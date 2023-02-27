@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,10 +16,11 @@ package org.apache.maven.surefire.api.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.booter;
 
+import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
-import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 /**
@@ -41,135 +40,112 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
  *
  * @author Kristian Rosenvold
  */
-public class ForkingRunListener
-    implements TestReportListener<TestOutputReportEntry>
-{
+public class ForkingRunListener implements TestReportListener<TestOutputReportEntry> {
     private final MasterProcessChannelEncoder target;
     private final boolean trim;
 
-    public ForkingRunListener( MasterProcessChannelEncoder target, boolean trim )
-    {
+    public ForkingRunListener(MasterProcessChannelEncoder target, boolean trim) {
         this.target = target;
         this.trim = trim;
     }
 
     @Override
-    public void testSetStarting( TestSetReportEntry report )
-    {
-        target.testSetStarting( report, trim );
+    public void testSetStarting(TestSetReportEntry report) {
+        target.testSetStarting(report, trim);
     }
 
     @Override
-    public void testSetCompleted( TestSetReportEntry report )
-    {
-        target.testSetCompleted( report, trim );
+    public void testSetCompleted(TestSetReportEntry report) {
+        target.testSetCompleted(report, trim);
     }
 
     @Override
-    public void testStarting( ReportEntry report )
-    {
-        target.testStarting( report, trim );
+    public void testStarting(ReportEntry report) {
+        target.testStarting(report, trim);
     }
 
     @Override
-    public void testSucceeded( ReportEntry report )
-    {
-        target.testSucceeded( report, trim );
+    public void testSucceeded(ReportEntry report) {
+        target.testSucceeded(report, trim);
     }
 
     @Override
-    public void testAssumptionFailure( ReportEntry report )
-    {
-        target.testAssumptionFailure( report, trim );
+    public void testAssumptionFailure(ReportEntry report) {
+        target.testAssumptionFailure(report, trim);
     }
 
     @Override
-    public void testError( ReportEntry report )
-    {
-        target.testError( report, trim );
+    public void testError(ReportEntry report) {
+        target.testError(report, trim);
     }
 
     @Override
-    public void testFailed( ReportEntry report )
-    {
-        target.testFailed( report, trim );
+    public void testFailed(ReportEntry report) {
+        target.testFailed(report, trim);
     }
 
     @Override
-    public void testSkipped( ReportEntry report )
-    {
-        target.testSkipped( report, trim );
+    public void testSkipped(ReportEntry report) {
+        target.testSkipped(report, trim);
     }
 
     @Override
-    public void testExecutionSkippedByUser()
-    {
+    public void testExecutionSkippedByUser() {
         target.stopOnNextTest();
     }
 
     @Override
-    public void writeTestOutput( TestOutputReportEntry reportEntry )
-    {
-        target.testOutput( reportEntry );
+    public void writeTestOutput(TestOutputReportEntry reportEntry) {
+        target.testOutput(reportEntry);
     }
 
     @Override
-    public boolean isDebugEnabled()
-    {
+    public boolean isDebugEnabled() {
         return true;
     }
 
     @Override
-    public void debug( String message )
-    {
-        target.consoleDebugLog( message );
+    public void debug(String message) {
+        target.consoleDebugLog(message);
     }
 
     @Override
-    public boolean isInfoEnabled()
-    {
+    public boolean isInfoEnabled() {
         return true;
     }
 
     @Override
-    public void info( String message )
-    {
-        target.consoleInfoLog( message );
+    public void info(String message) {
+        target.consoleInfoLog(message);
     }
 
     @Override
-    public boolean isWarnEnabled()
-    {
+    public boolean isWarnEnabled() {
         return true;
     }
 
     @Override
-    public void warning( String message )
-    {
-        target.consoleWarningLog( message );
+    public void warning(String message) {
+        target.consoleWarningLog(message);
     }
 
     @Override
-    public boolean isErrorEnabled()
-    {
+    public boolean isErrorEnabled() {
         return true;
     }
 
     @Override
-    public void error( String message )
-    {
-        target.consoleErrorLog( message );
+    public void error(String message) {
+        target.consoleErrorLog(message);
     }
 
     @Override
-    public void error( String message, Throwable t )
-    {
-        target.consoleErrorLog( message, t );
+    public void error(String message, Throwable t) {
+        target.consoleErrorLog(message, t);
     }
 
     @Override
-    public void error( Throwable t )
-    {
-        error( null, t );
+    public void error(Throwable t) {
+        error(null, t);
     }
 }

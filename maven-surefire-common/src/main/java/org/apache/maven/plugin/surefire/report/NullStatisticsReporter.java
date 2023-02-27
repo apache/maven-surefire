@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.api.report.ReportEntry;
@@ -28,39 +27,26 @@ import org.apache.maven.surefire.api.report.ReportEntry;
  * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
  * @since 2.20
  */
-class NullStatisticsReporter
-    extends StatisticsReporter
-{
+class NullStatisticsReporter extends StatisticsReporter {
 
     static final NullStatisticsReporter INSTANCE = new NullStatisticsReporter();
 
-    private NullStatisticsReporter()
-    {
-        super( null, null, null );
+    private NullStatisticsReporter() {
+        super(null, null, null);
     }
 
     @Override
-    public synchronized void testSetCompleted()
-    {
-    }
+    public synchronized void testSetCompleted() {}
 
     @Override
-    public void testSucceeded( ReportEntry report )
-    {
-    }
+    public void testSucceeded(ReportEntry report) {}
 
     @Override
-    public void testSkipped( ReportEntry report )
-    {
-    }
+    public void testSkipped(ReportEntry report) {}
 
     @Override
-    public void testError( ReportEntry report )
-    {
-    }
+    public void testError(ReportEntry report) {}
 
     @Override
-    public void testFailed( ReportEntry report )
-    {
-    }
+    public void testFailed(ReportEntry report) {}
 }

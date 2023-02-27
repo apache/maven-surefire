@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit48;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit48;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,29 +16,25 @@ package org.apache.maven.surefire.common.junit48;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit48;
 
 import org.junit.runner.Description;
 import org.junit.runner.manipulation.Filter;
 
-final class InvertedFilter
-    extends Filter
-{
+final class InvertedFilter extends Filter {
     private final Filter filter;
 
-    InvertedFilter( Filter filter )
-    {
+    InvertedFilter(Filter filter) {
         this.filter = filter;
     }
 
     @Override
-    public boolean shouldRun( Description description )
-    {
-        return !filter.shouldRun( description );
+    public boolean shouldRun(Description description) {
+        return !filter.shouldRun(description);
     }
 
     @Override
-    public String describe()
-    {
+    public String describe() {
         return filter.describe();
     }
 }

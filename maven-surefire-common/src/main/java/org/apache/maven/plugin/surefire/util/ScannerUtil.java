@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,37 +16,36 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.util;
 
-import org.apache.maven.surefire.shared.lang3.StringUtils;
 import javax.annotation.Nonnull;
 
-final class ScannerUtil
-{
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 
-    private ScannerUtil()
-    {
-        throw new IllegalStateException( "not instantiable constructor" );
+final class ScannerUtil {
+
+    private ScannerUtil() {
+        throw new IllegalStateException("not instantiable constructor");
     }
 
     @Deprecated
-    private static final String FS = System.getProperty( "file.separator" );
+    private static final String FS = System.getProperty("file.separator");
 
     @Deprecated
-    private static final boolean IS_NON_UNIX_FS = ( !FS.equals( "/" ) );
+    private static final boolean IS_NON_UNIX_FS = (!FS.equals("/"));
 
-    @Nonnull public static String convertJarFileResourceToJavaClassName( @Nonnull String test )
-    {
-        return StringUtils.removeEnd( test, ".class" ).replace( "/", "." );
+    @Nonnull
+    public static String convertJarFileResourceToJavaClassName(@Nonnull String test) {
+        return StringUtils.removeEnd(test, ".class").replace("/", ".");
     }
 
-    public static boolean isJavaClassFile( String file )
-    {
-        return file.endsWith( ".class" );
+    public static boolean isJavaClassFile(String file) {
+        return file.endsWith(".class");
     }
 
     @Deprecated
-    @Nonnull public static String convertSlashToSystemFileSeparator( @Nonnull String path )
-    {
-        return ( IS_NON_UNIX_FS ? path.replace( "/", FS ) : path );
+    @Nonnull
+    public static String convertSlashToSystemFileSeparator(@Nonnull String path) {
+        return (IS_NON_UNIX_FS ? path.replace("/", FS) : path);
     }
 }

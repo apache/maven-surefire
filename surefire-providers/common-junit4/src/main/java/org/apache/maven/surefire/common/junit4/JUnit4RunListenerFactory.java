@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit4;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit4;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,12 +16,12 @@ package org.apache.maven.surefire.common.junit4;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit4;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
-
 import org.junit.runner.notification.RunListener;
 
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
@@ -31,23 +29,17 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 /**
  * @author Kristian Rosenvold
  */
-public class JUnit4RunListenerFactory
-{
-    public static List<RunListener> createCustomListeners( String listeners )
-    {
+public class JUnit4RunListenerFactory {
+    public static List<RunListener> createCustomListeners(String listeners) {
         List<RunListener> result = new ArrayList<>();
-        if ( isNotBlank( listeners ) )
-        {
+        if (isNotBlank(listeners)) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            for ( String listener : listeners.split( "," ) )
-            {
-                if ( isNotBlank( listener ) )
-                {
-                    result.add( ReflectionUtils.instantiate( cl, listener, RunListener.class ) );
+            for (String listener : listeners.split(",")) {
+                if (isNotBlank(listener)) {
+                    result.add(ReflectionUtils.instantiate(cl, listener, RunListener.class));
                 }
             }
         }
         return result;
     }
-
 }

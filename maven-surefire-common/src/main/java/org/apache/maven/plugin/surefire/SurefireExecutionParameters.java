@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.util.List;
@@ -29,103 +28,102 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
  *
  * @author Stephen Connolly
  */
-public interface SurefireExecutionParameters
-{
+public interface SurefireExecutionParameters {
     boolean isSkipTests();
 
-    void setSkipTests( boolean skipTests );
+    void setSkipTests(boolean skipTests);
 
     boolean isSkipExec();
 
-    void setSkipExec( boolean skipExec );
+    void setSkipExec(boolean skipExec);
 
     boolean isSkip();
 
-    void setSkip( boolean skip );
+    void setSkip(boolean skip);
 
     File getBasedir();
 
-    void setBasedir( File basedir );
+    void setBasedir(File basedir);
 
     File getTestClassesDirectory();
 
-    void setTestClassesDirectory( File testClassesDirectory );
+    void setTestClassesDirectory(File testClassesDirectory);
 
     File getMainBuildPath();
 
-    void setMainBuildPath( File mainBuildPath );
+    void setMainBuildPath(File mainBuildPath);
 
     File getReportsDirectory();
 
-    void setReportsDirectory( File reportsDirectory );
+    void setReportsDirectory(File reportsDirectory);
 
     File getTestSourceDirectory();
 
-    void setTestSourceDirectory( File testSourceDirectory );
+    void setTestSourceDirectory(File testSourceDirectory);
 
     String getTest();
 
-    void setTest( String test );
+    void setTest(String test);
 
     List<String> getIncludes();
 
-    void setIncludes( List<String> includes );
+    void setIncludes(List<String> includes);
 
     List<String> getExcludes();
 
-    void setExcludes( List<String> excludes );
+    void setExcludes(List<String> excludes);
 
     ArtifactRepository getLocalRepository();
 
-    void setLocalRepository( ArtifactRepository localRepository );
+    void setLocalRepository(ArtifactRepository localRepository);
 
     boolean isPrintSummary();
 
-    void setPrintSummary( boolean printSummary );
+    void setPrintSummary(boolean printSummary);
 
     String getReportFormat();
 
-    void setReportFormat( String reportFormat );
+    void setReportFormat(String reportFormat);
 
     boolean isUseFile();
 
-    void setUseFile( boolean useFile );
+    void setUseFile(boolean useFile);
 
     String getDebugForkedProcess();
 
-    void setDebugForkedProcess( String debugForkedProcess );
+    void setDebugForkedProcess(String debugForkedProcess);
 
     int getForkedProcessTimeoutInSeconds();
 
-    void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds );
+    void setForkedProcessTimeoutInSeconds(int forkedProcessTimeoutInSeconds);
 
     int getForkedProcessExitTimeoutInSeconds();
 
-    void setForkedProcessExitTimeoutInSeconds( int forkedProcessTerminationTimeoutInSeconds );
+    void setForkedProcessExitTimeoutInSeconds(int forkedProcessTerminationTimeoutInSeconds);
 
     double getParallelTestsTimeoutInSeconds();
 
-    void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds );
+    void setParallelTestsTimeoutInSeconds(double parallelTestsTimeoutInSeconds);
 
     double getParallelTestsTimeoutForcedInSeconds();
 
-    void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds );
+    void setParallelTestsTimeoutForcedInSeconds(double parallelTestsTimeoutForcedInSeconds);
 
     boolean isUseSystemClassLoader();
 
-    void setUseSystemClassLoader( boolean useSystemClassLoader );
+    void setUseSystemClassLoader(boolean useSystemClassLoader);
 
     boolean isUseManifestOnlyJar();
 
-    void setUseManifestOnlyJar( boolean useManifestOnlyJar );
+    void setUseManifestOnlyJar(boolean useManifestOnlyJar);
 
     String getEncoding();
 
-    void setEncoding( String encoding );
+    void setEncoding(String encoding);
 
     boolean getFailIfNoSpecifiedTests();
 
-    void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests );
+    void setFailIfNoSpecifiedTests(boolean failIfNoSpecifiedTests);
 
     int getSkipAfterFailureCount();
 
@@ -133,9 +131,9 @@ public interface SurefireExecutionParameters
 
     String[] getIncludeJUnit5Engines();
 
-    void setIncludeJUnit5Engines( String[] includeJUnit5Engines );
+    void setIncludeJUnit5Engines(String[] includeJUnit5Engines);
 
     String[] getExcludeJUnit5Engines();
 
-    void setExcludeJUnit5Engines( String[] excludeJUnit5Engines );
+    void setExcludeJUnit5Engines(String[] excludeJUnit5Engines);
 }

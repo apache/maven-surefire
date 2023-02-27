@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,38 +16,29 @@ package org.apache.maven.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+package org.apache.maven.surefire.report;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-class RunnableTestClass1
-    implements Callable<Object>
-{
+import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+
+class RunnableTestClass1 implements Callable<Object> {
     @Override
-    public Object call()
-        throws Exception
-    {
+    public Object call() throws Exception {
         doSomethingThatThrows();
         return "yo";
     }
 
-    private void doSomethingThatThrows()
-        throws ExecutionException
-    {
+    private void doSomethingThatThrows() throws ExecutionException {
         RunnableTestClass2 rt2 = new RunnableTestClass2();
-        FutureTask<Object> futureTask = new FutureTask<>( rt2 );
-        DaemonThreadFactory.newDaemonThread( futureTask ).start();
-        try
-        {
+        FutureTask<Object> futureTask = new FutureTask<>(rt2);
+        DaemonThreadFactory.newDaemonThread(futureTask).start();
+        try {
             futureTask.get();
-        }
-        catch ( InterruptedException e )
-        {
+        } catch (InterruptedException e) {
             throw new RuntimeException();
         }
     }
-
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,8 +16,10 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import javax.annotation.Nonnull;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -40,165 +40,131 @@ import static java.io.File.pathSeparatorChar;
  *
  * @author Kristian Rosenvold
  */
-public final class Classpath implements Iterable<String>, Cloneable
-{
+public final class Classpath implements Iterable<String>, Cloneable {
     private final List<String> unmodifiableElements;
 
-    public static Classpath join( Classpath firstClasspath, Classpath secondClasspath )
-    {
-        LinkedHashSet<String> accumulated =  new LinkedHashSet<>();
-        if ( firstClasspath != null )
-        {
-            firstClasspath.addTo( accumulated );
+    public static Classpath join(Classpath firstClasspath, Classpath secondClasspath) {
+        LinkedHashSet<String> accumulated = new LinkedHashSet<>();
+        if (firstClasspath != null) {
+            firstClasspath.addTo(accumulated);
         }
-        if ( secondClasspath != null )
-        {
-            secondClasspath.addTo( accumulated );
+        if (secondClasspath != null) {
+            secondClasspath.addTo(accumulated);
         }
-        return new Classpath( accumulated );
+        return new Classpath(accumulated);
     }
 
-    private void addTo( @Nonnull Collection<String> c )
-    {
-        c.addAll( unmodifiableElements );
+    private void addTo(@Nonnull Collection<String> c) {
+        c.addAll(unmodifiableElements);
     }
 
-    private Classpath()
-    {
+    private Classpath() {
         unmodifiableElements = Collections.emptyList();
     }
 
-    public Classpath( @Nonnull Classpath other, @Nonnull String additionalElement )
-    {
-        ArrayList<String> elems = new ArrayList<>( other.unmodifiableElements );
-        elems.add( additionalElement );
-        unmodifiableElements = Collections.unmodifiableList( elems );
+    public Classpath(@Nonnull Classpath other, @Nonnull String additionalElement) {
+        ArrayList<String> elems = new ArrayList<>(other.unmodifiableElements);
+        elems.add(additionalElement);
+        unmodifiableElements = Collections.unmodifiableList(elems);
     }
 
-    public Classpath( @Nonnull Collection<String> elements )
-    {
-        List<String> newCp = new ArrayList<>( elements.size() );
-        for ( String element : elements )
-        {
+    public Classpath(@Nonnull Collection<String> elements) {
+        List<String> newCp = new ArrayList<>(elements.size());
+        for (String element : elements) {
             element = element.trim();
-            if ( !element.isEmpty() )
-            {
-                newCp.add( element );
+            if (!element.isEmpty()) {
+                newCp.add(element);
             }
         }
-        unmodifiableElements = Collections.unmodifiableList( newCp );
+        unmodifiableElements = Collections.unmodifiableList(newCp);
     }
 
-    public static Classpath emptyClasspath()
-    {
+    public static Classpath emptyClasspath() {
         return new Classpath();
     }
 
-    public Classpath addClassPathElementUrl( String path )
-    {
-        if ( path == null )
-        {
-            throw new IllegalArgumentException( "Null is not a valid class path element url." );
+    public Classpath addClassPathElementUrl(String path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Null is not a valid class path element url.");
         }
-        return unmodifiableElements.contains( path ) ? this : new Classpath( this, path );
+        return unmodifiableElements.contains(path) ? this : new Classpath(this, path);
     }
 
     @Nonnull
-    public List<String> getClassPath()
-    {
+    public List<String> getClassPath() {
         return unmodifiableElements;
     }
 
-    public void writeToSystemProperty( @Nonnull String propertyName )
-    {
+    public void writeToSystemProperty(@Nonnull String propertyName) {
         StringBuilder sb = new StringBuilder();
-        for ( String element : unmodifiableElements )
-        {
-            sb.append( element )
-              .append( pathSeparatorChar );
+        for (String element : unmodifiableElements) {
+            sb.append(element).append(pathSeparatorChar);
         }
-        System.setProperty( propertyName, sb.toString() );
+        System.setProperty(propertyName, sb.toString());
     }
 
     @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o )
-        {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if ( o == null || getClass() != o.getClass() )
-        {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
         Classpath classpath = (Classpath) o;
 
-        return unmodifiableElements.equals( classpath.unmodifiableElements );
+        return unmodifiableElements.equals(classpath.unmodifiableElements);
     }
 
-    public ClassLoader createClassLoader( boolean childDelegation, boolean enableAssertions, @Nonnull String roleName )
-        throws SurefireExecutionException
-    {
-        try
-        {
+    public ClassLoader createClassLoader(boolean childDelegation, boolean enableAssertions, @Nonnull String roleName)
+            throws SurefireExecutionException {
+        try {
             ClassLoader parent = SystemUtils.platformClassLoader();
-            IsolatedClassLoader classLoader = new IsolatedClassLoader( parent, childDelegation, roleName );
-            for ( String classPathElement : unmodifiableElements )
-            {
-                classLoader.addURL( new File( classPathElement ).toURI().toURL() );
+            IsolatedClassLoader classLoader = new IsolatedClassLoader(parent, childDelegation, roleName);
+            for (String classPathElement : unmodifiableElements) {
+                classLoader.addURL(new File(classPathElement).toURI().toURL());
             }
-            if ( parent != null )
-            {
-                parent.setDefaultAssertionStatus( enableAssertions );
+            if (parent != null) {
+                parent.setDefaultAssertionStatus(enableAssertions);
             }
-            classLoader.setDefaultAssertionStatus( enableAssertions );
+            classLoader.setDefaultAssertionStatus(enableAssertions);
             return classLoader;
-        }
-        catch ( MalformedURLException e )
-        {
-            throw new SurefireExecutionException( "When creating classloader", e );
+        } catch (MalformedURLException e) {
+            throw new SurefireExecutionException("When creating classloader", e);
         }
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return unmodifiableElements.hashCode();
     }
 
-    public String getLogMessage( @Nonnull String descriptor )
-    {
-        StringBuilder result = new StringBuilder( descriptor );
-        for ( String element : unmodifiableElements )
-        {
-            result.append( "  " )
-                    .append( element );
+    public String getLogMessage(@Nonnull String descriptor) {
+        StringBuilder result = new StringBuilder(descriptor);
+        for (String element : unmodifiableElements) {
+            result.append("  ").append(element);
         }
         return result.toString();
     }
 
-    public String getCompactLogMessage( @Nonnull String descriptor )
-    {
-        StringBuilder result = new StringBuilder( descriptor );
-        for ( String element : unmodifiableElements )
-        {
-            result.append( "  " );
-            int pos = element.lastIndexOf( File.separatorChar );
-            result.append( pos == -1 ? element : element.substring( pos + 1 ) );
+    public String getCompactLogMessage(@Nonnull String descriptor) {
+        StringBuilder result = new StringBuilder(descriptor);
+        for (String element : unmodifiableElements) {
+            result.append("  ");
+            int pos = element.lastIndexOf(File.separatorChar);
+            result.append(pos == -1 ? element : element.substring(pos + 1));
         }
         return result.toString();
     }
 
     @Override
-    public Iterator<String> iterator()
-    {
+    public Iterator<String> iterator() {
         return unmodifiableElements.iterator();
     }
 
     @Override
-    public Classpath clone()
-    {
-        return new Classpath( unmodifiableElements );
+    public Classpath clone() {
+        return new Classpath(unmodifiableElements);
     }
 }

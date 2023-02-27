@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.plugin.surefire;
 
 /*
@@ -23,6 +41,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.booterclient.ChecksumCalculator;
@@ -30,8 +49,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 
@@ -40,34 +59,34 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
  *
  * @author Jason van Zyl
  */
-@Mojo( name = "test", defaultPhase = LifecyclePhase.TEST, threadSafe = true,
-       requiresDependencyResolution = ResolutionScope.TEST )
-public class SurefirePlugin
-    extends AbstractSurefireMojo
-    implements SurefireReportParameters
-{
+@Mojo(
+        name = "test",
+        defaultPhase = LifecyclePhase.TEST,
+        threadSafe = true,
+        requiresDependencyResolution = ResolutionScope.TEST)
+public class SurefirePlugin extends AbstractSurefireMojo implements SurefireReportParameters {
 
     /**
      * The directory containing generated classes of the project being tested. This will be included after the test
      * classes in the test classpath.
      */
-    @Parameter( defaultValue = "${project.build.outputDirectory}" )
+    @Parameter(defaultValue = "${project.build.outputDirectory}")
     private File classesDirectory;
 
     /**
      * Set this to "true" to ignore a failure during testing. Its use is NOT RECOMMENDED, but quite convenient on
      * occasion.
      */
-    @Parameter( property = "maven.test.failure.ignore", defaultValue = "false" )
+    @Parameter(property = "maven.test.failure.ignore", defaultValue = "false")
     private boolean testFailureIgnore;
 
     /**
      * Base directory where all reports are written to.
      */
-    @Parameter( defaultValue = "${project.build.directory}/surefire-reports" )
+    @Parameter(defaultValue = "${project.build.directory}/surefire-reports")
     private File reportsDirectory;
 
-    @SuppressWarnings( "checkstyle:linelength" )
+    @SuppressWarnings("checkstyle:linelength")
     /**
      * Specify this parameter to run individual tests by file name, overriding the parameter {@code includes} and
      * {@code excludes}. Each pattern you specify here will be used to create an include pattern formatted like
@@ -90,26 +109,26 @@ public class SurefirePlugin
      * If using <code>@Parameters(name="{index}: fib({0})={1}")</code> and selecting the index e.g. 5 in pattern, the
      * non-regex method pattern would become {@code #testMethod[5:*]}.
      */
-    @Parameter( property = "test" )
+    @Parameter(property = "test")
     private String test;
 
     /**
      * Option to print summary of test suites or just print the test cases that have errors.
      */
-    @Parameter( property = "surefire.printSummary", defaultValue = "true" )
+    @Parameter(property = "surefire.printSummary", defaultValue = "true")
     private boolean printSummary;
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as "brief" or "plain".
      * Only applies to the output format of the output files  (target/surefire-reports/testName.txt)
      */
-    @Parameter( property = "surefire.reportFormat", defaultValue = "brief" )
+    @Parameter(property = "surefire.reportFormat", defaultValue = "brief")
     private String reportFormat;
 
     /**
      * Option to generate a file test report or just output the test report to the console.
      */
-    @Parameter( property = "surefire.useFile", defaultValue = "true" )
+    @Parameter(property = "surefire.useFile", defaultValue = "true")
     private boolean useFile;
 
     /**
@@ -118,7 +137,7 @@ public class SurefirePlugin
      *
      * @since 2.12
      */
-    @Parameter( property = "surefire.failIfNoSpecifiedTests", defaultValue = "true" )
+    @Parameter(property = "surefire.failIfNoSpecifiedTests", defaultValue = "true")
     private boolean failIfNoSpecifiedTests;
 
     /**
@@ -129,7 +148,7 @@ public class SurefirePlugin
      *
      * @since 2.4
      */
-    @Parameter( property = "maven.surefire.debug" )
+    @Parameter(property = "maven.surefire.debug")
     private String debugForkedProcess;
 
     /**
@@ -138,7 +157,7 @@ public class SurefirePlugin
      *
      * @since 2.4
      */
-    @Parameter( property = "surefire.timeout" )
+    @Parameter(property = "surefire.timeout")
     private int forkedProcessTimeoutInSeconds;
 
     /**
@@ -151,7 +170,7 @@ public class SurefirePlugin
      *
      * @since 2.20
      */
-    @Parameter( property = "surefire.exitTimeout", defaultValue = "30" )
+    @Parameter(property = "surefire.exitTimeout", defaultValue = "30")
     private int forkedProcessExitTimeoutInSeconds;
 
     /**
@@ -164,7 +183,7 @@ public class SurefirePlugin
      *
      * @since 2.16
      */
-    @Parameter( property = "surefire.parallel.timeout" )
+    @Parameter(property = "surefire.parallel.timeout")
     private double parallelTestsTimeoutInSeconds;
 
     /**
@@ -178,10 +197,10 @@ public class SurefirePlugin
      *
      * @since 2.16
      */
-    @Parameter( property = "surefire.parallel.forcedTimeout" )
+    @Parameter(property = "surefire.parallel.forcedTimeout")
     private double parallelTestsTimeoutForcedInSeconds;
 
-    @SuppressWarnings( "checkstyle:linelength" )
+    @SuppressWarnings("checkstyle:linelength")
     /**
      * A list of {@literal <include>} elements specifying the tests (by pattern) that should be included in testing.
      * When not specified and when the {@code test} parameter is not specified, the default includes will be
@@ -208,7 +227,7 @@ public class SurefirePlugin
      * to the POM property {@code ${project.build.testOutputDirectory}}, typically
      * <code>{@literal src/test/java}</code> unless overridden.
      */
-    @Parameter( property = "surefire.includes" )
+    @Parameter(property = "surefire.includes")
     // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
     private List<String> includes;
 
@@ -236,7 +255,7 @@ public class SurefirePlugin
      * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
      * <code>{@literal src/test/java}</code> unless overridden.
      */
-    @Parameter( property = "surefire.excludes" )
+    @Parameter(property = "surefire.excludes")
     // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
     private List<String> excludes;
 
@@ -247,7 +266,7 @@ public class SurefirePlugin
      *
      * @since 2.3
      */
-    @Parameter( property = "surefire.useSystemClassLoader", defaultValue = "true" )
+    @Parameter(property = "surefire.useSystemClassLoader", defaultValue = "true")
     private boolean useSystemClassLoader;
 
     /**
@@ -261,7 +280,7 @@ public class SurefirePlugin
      *
      * @since 2.4.3
      */
-    @Parameter( property = "surefire.useManifestOnlyJar", defaultValue = "true" )
+    @Parameter(property = "surefire.useManifestOnlyJar", defaultValue = "true")
     private boolean useManifestOnlyJar;
 
     /**
@@ -271,7 +290,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M1
      */
-    @Parameter( property = "surefire.encoding", defaultValue = "${project.reporting.outputEncoding}" )
+    @Parameter(property = "surefire.encoding", defaultValue = "${project.reporting.outputEncoding}")
     private String encoding;
 
     /**
@@ -280,7 +299,7 @@ public class SurefirePlugin
      * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
      * However, all the failing attempts will be recorded.
      */
-    @Parameter( property = "surefire.rerunFailingTestsCount", defaultValue = "0" )
+    @Parameter(property = "surefire.rerunFailingTestsCount", defaultValue = "0")
     private int rerunFailingTestsCount;
 
     /**
@@ -289,7 +308,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "surefire.failOnFlakeCount", defaultValue = "0" )
+    @Parameter(property = "surefire.failOnFlakeCount", defaultValue = "0")
     private int failOnFlakeCount;
 
     /**
@@ -301,7 +320,7 @@ public class SurefirePlugin
      *
      * @since 2.2
      */
-    @Parameter( property = "surefire.suiteXmlFiles" )
+    @Parameter(property = "surefire.suiteXmlFiles")
     private File[] suiteXmlFiles;
 
     /**
@@ -328,7 +347,7 @@ public class SurefirePlugin
      *
      * @since 2.7
      */
-    @Parameter( property = "surefire.runOrder", defaultValue = "filesystem" )
+    @Parameter(property = "surefire.runOrder", defaultValue = "filesystem")
     private String runOrder;
 
     /**
@@ -344,7 +363,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "surefire.runOrder.random.seed" )
+    @Parameter(property = "surefire.runOrder.random.seed")
     private Long runOrderRandomSeed;
 
     /**
@@ -363,7 +382,7 @@ public class SurefirePlugin
      *
      * @since 2.13
      */
-    @Parameter( property = "surefire.includesFile" )
+    @Parameter(property = "surefire.includesFile")
     private File includesFile;
 
     /**
@@ -382,7 +401,7 @@ public class SurefirePlugin
      *
      * @since 2.13
      */
-    @Parameter( property = "surefire.excludesFile" )
+    @Parameter(property = "surefire.excludesFile")
     private File excludesFile;
 
     /**
@@ -396,7 +415,7 @@ public class SurefirePlugin
      *
      * @since 2.19
      */
-    @Parameter( property = "surefire.skipAfterFailureCount", defaultValue = "0" )
+    @Parameter(property = "surefire.skipAfterFailureCount", defaultValue = "0")
     private int skipAfterFailureCount;
 
     /**
@@ -416,7 +435,7 @@ public class SurefirePlugin
      *
      * @since 2.19
      */
-    @Parameter( property = "surefire.shutdown", defaultValue = "exit" )
+    @Parameter(property = "surefire.shutdown", defaultValue = "exit")
     private String shutdown;
 
     /**
@@ -427,7 +446,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M2
      */
-    @Parameter( property = "surefire.useModulePath", defaultValue = "true" )
+    @Parameter(property = "surefire.useModulePath", defaultValue = "true")
     private boolean useModulePath;
 
     /**
@@ -442,7 +461,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M5
      */
-    @Parameter( property = "surefire.forkNode" )
+    @Parameter(property = "surefire.forkNode")
     private ForkNodeFactory forkNode;
 
     /**
@@ -458,7 +477,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M4
      */
-    @Parameter( property = "surefire.excludedEnvironmentVariables" )
+    @Parameter(property = "surefire.excludedEnvironmentVariables")
     private String[] excludedEnvironmentVariables;
 
     /**
@@ -499,10 +518,10 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M4
      */
-    @Parameter( property = "surefire.enableProcessChecker" )
+    @Parameter(property = "surefire.enableProcessChecker")
     private String enableProcessChecker;
 
-    @Parameter( property = "surefire.systemPropertiesFile" )
+    @Parameter(property = "surefire.systemPropertiesFile")
     private File systemPropertiesFile;
 
     /**
@@ -510,7 +529,7 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "surefire.includeJUnit5Engines" )
+    @Parameter(property = "surefire.includeJUnit5Engines")
     private String[] includeJUnit5Engines;
 
     /**
@@ -518,498 +537,413 @@ public class SurefirePlugin
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "surefire.excludeJUnit5Engines" )
+    @Parameter(property = "surefire.excludeJUnit5Engines")
     private String[] excludeJUnit5Engines;
 
     @Override
-    protected int getRerunFailingTestsCount()
-    {
+    protected int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
     }
 
     @Override
-    public int getFailOnFlakeCount()
-    {
+    public int getFailOnFlakeCount() {
         return failOnFlakeCount;
     }
 
     @Override
-    public void setFailOnFlakeCount( int failOnFlakeCount )
-    {
+    public void setFailOnFlakeCount(int failOnFlakeCount) {
         this.failOnFlakeCount = failOnFlakeCount;
     }
 
     @Override
-    protected void handleSummary( RunResult summary, Exception firstForkException )
-        throws MojoExecutionException, MojoFailureException
-    {
-        reportExecution( this, summary, getConsoleLogger(), firstForkException );
+    protected void handleSummary(RunResult summary, Exception firstForkException)
+            throws MojoExecutionException, MojoFailureException {
+        reportExecution(this, summary, getConsoleLogger(), firstForkException);
     }
 
     @Override
-    protected boolean isSkipExecution()
-    {
+    protected boolean isSkipExecution() {
         return isSkip() || isSkipTests() || isSkipExec();
     }
 
     @Override
-    protected String getPluginName()
-    {
+    protected String getPluginName() {
         return "surefire";
     }
 
     @Override
-    protected String[] getDefaultIncludes()
-    {
-        return new String[]{ "**/Test*.java", "**/*Test.java", "**/*Tests.java", "**/*TestCase.java" };
+    protected String[] getDefaultIncludes() {
+        return new String[] {"**/Test*.java", "**/*Test.java", "**/*Tests.java", "**/*TestCase.java"};
     }
 
     @Override
-    protected String getReportSchemaLocation()
-    {
+    protected String getReportSchemaLocation() {
         return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
     }
 
-
-    public File getSystemPropertiesFile()
-    {
+    public File getSystemPropertiesFile() {
         return systemPropertiesFile;
     }
 
-
-    public void setSystemPropertiesFile( File systemPropertiesFile )
-    {
+    public void setSystemPropertiesFile(File systemPropertiesFile) {
         this.systemPropertiesFile = systemPropertiesFile;
     }
-
 
     // now for the implementation of the field accessors
 
     @Override
-    public boolean isSkipTests()
-    {
+    public boolean isSkipTests() {
         return skipTests;
     }
 
     @Override
-    public void setSkipTests( boolean skipTests )
-    {
+    public void setSkipTests(boolean skipTests) {
         this.skipTests = skipTests;
     }
 
     @Override
     @Deprecated
-    public boolean isSkipExec()
-    {
+    public boolean isSkipExec() {
         return skipExec;
     }
 
     @Override
     @Deprecated
-    public void setSkipExec( boolean skipExec )
-    {
+    public void setSkipExec(boolean skipExec) {
         this.skipExec = skipExec;
     }
 
     @Override
-    public boolean isSkip()
-    {
+    public boolean isSkip() {
         return skip;
     }
 
     @Override
-    public void setSkip( boolean skip )
-    {
+    public void setSkip(boolean skip) {
         this.skip = skip;
     }
 
     @Override
-    public boolean isTestFailureIgnore()
-    {
+    public boolean isTestFailureIgnore() {
         return testFailureIgnore;
     }
 
     @Override
-    public void setTestFailureIgnore( boolean testFailureIgnore )
-    {
+    public void setTestFailureIgnore(boolean testFailureIgnore) {
         this.testFailureIgnore = testFailureIgnore;
     }
 
     @Override
-    public File getBasedir()
-    {
+    public File getBasedir() {
         return basedir;
     }
 
     @Override
-    public void setBasedir( File basedir )
-    {
+    public void setBasedir(File basedir) {
         this.basedir = basedir;
     }
 
     @Override
-    public File getTestClassesDirectory()
-    {
+    public File getTestClassesDirectory() {
         return testClassesDirectory;
     }
 
     @Override
-    public void setTestClassesDirectory( File testClassesDirectory )
-    {
+    public void setTestClassesDirectory(File testClassesDirectory) {
         this.testClassesDirectory = testClassesDirectory;
     }
 
     @Override
-    public File getMainBuildPath()
-    {
+    public File getMainBuildPath() {
         return classesDirectory;
     }
 
     @Override
-    public void setMainBuildPath( File mainBuildPath )
-    {
+    public void setMainBuildPath(File mainBuildPath) {
         classesDirectory = mainBuildPath;
     }
 
     @Override
-    public File getReportsDirectory()
-    {
+    public File getReportsDirectory() {
         return reportsDirectory;
     }
 
     @Override
-    public void setReportsDirectory( File reportsDirectory )
-    {
+    public void setReportsDirectory(File reportsDirectory) {
         this.reportsDirectory = reportsDirectory;
     }
 
     @Override
-    public String getTest()
-    {
+    public String getTest() {
         return test;
     }
 
     @Override
-    public boolean isUseSystemClassLoader()
-    {
+    public boolean isUseSystemClassLoader() {
         return useSystemClassLoader;
     }
 
     @Override
-    public void setUseSystemClassLoader( boolean useSystemClassLoader )
-    {
+    public void setUseSystemClassLoader(boolean useSystemClassLoader) {
         this.useSystemClassLoader = useSystemClassLoader;
     }
 
     @Override
-    public boolean isUseManifestOnlyJar()
-    {
+    public boolean isUseManifestOnlyJar() {
         return useManifestOnlyJar;
     }
 
     @Override
-    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
-    {
+    public void setUseManifestOnlyJar(boolean useManifestOnlyJar) {
         this.useManifestOnlyJar = useManifestOnlyJar;
     }
 
     @Override
-    public String getEncoding()
-    {
+    public String getEncoding() {
         return encoding;
     }
 
     @Override
-    public void setEncoding( String encoding )
-    {
+    public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
     @Override
-    public boolean getFailIfNoSpecifiedTests()
-    {
+    public boolean getFailIfNoSpecifiedTests() {
         return failIfNoSpecifiedTests;
     }
 
     @Override
-    public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
-    {
+    public void setFailIfNoSpecifiedTests(boolean failIfNoSpecifiedTests) {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
     @Override
-    public int getSkipAfterFailureCount()
-    {
+    public int getSkipAfterFailureCount() {
         return skipAfterFailureCount;
     }
 
     @Override
-    public String getShutdown()
-    {
+    public String getShutdown() {
         return shutdown;
     }
 
     @Override
-    public boolean isPrintSummary()
-    {
+    public boolean isPrintSummary() {
         return printSummary;
     }
 
     @Override
-    public void setPrintSummary( boolean printSummary )
-    {
+    public void setPrintSummary(boolean printSummary) {
         this.printSummary = printSummary;
     }
 
     @Override
-    public String getReportFormat()
-    {
+    public String getReportFormat() {
         return reportFormat;
     }
 
     @Override
-    public void setReportFormat( String reportFormat )
-    {
+    public void setReportFormat(String reportFormat) {
         this.reportFormat = reportFormat;
     }
 
     @Override
-    public boolean isUseFile()
-    {
+    public boolean isUseFile() {
         return useFile;
     }
 
     @Override
-    public void setUseFile( boolean useFile )
-    {
+    public void setUseFile(boolean useFile) {
         this.useFile = useFile;
     }
 
     @Override
-    public String getDebugForkedProcess()
-    {
+    public String getDebugForkedProcess() {
         return debugForkedProcess;
     }
 
     @Override
-    public void setDebugForkedProcess( String debugForkedProcess )
-    {
+    public void setDebugForkedProcess(String debugForkedProcess) {
         this.debugForkedProcess = debugForkedProcess;
     }
 
     @Override
-    public int getForkedProcessTimeoutInSeconds()
-    {
+    public int getForkedProcessTimeoutInSeconds() {
         return forkedProcessTimeoutInSeconds;
     }
 
     @Override
-    public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
-    {
+    public void setForkedProcessTimeoutInSeconds(int forkedProcessTimeoutInSeconds) {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
     @Override
-    public int getForkedProcessExitTimeoutInSeconds()
-    {
+    public int getForkedProcessExitTimeoutInSeconds() {
         return forkedProcessExitTimeoutInSeconds;
     }
 
     @Override
-    public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
-    {
+    public void setForkedProcessExitTimeoutInSeconds(int forkedProcessExitTimeoutInSeconds) {
         this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
     @Override
-    public double getParallelTestsTimeoutInSeconds()
-    {
+    public double getParallelTestsTimeoutInSeconds() {
         return parallelTestsTimeoutInSeconds;
     }
 
     @Override
-    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
-    {
+    public void setParallelTestsTimeoutInSeconds(double parallelTestsTimeoutInSeconds) {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
     @Override
-    public double getParallelTestsTimeoutForcedInSeconds()
-    {
+    public double getParallelTestsTimeoutForcedInSeconds() {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
     @Override
-    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
-    {
+    public void setParallelTestsTimeoutForcedInSeconds(double parallelTestsTimeoutForcedInSeconds) {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
     @Override
-    public void setTest( String test )
-    {
+    public void setTest(String test) {
         this.test = test;
     }
 
     @Override
-    public List<String> getIncludes()
-    {
+    public List<String> getIncludes() {
         return includes;
     }
 
     @Override
-    public void setIncludes( List<String> includes )
-    {
+    public void setIncludes(List<String> includes) {
         this.includes = includes;
     }
 
     @Override
-    public List<String> getExcludes()
-    {
+    public List<String> getExcludes() {
         return excludes;
     }
 
     @Override
-    public void setExcludes( List<String> excludes )
-    {
+    public void setExcludes(List<String> excludes) {
         this.excludes = excludes;
     }
 
     @Override
-    public File[] getSuiteXmlFiles()
-    {
+    public File[] getSuiteXmlFiles() {
         return suiteXmlFiles.clone();
     }
 
     @Override
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setSuiteXmlFiles( File[] suiteXmlFiles )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setSuiteXmlFiles(File[] suiteXmlFiles) {
         this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
     @Override
-    public String getRunOrder()
-    {
+    public String getRunOrder() {
         return runOrder;
     }
 
     @Override
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setRunOrder( String runOrder )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setRunOrder(String runOrder) {
         this.runOrder = runOrder;
     }
 
     @Override
-    public Long getRunOrderRandomSeed()
-    {
+    public Long getRunOrderRandomSeed() {
         return runOrderRandomSeed;
     }
 
     @Override
-    public void setRunOrderRandomSeed( Long runOrderRandomSeed )
-    {
+    public void setRunOrderRandomSeed(Long runOrderRandomSeed) {
         this.runOrderRandomSeed = runOrderRandomSeed;
     }
 
     @Override
-    public File getIncludesFile()
-    {
+    public File getIncludesFile() {
         return includesFile;
     }
 
     @Override
-    public File getExcludesFile()
-    {
+    public File getExcludesFile() {
         return excludesFile;
     }
 
     @Override
-    protected boolean useModulePath()
-    {
+    protected boolean useModulePath() {
         return useModulePath;
     }
 
     @Override
-    protected void setUseModulePath( boolean useModulePath )
-    {
+    protected void setUseModulePath(boolean useModulePath) {
         this.useModulePath = useModulePath;
     }
 
     @Override
-    protected final List<File> suiteXmlFiles()
-    {
-        return hasSuiteXmlFiles() ? Arrays.asList( suiteXmlFiles ) : Collections.<File>emptyList();
+    protected final List<File> suiteXmlFiles() {
+        return hasSuiteXmlFiles() ? Arrays.asList(suiteXmlFiles) : Collections.<File>emptyList();
     }
 
     @Override
-    protected final boolean hasSuiteXmlFiles()
-    {
+    protected final boolean hasSuiteXmlFiles() {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 
     @Override
-    protected final String[] getExcludedEnvironmentVariables()
-    {
+    protected final String[] getExcludedEnvironmentVariables() {
         return excludedEnvironmentVariables == null ? new String[0] : excludedEnvironmentVariables;
     }
 
-    void setExcludedEnvironmentVariables( String[] excludedEnvironmentVariables )
-    {
+    void setExcludedEnvironmentVariables(String[] excludedEnvironmentVariables) {
         this.excludedEnvironmentVariables = excludedEnvironmentVariables;
     }
 
     @Override
-    protected final String getEnableProcessChecker()
-    {
+    protected final String getEnableProcessChecker() {
         return enableProcessChecker;
     }
 
     @Override
-    protected final ForkNodeFactory getForkNode()
-    {
+    protected final ForkNodeFactory getForkNode() {
         return forkNode;
     }
 
     @Override
-    protected void warnIfIllegalFailOnFlakeCount() throws MojoFailureException
-    {
-        if ( failOnFlakeCount < 0 )
-        {
-            throw new MojoFailureException( "Parameter \"failOnFlakeCount\" should not be negative." );
+    protected void warnIfIllegalFailOnFlakeCount() throws MojoFailureException {
+        if (failOnFlakeCount < 0) {
+            throw new MojoFailureException("Parameter \"failOnFlakeCount\" should not be negative.");
         }
-        if ( failOnFlakeCount > 0 && rerunFailingTestsCount < 1 )
-        {
-            throw new MojoFailureException( "\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1." );
+        if (failOnFlakeCount > 0 && rerunFailingTestsCount < 1) {
+            throw new MojoFailureException("\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1.");
         }
     }
 
     @Override
-    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
-    {
-        checksum.add( skipAfterFailureCount );
+    protected void addPluginSpecificChecksumItems(ChecksumCalculator checksum) {
+        checksum.add(skipAfterFailureCount);
     }
 
-    public String[] getIncludeJUnit5Engines()
-    {
+    public String[] getIncludeJUnit5Engines() {
         return includeJUnit5Engines;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setIncludeJUnit5Engines(String[] includeJUnit5Engines) {
         this.includeJUnit5Engines = includeJUnit5Engines;
     }
 
-    public String[] getExcludeJUnit5Engines()
-    {
+    public String[] getExcludeJUnit5Engines() {
         return excludeJUnit5Engines;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setExcludeJUnit5Engines(String[] excludeJUnit5Engines) {
         this.excludeJUnit5Engines = excludeJUnit5Engines;
     }
 }

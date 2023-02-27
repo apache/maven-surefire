@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,7 +16,7 @@ package org.apache.maven.plugin.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-
+package org.apache.maven.plugin.surefire.util;
 
 import javax.annotation.Nonnull;
 
@@ -27,30 +25,23 @@ import javax.annotation.Nonnull;
  *
  * @author Kristian Rosenvold
  */
-public final class Relocator
-{
+public final class Relocator {
     private static final String RELOCATION_BASE = "org.apache.maven.";
     private static final String PACKAGE_DELIMITER = "shadefire";
 
-    private Relocator()
-    {
-        throw new IllegalStateException( "no instantiable constructor" );
+    private Relocator() {
+        throw new IllegalStateException("no instantiable constructor");
     }
 
     @Nonnull
-    public static String relocate( @Nonnull String className )
-    {
-        if ( className.contains( PACKAGE_DELIMITER ) )
-        {
+    public static String relocate(@Nonnull String className) {
+        if (className.contains(PACKAGE_DELIMITER)) {
             return className;
-        }
-        else
-        {
-            if ( !className.startsWith( RELOCATION_BASE ) )
-            {
-                throw new IllegalArgumentException( "'" + className + "' should start with '" + RELOCATION_BASE + "'" );
+        } else {
+            if (!className.startsWith(RELOCATION_BASE)) {
+                throw new IllegalArgumentException("'" + className + "' should start with '" + RELOCATION_BASE + "'");
             }
-            String rest = className.substring( RELOCATION_BASE.length() );
+            String rest = className.substring(RELOCATION_BASE.length());
             final String s = RELOCATION_BASE + PACKAGE_DELIMITER + ".";
             return s + rest;
         }

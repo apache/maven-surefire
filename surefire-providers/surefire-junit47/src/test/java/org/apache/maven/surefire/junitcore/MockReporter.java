@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore;
 
 /*
@@ -34,9 +52,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Internal tests use only.
  */
-final class MockReporter
-        extends ConcurrentRunListener
-{
+final class MockReporter extends ConcurrentRunListener {
     private final List<String> events = new ArrayList<>();
 
     static final String SET_STARTED = "SET_STARTED";
@@ -57,149 +73,106 @@ final class MockReporter
 
     private final AtomicInteger testError = new AtomicInteger();
 
-    MockReporter()
-    {
-        super( mock( ReporterFactory.class ), false, emptyMap() );
+    MockReporter() {
+        super(mock(ReporterFactory.class), false, emptyMap());
     }
 
     @Override
-    public void testSetStarting( TestSetReportEntry report )
-    {
-        events.add( SET_STARTED );
+    public void testSetStarting(TestSetReportEntry report) {
+        events.add(SET_STARTED);
     }
 
     @Override
-    public void testSetCompleted( TestSetReportEntry report )
-    {
-        events.add( SET_COMPLETED );
+    public void testSetCompleted(TestSetReportEntry report) {
+        events.add(SET_COMPLETED);
     }
 
     @Override
-    public void testStarting( ReportEntry report )
-    {
-        events.add( TEST_STARTED );
+    public void testStarting(ReportEntry report) {
+        events.add(TEST_STARTED);
     }
 
     @Override
-    public void testSucceeded( ReportEntry report )
-    {
-        events.add( TEST_COMPLETED );
+    public void testSucceeded(ReportEntry report) {
+        events.add(TEST_COMPLETED);
         testSucceeded.incrementAndGet();
     }
 
     @Override
-    protected void checkIfTestSetCanBeReported( TestSet testSetForTest )
-    {
-
-    }
+    protected void checkIfTestSetCanBeReported(TestSet testSetForTest) {}
 
     @Override
-    public void testSkipped( ReportEntry report )
-    {
-        events.add( TEST_SKIPPED );
+    public void testSkipped(ReportEntry report) {
+        events.add(TEST_SKIPPED);
         testIgnored.incrementAndGet();
     }
 
     @Override
-    public void testExecutionSkippedByUser()
-    {
-    }
+    public void testExecutionSkippedByUser() {}
 
-    public int getTestSucceeded()
-    {
+    public int getTestSucceeded() {
         return testSucceeded.get();
     }
 
-    public int getTestFailed()
-    {
+    public int getTestFailed() {
         return testFailed.get();
     }
 
     @Override
-    public void testError( ReportEntry report )
-    {
+    public void testError(ReportEntry report) {
         testError.incrementAndGet();
     }
 
     @Override
-    public void testFailed( ReportEntry report )
-    {
+    public void testFailed(ReportEntry report) {
         testFailed.incrementAndGet();
     }
 
     @Override
-    public void testAssumptionFailure( ReportEntry report )
-    {
-    }
+    public void testAssumptionFailure(ReportEntry report) {}
 
-    public boolean containsNotification( String event )
-    {
-        return events.contains( event );
+    public boolean containsNotification(String event) {
+        return events.contains(event);
     }
 
     @Override
-    public void writeTestOutput( TestOutputReportEntry reportEntry )
-    {
-
-    }
+    public void writeTestOutput(TestOutputReportEntry reportEntry) {}
 
     @Override
-    public boolean isDebugEnabled()
-    {
+    public boolean isDebugEnabled() {
         return false;
     }
 
     @Override
-    public void debug( String message )
-    {
-
-    }
+    public void debug(String message) {}
 
     @Override
-    public boolean isInfoEnabled()
-    {
+    public boolean isInfoEnabled() {
         return false;
     }
 
     @Override
-    public void info( String message )
-    {
-
-    }
+    public void info(String message) {}
 
     @Override
-    public boolean isWarnEnabled()
-    {
+    public boolean isWarnEnabled() {
         return false;
     }
 
     @Override
-    public void warning( String message )
-    {
-
-    }
+    public void warning(String message) {}
 
     @Override
-    public boolean isErrorEnabled()
-    {
+    public boolean isErrorEnabled() {
         return false;
     }
 
     @Override
-    public void error( String message )
-    {
-
-    }
+    public void error(String message) {}
 
     @Override
-    public void error( String message, Throwable t )
-    {
-
-    }
+    public void error(String message, Throwable t) {}
 
     @Override
-    public void error( Throwable t )
-    {
-
-    }
+    public void error(Throwable t) {}
 }

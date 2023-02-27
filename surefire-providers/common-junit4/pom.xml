@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Licensed to the Apache Software Foundation (ASF) under one
   ~ or more contributor license agreements.  See the NOTICE file
@@ -16,7 +17,6 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,10 @@
 
   <name>Shared JUnit4 Provider Code</name>
   <description>Shared JUnit4 Provider Code</description>
+
+  <scm>
+    <tag>surefire-3.0.0-M8</tag>
+  </scm>
 
   <dependencies>
     <dependency>
@@ -55,6 +59,9 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+        </configuration>
         <executions>
           <execution>
             <id>jacoco-agent</id>
@@ -63,9 +70,6 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <propertyName>jacoco.agent</propertyName>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -76,14 +80,11 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>3.0.0-M7</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+            <version>3.0.0-M7</version>
+            <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
       </plugin>
     </plugins>
   </build>
-
-  <scm>
-    <tag>surefire-3.0.0-M8</tag>
-  </scm>
 </project>

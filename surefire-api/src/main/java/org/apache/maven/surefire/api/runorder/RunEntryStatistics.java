@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.runorder;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.runorder;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,54 +16,47 @@ package org.apache.maven.surefire.api.runorder;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.runorder;
 
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RunEntryStatistics
-{
+public class RunEntryStatistics {
     private final int runTime;
 
     private final int successfulBuilds;
 
     private final ClassMethod classMethod;
 
-    RunEntryStatistics( int runTime, int successfulBuilds, String clazz, String method )
-    {
-        this( runTime, successfulBuilds, new ClassMethod( clazz, method ) );
+    RunEntryStatistics(int runTime, int successfulBuilds, String clazz, String method) {
+        this(runTime, successfulBuilds, new ClassMethod(clazz, method));
     }
 
-    public RunEntryStatistics( int runTime, int successfulBuilds, ClassMethod classMethod )
-    {
+    public RunEntryStatistics(int runTime, int successfulBuilds, ClassMethod classMethod) {
         this.runTime = runTime;
         this.successfulBuilds = successfulBuilds;
         this.classMethod = classMethod;
     }
 
-    public ClassMethod getClassMethod()
-    {
+    public ClassMethod getClassMethod() {
         return classMethod;
     }
 
-    public RunEntryStatistics nextGeneration( int runTime )
-    {
-        return new RunEntryStatistics( runTime, successfulBuilds + 1, classMethod );
+    public RunEntryStatistics nextGeneration(int runTime) {
+        return new RunEntryStatistics(runTime, successfulBuilds + 1, classMethod);
     }
 
-    public RunEntryStatistics nextGenerationFailure( int runTime )
-    {
-        return new RunEntryStatistics( runTime, 0, classMethod );
+    public RunEntryStatistics nextGenerationFailure(int runTime) {
+        return new RunEntryStatistics(runTime, 0, classMethod);
     }
 
-    public int getRunTime()
-    {
+    public int getRunTime() {
         return runTime;
     }
 
-    public int getSuccessfulBuilds()
-    {
+    public int getSuccessfulBuilds() {
         return successfulBuilds;
     }
 }

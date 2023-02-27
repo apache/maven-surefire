@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.junit.Test;
@@ -37,53 +36,41 @@ import static org.mockito.Mockito.when;
 /**
  * tests for {@link TestSetStats}.
  */
-@RunWith( PowerMockRunner.class )
-@PowerMockIgnore( { "org.jacoco.agent.rt.*", "com.vladium.emma.rt.*" } )
-public class TestSetStatsTest
-{
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
+public class TestSetStatsTest {
     @Mock
     private ReportEntry reportEntry;
 
     @Test
-    public void shouldConcatenateWithTestGroup()
-    {
-        when( reportEntry.getNameWithGroup() )
-                .thenReturn( "pkg.MyTest (my group)" );
-        String actual = TestSetStats.concatenateWithTestGroup( buffer(), reportEntry, false );
-        verify( reportEntry, times( 1 ) ).getNameWithGroup();
-        verifyNoMoreInteractions( reportEntry );
-        String expected = buffer().a( "pkg." ).strong( "MyTest (my group)" ).toString();
-        assertThat( actual )
-                .isEqualTo( expected );
+    public void shouldConcatenateWithTestGroup() {
+        when(reportEntry.getNameWithGroup()).thenReturn("pkg.MyTest (my group)");
+        String actual = TestSetStats.concatenateWithTestGroup(buffer(), reportEntry, false);
+        verify(reportEntry, times(1)).getNameWithGroup();
+        verifyNoMoreInteractions(reportEntry);
+        String expected = buffer().a("pkg.").strong("MyTest (my group)").toString();
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    public void shouldConcatenateWithJUnit5TestGroup()
-    {
-        when( reportEntry.getReportNameWithGroup() )
-                .thenReturn( "pkg.MyTest (my group)" );
-        String actual = TestSetStats.concatenateWithTestGroup( buffer(), reportEntry, true );
-        verify( reportEntry, atLeastOnce() ).getReportNameWithGroup();
-        verifyNoMoreInteractions( reportEntry );
-        String expected = buffer().strong( "pkg.MyTest (my group)" ).toString();
-        assertThat( actual )
-                .isEqualTo( expected );
+    public void shouldConcatenateWithJUnit5TestGroup() {
+        when(reportEntry.getReportNameWithGroup()).thenReturn("pkg.MyTest (my group)");
+        String actual = TestSetStats.concatenateWithTestGroup(buffer(), reportEntry, true);
+        verify(reportEntry, atLeastOnce()).getReportNameWithGroup();
+        verifyNoMoreInteractions(reportEntry);
+        String expected = buffer().strong("pkg.MyTest (my group)").toString();
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    public void shouldFallBackToTestGroupIfJUnit5TestGroupIsNull()
-    {
-        when( reportEntry.getReportNameWithGroup() )
-            .thenReturn( null );
-        when( reportEntry.getNameWithGroup() )
-            .thenReturn( "pkg.MyTest (my group)" );
-        String actual = TestSetStats.concatenateWithTestGroup( buffer(), reportEntry, true );
-        verify( reportEntry, atLeastOnce() ).getReportNameWithGroup();
-        verify( reportEntry, atLeastOnce() ).getNameWithGroup();
-        verifyNoMoreInteractions( reportEntry );
-        String expected = buffer().a( "pkg." ).strong( "MyTest (my group)" ).toString();
-        assertThat( actual )
-            .isEqualTo( expected );
+    public void shouldFallBackToTestGroupIfJUnit5TestGroupIsNull() {
+        when(reportEntry.getReportNameWithGroup()).thenReturn(null);
+        when(reportEntry.getNameWithGroup()).thenReturn("pkg.MyTest (my group)");
+        String actual = TestSetStats.concatenateWithTestGroup(buffer(), reportEntry, true);
+        verify(reportEntry, atLeastOnce()).getReportNameWithGroup();
+        verify(reportEntry, atLeastOnce()).getNameWithGroup();
+        verifyNoMoreInteractions(reportEntry);
+        String expected = buffer().a("pkg.").strong("MyTest (my group)").toString();
+        assertThat(actual).isEqualTo(expected);
     }
-
 }

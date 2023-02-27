@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import javax.annotation.Nonnull;
 
@@ -31,8 +30,7 @@ import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
  * @author Emmanuel Venisse
  * @author Kristian Rosenvold
  */
-public class ClasspathConfiguration extends AbstractPathConfiguration
-{
+public class ClasspathConfiguration extends AbstractPathConfiguration {
     private final Classpath testClasspathUrls;
 
     /**
@@ -40,52 +38,51 @@ public class ClasspathConfiguration extends AbstractPathConfiguration
      */
     private final Classpath inprocClasspath;
 
-    public ClasspathConfiguration( boolean enableAssertions, boolean childDelegation )
-    {
-        this( emptyClasspath(), emptyClasspath(), emptyClasspath(), enableAssertions, childDelegation );
+    public ClasspathConfiguration(boolean enableAssertions, boolean childDelegation) {
+        this(emptyClasspath(), emptyClasspath(), emptyClasspath(), enableAssertions, childDelegation);
     }
 
-    ClasspathConfiguration( @Nonnull PropertiesWrapper properties )
-    {
-        this( properties.getClasspath( CLASSPATH ), properties.getClasspath( SUREFIRE_CLASSPATH ), emptyClasspath(),
-              properties.getBooleanProperty( ENABLE_ASSERTIONS ), properties.getBooleanProperty( CHILD_DELEGATION ) );
+    ClasspathConfiguration(@Nonnull PropertiesWrapper properties) {
+        this(
+                properties.getClasspath(CLASSPATH),
+                properties.getClasspath(SUREFIRE_CLASSPATH),
+                emptyClasspath(),
+                properties.getBooleanProperty(ENABLE_ASSERTIONS),
+                properties.getBooleanProperty(CHILD_DELEGATION));
     }
 
-    public ClasspathConfiguration( @Nonnull Classpath testClasspathUrls, @Nonnull Classpath surefireClassPathUrls,
-                                   @Nonnull Classpath inprocClasspath, boolean enableAssertions,
-                                   boolean childDelegation )
-    {
-        super( surefireClassPathUrls, enableAssertions, childDelegation );
+    public ClasspathConfiguration(
+            @Nonnull Classpath testClasspathUrls,
+            @Nonnull Classpath surefireClassPathUrls,
+            @Nonnull Classpath inprocClasspath,
+            boolean enableAssertions,
+            boolean childDelegation) {
+        super(surefireClassPathUrls, enableAssertions, childDelegation);
         this.testClasspathUrls = testClasspathUrls;
         this.inprocClasspath = inprocClasspath;
     }
 
     @Override
-    protected Classpath getInprocClasspath()
-    {
+    protected Classpath getInprocClasspath() {
         return inprocClasspath;
     }
 
-    public Classpath getTestClasspath()
-    {
+    public Classpath getTestClasspath() {
         return testClasspathUrls;
     }
 
     @Override
-    public final boolean isModularPathConfig()
-    {
+    public final boolean isModularPathConfig() {
         return !isClassPathConfig();
     }
 
     @Override
-    public final boolean isClassPathConfig()
-    {
+    public final boolean isClassPathConfig() {
         return true;
     }
 
-    public void trickClassPathWhenManifestOnlyClasspath()
-    {
-        System.setProperty( "surefire.real.class.path", System.getProperty( "java.class.path" ) );
-        getTestClasspath().writeToSystemProperty( "java.class.path" );
+    public void trickClassPathWhenManifestOnlyClasspath() {
+        System.setProperty("surefire.real.class.path", System.getProperty("java.class.path"));
+        getTestClasspath().writeToSystemProperty("java.class.path");
     }
 }

@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.its.fixture;
 
 /*
@@ -19,11 +37,6 @@ package org.apache.maven.surefire.its.fixture;
  * under the License.
  */
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
-import org.apache.maven.shared.utils.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -35,6 +48,11 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.maven.it.VerificationException;
+import org.apache.maven.it.Verifier;
+import org.apache.maven.it.util.ResourceExtractor;
+import org.apache.maven.shared.utils.io.FileUtils;
+
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;
 
@@ -44,8 +62,7 @@ import static java.util.Collections.unmodifiableList;
  *
  * @author Kristian Rosenvold
  */
-public final class MavenLauncher
-{
+public final class MavenLauncher {
     private static final File SETTINGS_XML_PATH = settingsXmlPath();
 
     private final List<String> cliOptions = new ArrayList<>();
@@ -72,8 +89,7 @@ public final class MavenLauncher
 
     private boolean expectFailure;
 
-    MavenLauncher( Class<?> testClass, String resourceName, String suffix, String[] cli )
-    {
+    MavenLauncher(Class<?> testClass, String resourceName, String suffix, String[] cli) {
         this.testCaseBeingRun = testClass;
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
@@ -82,427 +98,339 @@ public final class MavenLauncher
         resetCliOptions();
     }
 
-    public MavenLauncher( Class<?> testClass, String resourceName, String suffix )
-    {
-        this( testClass, resourceName, suffix, null );
+    public MavenLauncher(Class<?> testClass, String resourceName, String suffix) {
+        this(testClass, resourceName, suffix, null);
     }
 
-    public File getUnpackedAt()
-    {
+    public File getUnpackedAt() {
         return ensureUnpacked();
     }
 
-    private File ensureUnpacked()
-    {
-        if ( unpackedAt == null )
-        {
-            unpackedAt = simpleExtractResources( testCaseBeingRun, resourceName );
+    private File ensureUnpacked() {
+        if (unpackedAt == null) {
+            unpackedAt = simpleExtractResources(testCaseBeingRun, resourceName);
         }
         return unpackedAt;
     }
 
-    public void moveUnpackTo( File dest ) throws IOException
-    {
-        FileUtils.deleteDirectory( dest );
+    public void moveUnpackTo(File dest) throws IOException {
+        FileUtils.deleteDirectory(dest);
         //noinspection ResultOfMethodCallIgnored
-        boolean moved = getUnpackedAt().renameTo( dest );
-        if ( !moved )
-        {
-            String fileEncoding = System.getProperty( "file.encoding" );
-            String os = System.getProperty( "os.name" );
-            String version = System.getProperty( "os.version" );
-            String arch = System.getProperty( "os.arch" );
-            throw new IOException( "Could not move " + getUnpackedAt() + " to " + dest
-                + " (file.encoding=" + fileEncoding + ", " + os + " " + version + " " + arch + ")." );
+        boolean moved = getUnpackedAt().renameTo(dest);
+        if (!moved) {
+            String fileEncoding = System.getProperty("file.encoding");
+            String os = System.getProperty("os.name");
+            String version = System.getProperty("os.version");
+            String arch = System.getProperty("os.arch");
+            throw new IOException("Could not move " + getUnpackedAt() + " to " + dest + " (file.encoding="
+                    + fileEncoding + ", " + os + " " + version + " " + arch + ").");
         }
         unpackedAt = dest;
     }
 
-    private void resetGoals()
-    {
+    private void resetGoals() {
         goals.clear();
     }
 
-    private void addCliOption( String cliOption )
-    {
-        cliOptions.add( cliOption );
+    private void addCliOption(String cliOption) {
+        cliOptions.add(cliOption);
     }
 
-    private StackTraceElement findTopElemenent( StackTraceElement[] stackTrace, Class<?> testClassToLookFor )
-    {
+    private StackTraceElement findTopElemenent(StackTraceElement[] stackTrace, Class<?> testClassToLookFor) {
         StackTraceElement bestmatch = null;
-        for ( StackTraceElement stackTraceElement : stackTrace )
-        {
-            if ( stackTraceElement.getClassName().equals( testClassToLookFor.getName() ) )
-            {
+        for (StackTraceElement stackTraceElement : stackTrace) {
+            if (stackTraceElement.getClassName().equals(testClassToLookFor.getName())) {
                 bestmatch = stackTraceElement;
             }
         }
         return bestmatch;
     }
 
-    private static StackTraceElement[] getStackTraceElements()
-    {
-        try
-        {
+    private static StackTraceElement[] getStackTraceElements() {
+        try {
             throw new RuntimeException();
-        }
-        catch ( RuntimeException e )
-        {
+        } catch (RuntimeException e) {
             return e.getStackTrace();
         }
     }
 
-    public void reset()
-    {
+    public void reset() {
         resetGoals();
         resetCliOptions();
     }
 
-    private void resetCliOptions()
-    {
+    private void resetCliOptions() {
         cliOptions.clear();
     }
 
-    public MavenLauncher getSubProjectLauncher( String subProject )
-    {
+    public MavenLauncher getSubProjectLauncher(String subProject) {
         MavenLauncher mavenLauncher =
-            new MavenLauncher( testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli );
-        mavenLauncher.unpackedAt = new File( ensureUnpacked(), subProject );
+                new MavenLauncher(testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli);
+        mavenLauncher.unpackedAt = new File(ensureUnpacked(), subProject);
         return mavenLauncher;
     }
 
-    public OutputValidator getSubProjectValidator( String subProject ) throws VerificationException
-    {
-        String subProjectBasedir = getValidator().getSubFile( subProject ).getAbsolutePath();
+    public OutputValidator getSubProjectValidator(String subProject) throws VerificationException {
+        String subProjectBasedir = getValidator().getSubFile(subProject).getAbsolutePath();
         String settingsXml = settingsXmlPath().getAbsolutePath();
-        Verifier subProjectVerifier = createVerifier( subProjectBasedir, settingsXml, null );
-        return new OutputValidator( subProjectVerifier );
+        Verifier subProjectVerifier = createVerifier(subProjectBasedir, settingsXml, null);
+        return new OutputValidator(subProjectVerifier);
     }
 
-    public MavenLauncher addEnvVar( String key, String value )
-    {
-        envVars.put( key, value );
+    public MavenLauncher addEnvVar(String key, String value) {
+        envVars.put(key, value);
         return this;
     }
 
-    public MavenLauncher verifyFileNotPresent( String subFile ) throws VerificationException
-    {
-        getVerifier().verifyFileNotPresent( getValidator().getSubFile( subFile ).getAbsolutePath() );
+    public MavenLauncher verifyFileNotPresent(String subFile) throws VerificationException {
+        getVerifier().verifyFileNotPresent(getValidator().getSubFile(subFile).getAbsolutePath());
         return this;
     }
 
-    public MavenLauncher showErrorStackTraces()
-    {
-        addCliOption( "-e" );
+    public MavenLauncher showErrorStackTraces() {
+        addCliOption("-e");
         return this;
     }
 
-    public MavenLauncher debugLogging()
-    {
-        addCliOption( "-X" );
+    public MavenLauncher debugLogging() {
+        addCliOption("-X");
         return this;
     }
 
-    public MavenLauncher failNever()
-    {
-        addCliOption( "-fn" );
+    public MavenLauncher failNever() {
+        addCliOption("-fn");
         return this;
     }
 
-    public MavenLauncher offline()
-    {
-        addCliOption( "-o" );
+    public MavenLauncher offline() {
+        addCliOption("-o");
         return this;
     }
 
-    public MavenLauncher skipClean()
-    {
-        writeGoal( "-Dclean.skip=true" /* for maven-clean-plugin < 3.0 */ );
-        writeGoal( "-Dmaven.clean.skip=true" /* for maven-clean-plugin 3.0+ */ );
+    public MavenLauncher skipClean() {
+        writeGoal("-Dclean.skip=true" /* for maven-clean-plugin < 3.0 */);
+        writeGoal("-Dmaven.clean.skip=true" /* for maven-clean-plugin 3.0+ */);
         return this;
     }
 
-    public MavenLauncher addGoal( String goal )
-    {
-        writeGoal( goal );
+    public MavenLauncher addGoal(String goal) {
+        writeGoal(goal);
         return this;
     }
 
-    public FailsafeOutputValidator executeVerify()
-    {
-        return new FailsafeOutputValidator( conditionalExec( "verify" ) );
+    public FailsafeOutputValidator executeVerify() {
+        return new FailsafeOutputValidator(conditionalExec("verify"));
     }
 
-    public OutputValidator executeTest()
-    {
-        return conditionalExec( "test" );
+    public OutputValidator executeTest() {
+        return conditionalExec("test");
     }
 
-    List<String> getGoals()
-    {
-        return unmodifiableList( goals );
+    List<String> getGoals() {
+        return unmodifiableList(goals);
     }
 
-    private void writeGoal( String newGoal )
-    {
-        if ( newGoal != null && newGoal.startsWith( "-D" ) )
-        {
-            String sysPropKey = newGoal.contains( "=" ) ? newGoal.substring( 0, newGoal.indexOf( '=' ) ) : newGoal;
+    private void writeGoal(String newGoal) {
+        if (newGoal != null && newGoal.startsWith("-D")) {
+            String sysPropKey = newGoal.contains("=") ? newGoal.substring(0, newGoal.indexOf('=')) : newGoal;
 
             String sysPropStarter = sysPropKey + "=";
 
-            for ( ListIterator<String> it = goals.listIterator(); it.hasNext(); )
-            {
+            for (ListIterator<String> it = goals.listIterator(); it.hasNext(); ) {
                 String goal = it.next();
-                if ( goal.equals( sysPropKey ) || goal.startsWith( sysPropStarter ) )
-                {
-                    System.out.printf( "[WARNING] System property already exists '%s'. Overriding to '%s'.\n", goal,
-                            newGoal );
-                    it.set( newGoal );
+                if (goal.equals(sysPropKey) || goal.startsWith(sysPropStarter)) {
+                    System.out.printf(
+                            "[WARNING] System property already exists '%s'. Overriding to '%s'.\n", goal, newGoal);
+                    it.set(newGoal);
                     return;
                 }
             }
         }
-        goals.add( newGoal );
+        goals.add(newGoal);
     }
 
-    private OutputValidator conditionalExec( String goal )
-    {
+    private OutputValidator conditionalExec(String goal) {
         OutputValidator verify;
-        try
-        {
-            verify = execute( goal );
-        }
-        catch ( SurefireVerifierException exc )
-        {
-            if ( expectFailure )
-            {
+        try {
+            verify = execute(goal);
+        } catch (SurefireVerifierException exc) {
+            if (expectFailure) {
                 return getValidator();
-            }
-            else
-            {
+            } else {
                 throw exc;
             }
         }
-        if ( expectFailure )
-        {
-            throw new RuntimeException( "Expecting build failure, got none!" );
+        if (expectFailure) {
+            throw new RuntimeException("Expecting build failure, got none!");
         }
         return verify;
     }
 
-    public MavenLauncher withFailure()
-    {
+    public MavenLauncher withFailure() {
         expectFailure = true;
         return this;
     }
 
-    public OutputValidator execute( String goal )
-    {
-        addGoal( goal );
+    public OutputValidator execute(String goal) {
+        addGoal(goal);
         return executeCurrentGoals();
     }
 
-    public OutputValidator executeCurrentGoals()
-    {
-        try
-        {
-            List<String> goalsAndProps = new ArrayList<>( goals );
+    public OutputValidator executeCurrentGoals() {
+        try {
+            List<String> goalsAndProps = new ArrayList<>(goals);
 
-            for ( Entry<String, String> e : props.entrySet() )
-            {
+            for (Entry<String, String> e : props.entrySet()) {
                 String key = e.getKey();
                 String val = e.getValue();
-                goalsAndProps.add( val == null ? "-D" + key : "-D" + key + "=" + val );
+                goalsAndProps.add(val == null ? "-D" + key : "-D" + key + "=" + val);
             }
 
-            getVerifier().setCliOptions( cliOptions );
-            getVerifier().executeGoals( goalsAndProps, envVars );
+            getVerifier().setCliOptions(cliOptions);
+            getVerifier().executeGoals(goalsAndProps, envVars);
             return getValidator();
-        }
-        catch ( VerificationException e )
-        {
-            throw new SurefireVerifierException( e.getLocalizedMessage(), e );
-        }
-        finally
-        {
+        } catch (VerificationException e) {
+            throw new SurefireVerifierException(e.getLocalizedMessage(), e);
+        } finally {
             getVerifier().resetStreams();
         }
     }
 
-    public MavenLauncher activateProfile( String profile )
-    {
-        return addGoal( "-P" + profile );
+    public MavenLauncher activateProfile(String profile) {
+        return addGoal("-P" + profile);
     }
 
-    public MavenLauncher sysProp( String key, String value )
-    {
-        return sysProp( singletonMap( key, value ) );
+    public MavenLauncher sysProp(String key, String value) {
+        return sysProp(singletonMap(key, value));
     }
 
-    public MavenLauncher sysProp( Map<String, String> properties )
-    {
-        props.putAll( properties );
+    public MavenLauncher sysProp(Map<String, String> properties) {
+        props.putAll(properties);
         return this;
     }
 
-    public MavenLauncher sysProp( String key, boolean value )
-    {
-        return sysProp( singletonMap( key, Boolean.toString( value ) ) );
+    public MavenLauncher sysProp(String key, boolean value) {
+        return sysProp(singletonMap(key, Boolean.toString(value)));
     }
 
-    public MavenLauncher sysProp( String key, int value )
-    {
-        return sysProp( singletonMap( key, Integer.toString( value ) ) );
+    public MavenLauncher sysProp(String key, int value) {
+        return sysProp(singletonMap(key, Integer.toString(value)));
     }
 
-    public MavenLauncher sysProp( String key, double value )
-    {
-        return sysProp( singletonMap( key, Double.toString( value ) ) );
+    public MavenLauncher sysProp(String key, double value) {
+        return sysProp(singletonMap(key, Double.toString(value)));
     }
 
-    public MavenLauncher showExceptionMessages()
-    {
-        addCliOption( "-e" );
+    public MavenLauncher showExceptionMessages() {
+        addCliOption("-e");
         return this;
     }
 
-    public MavenLauncher deleteSiteDir()
-    {
-        try
-        {
-            FileUtils.deleteDirectory( getValidator().getSubFile( "site" ) );
-        }
-        catch ( IOException e )
-        {
-            throw new SurefireVerifierException( e );
+    public MavenLauncher deleteSiteDir() {
+        try {
+            FileUtils.deleteDirectory(getValidator().getSubFile("site"));
+        } catch (IOException e) {
+            throw new SurefireVerifierException(e);
         }
         return this;
     }
 
-    public OutputValidator getValidator()
-    {
-        if ( validator == null )
-        {
-            validator = new OutputValidator( getVerifier() );
+    public OutputValidator getValidator() {
+        if (validator == null) {
+            validator = new OutputValidator(getVerifier());
         }
         return validator;
     }
 
-    public void setForkJvm( boolean forkJvm )
-    {
-        getVerifier().setForkJvm( forkJvm );
+    public void setForkJvm(boolean forkJvm) {
+        getVerifier().setForkJvm(forkJvm);
     }
 
-    public String getLocalRepository()
-    {
+    public String getLocalRepository() {
         return getVerifier().getLocalRepository();
     }
 
-    public void setAutoclean( boolean autoclean )
-    {
-        getVerifier().setAutoclean( autoclean );
+    public void setAutoclean(boolean autoclean) {
+        getVerifier().setAutoclean(autoclean);
     }
 
-    public void setLogFileName( String logFileName )
-    {
-        getVerifier().setLogFileName( logFileName );
+    public void setLogFileName(String logFileName) {
+        getVerifier().setLogFileName(logFileName);
     }
 
-    private Verifier getVerifier()
-    {
-        if ( verifier == null )
-        {
-            try
-            {
+    private Verifier getVerifier() {
+        if (verifier == null) {
+            try {
                 String unpackedPath = ensureUnpacked().getAbsolutePath();
                 String settingsXml = SETTINGS_XML_PATH.getAbsolutePath();
-                verifier = createVerifier( unpackedPath, settingsXml, cli );
-            }
-            catch ( VerificationException e )
-            {
-                throw new RuntimeException( e );
+                verifier = createVerifier(unpackedPath, settingsXml, cli);
+            } catch (VerificationException e) {
+                throw new RuntimeException(e);
             }
         }
         return verifier;
     }
 
-    private File simpleExtractResources( Class<?> cl, String resourcePath )
-    {
-        if ( !resourcePath.startsWith( "/" ) )
-        {
+    private File simpleExtractResources(Class<?> cl, String resourcePath) {
+        if (!resourcePath.startsWith("/")) {
             resourcePath = "/" + resourcePath;
         }
         File tempDir = getUnpackDir();
-        File testDir = new File( tempDir, resourcePath );
-        try
-        {
-            File parentPom = new File( tempDir.getParentFile(), "pom.xml" );
-            if ( !parentPom.exists() )
-            {
-                URL resource = cl.getResource( "/pom.xml" );
-                FileUtils.copyURLToFile( resource, parentPom );
+        File testDir = new File(tempDir, resourcePath);
+        try {
+            File parentPom = new File(tempDir.getParentFile(), "pom.xml");
+            if (!parentPom.exists()) {
+                URL resource = cl.getResource("/pom.xml");
+                FileUtils.copyURLToFile(resource, parentPom);
             }
 
-            FileUtils.deleteDirectory( testDir );
-            File file = ResourceExtractor.extractResourceToDestination( cl, resourcePath, tempDir, true );
+            FileUtils.deleteDirectory(testDir);
+            File file = ResourceExtractor.extractResourceToDestination(cl, resourcePath, tempDir, true);
             return file.getCanonicalFile();
-        }
-        catch ( IOException e )
-        {
-            throw new RuntimeException( e );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private File getUnpackDir()
-    {
-        String tempDirPath = System.getProperty( "maven.test.tmpdir", System.getProperty( "java.io.tmpdir" ) );
-        return new File( tempDirPath, testCaseBeingRun.getSimpleName() + "_" + getTestMethodName() + suffix );
+    private File getUnpackDir() {
+        String tempDirPath = System.getProperty("maven.test.tmpdir", System.getProperty("java.io.tmpdir"));
+        return new File(tempDirPath, testCaseBeingRun.getSimpleName() + "_" + getTestMethodName() + suffix);
     }
 
-    public File getArtifactPath( String gid, String aid, String version, String ext )
-    {
-        return new File( verifier.getArtifactPath( gid, aid, version, ext ) );
+    public File getArtifactPath(String gid, String aid, String version, String ext) {
+        return new File(verifier.getArtifactPath(gid, aid, version, ext));
     }
 
-    String getTestMethodName()
-    {
+    String getTestMethodName() {
         // dirty. Im sure we can use junit4 rules to attach testname to thread instead
         StackTraceElement[] stackTrace = getStackTraceElements();
         StackTraceElement topInTestClass;
-        topInTestClass = findTopElemenent( stackTrace, testCaseBeingRun );
-        if ( topInTestClass == null )
-        {
+        topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun);
+        if (topInTestClass == null) {
             // Look in superclass...
-            topInTestClass = findTopElemenent( stackTrace, testCaseBeingRun.getSuperclass() );
+            topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun.getSuperclass());
         }
-        if ( topInTestClass != null )
-        {
+        if (topInTestClass != null) {
             return topInTestClass.getMethodName();
         }
-        throw new IllegalStateException( "Cannot find " + testCaseBeingRun.getName() + "in stacktrace" );
+        throw new IllegalStateException("Cannot find " + testCaseBeingRun.getName() + "in stacktrace");
     }
 
-    private static Verifier createVerifier( String basedir, String settingsFile, String[] defaultCliOptions )
-            throws VerificationException
-    {
-        Verifier verifier = defaultCliOptions == null ? new Verifier( basedir, settingsFile, false ) : new Verifier(
-                basedir, settingsFile, false, defaultCliOptions );
+    private static Verifier createVerifier(String basedir, String settingsFile, String[] defaultCliOptions)
+            throws VerificationException {
+        Verifier verifier = defaultCliOptions == null
+                ? new Verifier(basedir, settingsFile, false)
+                : new Verifier(basedir, settingsFile, false, defaultCliOptions);
 
-        verifier.getVerifierProperties().setProperty( "use.mavenRepoLocal", "true" );
+        verifier.getVerifierProperties().setProperty("use.mavenRepoLocal", "true");
         return verifier;
     }
 
-    private static File settingsXmlPath()
-    {
-        try
-        {
-            return new File( System.getProperty( "maven.settings.file" ) ).getCanonicalFile();
-        }
-        catch ( IOException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
+    private static File settingsXmlPath() {
+        try {
+            return new File(System.getProperty("maven.settings.file")).getCanonicalFile();
+        } catch (IOException e) {
+            throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
     }
 }

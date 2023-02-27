@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,13 +16,14 @@ package org.apache.maven.plugin.surefire.booterclient;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.JdkAttributes;
-import org.apache.maven.surefire.booter.SystemUtils;
+package org.apache.maven.plugin.surefire.booterclient;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
+
+import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.surefire.booter.SystemUtils;
 
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
 
@@ -34,71 +33,56 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-public final class Platform
-{
+public final class Platform {
     private final RunnableFuture<Long> pluginPidJob;
 
     private final JdkAttributes jdk;
 
     private volatile boolean shutdown;
 
-    public Platform()
-    {
+    public Platform() {
         // the job may take 50 or 80 ms
-        this( new FutureTask<>( pidJob() ), null );
-        newDaemonThread( pluginPidJob ).start();
+        this(new FutureTask<>(pidJob()), null);
+        newDaemonThread(pluginPidJob).start();
     }
 
-    private Platform( RunnableFuture<Long> pluginPidJob, JdkAttributes jdk )
-    {
+    private Platform(RunnableFuture<Long> pluginPidJob, JdkAttributes jdk) {
         this.pluginPidJob = pluginPidJob;
         this.jdk = jdk;
     }
 
-    public boolean isShutdown()
-    {
+    public boolean isShutdown() {
         return shutdown;
     }
 
-    public void setShutdownState()
-    {
+    public void setShutdownState() {
         this.shutdown = true;
     }
 
-    public void clearShutdownState()
-    {
+    public void clearShutdownState() {
         this.shutdown = false;
     }
 
-    public Long getPluginPid()
-    {
-        try
-        {
+    public Long getPluginPid() {
+        try {
             return pluginPidJob.get();
-        }
-        catch ( Exception e )
-        {
+        } catch (Exception e) {
             return null;
         }
     }
 
-    public JdkAttributes getJdkExecAttributesForTests()
-    {
+    public JdkAttributes getJdkExecAttributesForTests() {
         return jdk;
     }
 
-    public Platform withJdkExecAttributesForTests( JdkAttributes jdk )
-    {
-        return new Platform( pluginPidJob, jdk );
+    public Platform withJdkExecAttributesForTests(JdkAttributes jdk) {
+        return new Platform(pluginPidJob, jdk);
     }
 
-    private static Callable<Long> pidJob()
-    {
-        return new Callable<Long>()
-        {
+    private static Callable<Long> pidJob() {
+        return new Callable<Long>() {
             @Override
-            public Long call() throws Exception
-            {
+            public Long call() throws Exception {
                 return SystemUtils.pid();
             }
         };

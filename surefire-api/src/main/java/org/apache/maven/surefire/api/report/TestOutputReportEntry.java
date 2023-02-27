@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.api.report;
 
 /*
@@ -24,8 +42,7 @@ package org.apache.maven.surefire.api.report;
  *
  * {@inheritDoc}
  */
-public final class TestOutputReportEntry implements OutputReportEntry
-{
+public final class TestOutputReportEntry implements OutputReportEntry {
     private final String log;
     private final boolean isStdOut;
     private final boolean newLine;
@@ -41,8 +58,7 @@ public final class TestOutputReportEntry implements OutputReportEntry
      * @param runMode the phase of testset
      * @param testRunId unique id of the test run pointing to the test description
      */
-    public TestOutputReportEntry( String log, boolean isStdOut, boolean newLine, RunMode runMode, Long testRunId )
-    {
+    public TestOutputReportEntry(String log, boolean isStdOut, boolean newLine, RunMode runMode, Long testRunId) {
         this.log = log;
         this.isStdOut = isStdOut;
         this.newLine = newLine;
@@ -57,13 +73,11 @@ public final class TestOutputReportEntry implements OutputReportEntry
      * @param isStdOut Indicates if this is stdout
      * @param newLine print on new line
      */
-    private TestOutputReportEntry( String log, boolean isStdOut, boolean newLine )
-    {
-        this( log, isStdOut, newLine, null, null );
+    private TestOutputReportEntry(String log, boolean isStdOut, boolean newLine) {
+        this(log, isStdOut, newLine, null, null);
     }
 
-    public TestOutputReportEntry( OutputReportEntry reportEntry, RunMode runMode, Long testRunId )
-    {
+    public TestOutputReportEntry(OutputReportEntry reportEntry, RunMode runMode, Long testRunId) {
         log = reportEntry.getLog();
         isStdOut = reportEntry.isStdOut();
         newLine = reportEntry.isNewLine();
@@ -72,50 +86,41 @@ public final class TestOutputReportEntry implements OutputReportEntry
     }
 
     @Override
-    public String getLog()
-    {
+    public String getLog() {
         return log;
     }
 
     @Override
-    public boolean isStdOut()
-    {
+    public boolean isStdOut() {
         return isStdOut;
     }
 
     @Override
-    public boolean isNewLine()
-    {
+    public boolean isNewLine() {
         return newLine;
     }
 
-    public RunMode getRunMode()
-    {
+    public RunMode getRunMode() {
         return runMode;
     }
 
-    public Long getTestRunId()
-    {
+    public Long getTestRunId() {
         return testRunId;
     }
 
-    public static OutputReportEntry stdOut( String log )
-    {
-        return new TestOutputReportEntry( log, true, false );
+    public static OutputReportEntry stdOut(String log) {
+        return new TestOutputReportEntry(log, true, false);
     }
 
-    public static TestOutputReportEntry stdOutln( String log )
-    {
-        return new TestOutputReportEntry( log, true, true );
+    public static TestOutputReportEntry stdOutln(String log) {
+        return new TestOutputReportEntry(log, true, true);
     }
 
-    public static TestOutputReportEntry stdErr( String log )
-    {
-        return new TestOutputReportEntry( log, false, false );
+    public static TestOutputReportEntry stdErr(String log) {
+        return new TestOutputReportEntry(log, false, false);
     }
 
-    public static TestOutputReportEntry stdErrln( String log )
-    {
-        return new TestOutputReportEntry( log, false, true );
+    public static TestOutputReportEntry stdErrln(String log) {
+        return new TestOutputReportEntry(log, false, true);
     }
 }

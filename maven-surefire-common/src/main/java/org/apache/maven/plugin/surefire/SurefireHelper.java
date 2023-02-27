@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,16 @@ package org.apache.maven.plugin.surefire;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire;
+
+import javax.annotation.Nonnull;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
@@ -29,17 +37,7 @@ import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-
 import static java.util.Collections.unmodifiableList;
-import static org.apache.maven.surefire.api.util.internal.DumpFileUtils.newFormattedDateFileName;
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.api.booter.DumpErrorSingleton.DUMPSTREAM_FILE_EXT;
 import static org.apache.maven.surefire.api.booter.DumpErrorSingleton.DUMP_FILE_EXT;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
@@ -47,12 +45,13 @@ import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_INFO;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_WARN;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
+import static org.apache.maven.surefire.api.util.internal.DumpFileUtils.newFormattedDateFileName;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 
 /**
  * Helper class for surefire plugins
  */
-public final class SurefireHelper
-{
+public final class SurefireHelper {
     private static final String DUMP_FILE_DATE = newFormattedDateFileName();
 
     public static final String DUMP_FILE_PREFIX = DUMP_FILE_DATE + "-jvmRun";
@@ -80,13 +79,12 @@ public final class SurefireHelper
      */
     private static final int MAX_PATH_LENGTH_WINDOWS = 247;
 
-    private static final String[] DUMP_FILES_PRINT =
-            {
-                    "[date]" + DUMP_FILE_EXT,
-                    "[date]-jvmRun[N]" + DUMP_FILE_EXT,
-                    "[date]" + DUMPSTREAM_FILE_EXT,
-                    "[date]-jvmRun[N]" + DUMPSTREAM_FILE_EXT
-            };
+    private static final String[] DUMP_FILES_PRINT = {
+        "[date]" + DUMP_FILE_EXT,
+        "[date]-jvmRun[N]" + DUMP_FILE_EXT,
+        "[date]" + DUMPSTREAM_FILE_EXT,
+        "[date]-jvmRun[N]" + DUMPSTREAM_FILE_EXT
+    };
 
     /**
      * The placeholder that is replaced by the executing thread's running number. The thread number
@@ -104,135 +102,108 @@ public final class SurefireHelper
     /**
      * Do not instantiate.
      */
-    private SurefireHelper()
-    {
-        throw new IllegalAccessError( "Utility class" );
+    private SurefireHelper() {
+        throw new IllegalAccessError("Utility class");
     }
 
     @Nonnull
-    public static String replaceThreadNumberPlaceholders( @Nonnull String argLine, int threadNumber )
-    {
-        String threadNumberAsString = String.valueOf( threadNumber );
-        return argLine.replace( THREAD_NUMBER_PLACEHOLDER, threadNumberAsString )
-                .replace( FORK_NUMBER_PLACEHOLDER, threadNumberAsString );
+    public static String replaceThreadNumberPlaceholders(@Nonnull String argLine, int threadNumber) {
+        String threadNumberAsString = String.valueOf(threadNumber);
+        return argLine.replace(THREAD_NUMBER_PLACEHOLDER, threadNumberAsString)
+                .replace(FORK_NUMBER_PLACEHOLDER, threadNumberAsString);
     }
 
-    public static File replaceForkThreadsInPath( File path, int replacement )
-    {
+    public static File replaceForkThreadsInPath(File path, int replacement) {
         Deque<String> dirs = new LinkedList<>();
         File root = path;
-        while ( !root.exists() )
-        {
-            dirs.addFirst( replaceThreadNumberPlaceholders( root.getName(), replacement ) );
+        while (!root.exists()) {
+            dirs.addFirst(replaceThreadNumberPlaceholders(root.getName(), replacement));
             root = root.getParentFile();
         }
         File replacedPath = root;
-        for ( String dir : dirs )
-        {
-            replacedPath = new File( replacedPath, dir );
+        for (String dir : dirs) {
+            replacedPath = new File(replacedPath, dir);
         }
         return replacedPath;
     }
 
-    public static String[] getDumpFilesToPrint()
-    {
+    public static String[] getDumpFilesToPrint() {
         return DUMP_FILES_PRINT.clone();
     }
 
-    public static void reportExecution( SurefireReportParameters reportParameters, RunResult result,
-                                        PluginConsoleLogger log, Exception firstForkException )
-        throws MojoFailureException, MojoExecutionException
-    {
+    public static void reportExecution(
+            SurefireReportParameters reportParameters,
+            RunResult result,
+            PluginConsoleLogger log,
+            Exception firstForkException)
+            throws MojoFailureException, MojoExecutionException {
         boolean isError = firstForkException != null || result.isTimeout() || !result.isErrorFree();
-        boolean isTooFlaky = isTooFlaky( result, reportParameters );
-        if ( !isError && !isTooFlaky )
-        {
-            if ( result.getCompletedCount() == 0 && failIfNoTests( reportParameters ) )
-            {
-                throw new MojoFailureException( "No tests were executed!  "
-                                                        + "(Set -DfailIfNoTests=false to ignore this error.)" );
+        boolean isTooFlaky = isTooFlaky(result, reportParameters);
+        if (!isError && !isTooFlaky) {
+            if (result.getCompletedCount() == 0 && failIfNoTests(reportParameters)) {
+                throw new MojoFailureException(
+                        "No tests were executed!  " + "(Set -DfailIfNoTests=false to ignore this error.)");
             }
             return;
         }
 
-        if ( reportParameters.isTestFailureIgnore() )
-        {
-            String errorMessage = createErrorMessage( reportParameters, result, firstForkException );
+        if (reportParameters.isTestFailureIgnore()) {
+            String errorMessage = createErrorMessage(reportParameters, result, firstForkException);
 
-            if ( firstForkException instanceof SurefireBooterForkException )
-            {
-                throw new MojoExecutionException( errorMessage, firstForkException );
+            if (firstForkException instanceof SurefireBooterForkException) {
+                throw new MojoExecutionException(errorMessage, firstForkException);
             }
 
-            log.error( errorMessage );
-        }
-        else
-        {
-            throwException( reportParameters, result, firstForkException );
+            log.error(errorMessage);
+        } else {
+            throwException(reportParameters, result, firstForkException);
         }
     }
 
-    public static List<CommandLineOption> commandLineOptions( MavenSession session, PluginConsoleLogger log )
-    {
+    public static List<CommandLineOption> commandLineOptions(MavenSession session, PluginConsoleLogger log) {
         List<CommandLineOption> cli = new ArrayList<>();
-        if ( log.isErrorEnabled() )
-        {
-            cli.add( LOGGING_LEVEL_ERROR );
+        if (log.isErrorEnabled()) {
+            cli.add(LOGGING_LEVEL_ERROR);
         }
 
-        if ( log.isWarnEnabled() )
-        {
-            cli.add( LOGGING_LEVEL_WARN );
+        if (log.isWarnEnabled()) {
+            cli.add(LOGGING_LEVEL_WARN);
         }
 
-        if ( log.isInfoEnabled() )
-        {
-            cli.add( LOGGING_LEVEL_INFO );
+        if (log.isInfoEnabled()) {
+            cli.add(LOGGING_LEVEL_INFO);
         }
 
-        if ( log.isDebugEnabled() )
-        {
-            cli.add( LOGGING_LEVEL_DEBUG );
+        if (log.isDebugEnabled()) {
+            cli.add(LOGGING_LEVEL_DEBUG);
         }
 
         MavenExecutionRequest request = session.getRequest();
 
-        if ( request.isShowErrors() )
-        {
-            cli.add( SHOW_ERRORS );
+        if (request.isShowErrors()) {
+            cli.add(SHOW_ERRORS);
         }
 
         String failureBehavior = request.getReactorFailureBehavior();
-        if ( failureBehavior != null )
-        {
-            try
-            {
-                cli.add( CommandLineOption.valueOf( failureBehavior ) );
-            }
-            catch ( IllegalArgumentException e )
-            {
+        if (failureBehavior != null) {
+            try {
+                cli.add(CommandLineOption.valueOf(failureBehavior));
+            } catch (IllegalArgumentException e) {
                 // CommandLineOption does not have specified enum as string. See getRequest() method in Maven Session.
             }
         }
 
-        return unmodifiableList( cli );
+        return unmodifiableList(cli);
     }
 
-    public static void logDebugOrCliShowErrors( String s, PluginConsoleLogger log, Collection<CommandLineOption> cli )
-    {
-        if ( cli.contains( LOGGING_LEVEL_DEBUG ) )
-        {
-            log.debug( s );
-        }
-        else if ( cli.contains( SHOW_ERRORS ) )
-        {
-            if ( log.isDebugEnabled() )
-            {
-                log.debug( s );
-            }
-            else
-            {
-                log.info( s );
+    public static void logDebugOrCliShowErrors(String s, PluginConsoleLogger log, Collection<CommandLineOption> cli) {
+        if (cli.contains(LOGGING_LEVEL_DEBUG)) {
+            log.debug(s);
+        } else if (cli.contains(SHOW_ERRORS)) {
+            if (log.isDebugEnabled()) {
+                log.debug(s);
+            } else {
+                log.info(s);
             }
         }
     }
@@ -250,102 +221,81 @@ public final class SurefireHelper
      * @param path    source path
      * @return escaped to platform path
      */
-    public static String escapeToPlatformPath( String path )
-    {
-        if ( IS_OS_WINDOWS && path.length() > MAX_PATH_LENGTH_WINDOWS )
-        {
-            path = path.startsWith( "\\\\" ) ? "\\\\?\\UNC\\" + path.substring( 2 ) : "\\\\?\\" + path;
+    public static String escapeToPlatformPath(String path) {
+        if (IS_OS_WINDOWS && path.length() > MAX_PATH_LENGTH_WINDOWS) {
+            path = path.startsWith("\\\\") ? "\\\\?\\UNC\\" + path.substring(2) : "\\\\?\\" + path;
         }
         return path;
     }
 
-    private static boolean failIfNoTests( SurefireReportParameters reportParameters )
-    {
+    private static boolean failIfNoTests(SurefireReportParameters reportParameters) {
         return reportParameters.getFailIfNoTests();
     }
 
-    private static boolean isFatal( Exception firstForkException )
-    {
-        return firstForkException != null && !( firstForkException instanceof TestSetFailedException );
+    private static boolean isFatal(Exception firstForkException) {
+        return firstForkException != null && !(firstForkException instanceof TestSetFailedException);
     }
 
-    private static void throwException( SurefireReportParameters reportParameters, RunResult result,
-                                           Exception firstForkException )
-            throws MojoFailureException, MojoExecutionException
-    {
-        if ( isFatal( firstForkException ) || result.isInternalError()  )
-        {
-            throw new MojoExecutionException( createErrorMessage( reportParameters, result, firstForkException ),
-                                                    firstForkException );
-        }
-        else
-        {
-            throw new MojoFailureException( createErrorMessage( reportParameters, result, firstForkException ),
-                                                  firstForkException );
+    private static void throwException(
+            SurefireReportParameters reportParameters, RunResult result, Exception firstForkException)
+            throws MojoFailureException, MojoExecutionException {
+        if (isFatal(firstForkException) || result.isInternalError()) {
+            throw new MojoExecutionException(
+                    createErrorMessage(reportParameters, result, firstForkException), firstForkException);
+        } else {
+            throw new MojoFailureException(
+                    createErrorMessage(reportParameters, result, firstForkException), firstForkException);
         }
     }
 
-    private static String createErrorMessage( SurefireReportParameters reportParameters, RunResult result,
-                                              Exception firstForkException )
-    {
-        StringBuilder msg = new StringBuilder( 512 );
+    private static String createErrorMessage(
+            SurefireReportParameters reportParameters, RunResult result, Exception firstForkException) {
+        StringBuilder msg = new StringBuilder(512);
 
-        if ( result.isTimeout() )
-        {
-            msg.append( "There was a timeout in the fork" );
-        }
-        else
-        {
-            if ( result.getFailures() > 0 )
-            {
-                msg.append( "There are test failures." );
+        if (result.isTimeout()) {
+            msg.append("There was a timeout in the fork");
+        } else {
+            if (result.getFailures() > 0) {
+                msg.append("There are test failures.");
             }
-            if ( isTooFlaky( result, reportParameters ) )
-            {
-                if ( result.getFailures() > 0 )
-                {
-                    msg.append( "\n" );
+            if (isTooFlaky(result, reportParameters)) {
+                if (result.getFailures() > 0) {
+                    msg.append("\n");
                 }
-                msg.append( "There" )
-                    .append( result.getFlakes() == 1 ? " is " : " are " )
-                    .append( result.getFlakes() )
-                    .append( result.getFlakes() == 1 ? " flake " : " flakes " )
-                    .append( "and failOnFlakeCount is set to " )
-                    .append( reportParameters.getFailOnFlakeCount() )
-                    .append( "." );
+                msg.append("There")
+                        .append(result.getFlakes() == 1 ? " is " : " are ")
+                        .append(result.getFlakes())
+                        .append(result.getFlakes() == 1 ? " flake " : " flakes ")
+                        .append("and failOnFlakeCount is set to ")
+                        .append(reportParameters.getFailOnFlakeCount())
+                        .append(".");
             }
-            msg.append( "\n\nPlease refer to " )
-                    .append( reportParameters.getReportsDirectory() )
-                    .append( " for the individual test results." )
-                    .append( '\n' )
-                    .append( "Please refer to dump files (if any exist) " )
-                    .append( DUMP_FILES_PRINT[0] )
-                    .append( ", " )
-                    .append( DUMP_FILES_PRINT[1] )
-                    .append( " and " )
-                    .append( DUMP_FILES_PRINT[2] )
-                    .append( "." );
+            msg.append("\n\nPlease refer to ")
+                    .append(reportParameters.getReportsDirectory())
+                    .append(" for the individual test results.")
+                    .append('\n')
+                    .append("Please refer to dump files (if any exist) ")
+                    .append(DUMP_FILES_PRINT[0])
+                    .append(", ")
+                    .append(DUMP_FILES_PRINT[1])
+                    .append(" and ")
+                    .append(DUMP_FILES_PRINT[2])
+                    .append(".");
         }
 
-        if ( firstForkException != null && firstForkException.getLocalizedMessage() != null )
-        {
-            msg.append( '\n' )
-                    .append( firstForkException.getLocalizedMessage() );
+        if (firstForkException != null && firstForkException.getLocalizedMessage() != null) {
+            msg.append('\n').append(firstForkException.getLocalizedMessage());
         }
 
-        if ( result.isFailure() )
-        {
-            msg.append( '\n' )
-                    .append( result.getFailure() );
+        if (result.isFailure()) {
+            msg.append('\n').append(result.getFailure());
         }
 
         return msg.toString();
     }
 
-    private static boolean isTooFlaky( RunResult result, SurefireReportParameters reportParameters )
-    {
+    private static boolean isTooFlaky(RunResult result, SurefireReportParameters reportParameters) {
         int failOnFlakeCount = reportParameters.getFailOnFlakeCount();
         return failOnFlakeCount > 0 && result.getFlakes() >= failOnFlakeCount;
     }
-
 }

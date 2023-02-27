@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,8 +32,7 @@ import org.apache.maven.surefire.api.util.TempFileManager;
 /**
  * @author Kristian Rosenvold
  */
-public class SystemPropertyManager
-{
+public class SystemPropertyManager {
 
     /**
      * Loads the properties, closes the stream
@@ -43,56 +41,42 @@ public class SystemPropertyManager
      * @return The properties
      * @throws java.io.IOException If something bad happens
      */
-    public static PropertiesWrapper loadProperties( InputStream inStream )
-        throws IOException
-    {
-        try ( final InputStream stream = inStream )
-        {
+    public static PropertiesWrapper loadProperties(InputStream inStream) throws IOException {
+        try (InputStream stream = inStream) {
             Properties p = new Properties();
-            p.load( stream );
-            Map<String, String> map = new ConcurrentHashMap<>( p.size() );
-            for ( String key : p.stringPropertyNames() )
-            {
-                map.put( key, p.getProperty( key ) );
+            p.load(stream);
+            Map<String, String> map = new ConcurrentHashMap<>(p.size());
+            for (String key : p.stringPropertyNames()) {
+                map.put(key, p.getProperty(key));
             }
-            return new PropertiesWrapper( map );
+            return new PropertiesWrapper(map);
         }
     }
 
-    private static PropertiesWrapper loadProperties( File file )
-        throws IOException
-    {
-        return loadProperties( new FileInputStream( file ) );
+    private static PropertiesWrapper loadProperties(File file) throws IOException {
+        return loadProperties(new FileInputStream(file));
     }
 
-    public static void setSystemProperties( File file )
-        throws IOException
-    {
-        PropertiesWrapper p = loadProperties( file );
+    public static void setSystemProperties(File file) throws IOException {
+        PropertiesWrapper p = loadProperties(file);
         p.setAsSystemProperties();
     }
 
-    public static File writePropertiesFile( Properties properties, File tempDirectory, String name,
-                                            boolean keepForkFiles )
-        throws IOException
-    {
-        File file = TempFileManager.instance( tempDirectory ).createTempFile( name, "tmp" );
-        if ( !keepForkFiles )
-        {
+    public static File writePropertiesFile(
+            Properties properties, File tempDirectory, String name, boolean keepForkFiles) throws IOException {
+        File file = TempFileManager.instance(tempDirectory).createTempFile(name, "tmp");
+        if (!keepForkFiles) {
             file.deleteOnExit();
         }
 
-        writePropertiesFile( file, name, properties );
+        writePropertiesFile(file, name, properties);
 
         return file;
     }
 
-    public static void writePropertiesFile( File file, String name, Properties properties )
-        throws IOException
-    {
-        try ( FileOutputStream out = new FileOutputStream( file ) )
-        {
-            properties.store( out, name );
+    public static void writePropertiesFile(File file, String name, Properties properties) throws IOException {
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            properties.store(out, name);
         }
     }
 }

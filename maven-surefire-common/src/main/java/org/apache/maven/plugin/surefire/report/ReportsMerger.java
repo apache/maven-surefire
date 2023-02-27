@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,19 +16,22 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.api.suite.RunResult;
+package org.apache.maven.plugin.surefire.report;
 
 import java.io.File;
 import java.util.Collection;
 
+import org.apache.maven.surefire.api.suite.RunResult;
+
 /**
  * This interface is used to merge reports in {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
  */
-public interface ReportsMerger
-{
+public interface ReportsMerger {
     void runStarting();
-    void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories );
+
+    void mergeFromOtherFactories(Collection<DefaultReporterFactory> factories);
+
     File getReportsDirectory();
+
     RunResult close();
 }

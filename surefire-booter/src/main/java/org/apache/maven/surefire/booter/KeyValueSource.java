@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,13 +16,13 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import java.util.Map;
 
 /**
  * A key-value source obeying the geneal constrains of java.util.Properties
  */
-public interface KeyValueSource
-{
-    void copyTo( Map<Object, Object> target );
+public interface KeyValueSource {
+    void copyTo(Map<Object, Object> target);
 }

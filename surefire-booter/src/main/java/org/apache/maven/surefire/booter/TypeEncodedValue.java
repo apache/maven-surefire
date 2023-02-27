@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -31,110 +30,80 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.loadClass;
 /**
  * @author Kristian Rosenvold
  */
-public final class TypeEncodedValue
-{
+public final class TypeEncodedValue {
     private final String type;
     private final String value;
 
-    public TypeEncodedValue( String type, String value )
-    {
+    public TypeEncodedValue(String type, String value) {
         this.type = type;
         this.value = value;
     }
 
-    private boolean isTypeClass()
-    {
-        return Class.class.getName().equals( type );
+    private boolean isTypeClass() {
+        return Class.class.getName().equals(type);
     }
 
-    public Object getDecodedValue()
-    {
-        return getDecodedValue( Thread.currentThread().getContextClassLoader() );
+    public Object getDecodedValue() {
+        return getDecodedValue(Thread.currentThread().getContextClassLoader());
     }
 
-    public Object getDecodedValue( ClassLoader classLoader )
-    {
-        if ( type.trim().isEmpty() )
-        {
+    public Object getDecodedValue(ClassLoader classLoader) {
+        if (type.trim().isEmpty()) {
             return null;
-        }
-        else if ( type.equals( String.class.getName() ) )
-        {
+        } else if (type.equals(String.class.getName())) {
             return value;
-        }
-        else if ( isTypeClass() )
-        {
-            return loadClass( classLoader, value );
-        }
-        else if ( type.equals( File.class.getName() ) )
-        {
-            return new File( value );
-        }
-        else if ( type.equals( Boolean.class.getName() ) )
-        {
-            return Boolean.valueOf( value );
-        }
-        else if ( type.equals( Integer.class.getName() ) )
-        {
-            return Integer.valueOf( value );
-        }
-        else if ( type.equals( Properties.class.getName() ) )
-        {
+        } else if (isTypeClass()) {
+            return loadClass(classLoader, value);
+        } else if (type.equals(File.class.getName())) {
+            return new File(value);
+        } else if (type.equals(Boolean.class.getName())) {
+            return Boolean.valueOf(value);
+        } else if (type.equals(Integer.class.getName())) {
+            return Integer.valueOf(value);
+        } else if (type.equals(Properties.class.getName())) {
             Properties result = new Properties();
-            try
-            {
-                result.load( new ByteArrayInputStream( value.getBytes( ISO_8859_1 ) ) );
+            try {
+                result.load(new ByteArrayInputStream(value.getBytes(ISO_8859_1)));
                 return result;
+            } catch (IOException e) {
+                throw new IllegalStateException("bug in property conversion", e);
             }
-            catch ( IOException e )
-            {
-                throw new IllegalStateException( "bug in property conversion", e );
-            }
-        }
-        else
-        {
-            throw new IllegalArgumentException( "Unknown parameter type: " + type );
+        } else {
+            throw new IllegalArgumentException("Unknown parameter type: " + type);
         }
     }
 
     @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o )
-        {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if ( o == null || getClass() != o.getClass() )
-        {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
         TypeEncodedValue that = (TypeEncodedValue) o;
 
-        return equalsType( that ) && equalsValue( that );
+        return equalsType(that) && equalsValue(that);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = type != null ? type.hashCode() : 0;
-        result = 31 * result + ( value != null ? value.hashCode() : 0 );
+        result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "TypeEncodedValue{" + "type='" + type + '\'' + ", value='" + value + '\'' + '}';
     }
 
-    private boolean equalsType( TypeEncodedValue that )
-    {
-        return Objects.equals( type, that.type );
+    private boolean equalsType(TypeEncodedValue that) {
+        return Objects.equals(type, that.type);
     }
 
-    private boolean equalsValue( TypeEncodedValue that )
-    {
-        return Objects.equals( value, that.value );
+    private boolean equalsValue(TypeEncodedValue that) {
+        return Objects.equals(value, that.value);
     }
 }

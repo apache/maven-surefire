@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
@@ -28,37 +27,21 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-public class NullConsoleOutputReceiver
-    implements TestcycleConsoleOutputReceiver
-{
+public class NullConsoleOutputReceiver implements TestcycleConsoleOutputReceiver {
 
     static final NullConsoleOutputReceiver INSTANCE = new NullConsoleOutputReceiver();
 
-    private NullConsoleOutputReceiver()
-    {
-    }
+    private NullConsoleOutputReceiver() {}
 
     @Override
-    public void testSetStarting( TestSetReportEntry reportEntry )
-    {
-
-    }
+    public void testSetStarting(TestSetReportEntry reportEntry) {}
 
     @Override
-    public void testSetCompleted( TestSetReportEntry report )
-    {
-
-    }
+    public void testSetCompleted(TestSetReportEntry report) {}
 
     @Override
-    public void close()
-    {
-
-    }
+    public void close() {}
 
     @Override
-    public void writeTestOutput( TestOutputReportEntry reportEntry )
-    {
-
-    }
+    public void writeTestOutput(TestOutputReportEntry reportEntry) {}
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.surefire;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
@@ -74,56 +73,54 @@ import org.apache.maven.surefire.util.RelocatorTest;
  * @author Tibor Digana (tibor17)
  * @since 2.19
  */
-public class JUnit4SuiteTest extends TestCase
-{
-    public static Test suite()
-    {
+public class JUnit4SuiteTest extends TestCase {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTestSuite( RelocatorTest.class );
-        suite.addTestSuite( RunStatisticsTest.class );
-        suite.addTestSuite( FileReporterTest.class );
-        suite.addTestSuite( org.apache.maven.surefire.report.ConsoleOutputFileReporterTest.class );
-        suite.addTestSuite( SurefirePropertiesTest.class );
-        suite.addTestSuite( SpecificFileFilterTest.class );
-        suite.addTest( new JUnit4TestAdapter( DirectoryScannerTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( DependenciesScannerTest.class ) );
-        suite.addTestSuite( RunEntryStatisticsMapTest.class );
-        suite.addTestSuite( WrappedReportEntryTest.class );
-        suite.addTestSuite( StatelessXmlReporterTest.class );
-        suite.addTestSuite( DefaultReporterFactoryTest.class );
-        suite.addTestSuite( ForkingRunListenerTest.class );
-        suite.addTest( new JUnit4TestAdapter( ForkConfigurationTest.class ) );
-        suite.addTestSuite( BooterDeserializerStartupConfigurationTest.class );
-        suite.addTestSuite( BooterDeserializerProviderConfigurationTest.class );
-        suite.addTest( new JUnit4TestAdapter( TestProvidingInputStreamTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( TestLessInputStreamBuilderTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( SPITest.class ) );
-        suite.addTest( new JUnit4TestAdapter( SurefireHelperTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( DefaultForkConfigurationTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( JarManifestForkConfigurationTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ModularClasspathForkConfigurationTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJava7PlusTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoToolchainsTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ScannerUtilTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( MojoMocklessTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ForkClientTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ForkedProcessEventNotifierTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ConsoleOutputReporterTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( StatelessReporterTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( TestSetStatsTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( StatelessTestsetInfoReporterTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( CommonReflectorTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ForkStarterTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ForkChannelTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( StreamFeederTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( E2ETest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ThreadedStreamConsumerTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( EventDecoderTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( EventConsumerThreadTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( ChecksumCalculatorTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoJunitCoreProvidersInfoTest.class ) );
-        suite.addTest( new JUnit4TestAdapter( AbstractSurefireMojoProvidersInfoTest.class ) );
+        suite.addTestSuite(RelocatorTest.class);
+        suite.addTestSuite(RunStatisticsTest.class);
+        suite.addTestSuite(FileReporterTest.class);
+        suite.addTestSuite(org.apache.maven.surefire.report.ConsoleOutputFileReporterTest.class);
+        suite.addTestSuite(SurefirePropertiesTest.class);
+        suite.addTestSuite(SpecificFileFilterTest.class);
+        suite.addTest(new JUnit4TestAdapter(DirectoryScannerTest.class));
+        suite.addTest(new JUnit4TestAdapter(DependenciesScannerTest.class));
+        suite.addTestSuite(RunEntryStatisticsMapTest.class);
+        suite.addTestSuite(WrappedReportEntryTest.class);
+        suite.addTestSuite(StatelessXmlReporterTest.class);
+        suite.addTestSuite(DefaultReporterFactoryTest.class);
+        suite.addTestSuite(ForkingRunListenerTest.class);
+        suite.addTest(new JUnit4TestAdapter(ForkConfigurationTest.class));
+        suite.addTestSuite(BooterDeserializerStartupConfigurationTest.class);
+        suite.addTestSuite(BooterDeserializerProviderConfigurationTest.class);
+        suite.addTest(new JUnit4TestAdapter(TestProvidingInputStreamTest.class));
+        suite.addTest(new JUnit4TestAdapter(TestLessInputStreamBuilderTest.class));
+        suite.addTest(new JUnit4TestAdapter(SPITest.class));
+        suite.addTest(new JUnit4TestAdapter(SurefireHelperTest.class));
+        suite.addTest(new JUnit4TestAdapter(AbstractSurefireMojoTest.class));
+        suite.addTest(new JUnit4TestAdapter(DefaultForkConfigurationTest.class));
+        suite.addTest(new JUnit4TestAdapter(JarManifestForkConfigurationTest.class));
+        suite.addTest(new JUnit4TestAdapter(ModularClasspathForkConfigurationTest.class));
+        suite.addTest(new JUnit4TestAdapter(AbstractSurefireMojoJava7PlusTest.class));
+        suite.addTest(new JUnit4TestAdapter(AbstractSurefireMojoToolchainsTest.class));
+        suite.addTest(new JUnit4TestAdapter(ScannerUtilTest.class));
+        suite.addTest(new JUnit4TestAdapter(MojoMocklessTest.class));
+        suite.addTest(new JUnit4TestAdapter(ForkClientTest.class));
+        suite.addTest(new JUnit4TestAdapter(ForkedProcessEventNotifierTest.class));
+        suite.addTest(new JUnit4TestAdapter(ConsoleOutputReporterTest.class));
+        suite.addTest(new JUnit4TestAdapter(StatelessReporterTest.class));
+        suite.addTest(new JUnit4TestAdapter(TestSetStatsTest.class));
+        suite.addTest(new JUnit4TestAdapter(StatelessTestsetInfoReporterTest.class));
+        suite.addTest(new JUnit4TestAdapter(CommonReflectorTest.class));
+        suite.addTest(new JUnit4TestAdapter(ForkStarterTest.class));
+        suite.addTest(new JUnit4TestAdapter(ForkChannelTest.class));
+        suite.addTest(new JUnit4TestAdapter(StreamFeederTest.class));
+        suite.addTest(new JUnit4TestAdapter(E2ETest.class));
+        suite.addTest(new JUnit4TestAdapter(ThreadedStreamConsumerTest.class));
+        suite.addTest(new JUnit4TestAdapter(EventDecoderTest.class));
+        suite.addTest(new JUnit4TestAdapter(EventConsumerThreadTest.class));
+        suite.addTest(new JUnit4TestAdapter(ChecksumCalculatorTest.class));
+        suite.addTest(new JUnit4TestAdapter(AbstractSurefireMojoJunitCoreProvidersInfoTest.class));
+        suite.addTest(new JUnit4TestAdapter(AbstractSurefireMojoProvidersInfoTest.class));
         return suite;
     }
 }

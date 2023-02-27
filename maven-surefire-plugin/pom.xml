@@ -17,175 +17,175 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire</artifactId>
-        <version>3.0.0-M10-SNAPSHOT</version>
-    </parent>
+  <parent>
+    <groupId>org.apache.maven.surefire</groupId>
+    <artifactId>surefire</artifactId>
+    <version>3.0.0-M10-SNAPSHOT</version>
+  </parent>
 
-    <groupId>org.apache.maven.plugins</groupId>
-    <artifactId>maven-surefire-plugin</artifactId>
-    <packaging>maven-plugin</packaging>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-surefire-plugin</artifactId>
+  <packaging>maven-plugin</packaging>
 
-    <name>Maven Surefire Plugin</name>
-    <description>Maven Surefire MOJO in maven-surefire-plugin.</description>
+  <name>Maven Surefire Plugin</name>
+  <description>Maven Surefire MOJO in maven-surefire-plugin.</description>
 
-    <prerequisites>
-        <maven>${mavenVersion}</maven>
-    </prerequisites>
+  <prerequisites>
+    <maven>${mavenVersion}</maven>
+  </prerequisites>
 
-    <properties>
-        <thisPlugin>Surefire</thisPlugin>
-        <thatPlugin>Failsafe</thatPlugin>
-    </properties>
+  <properties>
+    <thisPlugin>Surefire</thisPlugin>
+    <thatPlugin>Failsafe</thatPlugin>
+  </properties>
 
-    <dependencies>
-        <dependency>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>maven-surefire-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <propertyName>jacoco.agent</propertyName>
+        </configuration>
+        <executions>
+          <execution>
+            <id>jacoco-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+        </configuration>
+        <dependencies>
+          <dependency>
             <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>maven-surefire-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugin-tools</groupId>
-            <artifactId>maven-plugin-annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+            <artifactId>surefire-shadefire</artifactId>
+            <version>3.0.0-M7</version>
+            <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>build-site</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>src/assembly/site-source.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-test-report</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>site</phase>
+            <configuration>
+              <target name="generate-legacy-surefire-test-report">
+                <move file="${project.build.directory}/site/xsd/legacy-surefire-test-report.xsd" tofile="${project.build.directory}/site/xsd/surefire-test-report.xsd" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
-    <build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>ci</id>
+      <activation>
+        <property>
+          <name>enableCiProfile</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>jacoco-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <propertyName>jacoco.agent</propertyName>
-                </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-shadefire</artifactId>
-                        <version>3.0.0-M7</version> <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>build-site</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/assembly/site-source.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>generate-test-report</id>
-                        <phase>site</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target name="generate-legacy-surefire-test-report">
-                                <move file="${project.build.directory}/site/xsd/legacy-surefire-test-report.xsd" tofile="${project.build.directory}/site/xsd/surefire-test-report.xsd" />
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+          <plugin>
+            <artifactId>maven-docck-plugin</artifactId>
+            <version>1.1</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
-    </build>
-
-    <reporting>
+      </build>
+    </profile>
+    <profile>
+      <id>reporting</id>
+      <reporting>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-            </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-changes-plugin</artifactId>
+            <configuration>
+              <skip>false</skip>
+            </configuration>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>jira-report</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
         </plugins>
-    </reporting>
-
-    <profiles>
-        <profile>
-            <id>ci</id>
-            <activation>
-                <property>
-                    <name>enableCiProfile</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-docck-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>reporting</id>
-            <reporting>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-changes-plugin</artifactId>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                        <reportSets>
-                            <reportSet>
-                                <reports>
-                                    <report>jira-report</report>
-                                </reports>
-                            </reportSet>
-                        </reportSets>
-                    </plugin>
-                </plugins>
-            </reporting>
-        </profile>
-    </profiles>
+      </reporting>
+    </profile>
+  </profiles>
 </project>

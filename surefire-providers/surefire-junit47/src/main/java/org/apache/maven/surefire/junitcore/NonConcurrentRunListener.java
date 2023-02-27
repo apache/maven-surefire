@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore;
 
 /*
@@ -19,21 +37,21 @@ package org.apache.maven.surefire.junitcore;
  * under the License.
  */
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.apache.maven.surefire.common.junit4.JUnit4RunListener;
-import org.apache.maven.surefire.api.report.SimpleReportEntry;
-import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.junit.runner.Description;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-import java.util.Collections;
-import java.util.Map;
-
-import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
+import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClassMethod;
 
 /**
  * A class to be used when there is no JUnit parallelism (methods or/and class). This allows to workaround JUnit
@@ -42,70 +60,54 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProp
  * forkCount greater than one.
  */
 @Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
-class NonConcurrentRunListener
-    extends JUnit4RunListener
-{
+class NonConcurrentRunListener extends JUnit4RunListener {
     private Description currentTestSetDescription;
 
     private Description lastFinishedDescription;
 
-    NonConcurrentRunListener( TestReportListener<TestOutputReportEntry> reporter )
-    {
-        super( reporter );
+    NonConcurrentRunListener(TestReportListener<TestOutputReportEntry> reporter) {
+        super(reporter);
     }
 
-    private TestSetReportEntry createReportEntryForTestSet( Description description, Map<String, String> systemProps )
-    {
-        ClassMethod classMethod = toClassMethod( description );
+    private TestSetReportEntry createReportEntryForTestSet(Description description, Map<String, String> systemProps) {
+        ClassMethod classMethod = toClassMethod(description);
         String className = classMethod.getClazz();
         String methodName = classMethod.getMethod();
-        long testRunId = classMethodIndexer.indexClassMethod( className, methodName );
-        return new SimpleReportEntry( getRunMode(), testRunId, className, null, null, null, systemProps );
+        long testRunId = classMethodIndexer.indexClassMethod(className, methodName);
+        return new SimpleReportEntry(getRunMode(), testRunId, className, null, null, null, systemProps);
     }
 
-    private TestSetReportEntry createTestSetReportEntryStarted( Description description )
-    {
-        return createReportEntryForTestSet( description, Collections.<String, String>emptyMap() );
+    private TestSetReportEntry createTestSetReportEntryStarted(Description description) {
+        return createReportEntryForTestSet(description, Collections.<String, String>emptyMap());
     }
 
-    private TestSetReportEntry createTestSetReportEntryFinished( Description description )
-    {
-        return createReportEntryForTestSet( description, systemProps() );
+    private TestSetReportEntry createTestSetReportEntryFinished(Description description) {
+        return createReportEntryForTestSet(description, systemProps());
     }
 
     @Override
-    public void testStarted( Description description )
-        throws Exception
-    {
-        finishLastTestSetIfNecessary( description );
-        super.testStarted( description );
+    public void testStarted(Description description) throws Exception {
+        finishLastTestSetIfNecessary(description);
+        super.testStarted(description);
     }
 
-    private void finishLastTestSetIfNecessary( Description description )
-    {
-        if ( describesNewTestSet( description ) )
-        {
+    private void finishLastTestSetIfNecessary(Description description) {
+        if (describesNewTestSet(description)) {
             currentTestSetDescription = description;
-            if ( lastFinishedDescription != null )
-            {
-                reporter.testSetCompleted( createTestSetReportEntryFinished( lastFinishedDescription ) );
+            if (lastFinishedDescription != null) {
+                reporter.testSetCompleted(createTestSetReportEntryFinished(lastFinishedDescription));
                 lastFinishedDescription = null;
             }
-            reporter.testSetStarting( createTestSetReportEntryStarted( description ) );
+            reporter.testSetStarting(createTestSetReportEntryStarted(description));
         }
     }
 
-    private boolean describesNewTestSet( Description description )
-    {
-        if ( currentTestSetDescription != null )
-        {
-            if ( null != description.getTestClass() )
-            {
-                return !description.getTestClass().equals( currentTestSetDescription.getTestClass() );
-            }
-            else if ( description.isSuite() )
-            {
-                return description.getChildren().equals( currentTestSetDescription.getChildren() );
+    private boolean describesNewTestSet(Description description) {
+        if (currentTestSetDescription != null) {
+            if (null != description.getTestClass()) {
+                return !description.getTestClass().equals(currentTestSetDescription.getTestClass());
+            } else if (description.isSuite()) {
+                return description.getChildren().equals(currentTestSetDescription.getChildren());
             }
 
             return false;
@@ -115,55 +117,42 @@ class NonConcurrentRunListener
     }
 
     @Override
-    public void testFinished( Description description )
-        throws Exception
-    {
-        super.testFinished( description );
+    public void testFinished(Description description) throws Exception {
+        super.testFinished(description);
         lastFinishedDescription = description;
     }
 
     @Override
-    public void testIgnored( Description description )
-        throws Exception
-    {
-        finishLastTestSetIfNecessary( description );
+    public void testIgnored(Description description) throws Exception {
+        finishLastTestSetIfNecessary(description);
 
-        super.testIgnored( description );
+        super.testIgnored(description);
         lastFinishedDescription = description;
     }
 
     @Override
-    public void testFailure( Failure failure )
-        throws Exception
-    {
-        finishLastTestSetIfNecessary( failure.getDescription() );
+    public void testFailure(Failure failure) throws Exception {
+        finishLastTestSetIfNecessary(failure.getDescription());
 
-        super.testFailure( failure );
+        super.testFailure(failure);
         lastFinishedDescription = failure.getDescription();
     }
 
     @Override
-    public void testAssumptionFailure( Failure failure )
-    {
-        finishLastTestSetIfNecessary( failure.getDescription() );
+    public void testAssumptionFailure(Failure failure) {
+        finishLastTestSetIfNecessary(failure.getDescription());
 
-        super.testAssumptionFailure( failure );
+        super.testAssumptionFailure(failure);
         lastFinishedDescription = failure.getDescription();
     }
 
     @Override
-    public void testRunStarted( Description description )
-        throws Exception
-    {
-    }
+    public void testRunStarted(Description description) throws Exception {}
 
     @Override
-    public void testRunFinished( Result result )
-        throws Exception
-    {
-        if ( lastFinishedDescription != null )
-        {
-            reporter.testSetCompleted( createTestSetReportEntryFinished( lastFinishedDescription ) );
+    public void testRunFinished(Result result) throws Exception {
+        if (lastFinishedDescription != null) {
+            reporter.testSetCompleted(createTestSetReportEntryFinished(lastFinishedDescription));
             lastFinishedDescription = null;
         }
     }

@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore;
 
 /*
@@ -39,18 +57,15 @@ import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUti
  *
  * @see org.apache.maven.surefire.junitcore.ConcurrentRunListener for details about parallel running
  */
-final class JUnitCoreRunListener
-    extends JUnit4RunListener
-{
+final class JUnitCoreRunListener extends JUnit4RunListener {
     private final Map<String, TestSet> classMethodCounts;
 
     /**
      * @param reporter          the report manager to log testing events to
      * @param classMethodCounts A map of methods
      */
-    JUnitCoreRunListener( ConcurrentRunListener reporter, Map<String, TestSet> classMethodCounts )
-    {
-        super( reporter );
+    JUnitCoreRunListener(ConcurrentRunListener reporter, Map<String, TestSet> classMethodCounts) {
+        super(reporter);
         this.classMethodCounts = classMethodCounts;
     }
 
@@ -60,68 +75,49 @@ final class JUnitCoreRunListener
      * @see org.junit.runner.notification.RunListener#testRunStarted(org.junit.runner.Description)
      */
     @Override
-    public void testRunStarted( Description description )
-        throws Exception
-    {
-        fillTestCountMap( description );
-        reporter.testSetStarting( null ); // Not entirely meaningful as we can see
+    public void testRunStarted(Description description) throws Exception {
+        fillTestCountMap(description);
+        reporter.testSetStarting(null); // Not entirely meaningful as we can see
     }
 
     @Override
-    public void testRunFinished( Result result )
-        throws Exception
-    {
-        try
-        {
-            reporter.testSetCompleted( null );
-        }
-        finally
-        {
+    public void testRunFinished(Result result) throws Exception {
+        try {
+            reporter.testSetCompleted(null);
+        } finally {
             classMethodCounts.clear();
         }
     }
 
-    private void fillTestCountMap( Description testDesc )
-    {
-        for ( Description child : testDesc.getChildren() )
-        {
-            if ( !asTestLeaf( child ) )
-            {
-                fillTestCountMap( child );
+    private void fillTestCountMap(Description testDesc) {
+        for (Description child : testDesc.getChildren()) {
+            if (!asTestLeaf(child)) {
+                fillTestCountMap(child);
             }
         }
     }
 
-    private boolean asTestLeaf( Description description )
-    {
-        if ( description.isTest() )
-        {
-            final String testClassName = extractClassName( description.getDisplayName() );
-            if ( testClassName != null )
-            {
+    private boolean asTestLeaf(Description description) {
+        if (description.isTest()) {
+            final String testClassName = extractClassName(description.getDisplayName());
+            if (testClassName != null) {
                 final TestSet testSet;
-                if ( classMethodCounts.containsKey( testClassName ) )
-                {
-                    testSet = classMethodCounts.get( testClassName );
-                }
-                else
-                {
-                    testSet = new TestSet( testClassName, getRunMode(), classMethodIndexer );
-                    classMethodCounts.put( testClassName, testSet );
+                if (classMethodCounts.containsKey(testClassName)) {
+                    testSet = classMethodCounts.get(testClassName);
+                } else {
+                    testSet = new TestSet(testClassName, getRunMode(), classMethodIndexer);
+                    classMethodCounts.put(testClassName, testSet);
                 }
                 testSet.incrementTestMethodCount();
             }
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 
     @Override
-    protected StackTraceWriter createStackTraceWriter( Failure failure )
-    {
-        return new JUnit4StackTraceWriter( failure );
+    protected StackTraceWriter createStackTraceWriter(Failure failure) {
+        return new JUnit4StackTraceWriter(failure);
     }
 }

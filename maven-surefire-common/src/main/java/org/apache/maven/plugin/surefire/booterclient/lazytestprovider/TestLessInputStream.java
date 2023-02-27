@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,9 +16,7 @@ package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.api.booter.Command;
-import org.apache.maven.surefire.api.booter.Shutdown;
+package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -33,6 +29,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.maven.surefire.api.booter.Command;
+import org.apache.maven.surefire.api.booter.Shutdown;
+
 import static org.apache.maven.surefire.api.booter.Command.BYE_ACK;
 import static org.apache.maven.surefire.api.booter.Command.NOOP;
 import static org.apache.maven.surefire.api.booter.Command.SKIP_SINCE_NEXT_TEST;
@@ -44,10 +43,8 @@ import static org.apache.maven.surefire.api.booter.Command.toShutdown;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public final class TestLessInputStream
-        extends DefaultCommandReader
-{
-    private final Semaphore barrier = new Semaphore( 0 );
+public final class TestLessInputStream extends DefaultCommandReader {
+    private final Semaphore barrier = new Semaphore(0);
 
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -57,70 +54,55 @@ public final class TestLessInputStream
 
     private Iterator<Command> cachableCommands;
 
-    private TestLessInputStream( TestLessInputStreamBuilder builder )
-    {
+    private TestLessInputStream(TestLessInputStreamBuilder builder) {
         this.builder = builder;
     }
 
     @Override
-    public void provideNewTest()
-    {
-    }
+    public void provideNewTest() {}
 
     @Override
-    public void skipSinceNextTest()
-    {
-        if ( canContinue() )
-        {
-            immediateCommands.add( SKIP_SINCE_NEXT_TEST );
+    public void skipSinceNextTest() {
+        if (canContinue()) {
+            immediateCommands.add(SKIP_SINCE_NEXT_TEST);
             barrier.release();
         }
     }
 
     @Override
-    public void shutdown( Shutdown shutdownType )
-    {
-        if ( canContinue() )
-        {
-            immediateCommands.add( toShutdown( shutdownType ) );
+    public void shutdown(Shutdown shutdownType) {
+        if (canContinue()) {
+            immediateCommands.add(toShutdown(shutdownType));
             barrier.release();
         }
     }
 
     @Override
-    public void noop()
-    {
-        if ( canContinue() )
-        {
-            immediateCommands.add( NOOP );
+    public void noop() {
+        if (canContinue()) {
+            immediateCommands.add(NOOP);
             barrier.release();
         }
     }
 
     @Override
-    public void acknowledgeByeEventReceived()
-    {
-        if ( canContinue() )
-        {
-            immediateCommands.add( BYE_ACK );
+    public void acknowledgeByeEventReceived() {
+        if (canContinue()) {
+            immediateCommands.add(BYE_ACK);
             barrier.release();
         }
     }
 
     @Override
-    public boolean isClosed()
-    {
+    public boolean isClosed() {
         return closed.get();
     }
 
     @Override
-    protected Command nextCommand()
-    {
+    protected Command nextCommand() {
         Command cmd = immediateCommands.poll();
-        if ( cmd == null )
-        {
-            if ( cachableCommands == null )
-            {
+        if (cmd == null) {
+            if (cachableCommands == null) {
                 cachableCommands = builder.getIterableCachable().iterator();
             }
 
@@ -130,17 +112,13 @@ public final class TestLessInputStream
     }
 
     @Override
-    protected void beforeNextCommand()
-        throws IOException
-    {
+    protected void beforeNextCommand() throws IOException {
         awaitNextCommand();
     }
 
     @Override
-    public void close()
-    {
-        if ( closed.compareAndSet( false, true ) )
-        {
+    public void close() {
+        if (closed.compareAndSet(false, true)) {
             barrier.drainPermits();
             barrier.release();
         }
@@ -151,21 +129,15 @@ public final class TestLessInputStream
      *
      * @return permits used internally by {@link #beforeNextCommand()}
      */
-    int availablePermits()
-    {
+    int availablePermits() {
         return barrier.availablePermits();
     }
 
-    private void awaitNextCommand()
-        throws IOException
-    {
-        try
-        {
+    private void awaitNextCommand() throws IOException {
+        try {
             barrier.acquire();
-        }
-        catch ( InterruptedException e )
-        {
-            throw new IOException( e.getLocalizedMessage() );
+        } catch (InterruptedException e) {
+            throw new IOException(e.getLocalizedMessage());
         }
     }
 
@@ -174,53 +146,41 @@ public final class TestLessInputStream
      * and provides accessible API to dispatch immediate commands to all atomically
      * alive streams.
      */
-    public static final class TestLessInputStreamBuilder
-    {
+    public static final class TestLessInputStreamBuilder {
         private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
         private final Queue<TestLessInputStream> aliveStreams = new ConcurrentLinkedQueue<>();
         private final ImmediateCommands immediateCommands = new ImmediateCommands();
         private final CachableCommands cachableCommands = new CachableCommands();
-        private final Node head = new Node( null );
+        private final Node head = new Node(null);
         private final Iterable<Command> iterableCachable;
 
-        public TestLessInputStreamBuilder()
-        {
-            iterableCachable = new Iterable<Command>()
-            {
+        public TestLessInputStreamBuilder() {
+            iterableCachable = new Iterable<Command>() {
                 @Override
-                public Iterator<Command> iterator()
-                {
+                public Iterator<Command> iterator() {
                     return new CIt();
                 }
             };
         }
 
-        public TestLessInputStream build()
-        {
+        public TestLessInputStream build() {
             Lock lock = rwLock.writeLock();
             lock.lock();
-            try
-            {
-                TestLessInputStream is = new TestLessInputStream( this );
-                aliveStreams.offer( is );
+            try {
+                TestLessInputStream is = new TestLessInputStream(this);
+                aliveStreams.offer(is);
                 return is;
-            }
-            finally
-            {
+            } finally {
                 lock.unlock();
             }
         }
 
-        public void removeStream( TestLessInputStream is )
-        {
+        public void removeStream(TestLessInputStream is) {
             Lock lock = rwLock.writeLock();
             lock.lock();
-            try
-            {
-                aliveStreams.remove( is );
-            }
-            finally
-            {
+            try {
+                aliveStreams.remove(is);
+            } finally {
                 lock.unlock();
             }
         }
@@ -233,8 +193,7 @@ public final class TestLessInputStream
          * to cached commands, the immediate commands disappear and cannot be seen by any fork initiated after
          * the command has dispatched.
          */
-        public NotifiableTestStream getImmediateCommands()
-        {
+        public NotifiableTestStream getImmediateCommands() {
             return immediateCommands;
         }
 
@@ -246,76 +205,61 @@ public final class TestLessInputStream
          *
          * @return commands which are cached for currently alive or future forks.
          */
-        public NotifiableTestStream getCachableCommands()
-        {
+        public NotifiableTestStream getCachableCommands() {
             return cachableCommands;
         }
 
         /**
          * The iterator is not thread safe.
          */
-        Iterable<Command> getIterableCachable()
-        {
+        Iterable<Command> getIterableCachable() {
             return iterableCachable;
         }
 
-        @SuppressWarnings( "checkstyle:innerassignment" )
-        private boolean addTailNodeIfAbsent( Command command )
-        {
-            Node newTail = new Node( command );
+        @SuppressWarnings("checkstyle:innerassignment")
+        private boolean addTailNodeIfAbsent(Command command) {
+            Node newTail = new Node(command);
             Node currentTail = head;
-            do
-            {
-                for ( Node successor; ( successor = currentTail.next.get() ) != null; )
-                {
+            do {
+                for (Node successor; (successor = currentTail.next.get()) != null; ) {
                     currentTail = successor;
-                    if ( command.equals( currentTail.command ) )
-                    {
+                    if (command.equals(currentTail.command)) {
                         return false;
                     }
                 }
-            } while ( !currentTail.next.compareAndSet( null, newTail ) );
+            } while (!currentTail.next.compareAndSet(null, newTail));
             return true;
         }
 
-        private static Node nextCachedNode( Node current )
-        {
+        private static Node nextCachedNode(Node current) {
             return current.next.get();
         }
 
-        private final class CIt
-            implements Iterator<Command>
-        {
+        private final class CIt implements Iterator<Command> {
             private Node node = TestLessInputStreamBuilder.this.head;
 
             @Override
-            public boolean hasNext()
-            {
-                return examineNext( false ) != null;
+            public boolean hasNext() {
+                return examineNext(false) != null;
             }
 
             @Override
-            public Command next()
-            {
-                Command command = examineNext( true );
-                if ( command == null )
-                {
+            public Command next() {
+                Command command = examineNext(true);
+                if (command == null) {
                     throw new NoSuchElementException();
                 }
                 return command;
             }
 
             @Override
-            public void remove()
-            {
+            public void remove() {
                 throw new UnsupportedOperationException();
             }
 
-            private Command examineNext( boolean store )
-            {
-                Node next = nextCachedNode( node );
-                if ( store && next != null )
-                {
+            private Command examineNext(boolean store) {
+                Node next = nextCachedNode(node);
+                if (store && next != null) {
                     node = next;
                 }
                 return next == null ? null : next.command;
@@ -325,60 +269,45 @@ public final class TestLessInputStream
         /**
          * Event is called just now for all alive streams and command is not persisted.
          */
-        private final class ImmediateCommands
-            implements NotifiableTestStream
-        {
+        private final class ImmediateCommands implements NotifiableTestStream {
             @Override
-            public void provideNewTest()
-            {
+            public void provideNewTest() {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public void skipSinceNextTest()
-            {
+            public void skipSinceNextTest() {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public void shutdown( Shutdown shutdownType )
-            {
+            public void shutdown(Shutdown shutdownType) {
                 Lock lock = rwLock.readLock();
                 lock.lock();
-                try
-                {
-                    for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
-                    {
-                        aliveStream.shutdown( shutdownType );
+                try {
+                    for (TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams) {
+                        aliveStream.shutdown(shutdownType);
                     }
-                }
-                finally
-                {
+                } finally {
                     lock.unlock();
                 }
             }
 
             @Override
-            public void noop()
-            {
+            public void noop() {
                 Lock lock = rwLock.readLock();
                 lock.lock();
-                try
-                {
-                    for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
-                    {
+                try {
+                    for (TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams) {
                         aliveStream.noop();
                     }
-                }
-                finally
-                {
+                } finally {
                     lock.unlock();
                 }
             }
 
             @Override
-            public void acknowledgeByeEventReceived()
-            {
+            public void acknowledgeByeEventReceived() {
                 throw new UnsupportedOperationException();
             }
         }
@@ -386,79 +315,60 @@ public final class TestLessInputStream
         /**
          * Event is persisted.
          */
-        private final class CachableCommands
-            implements NotifiableTestStream
-        {
+        private final class CachableCommands implements NotifiableTestStream {
             @Override
-            public void provideNewTest()
-            {
+            public void provideNewTest() {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public void skipSinceNextTest()
-            {
+            public void skipSinceNextTest() {
                 Lock lock = rwLock.readLock();
                 lock.lock();
-                try
-                {
-                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( SKIP_SINCE_NEXT_TEST ) )
-                    {
+                try {
+                    if (TestLessInputStreamBuilder.this.addTailNodeIfAbsent(SKIP_SINCE_NEXT_TEST)) {
                         release();
                     }
-                }
-                finally
-                {
+                } finally {
                     lock.unlock();
                 }
             }
 
             @Override
-            public void shutdown( Shutdown shutdownType )
-            {
+            public void shutdown(Shutdown shutdownType) {
                 Lock lock = rwLock.readLock();
                 lock.lock();
-                try
-                {
-                    if ( TestLessInputStreamBuilder.this.addTailNodeIfAbsent( toShutdown( shutdownType ) ) )
-                    {
+                try {
+                    if (TestLessInputStreamBuilder.this.addTailNodeIfAbsent(toShutdown(shutdownType))) {
                         release();
                     }
-                }
-                finally
-                {
+                } finally {
                     lock.unlock();
                 }
             }
 
             @Override
-            public void noop()
-            {
+            public void noop() {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public void acknowledgeByeEventReceived()
-            {
+            public void acknowledgeByeEventReceived() {
                 throw new UnsupportedOperationException();
             }
 
-            private void release()
-            {
-                for ( TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams )
-                {
+            private void release() {
+                for (TestLessInputStream aliveStream : TestLessInputStreamBuilder.this.aliveStreams) {
                     aliveStream.barrier.release();
                 }
             }
         }
 
-        private static class Node
-        {
+        private static class Node {
             private final AtomicReference<Node> next = new AtomicReference<>();
             private final Command command;
 
-            Node( Command command )
-            {
+            Node(Command command) {
                 this.command = command;
             }
         }

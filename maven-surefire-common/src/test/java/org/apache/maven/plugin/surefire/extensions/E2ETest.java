@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.extensions;
 
 import javax.annotation.Nonnull;
 
@@ -63,330 +62,273 @@ import static org.junit.Assert.fail;
 /**
  * Simulates the End To End use case where Maven process and Surefire process communicate using the TCP/IP protocol.
  */
-@SuppressWarnings( "checkstyle:magicnumber" )
-public class E2ETest
-{
+@SuppressWarnings("checkstyle:magicnumber")
+public class E2ETest {
     private static final String LONG_STRING =
-        "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+            "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
 
     @Rule
     public final ExpectedException e = ExpectedException.none();
 
     @Test
-    public void endToEndTest() throws Exception
-    {
-        ForkNodeArguments arguments = new Arguments( UUID.randomUUID().toString(), 1, new NullConsoleLogger() );
+    public void endToEndTest() throws Exception {
+        ForkNodeArguments arguments = new Arguments(UUID.randomUUID().toString(), 1, new NullConsoleLogger());
 
-        final SurefireForkChannel server = new SurefireForkChannel( arguments );
+        final SurefireForkChannel server = new SurefireForkChannel(arguments);
         server.tryConnectToClient();
 
         final String connection = server.getForkNodeConnectionString();
 
         final SurefireMasterProcessChannelProcessorFactory factory = new SurefireMasterProcessChannelProcessorFactory();
-        factory.connect( connection );
-        final EventChannelEncoder encoder = (EventChannelEncoder) factory.createEncoder( arguments );
+        factory.connect(connection);
+        final EventChannelEncoder encoder = (EventChannelEncoder) factory.createEncoder(arguments);
 
-        final CountDownLatch awaitHandlerFinished = new CountDownLatch( 2 );
+        final CountDownLatch awaitHandlerFinished = new CountDownLatch(2);
 
         final AtomicLong readTime = new AtomicLong();
 
         final int totalCalls = 400_000; // 400_000; // 1_000_000; // 10_000_000;
 
-        EventHandler<Event> h = new EventHandler<Event>()
-        {
+        EventHandler<Event> h = new EventHandler<Event>() {
             private final AtomicInteger counter = new AtomicInteger();
             private volatile long t1;
 
             @Override
-            public void handleEvent( @Nonnull Event event )
-            {
-                try
-                {
-                    if ( counter.getAndIncrement() == 0 )
-                    {
+            public void handleEvent(@Nonnull Event event) {
+                try {
+                    if (counter.getAndIncrement() == 0) {
                         t1 = System.currentTimeMillis();
                     }
 
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;
 
-                    if ( counter.get() == totalCalls - 64 * 1024 )
-                    {
-                        readTime.set( spent );
-                        System.out.println( spent + "ms on read" );
+                    if (counter.get() == totalCalls - 64 * 1024) {
+                        readTime.set(spent);
+                        System.out.println(spent + "ms on read");
                         awaitHandlerFinished.countDown();
                     }
-                }
-                catch ( Exception e )
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         };
 
-        EventHandler<Event> queue = new ThreadedStreamConsumer( h );
+        EventHandler<Event> queue = new ThreadedStreamConsumer(h);
 
         System.gc();
 
-        SECONDS.sleep( 5L );
+        SECONDS.sleep(5L);
 
-        server.bindEventHandler( queue, new CountdownCloseable( new DummyCloseable(), 1 ), new DummyReadableChannel() );
-        server.bindCommandReader( new DummyCommandReader(), null );
+        server.bindEventHandler(queue, new CountdownCloseable(new DummyCloseable(), 1), new DummyReadableChannel());
+        server.bindCommandReader(new DummyCommandReader(), null);
 
-        Thread t = new Thread()
-        {
+        Thread t = new Thread() {
             @Override
-            public void run()
-            {
-                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver()
-                {
+            public void run() {
+                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver() {
                     @Override
-                    public void writeTestOutput( OutputReportEntry reportEntry )
-                    {
-                        encoder.testOutput( stdOutln( reportEntry.getLog() ) );
+                    public void writeTestOutput(OutputReportEntry reportEntry) {
+                        encoder.testOutput(stdOutln(reportEntry.getLog()));
                     }
                 };
 
-                //PrintStream out = System.out;
-                //PrintStream err = System.err;
+                // PrintStream out = System.out;
+                // PrintStream err = System.err;
 
-                //ConsoleOutputCapture.startCapture( target );
+                // ConsoleOutputCapture.startCapture( target );
 
-                try
-                {
+                try {
                     long t1 = System.currentTimeMillis();
-                    for ( int i = 0; i < totalCalls; i++ )
-                    {
-                        //System.out.println( LONG_STRING );
-                        encoder.testOutput( new TestOutputReportEntry( stdOutln( LONG_STRING ), NORMAL_RUN, 1L ) );
+                    for (int i = 0; i < totalCalls; i++) {
+                        // System.out.println( LONG_STRING );
+                        encoder.testOutput(new TestOutputReportEntry(stdOutln(LONG_STRING), NORMAL_RUN, 1L));
                     }
                     long t2 = System.currentTimeMillis();
                     long spent = t2 - t1;
-                    //System.setOut( out );
-                    //System.setErr( err );
-                    System.out.println( spent + "ms on write" );
+                    // System.setOut( out );
+                    // System.setErr( err );
+                    System.out.println(spent + "ms on write");
                     awaitHandlerFinished.countDown();
-                }
-                catch ( Exception e )
-                {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         };
-        t.setDaemon( true );
+        t.setDaemon(true);
         t.start();
 
-        assertThat( awaitHandlerFinished.await( 30L, SECONDS ) )
-            .isTrue();
+        assertThat(awaitHandlerFinished.await(30L, SECONDS)).isTrue();
 
         factory.close();
         server.close();
-        //queue.close();
+        // queue.close();
 
         // 1.0 seconds while using the encoder/decoder
-        assertThat( readTime.get() )
-            .describedAs( "The performance test should assert 1.0s of read time. "
-                + "The limit 6s guarantees that the read time does not exceed this limit on overloaded CPU." )
-            .isPositive()
-            .isLessThanOrEqualTo( 6_000L );
+        assertThat(readTime.get())
+                .describedAs("The performance test should assert 1.0s of read time. "
+                        + "The limit 6s guarantees that the read time does not exceed this limit on overloaded CPU.")
+                .isPositive()
+                .isLessThanOrEqualTo(6_000L);
     }
 
-    @Test( timeout = 10_000L )
-    public void shouldVerifyClient() throws Exception
-    {
-        ForkNodeArguments forkNodeArguments =
-            new Arguments( UUID.randomUUID().toString(), 1, new NullConsoleLogger() );
+    @Test(timeout = 10_000L)
+    public void shouldVerifyClient() throws Exception {
+        ForkNodeArguments forkNodeArguments = new Arguments(UUID.randomUUID().toString(), 1, new NullConsoleLogger());
 
-        try ( SurefireForkChannel server = new SurefireForkChannel( forkNodeArguments );
-              SurefireMasterProcessChannelProcessorFactory client = new SurefireMasterProcessChannelProcessorFactory() )
-        {
-            FutureTask<String> task = new FutureTask<>( new Callable<String>()
-            {
+        try (SurefireForkChannel server = new SurefireForkChannel(forkNodeArguments);
+                SurefireMasterProcessChannelProcessorFactory client =
+                        new SurefireMasterProcessChannelProcessorFactory()) {
+            FutureTask<String> task = new FutureTask<>(new Callable<String>() {
                 @Override
-                public String call() throws Exception
-                {
-                    client.connect( server.getForkNodeConnectionString() );
+                public String call() throws Exception {
+                    client.connect(server.getForkNodeConnectionString());
                     return "client connected";
                 }
-            } );
+            });
 
-            Thread t = new Thread( task );
-            t.setDaemon( true );
+            Thread t = new Thread(task);
+            t.setDaemon(true);
             t.start();
 
-            assertThat( task.get() )
-                .isEqualTo( "client connected" );
+            assertThat(task.get()).isEqualTo("client connected");
         }
     }
 
-    @Test( timeout = 10_000L )
-    public void shouldNotVerifyClient() throws Exception
-    {
-        ForkNodeArguments forkNodeArguments =
-            new Arguments( UUID.randomUUID().toString(), 1, new NullConsoleLogger() );
+    @Test(timeout = 10_000L)
+    public void shouldNotVerifyClient() throws Exception {
+        ForkNodeArguments forkNodeArguments = new Arguments(UUID.randomUUID().toString(), 1, new NullConsoleLogger());
 
-        try ( SurefireForkChannel server = new SurefireForkChannel( forkNodeArguments );
-              SurefireMasterProcessChannelProcessorFactory client = new SurefireMasterProcessChannelProcessorFactory() )
-        {
-            FutureTask<String> task = new FutureTask<>( new Callable<String>()
-            {
+        try (SurefireForkChannel server = new SurefireForkChannel(forkNodeArguments);
+                SurefireMasterProcessChannelProcessorFactory client =
+                        new SurefireMasterProcessChannelProcessorFactory()) {
+            FutureTask<String> task = new FutureTask<>(new Callable<String>() {
                 @Override
-                public String call() throws Exception
-                {
-                    URI connectionUri = new URI( server.getForkNodeConnectionString() );
-                    client.connect( "tcp://" + connectionUri.getHost() + ":" + connectionUri.getPort()
-                        + "?sessionId=6ba7b812-9dad-11d1-80b4-00c04fd430c8" );
+                public String call() throws Exception {
+                    URI connectionUri = new URI(server.getForkNodeConnectionString());
+                    client.connect("tcp://" + connectionUri.getHost() + ":" + connectionUri.getPort()
+                            + "?sessionId=6ba7b812-9dad-11d1-80b4-00c04fd430c8");
                     return "client connected";
                 }
-            } );
+            });
 
-            Thread t = new Thread( task );
-            t.setDaemon( true );
+            Thread t = new Thread(task);
+            t.setDaemon(true);
             t.start();
 
-            e.expect( InvalidSessionIdException.class );
-            e.expectMessage( "The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
-                + forkNodeArguments.getSessionId() + "'." );
+            e.expect(InvalidSessionIdException.class);
+            e.expectMessage("The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
+                    + forkNodeArguments.getSessionId() + "'.");
 
             server.tryConnectToClient();
-            server.bindCommandReader( new DummyCommandReader(), new DummyWritableByteChannel() );
+            server.bindCommandReader(new DummyCommandReader(), new DummyWritableByteChannel());
 
-            server.bindEventHandler( new DummyEventHandler(),
-                new CountdownCloseable( new DummyCloseable(), 1 ), new DummyReadableChannel() );
+            server.bindEventHandler(
+                    new DummyEventHandler(),
+                    new CountdownCloseable(new DummyCloseable(), 1),
+                    new DummyReadableChannel());
 
-            fail( task.get() );
+            fail(task.get());
         }
     }
 
-    private static class DummyEventHandler<Event> implements EventHandler<Event>
-    {
+    private static class DummyEventHandler<Event> implements EventHandler<Event> {
         @Override
-        public void handleEvent( @Nonnull Event event )
-        {
-        }
+        public void handleEvent(@Nonnull Event event) {}
     }
 
-    private static class DummyReadableChannel implements ReadableByteChannel
-    {
+    private static class DummyReadableChannel implements ReadableByteChannel {
         private volatile Thread t;
 
         @Override
-        public int read( ByteBuffer dst ) throws IOException
-        {
-            try
-            {
+        public int read(ByteBuffer dst) throws IOException {
+            try {
                 t = Thread.currentThread();
-                HOURS.sleep( 1L );
+                HOURS.sleep(1L);
                 return 0;
-            }
-            catch ( InterruptedException e )
-            {
-                throw new IOException( e.getLocalizedMessage(), e );
+            } catch (InterruptedException e) {
+                throw new IOException(e.getLocalizedMessage(), e);
             }
         }
 
         @Override
-        public boolean isOpen()
-        {
+        public boolean isOpen() {
             return true;
         }
 
         @Override
-        public void close()
-        {
-            if ( t != null )
-            {
+        public void close() {
+            if (t != null) {
                 t.interrupt();
             }
         }
     }
 
-    private static class DummyWritableByteChannel implements WritableByteChannel
-    {
+    private static class DummyWritableByteChannel implements WritableByteChannel {
         private volatile Thread t;
 
         @Override
-        public int write( ByteBuffer src ) throws IOException
-        {
-            try
-            {
+        public int write(ByteBuffer src) throws IOException {
+            try {
                 t = Thread.currentThread();
-                HOURS.sleep( 1L );
+                HOURS.sleep(1L);
                 return 0;
-            }
-            catch ( InterruptedException e )
-            {
-                throw new IOException( e.getLocalizedMessage(), e );
+            } catch (InterruptedException e) {
+                throw new IOException(e.getLocalizedMessage(), e);
             }
         }
 
         @Override
-        public boolean isOpen()
-        {
+        public boolean isOpen() {
             return true;
         }
 
         @Override
-        public void close() throws IOException
-        {
-            if ( t != null )
-            {
+        public void close() throws IOException {
+            if (t != null) {
                 t.interrupt();
             }
         }
     }
 
-    private static class DummyCommandReader implements CommandReader
-    {
+    private static class DummyCommandReader implements CommandReader {
         private volatile Thread t;
 
         @Override
-        public Command readNextCommand() throws IOException
-        {
-            try
-            {
+        public Command readNextCommand() throws IOException {
+            try {
                 t = Thread.currentThread();
-                HOURS.sleep( 1L );
+                HOURS.sleep(1L);
                 return null;
-            }
-            catch ( InterruptedException e )
-            {
-                throw new IOException( e.getLocalizedMessage(), e );
+            } catch (InterruptedException e) {
+                throw new IOException(e.getLocalizedMessage(), e);
             }
         }
 
         @Override
-        public void close()
-        {
-            if ( t != null )
-            {
+        public void close() {
+            if (t != null) {
                 t.interrupt();
             }
         }
 
         @Override
-        public boolean isClosed()
-        {
+        public boolean isClosed() {
             return false;
         }
     }
 
-    private static class DummyCloseable implements Closeable
-    {
+    private static class DummyCloseable implements Closeable {
         @Override
-        public void close()
-        {
-        }
+        public void close() {}
     }
 
-    private static class Arguments implements ForkNodeArguments
-    {
+    private static class Arguments implements ForkNodeArguments {
         private final String sessionId;
         private final int id;
         private final ConsoleLogger logger;
 
-        private Arguments( String sessionId, int id, ConsoleLogger logger )
-        {
+        private Arguments(String sessionId, int id, ConsoleLogger logger) {
             this.sessionId = sessionId;
             this.id = id;
             this.logger = logger;
@@ -394,59 +336,49 @@ public class E2ETest
 
         @Nonnull
         @Override
-        public String getSessionId()
-        {
+        public String getSessionId() {
             return sessionId;
         }
 
         @Override
-        public int getForkChannelId()
-        {
+        public int getForkChannelId() {
             return id;
         }
 
         @Nonnull
         @Override
-        public File dumpStreamText( @Nonnull String text )
-        {
-            return new File( "" );
+        public File dumpStreamText(@Nonnull String text) {
+            return new File("");
         }
 
         @Nonnull
         @Override
-        public File dumpStreamException( @Nonnull Throwable t )
-        {
-            return new File( "" );
+        public File dumpStreamException(@Nonnull Throwable t) {
+            return new File("");
         }
 
         @Override
-        public void logWarningAtEnd( @Nonnull String text )
-        {
-        }
+        public void logWarningAtEnd(@Nonnull String text) {}
 
         @Nonnull
         @Override
-        public ConsoleLogger getConsoleLogger()
-        {
+        public ConsoleLogger getConsoleLogger() {
             return logger;
         }
 
         @Nonnull
         @Override
-        public Object getConsoleLock()
-        {
+        public Object getConsoleLock() {
             return logger;
         }
 
         @Override
-        public File getEventStreamBinaryFile()
-        {
+        public File getEventStreamBinaryFile() {
             return null;
         }
 
         @Override
-        public File getCommandStreamBinaryFile()
-        {
+        public File getCommandStreamBinaryFile() {
             return null;
         }
     }

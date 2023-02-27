@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,27 +16,23 @@ package org.apache.maven.surefire.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.util.Relocator;
+package org.apache.maven.surefire.util;
 
 import junit.framework.TestCase;
+import org.apache.maven.plugin.surefire.util.Relocator;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RelocatorTest
-    extends TestCase
-{
+public class RelocatorTest extends TestCase {
 
-    public void testFoo()
-    {
+    public void testFoo() {
         String cn = "org.apache.maven.surefire.report.ForkingConsoleReporter";
-        assertEquals( "org.apache.maven.shadefire.surefire.report.ForkingConsoleReporter", Relocator.relocate( cn ) );
+        assertEquals("org.apache.maven.shadefire.surefire.report.ForkingConsoleReporter", Relocator.relocate(cn));
     }
 
-    public void testRelocation()
-    {
+    public void testRelocation() {
         String org1 = "org.apache.maven.surefire.fooz.Baz";
-        assertEquals( "org.apache.maven.shadefire.surefire.fooz.Baz", Relocator.relocate( org1 ) );
+        assertEquals("org.apache.maven.shadefire.surefire.fooz.Baz", Relocator.relocate(org1));
     }
 }

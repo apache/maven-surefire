@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 
@@ -28,33 +27,28 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
  * @author Qingzhou Luo
  *
  */
-public class TestMethodStats
-{
+public class TestMethodStats {
     private final String testClassMethodName;
 
     private final ReportEntryType resultType;
 
     private final StackTraceWriter stackTraceWriter;
 
-    public TestMethodStats( String testClassMethodName, ReportEntryType resultType, StackTraceWriter stackTraceWriter )
-    {
+    public TestMethodStats(String testClassMethodName, ReportEntryType resultType, StackTraceWriter stackTraceWriter) {
         this.testClassMethodName = testClassMethodName;
         this.resultType = resultType;
         this.stackTraceWriter = stackTraceWriter;
     }
 
-    public String getTestClassMethodName()
-    {
+    public String getTestClassMethodName() {
         return testClassMethodName;
     }
 
-    public ReportEntryType getResultType()
-    {
+    public ReportEntryType getResultType() {
         return resultType;
     }
 
-    public StackTraceWriter getStackTraceWriter()
-    {
+    public StackTraceWriter getStackTraceWriter() {
         return stackTraceWriter;
     }
 }

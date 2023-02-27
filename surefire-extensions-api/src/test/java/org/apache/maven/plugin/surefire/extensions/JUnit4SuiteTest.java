@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.extensions;
 
 import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
@@ -27,12 +26,10 @@ import junit.framework.TestSuite;
 /**
  *
  */
-public class JUnit4SuiteTest extends TestCase
-{
-    public static Test suite()
-    {
+public class JUnit4SuiteTest extends TestCase {
+    public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest( new JUnit4TestAdapter( CommandlineExecutorTest.class ) );
+        suite.addTest(new JUnit4TestAdapter(CommandlineExecutorTest.class));
         return suite;
     }
 }

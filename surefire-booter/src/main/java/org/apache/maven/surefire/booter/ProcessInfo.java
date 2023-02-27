@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import javax.annotation.Nonnull;
 
@@ -32,81 +31,68 @@ import javax.annotation.Nonnull;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-final class ProcessInfo
-{
-    static final ProcessInfo INVALID_PROCESS_INFO = new ProcessInfo( null, 0 );
-    static final ProcessInfo ERR_PROCESS_INFO = new ProcessInfo( null, 0 );
+final class ProcessInfo {
+    static final ProcessInfo INVALID_PROCESS_INFO = new ProcessInfo(null, 0);
+    static final ProcessInfo ERR_PROCESS_INFO = new ProcessInfo(null, 0);
 
     /**
      * On Unix we do not get PID due to the command is interested only to etime of PPID:
      * <br>
      * <pre>/bin/ps -o etime= -p 123</pre>
      */
-    static @Nonnull ProcessInfo unixProcessInfo( String pid, long etime )
-    {
-        return new ProcessInfo( pid, etime );
+    static @Nonnull ProcessInfo unixProcessInfo(String pid, long etime) {
+        return new ProcessInfo(pid, etime);
     }
 
-    static @Nonnull ProcessInfo windowsProcessInfo( String pid, long startTimestamp )
-    {
-        return new ProcessInfo( pid, startTimestamp );
+    static @Nonnull ProcessInfo windowsProcessInfo(String pid, long startTimestamp) {
+        return new ProcessInfo(pid, startTimestamp);
     }
 
     private final String pid;
     private final long time;
 
-    private ProcessInfo( String pid, long time )
-    {
+    private ProcessInfo(String pid, long time) {
         this.pid = pid;
         this.time = time;
     }
 
-    boolean canUse()
-    {
+    boolean canUse() {
         return !isError();
     }
 
-    boolean isInvalid()
-    {
+    boolean isInvalid() {
         return this == INVALID_PROCESS_INFO;
     }
 
-    boolean isError()
-    {
+    boolean isError() {
         return this == ERR_PROCESS_INFO;
     }
 
-    String getPID()
-    {
+    String getPID() {
         checkValid();
         return pid;
     }
 
-    long getTime()
-    {
+    long getTime() {
         checkValid();
         return time;
     }
 
-    boolean isTimeEqualTo( ProcessInfo that )
-    {
+    boolean isTimeEqualTo(ProcessInfo that) {
         checkValid();
         that.checkValid();
         return time == that.time;
     }
 
-    boolean isTimeBefore( ProcessInfo that )
-    {
+    boolean isTimeBefore(ProcessInfo that) {
         checkValid();
         that.checkValid();
         return time < that.time;
     }
 
-    private void checkValid()
-    {
-        if ( !canUse() )
-        {
-            throw new IllegalStateException( "invalid process info" );
+    private void checkValid() {
+        if (!canUse()) {
+            throw new IllegalStateException("invalid process info");
         }
     }
 }

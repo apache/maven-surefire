@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore.pc;
 
 /*
@@ -19,10 +37,6 @@ package org.apache.maven.surefire.junitcore.pc;
  * under the License.
  */
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.junit.runner.Description;
-import org.junit.runners.model.RunnerScheduler;
-
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,6 +44,10 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.junit.runner.Description;
+import org.junit.runners.model.RunnerScheduler;
 
 /**
  * Schedules tests, controls thread resources, awaiting tests and other schedulers finished, and
@@ -43,9 +61,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * @author Tibor Digana (tibor17)
  * @since 2.16
  */
-public class Scheduler
-    implements RunnerScheduler
-{
+public class Scheduler implements RunnerScheduler {
     private final Balancer balancer;
 
     private final SchedulingStrategy strategy;
@@ -74,9 +90,8 @@ public class Scheduler
      * @param description     JUnit description of class
      * @param strategy        scheduling strategy
      */
-    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy )
-    {
-        this( logger, description, strategy, -1 );
+    public Scheduler(ConsoleLogger logger, Description description, SchedulingStrategy strategy) {
+        this(logger, description, strategy, -1);
     }
 
     /**
@@ -92,9 +107,8 @@ public class Scheduler
      * @param concurrency determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <code>strategy</code>
      */
-    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, int concurrency )
-    {
-        this( logger, description, strategy, BalancerFactory.createBalancer( concurrency ) );
+    public Scheduler(ConsoleLogger logger, Description description, SchedulingStrategy strategy, int concurrency) {
+        this(logger, description, strategy, BalancerFactory.createBalancer(concurrency));
     }
 
     /**
@@ -112,9 +126,8 @@ public class Scheduler
      * @param balancer    determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <code>strategy</code> or <code>balancer</code>
      */
-    public Scheduler( ConsoleLogger logger, Description description, SchedulingStrategy strategy, Balancer balancer )
-    {
-        strategy.setDefaultShutdownHandler( newShutdownHandler() );
+    public Scheduler(ConsoleLogger logger, Description description, SchedulingStrategy strategy, Balancer balancer) {
+        strategy.setDefaultShutdownHandler(newShutdownHandler());
         this.logger = logger;
         this.description = description;
         this.strategy = strategy;
@@ -133,12 +146,15 @@ public class Scheduler
      * @param balancer        determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
      * @throws NullPointerException if null <code>masterScheduler</code>, <code>strategy</code> or <code>balancer</code>
      */
-    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
-                      SchedulingStrategy strategy, Balancer balancer )
-    {
-        this( logger, description, strategy, balancer );
-        strategy.setDefaultShutdownHandler( newShutdownHandler() );
-        masterScheduler.register( this );
+    public Scheduler(
+            ConsoleLogger logger,
+            Description description,
+            Scheduler masterScheduler,
+            SchedulingStrategy strategy,
+            Balancer balancer) {
+        this(logger, description, strategy, balancer);
+        strategy.setDefaultShutdownHandler(newShutdownHandler());
+        masterScheduler.register(this);
     }
 
     /**
@@ -153,12 +169,15 @@ public class Scheduler
      * @see #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)
      * @see #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)
      */
-    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
-                      SchedulingStrategy strategy, int concurrency )
-    {
-        this( logger, description, strategy, concurrency );
-        strategy.setDefaultShutdownHandler( newShutdownHandler() );
-        masterScheduler.register( this );
+    public Scheduler(
+            ConsoleLogger logger,
+            Description description,
+            Scheduler masterScheduler,
+            SchedulingStrategy strategy,
+            int concurrency) {
+        this(logger, description, strategy, concurrency);
+        strategy.setDefaultShutdownHandler(newShutdownHandler());
+        masterScheduler.register(this);
     }
 
     /**
@@ -172,17 +191,14 @@ public class Scheduler
      * @param masterScheduler parent scheduler
      * @param strategy        scheduling strategy
      */
-    public Scheduler( ConsoleLogger logger, Description description, Scheduler masterScheduler,
-                      SchedulingStrategy strategy )
-    {
-        this( logger, description, masterScheduler, strategy, 0 );
+    public Scheduler(
+            ConsoleLogger logger, Description description, Scheduler masterScheduler, SchedulingStrategy strategy) {
+        this(logger, description, masterScheduler, strategy, 0);
     }
 
-    private void setController( Controller masterController )
-    {
-        if ( masterController == null )
-        {
-            throw new NullPointerException( "null ExecutionController" );
+    private void setController(Controller masterController) {
+        if (masterController == null) {
+            throw new NullPointerException("null ExecutionController");
         }
         this.masterController = masterController;
     }
@@ -191,17 +207,14 @@ public class Scheduler
      * @param slave a slave scheduler to register
      * @return {@code true} if successfully registered the <code>slave</code>.
      */
-    private boolean register( Scheduler slave )
-    {
+    private boolean register(Scheduler slave) {
         boolean canRegister = slave != null && slave != this;
-        if ( canRegister )
-        {
-            Controller controller = new Controller( slave );
-            canRegister = !slaves.contains( controller );
-            if ( canRegister )
-            {
-                slaves.add( controller );
-                slave.setController( controller );
+        if (canRegister) {
+            Controller controller = new Controller(slave);
+            canRegister = !slaves.contains(controller);
+            if (canRegister) {
+                slaves.add(controller);
+                slave.setController(controller);
             }
         }
         return canRegister;
@@ -210,19 +223,16 @@ public class Scheduler
     /**
      * @return {@code true} if new tasks can be scheduled.
      */
-    private boolean canSchedule()
-    {
-        return !shutdown && ( masterController == null || masterController.canSchedule() );
+    private boolean canSchedule() {
+        return !shutdown && (masterController == null || masterController.canSchedule());
     }
 
-    protected void logQuietly( Throwable t )
-    {
-        logger.error( t );
+    protected void logQuietly(Throwable t) {
+        logger.error(t);
     }
 
-    protected void logQuietly( String msg )
-    {
-        logger.warning( msg );
+    protected void logQuietly(String msg) {
+        logger.warning(msg);
     }
 
     /**
@@ -235,12 +245,11 @@ public class Scheduler
      * @param stopNow if {@code true} interrupts waiting test methods
      * @return collection of descriptions started before shutting down
      */
-    protected ShutdownResult describeStopped( boolean stopNow )
-    {
+    protected ShutdownResult describeStopped(boolean stopNow) {
         Collection<Description> executedTests = new ConcurrentLinkedQueue<>();
         Collection<Description> incompleteTests = new ConcurrentLinkedQueue<>();
-        stop( executedTests, incompleteTests, false, stopNow );
-        return new ShutdownResult( executedTests, incompleteTests );
+        stop(executedTests, incompleteTests, false, stopNow);
+        return new ShutdownResult(executedTests, incompleteTests);
     }
 
     /**
@@ -259,152 +268,104 @@ public class Scheduler
      *                            {@link java.util.concurrent.Future#cancel(boolean) Future#cancel(true)} or
      *                            {@link Thread#interrupt()}.
      */
-    private void stop( Collection<Description> executedTests, Collection<Description> incompleteTests,
-                       boolean tryCancelFutures, boolean stopNow )
-    {
+    private void stop(
+            Collection<Description> executedTests,
+            Collection<Description> incompleteTests,
+            boolean tryCancelFutures,
+            boolean stopNow) {
         shutdown = true;
-        try
-        {
-            if ( started && !ParallelComputerUtil.isUnusedDescription( description ) )
-            {
-                if ( executedTests != null )
-                {
-                    executedTests.add( description );
+        try {
+            if (started && !ParallelComputerUtil.isUnusedDescription(description)) {
+                if (executedTests != null) {
+                    executedTests.add(description);
                 }
 
-                if ( incompleteTests != null && !finished )
-                {
-                    incompleteTests.add( description );
+                if (incompleteTests != null && !finished) {
+                    incompleteTests.add(description);
                 }
             }
 
-            for ( Controller slave : slaves )
-            {
-                slave.stop( executedTests, incompleteTests, tryCancelFutures, stopNow );
+            for (Controller slave : slaves) {
+                slave.stop(executedTests, incompleteTests, tryCancelFutures, stopNow);
             }
-        }
-        finally
-        {
-            try
-            {
+        } finally {
+            try {
                 balancer.releaseAllPermits();
-            }
-            finally
-            {
-                if ( stopNow )
-                {
+            } finally {
+                if (stopNow) {
                     strategy.stopNow();
-                }
-                else if ( tryCancelFutures )
-                {
+                } else if (tryCancelFutures) {
                     strategy.stop();
-                }
-                else
-                {
+                } else {
                     strategy.disable();
                 }
             }
         }
     }
 
-    protected boolean shutdownThreadPoolsAwaitingKilled()
-    {
-        if ( masterController == null )
-        {
-            stop( null, null, true, false );
+    protected boolean shutdownThreadPoolsAwaitingKilled() {
+        if (masterController == null) {
+            stop(null, null, true, false);
             boolean isNotInterrupted = true;
-            if ( strategy != null )
-            {
+            if (strategy != null) {
                 isNotInterrupted = strategy.destroy();
             }
-            for ( Controller slave : slaves )
-            {
+            for (Controller slave : slaves) {
                 isNotInterrupted &= slave.destroy();
             }
             return isNotInterrupted;
-        }
-        else
-        {
-            throw new UnsupportedOperationException( "cannot call this method if this is not a master scheduler" );
+        } else {
+            throw new UnsupportedOperationException("cannot call this method if this is not a master scheduler");
         }
     }
 
-    protected void beforeExecute()
-    {
-    }
+    protected void beforeExecute() {}
 
-    protected void afterExecute()
-    {
-    }
+    protected void afterExecute() {}
 
     @Override
-    public void schedule( Runnable childStatement )
-    {
-        if ( childStatement == null )
-        {
-            logQuietly( "cannot schedule null" );
-        }
-        else if ( canSchedule() && strategy.canSchedule() )
-        {
-            try
-            {
+    public void schedule(Runnable childStatement) {
+        if (childStatement == null) {
+            logQuietly("cannot schedule null");
+        } else if (canSchedule() && strategy.canSchedule()) {
+            try {
                 boolean isNotInterrupted = balancer.acquirePermit();
-                if ( isNotInterrupted && !shutdown )
-                {
-                    Runnable task = wrapTask( childStatement );
-                    strategy.schedule( task );
+                if (isNotInterrupted && !shutdown) {
+                    Runnable task = wrapTask(childStatement);
+                    strategy.schedule(task);
                     started = true;
                 }
-            }
-            catch ( RejectedExecutionException e )
-            {
-                stop( null, null, true, false );
-            }
-            catch ( Throwable t )
-            {
+            } catch (RejectedExecutionException e) {
+                stop(null, null, true, false);
+            } catch (Throwable t) {
                 balancer.releasePermit();
-                logQuietly( t );
+                logQuietly(t);
             }
         }
     }
 
     @Override
-    public void finished()
-    {
-        try
-        {
+    public void finished() {
+        try {
             strategy.finished();
-        }
-        catch ( InterruptedException e )
-        {
-            logQuietly( e );
-        }
-        finally
-        {
+        } catch (InterruptedException e) {
+            logQuietly(e);
+        } finally {
             finished = true;
         }
     }
 
-    private Runnable wrapTask( final Runnable task )
-    {
-        return new Runnable()
-        {
+    private Runnable wrapTask(final Runnable task) {
+        return new Runnable() {
             @Override
-            public void run()
-            {
-                try
-                {
+            public void run() {
+                try {
                     beforeExecute();
                     task.run();
-                }
-                finally
-                {
-                    try
-                    {
+                } finally {
+                    try {
                         afterExecute();
-                    }
-                    finally
-                    {
+                    } finally {
                         balancer.releasePermit();
                     }
                 }
@@ -412,55 +373,50 @@ public class Scheduler
         };
     }
 
-    protected ShutdownHandler newShutdownHandler()
-    {
+    protected ShutdownHandler newShutdownHandler() {
         return new ShutdownHandler();
     }
 
     /**
      * If this is a master scheduler, the slaves can stop scheduling by the master through the controller.
      */
-    private final class Controller
-    {
+    private final class Controller {
         private final Scheduler slave;
 
-        private Controller( Scheduler slave )
-        {
+        private Controller(Scheduler slave) {
             this.slave = slave;
         }
 
         /**
          * @return {@code true} if new children can be scheduled.
          */
-        boolean canSchedule()
-        {
+        boolean canSchedule() {
             return Scheduler.this.canSchedule();
         }
 
-        void stop( Collection<Description> executedTests, Collection<Description> incompleteTests,
-                   boolean tryCancelFutures, boolean shutdownNow )
-        {
-            slave.stop( executedTests, incompleteTests, tryCancelFutures, shutdownNow );
+        void stop(
+                Collection<Description> executedTests,
+                Collection<Description> incompleteTests,
+                boolean tryCancelFutures,
+                boolean shutdownNow) {
+            slave.stop(executedTests, incompleteTests, tryCancelFutures, shutdownNow);
         }
 
         /**
          * @see org.apache.maven.surefire.junitcore.pc.Destroyable#destroy()
          */
-        boolean destroy()
-        {
+        boolean destroy() {
             return slave.strategy.destroy();
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return slave.hashCode();
         }
 
         @Override
-        public boolean equals( Object o )
-        {
-            return o == this || ( o instanceof Controller ) && slave.equals( ( (Controller) o ).slave );
+        public boolean equals(Object o) {
+            return o == this || (o instanceof Controller) && slave.equals(((Controller) o).slave);
         }
     }
 
@@ -472,32 +428,25 @@ public class Scheduler
      * {@link #describeStopped(boolean)}. The method {@link #describeStopped(boolean)} is again shutting down children
      * schedulers recursively as well.
      */
-    public class ShutdownHandler
-        implements RejectedExecutionHandler
-    {
+    public class ShutdownHandler implements RejectedExecutionHandler {
         private volatile RejectedExecutionHandler poolHandler;
 
-        protected ShutdownHandler()
-        {
+        protected ShutdownHandler() {
             poolHandler = null;
         }
 
-        public void setRejectedExecutionHandler( RejectedExecutionHandler poolHandler )
-        {
+        public void setRejectedExecutionHandler(RejectedExecutionHandler poolHandler) {
             this.poolHandler = poolHandler;
         }
 
         @Override
-        public void rejectedExecution( Runnable r, ThreadPoolExecutor executor )
-        {
-            if ( executor.isShutdown() )
-            {
-                Scheduler.this.stop( null, null, true, false );
+        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            if (executor.isShutdown()) {
+                Scheduler.this.stop(null, null, true, false);
             }
             final RejectedExecutionHandler poolHandler = this.poolHandler;
-            if ( poolHandler != null )
-            {
-                poolHandler.rejectedExecution( r, executor );
+            if (poolHandler != null) {
+                poolHandler.rejectedExecution(r, executor);
             }
         }
     }

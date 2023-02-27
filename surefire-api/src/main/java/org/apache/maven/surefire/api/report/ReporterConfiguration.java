@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.report;
 
 import java.io.File;
 
@@ -28,13 +27,11 @@ import java.io.File;
  *
  * @author Kristian Rosenvold
  */
-public class ReporterConfiguration
-{
+public class ReporterConfiguration {
     private final File reportsDirectory;
     private final boolean trimStackTrace;
 
-    public ReporterConfiguration( File reportsDirectory, boolean trimStackTrace )
-    {
+    public ReporterConfiguration(File reportsDirectory, boolean trimStackTrace) {
         this.reportsDirectory = reportsDirectory;
         this.trimStackTrace = trimStackTrace;
     }
@@ -44,8 +41,7 @@ public class ReporterConfiguration
      *
      * @return A file pointing at the specified directory
      */
-    public File getReportsDirectory()
-    {
+    public File getReportsDirectory() {
         return reportsDirectory;
     }
 
@@ -54,8 +50,7 @@ public class ReporterConfiguration
      *
      * @return true if stacktraces should be trimmed in reporting
      */
-    public boolean isTrimStackTrace()
-    {
+    public boolean isTrimStackTrace() {
         return trimStackTrace;
     }
 }

@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.junit;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.junit;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.junit;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.junit;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -40,9 +39,7 @@ import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUti
  * Invocation Handler for TestListener proxies to delegate to our {@link RunListener}
  *
  */
-public class TestListenerInvocationHandler
-    implements InvocationHandler
-{
+public class TestListenerInvocationHandler implements InvocationHandler {
     // The String names of the four methods in interface junit.framework.TestListener
     private static final String START_TEST = "startTest";
 
@@ -56,43 +53,32 @@ public class TestListenerInvocationHandler
 
     private final JUnit3Reporter reporter;
 
-    private static final Class<?>[] EMPTY_CLASS_ARRAY = { };
+    private static final Class<?>[] EMPTY_CLASS_ARRAY = {};
 
-    private static final Object[] EMPTY_STRING_ARRAY = { };
+    private static final Object[] EMPTY_STRING_ARRAY = {};
 
-    private static class FailedTest
-    {
+    private static class FailedTest {
         private final Object testThatFailed;
         private final Thread threadOnWhichTestFailed;
 
-        FailedTest( Object testThatFailed, Thread threadOnWhichTestFailed )
-        {
-            this.testThatFailed =
-                requireNonNull( testThatFailed, "testThatFailed is null" );
+        FailedTest(Object testThatFailed, Thread threadOnWhichTestFailed) {
+            this.testThatFailed = requireNonNull(testThatFailed, "testThatFailed is null");
 
-            this.threadOnWhichTestFailed =
-                requireNonNull( threadOnWhichTestFailed, "threadOnWhichTestFailed is null" );
+            this.threadOnWhichTestFailed = requireNonNull(threadOnWhichTestFailed, "threadOnWhichTestFailed is null");
         }
 
         @Override
-        public boolean equals( Object obj )
-        {
+        public boolean equals(Object obj) {
             boolean retVal = true;
 
-            if ( obj == null || getClass() != obj.getClass() )
-            {
+            if (obj == null || getClass() != obj.getClass()) {
                 retVal = false;
-            }
-            else
-            {
+            } else {
                 FailedTest ft = (FailedTest) obj;
 
-                if ( ft.testThatFailed != testThatFailed )
-                {
+                if (ft.testThatFailed != testThatFailed) {
                     retVal = false;
-                }
-                else if ( !ft.threadOnWhichTestFailed.equals( threadOnWhichTestFailed ) )
-                {
+                } else if (!ft.threadOnWhichTestFailed.equals(threadOnWhichTestFailed)) {
                     retVal = false;
                 }
             }
@@ -101,36 +87,31 @@ public class TestListenerInvocationHandler
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return threadOnWhichTestFailed.hashCode();
         }
     }
 
-    public TestListenerInvocationHandler( JUnit3Reporter reporter )
-    {
-        this.reporter = requireNonNull( reporter, "reporter is null" );
+    public TestListenerInvocationHandler(JUnit3Reporter reporter) {
+        this.reporter = requireNonNull(reporter, "reporter is null");
     }
 
     @Override
-    public Object invoke( Object proxy, Method method, Object[] args )
-        throws Throwable
-    {
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
 
-        switch ( methodName )
-        {
+        switch (methodName) {
             case START_TEST:
-                handleStartTest( args );
+                handleStartTest(args);
                 break;
             case ADD_ERROR:
-                handleAddError( args );
+                handleAddError(args);
                 break;
             case ADD_FAILURE:
-                handleAddFailure( args );
+                handleAddFailure(args);
                 break;
             case END_TEST:
-                handleEndTest( args );
+                handleEndTest(args);
                 break;
             default:
                 break;
@@ -140,81 +121,66 @@ public class TestListenerInvocationHandler
     }
 
     // Handler for TestListener.startTest(Test)
-    private void handleStartTest( Object[] args )
-    {
-        ReportEntry report = createStartEndReportEntry( args );
+    private void handleStartTest(Object[] args) {
+        ReportEntry report = createStartEndReportEntry(args);
 
-        reporter.testStarting( report );
+        reporter.testStarting(report);
     }
 
     // Handler for TestListener.addFailure(Test, Throwable)
-    private void handleAddError( Object[] args )
-        throws ReflectiveOperationException
-    {
-        ReportEntry report = toReportEntryWithException( args );
+    private void handleAddError(Object[] args) throws ReflectiveOperationException {
+        ReportEntry report = toReportEntryWithException(args);
 
-        reporter.testError( report );
+        reporter.testError(report);
 
-        failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
+        failedTestsSet.add(new FailedTest(args[0], Thread.currentThread()));
     }
 
-    private static LegacyPojoStackTraceWriter toStackTraceWriter( Object[] args )
-        throws ReflectiveOperationException
-    {
+    private static LegacyPojoStackTraceWriter toStackTraceWriter(Object[] args) throws ReflectiveOperationException {
         String testName;
 
-        try
-        {
-            Method m = args[0].getClass().getMethod( "getName", EMPTY_CLASS_ARRAY );
-            testName = (String) m.invoke( args[0], EMPTY_STRING_ARRAY );
-        }
-        catch ( NoSuchMethodException e )
-        {
+        try {
+            Method m = args[0].getClass().getMethod("getName", EMPTY_CLASS_ARRAY);
+            testName = (String) m.invoke(args[0], EMPTY_STRING_ARRAY);
+        } catch (NoSuchMethodException e) {
             testName = "UNKNOWN";
         }
 
-        return new LegacyPojoStackTraceWriter( args[0].getClass().getName(), testName, (Throwable) args[1] );
+        return new LegacyPojoStackTraceWriter(args[0].getClass().getName(), testName, (Throwable) args[1]);
     }
 
-    private void handleAddFailure( Object[] args )
-        throws ReflectiveOperationException
-    {
-        ReportEntry report = toReportEntryWithException( args );
+    private void handleAddFailure(Object[] args) throws ReflectiveOperationException {
+        ReportEntry report = toReportEntryWithException(args);
 
-        reporter.testFailed( report );
+        reporter.testFailed(report);
 
-        failedTestsSet.add( new FailedTest( args[0], Thread.currentThread() ) );
+        failedTestsSet.add(new FailedTest(args[0], Thread.currentThread()));
     }
 
-    private void handleEndTest( Object[] args )
-    {
-        boolean testHadFailed = failedTestsSet.remove( new FailedTest( args[0], Thread.currentThread() ) );
+    private void handleEndTest(Object[] args) {
+        boolean testHadFailed = failedTestsSet.remove(new FailedTest(args[0], Thread.currentThread()));
 
-        if ( !testHadFailed )
-        {
-            ReportEntry report = createStartEndReportEntry( args );
+        if (!testHadFailed) {
+            ReportEntry report = createStartEndReportEntry(args);
 
-            reporter.testSucceeded( report );
+            reporter.testSucceeded(report);
         }
     }
 
-    private ReportEntry toReportEntryWithException( Object[] args )
-            throws ReflectiveOperationException
-    {
+    private ReportEntry toReportEntryWithException(Object[] args) throws ReflectiveOperationException {
         String description = args[0].toString();
-        String className = extractClassName( description );
-        String methodName = extractMethodName( description );
-        StackTraceWriter stackTraceWriter = toStackTraceWriter( args );
-        long testRunId = reporter.getClassMethodIndexer().indexClassMethod( className, methodName );
-        return withException( NORMAL_RUN, testRunId, className, null, methodName, null, stackTraceWriter );
+        String className = extractClassName(description);
+        String methodName = extractMethodName(description);
+        StackTraceWriter stackTraceWriter = toStackTraceWriter(args);
+        long testRunId = reporter.getClassMethodIndexer().indexClassMethod(className, methodName);
+        return withException(NORMAL_RUN, testRunId, className, null, methodName, null, stackTraceWriter);
     }
 
-    private SimpleReportEntry createStartEndReportEntry( Object[] args )
-    {
+    private SimpleReportEntry createStartEndReportEntry(Object[] args) {
         String description = args[0].toString();
-        String className = extractClassName( description );
-        String methodName = extractMethodName( description );
-        long testRunId = reporter.getClassMethodIndexer().indexClassMethod( className, methodName );
-        return new SimpleReportEntry( NORMAL_RUN, testRunId, className, null, methodName, null );
+        String className = extractClassName(description);
+        String methodName = extractMethodName(description);
+        long testRunId = reporter.getClassMethodIndexer().indexClassMethod(className, methodName);
+        return new SimpleReportEntry(NORMAL_RUN, testRunId, className, null, methodName, null);
     }
 }

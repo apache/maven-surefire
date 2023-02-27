@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions.junit5;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions.junit5;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.extensions.junit5;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.extensions.junit5;
 
 import org.apache.maven.plugin.surefire.extensions.DefaultStatelessReportMojoConfiguration;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
@@ -33,9 +32,7 @@ import org.apache.maven.surefire.extensions.StatelessReportEventListener;
  * author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-public class JUnit5Xml30StatelessReporter
-        extends SurefireStatelessReporter
-{
+public class JUnit5Xml30StatelessReporter extends SurefireStatelessReporter {
     /**
      * {@code false} by default.
      * <br>
@@ -64,51 +61,43 @@ public class JUnit5Xml30StatelessReporter
      */
     private boolean usePhrasedTestCaseMethodName;
 
-    public boolean getUsePhrasedFileName()
-    {
+    public boolean getUsePhrasedFileName() {
         return usePhrasedFileName;
     }
 
-    public void setUsePhrasedFileName( boolean usePhrasedFileName )
-    {
+    public void setUsePhrasedFileName(boolean usePhrasedFileName) {
         this.usePhrasedFileName = usePhrasedFileName;
     }
 
-    public boolean getUsePhrasedTestSuiteClassName()
-    {
+    public boolean getUsePhrasedTestSuiteClassName() {
         return usePhrasedTestSuiteClassName;
     }
 
-    public void setUsePhrasedTestSuiteClassName( boolean usePhrasedTestSuiteClassName )
-    {
+    public void setUsePhrasedTestSuiteClassName(boolean usePhrasedTestSuiteClassName) {
         this.usePhrasedTestSuiteClassName = usePhrasedTestSuiteClassName;
     }
 
-    public boolean getUsePhrasedTestCaseClassName()
-    {
+    public boolean getUsePhrasedTestCaseClassName() {
         return usePhrasedTestCaseClassName;
     }
 
-    public void setUsePhrasedTestCaseClassName( boolean usePhrasedTestCaseClassName )
-    {
+    public void setUsePhrasedTestCaseClassName(boolean usePhrasedTestCaseClassName) {
         this.usePhrasedTestCaseClassName = usePhrasedTestCaseClassName;
     }
 
-    public boolean getUsePhrasedTestCaseMethodName()
-    {
+    public boolean getUsePhrasedTestCaseMethodName() {
         return usePhrasedTestCaseMethodName;
     }
 
-    public void setUsePhrasedTestCaseMethodName( boolean usePhrasedTestCaseMethodName )
-    {
+    public void setUsePhrasedTestCaseMethodName(boolean usePhrasedTestCaseMethodName) {
         this.usePhrasedTestCaseMethodName = usePhrasedTestCaseMethodName;
     }
 
     @Override
     public StatelessReportEventListener<WrappedReportEntry, TestSetStats> createListener(
-            DefaultStatelessReportMojoConfiguration configuration )
-    {
-        return new StatelessXmlReporter( configuration.getReportsDirectory(),
+            DefaultStatelessReportMojoConfiguration configuration) {
+        return new StatelessXmlReporter(
+                configuration.getReportsDirectory(),
                 configuration.getReportNameSuffix(),
                 configuration.isTrimStackTrace(),
                 configuration.getRerunFailingTestsCount(),
@@ -118,37 +107,31 @@ public class JUnit5Xml30StatelessReporter
                 getUsePhrasedFileName(),
                 getUsePhrasedTestSuiteClassName(),
                 getUsePhrasedTestCaseClassName(),
-                getUsePhrasedTestCaseMethodName() );
+                getUsePhrasedTestCaseMethodName());
     }
 
     @Override
-    public Object clone( ClassLoader target )
-    {
-        try
-        {
-            Object clone = super.clone( target );
+    public Object clone(ClassLoader target) {
+        try {
+            Object clone = super.clone(target);
 
             Class<?> cls = clone.getClass();
-            cls.getMethod( "setUsePhrasedFileName", boolean.class )
-                    .invoke( clone, getUsePhrasedFileName() );
-            cls.getMethod( "setUsePhrasedTestSuiteClassName", boolean.class )
-                    .invoke( clone, getUsePhrasedTestSuiteClassName() );
-            cls.getMethod( "setUsePhrasedTestCaseClassName", boolean.class )
-                    .invoke( clone, getUsePhrasedTestCaseClassName() );
-            cls.getMethod( "setUsePhrasedTestCaseMethodName", boolean.class )
-                    .invoke( clone, getUsePhrasedTestCaseMethodName() );
+            cls.getMethod("setUsePhrasedFileName", boolean.class).invoke(clone, getUsePhrasedFileName());
+            cls.getMethod("setUsePhrasedTestSuiteClassName", boolean.class)
+                    .invoke(clone, getUsePhrasedTestSuiteClassName());
+            cls.getMethod("setUsePhrasedTestCaseClassName", boolean.class)
+                    .invoke(clone, getUsePhrasedTestCaseClassName());
+            cls.getMethod("setUsePhrasedTestCaseMethodName", boolean.class)
+                    .invoke(clone, getUsePhrasedTestCaseMethodName());
 
             return clone;
-        }
-        catch ( ReflectiveOperationException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage() );
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e.getLocalizedMessage());
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "JUnit5Xml30StatelessReporter{"
                 + "version=" + getVersion()
                 + ", disable=" + isDisable()

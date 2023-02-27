@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.extensions;
 
 import java.io.File;
 
@@ -26,8 +25,7 @@ import java.io.File;
  * <em>org.apache.maven.plugin.surefire.report.StatelessXmlReporter</em>.
  * Signatures can be changed between major, minor versions or milestones.
  */
-public class StatelessReportMojoConfiguration
-{
+public class StatelessReportMojoConfiguration {
     private final File reportsDirectory;
 
     private final String reportNameSuffix;
@@ -38,9 +36,12 @@ public class StatelessReportMojoConfiguration
 
     private final String xsdSchemaLocation;
 
-    public StatelessReportMojoConfiguration( File reportsDirectory, String reportNameSuffix, boolean trimStackTrace,
-                                             int rerunFailingTestsCount, String xsdSchemaLocation )
-    {
+    public StatelessReportMojoConfiguration(
+            File reportsDirectory,
+            String reportNameSuffix,
+            boolean trimStackTrace,
+            int rerunFailingTestsCount,
+            String xsdSchemaLocation) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
@@ -48,28 +49,23 @@ public class StatelessReportMojoConfiguration
         this.xsdSchemaLocation = xsdSchemaLocation;
     }
 
-    public File getReportsDirectory()
-    {
+    public File getReportsDirectory() {
         return reportsDirectory;
     }
 
-    public String getReportNameSuffix()
-    {
+    public String getReportNameSuffix() {
         return reportNameSuffix;
     }
 
-    public boolean isTrimStackTrace()
-    {
+    public boolean isTrimStackTrace() {
         return trimStackTrace;
     }
 
-    public int getRerunFailingTestsCount()
-    {
+    public int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
     }
 
-    public String getXsdSchemaLocation()
-    {
+    public String getXsdSchemaLocation() {
         return xsdSchemaLocation;
     }
 }

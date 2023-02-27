@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,32 +16,29 @@ package org.apache.maven.surefire.api.util;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import junit.framework.TestCase;
+package org.apache.maven.surefire.api.util;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.TestCase;
+
 /**
  * @author Kristian Rosenvold
  */
-public class ScanResultTest
-    extends TestCase
-{
-    public void testWriteTo()
-        throws Exception
-    {
-        List<String> files = Arrays.asList( "abc", "cde" );
-        DefaultScanResult scanResult = new DefaultScanResult( files );
+public class ScanResultTest extends TestCase {
+    public void testWriteTo() throws Exception {
+        List<String> files = Arrays.asList("abc", "cde");
+        DefaultScanResult scanResult = new DefaultScanResult(files);
         Map<String, String> serialized = new HashMap<>();
-        scanResult.writeTo( serialized );
+        scanResult.writeTo(serialized);
 
-        DefaultScanResult read = DefaultScanResult.from( serialized );
+        DefaultScanResult read = DefaultScanResult.from(serialized);
         List<?> classes = read.getClasses();
-        assertEquals( 2, classes.size() );
-        assertTrue( classes.contains( "abc" ) );
-        assertTrue( classes.contains( "cde" ) );
+        assertEquals(2, classes.size());
+        assertTrue(classes.contains("abc"));
+        assertTrue(classes.contains("cde"));
     }
 }

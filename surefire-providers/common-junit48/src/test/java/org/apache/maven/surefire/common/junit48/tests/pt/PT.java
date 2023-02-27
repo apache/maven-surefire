@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit48.tests.pt;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit48.tests.pt;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,72 +16,51 @@ package org.apache.maven.surefire.common.junit48.tests.pt;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit48.tests.pt;
+
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
-
 /**
  *
  */
-@RunWith( Parameterized.class )
-public class PT
-{
+@RunWith(Parameterized.class)
+public class PT {
 
-    public PT( String x )
-    {
-    }
+    public PT(String x) {}
 
     @Parameterized.Parameters
-    public static Iterable<Object[]> data()
-    {
-        return Arrays.asList( new Object[][]{ { "x" }, { "y" } } );
+    public static Iterable<Object[]> data() {
+        return Arrays.asList(new Object[][] {{"x"}, {"y"}});
     }
 
     @Test
-    public void testAA()
-    {
-    }
+    public void testAA() {}
 
     @Test
-    public void testB5()
-    {
-    }
+    public void testB5() {}
 
     @Test
-    public void testCX()
-    {
-    }
+    public void testCX() {}
 
     @Test
-    public void testCY()
-    {
-    }
+    public void testCY() {}
 
     @Test
-    public void w12T34()
-    {
-    }
+    public void w12T34() {}
 
     @Test
-    public void x12T34()
-    {
-    }
+    public void x12T34() {}
 
     @Test
-    public void x12T35()
-    {
-    }
+    public void x12T35() {}
 
     @Test
-    public void x12t36()
-    {
-    }
+    public void x12t36() {}
 
     @Test
-    public void y12t34()
-    {
-    }
+    public void y12t34() {}
 }

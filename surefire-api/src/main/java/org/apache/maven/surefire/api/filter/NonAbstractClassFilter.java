@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.filter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.filter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,19 +16,18 @@ package org.apache.maven.surefire.api.filter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.filter;
 
 import java.lang.reflect.Modifier;
+
 import org.apache.maven.surefire.api.util.ScannerFilter;
 
 /**
  * @author Kristian Rosenvold
  */
-public class NonAbstractClassFilter
-    implements ScannerFilter
-{
+public class NonAbstractClassFilter implements ScannerFilter {
     @Override
-    public boolean accept( Class testClass )
-    {
-        return !Modifier.isAbstract( testClass.getModifiers() );
+    public boolean accept(Class testClass) {
+        return !Modifier.isAbstract(testClass.getModifiers());
     }
 }

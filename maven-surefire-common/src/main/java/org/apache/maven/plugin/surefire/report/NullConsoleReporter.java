@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.report;
 
 import java.util.List;
 
@@ -30,29 +29,20 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
  * @author <a href="mailto:britter@apache.org">Benedikt Ritter</a>
  * @since 2.20
  */
-class NullConsoleReporter
-    extends ConsoleReporter
-{
+class NullConsoleReporter extends ConsoleReporter {
 
     static final NullConsoleReporter INSTANCE = new NullConsoleReporter();
 
-    private NullConsoleReporter()
-    {
-        super( new NullConsoleLogger(), false, false );
+    private NullConsoleReporter() {
+        super(new NullConsoleLogger(), false, false);
     }
 
     @Override
-    public void testSetStarting( TestSetReportEntry report )
-    {
-    }
+    public void testSetStarting(TestSetReportEntry report) {}
 
     @Override
-    public void testSetCompleted( WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults )
-    {
-    }
+    public void testSetCompleted(WrappedReportEntry report, TestSetStats testSetStats, List<String> testResults) {}
 
     @Override
-    public void reset()
-    {
-    }
+    public void reset() {}
 }

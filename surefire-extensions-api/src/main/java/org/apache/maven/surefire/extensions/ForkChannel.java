@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,16 +16,18 @@ package org.apache.maven.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.surefire.api.event.Event;
-import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+package org.apache.maven.surefire.extensions;
 
 import javax.annotation.Nonnull;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+
+import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
+import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 
 /**
  * It's a session object used only by a particular Thread in ForkStarter
@@ -41,16 +41,14 @@ import java.nio.channels.WritableByteChannel;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M5
  */
-public abstract class ForkChannel implements Closeable
-{
+public abstract class ForkChannel implements Closeable {
     @Nonnull
     private final ForkNodeArguments arguments;
 
     /**
      * @param arguments data necessary for command reader and event handler.
      */
-    protected ForkChannel( @Nonnull ForkNodeArguments arguments )
-    {
+    protected ForkChannel(@Nonnull ForkNodeArguments arguments) {
         this.arguments = arguments;
     }
 
@@ -82,8 +80,8 @@ public abstract class ForkChannel implements Closeable
      * @throws IOException if an error in the fork channel
      * @throws InterruptedException channel interrupted
      */
-    public abstract void bindCommandReader( @Nonnull CommandReader commands, WritableByteChannel stdIn )
-        throws IOException, InterruptedException;
+    public abstract void bindCommandReader(@Nonnull CommandReader commands, WritableByteChannel stdIn)
+            throws IOException, InterruptedException;
 
     /**
      * Starts a Thread reading the events.
@@ -94,14 +92,14 @@ public abstract class ForkChannel implements Closeable
      * @throws IOException if an error in the fork channel
      * @throws InterruptedException channel interrupted
      */
-    public abstract void bindEventHandler( @Nonnull EventHandler<Event> eventHandler,
-                                           @Nonnull CountdownCloseable countdownCloseable,
-                                           ReadableByteChannel stdOut )
-        throws IOException, InterruptedException;
+    public abstract void bindEventHandler(
+            @Nonnull EventHandler<Event> eventHandler,
+            @Nonnull CountdownCloseable countdownCloseable,
+            ReadableByteChannel stdOut)
+            throws IOException, InterruptedException;
 
     @Nonnull
-    protected ForkNodeArguments getArguments()
-    {
+    protected ForkNodeArguments getArguments() {
         return arguments;
     }
 

@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,22 +16,7 @@ package org.apache.maven.plugin.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.StartupReportConfiguration;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugin.surefire.log.api.Level;
-import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
-import org.apache.maven.surefire.api.report.TestOutputReportEntry;
-import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
-import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
-import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
-import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
-import org.apache.maven.surefire.api.report.ReporterFactory;
-import org.apache.maven.surefire.api.report.TestReportListener;
-import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.api.report.StackTraceWriter;
-import org.apache.maven.surefire.api.suite.RunResult;
+package org.apache.maven.plugin.surefire.report;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +26,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.maven.plugin.surefire.StartupReportConfiguration;
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.log.api.Level;
+import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
+import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
+import org.apache.maven.surefire.report.RunStatistics;
+import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
@@ -55,8 +54,8 @@ import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.Tes
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.useNonNull;
+import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 
 /**
  * Provides reporting modules on the plugin side.
@@ -65,9 +64,7 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.useNonNull
  *
  * @author Kristian Rosenvold
  */
-public class DefaultReporterFactory
-    implements ReporterFactory, ReportsMerger
-{
+public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
     private final Collection<TestSetRunListener> listeners = new ConcurrentLinkedQueue<>();
     private final StartupReportConfiguration reportConfiguration;
     private final ConsoleLogger consoleLogger;
@@ -84,140 +81,119 @@ public class DefaultReporterFactory
     // from "<testclass>.<testmethod>" -> statistics about all the runs for error tests
     private Map<String, List<TestMethodStats>> errorTests;
 
-    public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger )
-    {
-        this( reportConfiguration, consoleLogger, null );
+    public DefaultReporterFactory(StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger) {
+        this(reportConfiguration, consoleLogger, null);
     }
 
-    public DefaultReporterFactory( StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger,
-                                   Integer forkNumber )
-    {
+    public DefaultReporterFactory(
+            StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger, Integer forkNumber) {
         this.reportConfiguration = reportConfiguration;
         this.consoleLogger = consoleLogger;
         this.forkNumber = forkNumber;
     }
 
     @Override
-    public TestReportListener<TestOutputReportEntry> createTestReportListener()
-    {
-        TestSetRunListener testSetRunListener =
-            new TestSetRunListener( createConsoleReporter(),
-                                    createFileReporter(),
-                                    createSimpleXMLReporter(),
-                                    createConsoleOutputReceiver(),
-                                    createStatisticsReporter(),
-                                    reportConfiguration.isTrimStackTrace(),
-                                    PLAIN.equals( reportConfiguration.getReportFormat() ),
-                                    reportConfiguration.isBriefOrPlainFormat(),
-                                    consoleLogger );
-        addListener( testSetRunListener );
+    public TestReportListener<TestOutputReportEntry> createTestReportListener() {
+        TestSetRunListener testSetRunListener = new TestSetRunListener(
+                createConsoleReporter(),
+                createFileReporter(),
+                createSimpleXMLReporter(),
+                createConsoleOutputReceiver(),
+                createStatisticsReporter(),
+                reportConfiguration.isTrimStackTrace(),
+                PLAIN.equals(reportConfiguration.getReportFormat()),
+                reportConfiguration.isBriefOrPlainFormat(),
+                consoleLogger);
+        addListener(testSetRunListener);
         return testSetRunListener;
     }
 
     @Override
-    public File getReportsDirectory()
-    {
+    public File getReportsDirectory() {
         return reportConfiguration.getReportsDirectory();
     }
 
-    private StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> createConsoleReporter()
-    {
+    private StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> createConsoleReporter() {
         StatelessTestsetInfoConsoleReportEventListener<WrappedReportEntry, TestSetStats> consoleReporter =
-                reportConfiguration.instantiateConsoleReporter( consoleLogger );
-        return useNonNull( consoleReporter, NullConsoleReporter.INSTANCE );
+                reportConfiguration.instantiateConsoleReporter(consoleLogger);
+        return useNonNull(consoleReporter, NullConsoleReporter.INSTANCE);
     }
 
-    private StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> createFileReporter()
-    {
+    private StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> createFileReporter() {
         StatelessTestsetInfoFileReportEventListener<WrappedReportEntry, TestSetStats> fileReporter =
-                reportConfiguration.instantiateFileReporter( forkNumber );
-        return useNonNull( fileReporter, NullFileReporter.INSTANCE );
+                reportConfiguration.instantiateFileReporter(forkNumber);
+        return useNonNull(fileReporter, NullFileReporter.INSTANCE);
     }
 
-    private StatelessReportEventListener<WrappedReportEntry, TestSetStats> createSimpleXMLReporter()
-    {
+    private StatelessReportEventListener<WrappedReportEntry, TestSetStats> createSimpleXMLReporter() {
         StatelessReportEventListener<WrappedReportEntry, TestSetStats> xmlReporter =
-                reportConfiguration.instantiateStatelessXmlReporter( forkNumber );
-        return useNonNull( xmlReporter, NullStatelessXmlReporter.INSTANCE );
+                reportConfiguration.instantiateStatelessXmlReporter(forkNumber);
+        return useNonNull(xmlReporter, NullStatelessXmlReporter.INSTANCE);
     }
 
-    private ConsoleOutputReportEventListener createConsoleOutputReceiver()
-    {
+    private ConsoleOutputReportEventListener createConsoleOutputReceiver() {
         ConsoleOutputReportEventListener outputReporter =
-                reportConfiguration.instantiateConsoleOutputFileReporter( forkNumber );
-        return useNonNull( outputReporter, NullConsoleOutputReceiver.INSTANCE );
+                reportConfiguration.instantiateConsoleOutputFileReporter(forkNumber);
+        return useNonNull(outputReporter, NullConsoleOutputReceiver.INSTANCE);
     }
 
-    private StatisticsReporter createStatisticsReporter()
-    {
+    private StatisticsReporter createStatisticsReporter() {
         StatisticsReporter statisticsReporter = reportConfiguration.getStatisticsReporter();
-        return useNonNull( statisticsReporter, NullStatisticsReporter.INSTANCE );
+        return useNonNull(statisticsReporter, NullStatisticsReporter.INSTANCE);
     }
 
     @Override
-    public void mergeFromOtherFactories( Collection<DefaultReporterFactory> factories )
-    {
-        for ( DefaultReporterFactory factory : factories )
-        {
-            listeners.addAll( factory.listeners );
+    public void mergeFromOtherFactories(Collection<DefaultReporterFactory> factories) {
+        for (DefaultReporterFactory factory : factories) {
+            listeners.addAll(factory.listeners);
         }
     }
 
-    final void addListener( TestSetRunListener listener )
-    {
-        listeners.add( listener );
+    final void addListener(TestSetRunListener listener) {
+        listeners.add(listener);
     }
 
     @Override
-    public RunResult close()
-    {
+    public RunResult close() {
         mergeTestHistoryResult();
         runCompleted();
-        for ( TestSetRunListener listener : listeners )
-        {
+        for (TestSetRunListener listener : listeners) {
             listener.close();
         }
         return globalStats.getRunResult();
     }
 
     @Override
-    public void runStarting()
-    {
-        if ( reportConfiguration.isPrintSummary() )
-        {
-            log( "" );
-            log( "-------------------------------------------------------" );
-            log( " T E S T S" );
-            log( "-------------------------------------------------------" );
+    public void runStarting() {
+        if (reportConfiguration.isPrintSummary()) {
+            log("");
+            log("-------------------------------------------------------");
+            log(" T E S T S");
+            log("-------------------------------------------------------");
         }
     }
 
-    private void runCompleted()
-    {
-        if ( reportConfiguration.isPrintSummary() )
-        {
-            log( "" );
-            log( "Results:" );
-            log( "" );
+    private void runCompleted() {
+        if (reportConfiguration.isPrintSummary()) {
+            log("");
+            log("Results:");
+            log("");
         }
-        boolean printedFailures = printTestFailures( failure );
-        boolean printedErrors = printTestFailures( error );
-        boolean printedFlakes = printTestFailures( flake );
-        if ( reportConfiguration.isPrintSummary() )
-        {
-            if ( printedFailures | printedErrors | printedFlakes )
-            {
-                log( "" );
+        boolean printedFailures = printTestFailures(failure);
+        boolean printedErrors = printTestFailures(error);
+        boolean printedFlakes = printTestFailures(flake);
+        if (reportConfiguration.isPrintSummary()) {
+            if (printedFailures | printedErrors | printedFlakes) {
+                log("");
             }
             boolean hasSuccessful = globalStats.getCompletedCount() > 0;
             boolean hasSkipped = globalStats.getSkipped() > 0;
-            log( globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes );
-            log( "" );
+            log(globalStats.getSummary(), hasSuccessful, printedFailures, printedErrors, hasSkipped, printedFlakes);
+            log("");
         }
     }
 
-    public RunStatistics getGlobalRunStatistics()
-    {
+    public RunStatistics getGlobalRunStatistics() {
         mergeTestHistoryResult();
         return globalStats;
     }
@@ -231,47 +207,31 @@ public class DefaultReporterFactory
      * @return the type of test result
      */
     // Use default visibility for testing
-    static TestResultType getTestResultType( List<ReportEntryType> reportEntries, int rerunFailingTestsCount  )
-    {
-        if ( reportEntries == null || reportEntries.isEmpty() )
-        {
+    static TestResultType getTestResultType(List<ReportEntryType> reportEntries, int rerunFailingTestsCount) {
+        if (reportEntries == null || reportEntries.isEmpty()) {
             return unknown;
         }
 
         boolean seenSuccess = false, seenFailure = false, seenError = false;
-        for ( ReportEntryType resultType : reportEntries )
-        {
-            if ( resultType == SUCCESS )
-            {
+        for (ReportEntryType resultType : reportEntries) {
+            if (resultType == SUCCESS) {
                 seenSuccess = true;
-            }
-            else if ( resultType == FAILURE )
-            {
+            } else if (resultType == FAILURE) {
                 seenFailure = true;
-            }
-            else if ( resultType == ERROR )
-            {
+            } else if (resultType == ERROR) {
                 seenError = true;
             }
         }
 
-        if ( seenFailure || seenError )
-        {
-            if ( seenSuccess && rerunFailingTestsCount > 0 )
-            {
+        if (seenFailure || seenError) {
+            if (seenSuccess && rerunFailingTestsCount > 0) {
                 return flake;
-            }
-            else
-            {
+            } else {
                 return seenError ? error : failure;
             }
-        }
-        else if ( seenSuccess )
-        {
+        } else if (seenSuccess) {
             return success;
-        }
-        else
-        {
+        } else {
             return skipped;
         }
     }
@@ -280,8 +240,7 @@ public class DefaultReporterFactory
      * Merge all the TestMethodStats in each TestRunListeners and put results into flakyTests, failedTests and
      * errorTests, indexed by test class and method name. Update globalStatistics based on the result of the merge.
      */
-    private void mergeTestHistoryResult()
-    {
+    private void mergeTestHistoryResult() {
         globalStats = new RunStatistics();
         flakyTests = new TreeMap<>();
         failedTests = new TreeMap<>();
@@ -289,21 +248,16 @@ public class DefaultReporterFactory
 
         Map<String, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<>();
         // Merge all the stats for tests from listeners
-        for ( TestSetRunListener listener : listeners )
-        {
-            for ( TestMethodStats methodStats : listener.getTestMethodStats() )
-            {
+        for (TestSetRunListener listener : listeners) {
+            for (TestMethodStats methodStats : listener.getTestMethodStats()) {
                 List<TestMethodStats> currentMethodStats =
-                    mergedTestHistoryResult.get( methodStats.getTestClassMethodName() );
-                if ( currentMethodStats == null )
-                {
+                        mergedTestHistoryResult.get(methodStats.getTestClassMethodName());
+                if (currentMethodStats == null) {
                     currentMethodStats = new ArrayList<>();
-                    currentMethodStats.add( methodStats );
-                    mergedTestHistoryResult.put( methodStats.getTestClassMethodName(), currentMethodStats );
-                }
-                else
-                {
-                    currentMethodStats.add( methodStats );
+                    currentMethodStats.add(methodStats);
+                    mergedTestHistoryResult.put(methodStats.getTestClassMethodName(), currentMethodStats);
+                } else {
+                    currentMethodStats.add(methodStats);
                 }
             }
         }
@@ -311,27 +265,22 @@ public class DefaultReporterFactory
         // Update globalStatistics by iterating through mergedTestHistoryResult
         int completedCount = 0, skipped = 0;
 
-        for ( Map.Entry<String, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet() )
-        {
+        for (Map.Entry<String, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet()) {
             List<TestMethodStats> testMethodStats = entry.getValue();
             String testClassMethodName = entry.getKey();
             completedCount++;
 
             List<ReportEntryType> resultTypes = new ArrayList<>();
-            for ( TestMethodStats methodStats : testMethodStats )
-            {
-                resultTypes.add( methodStats.getResultType() );
+            for (TestMethodStats methodStats : testMethodStats) {
+                resultTypes.add(methodStats.getResultType());
             }
 
-            switch ( getTestResultType( resultTypes, reportConfiguration.getRerunFailingTestsCount() ) )
-            {
+            switch (getTestResultType(resultTypes, reportConfiguration.getRerunFailingTestsCount())) {
                 case success:
                     // If there are multiple successful runs of the same test, count all of them
                     int successCount = 0;
-                    for ( ReportEntryType type : resultTypes )
-                    {
-                        if ( type == SUCCESS )
-                        {
+                    for (ReportEntryType type : resultTypes) {
+                        if (type == SUCCESS) {
                             successCount++;
                         }
                     }
@@ -341,20 +290,20 @@ public class DefaultReporterFactory
                     skipped++;
                     break;
                 case flake:
-                    flakyTests.put( testClassMethodName, testMethodStats );
+                    flakyTests.put(testClassMethodName, testMethodStats);
                     break;
                 case failure:
-                    failedTests.put( testClassMethodName, testMethodStats );
+                    failedTests.put(testClassMethodName, testMethodStats);
                     break;
                 case error:
-                    errorTests.put( testClassMethodName, testMethodStats );
+                    errorTests.put(testClassMethodName, testMethodStats);
                     break;
                 default:
-                    throw new IllegalStateException( "Get unknown test result type" );
+                    throw new IllegalStateException("Get unknown test result type");
             }
         }
 
-        globalStats.set( completedCount, errorTests.size(), failedTests.size(), skipped, flakyTests.size() );
+        globalStats.set(completedCount, errorTests.size(), failedTests.size(), skipped, flakyTests.size());
     }
 
     /**
@@ -365,12 +314,10 @@ public class DefaultReporterFactory
      * @return {@code true} if printed some lines
      */
     // Use default visibility for testing
-    boolean printTestFailures( TestResultType type )
-    {
+    boolean printTestFailures(TestResultType type) {
         final Map<String, List<TestMethodStats>> testStats;
         final Level level;
-        switch ( type )
-        {
+        switch (type) {
             case failure:
                 testStats = failedTests;
                 level = Level.FAILURE;
@@ -388,115 +335,94 @@ public class DefaultReporterFactory
         }
 
         boolean printed = false;
-        if ( !testStats.isEmpty() )
-        {
-            log( type.getLogPrefix(), level );
+        if (!testStats.isEmpty()) {
+            log(type.getLogPrefix(), level);
             printed = true;
         }
 
-        for ( Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet() )
-        {
+        for (Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet()) {
             List<TestMethodStats> testMethodStats = entry.getValue();
-            if ( testMethodStats.size() == 1 )
-            {
+            if (testMethodStats.size() == 1) {
                 // No rerun, follow the original output format
-                failure( "  " + testMethodStats.get( 0 ).getStackTraceWriter().smartTrimmedStackTrace() );
-            }
-            else
-            {
-                log( entry.getKey(), level );
-                for ( int i = 0; i < testMethodStats.size(); i++ )
-                {
-                    StackTraceWriter failureStackTrace = testMethodStats.get( i ).getStackTraceWriter();
-                    if ( failureStackTrace == null )
-                    {
-                        success( "  Run " + ( i + 1 ) + ": PASS" );
-                    }
-                    else
-                    {
-                        failure( "  Run " + ( i + 1 ) + ": " + failureStackTrace.smartTrimmedStackTrace() );
+                failure("  " + testMethodStats.get(0).getStackTraceWriter().smartTrimmedStackTrace());
+            } else {
+                log(entry.getKey(), level);
+                for (int i = 0; i < testMethodStats.size(); i++) {
+                    StackTraceWriter failureStackTrace = testMethodStats.get(i).getStackTraceWriter();
+                    if (failureStackTrace == null) {
+                        success("  Run " + (i + 1) + ": PASS");
+                    } else {
+                        failure("  Run " + (i + 1) + ": " + failureStackTrace.smartTrimmedStackTrace());
                     }
                 }
-                log( "" );
+                log("");
             }
         }
         return printed;
     }
 
     // Describe the result of a given test
-    enum TestResultType
-    {
-
-        error(   "Errors: "   ),
-        failure( "Failures: " ),
-        flake(   "Flakes: "   ),
-        success( "Success: "  ),
-        skipped( "Skipped: "  ),
-        unknown( "Unknown: "  );
+    enum TestResultType {
+        error("Errors: "),
+        failure("Failures: "),
+        flake("Flakes: "),
+        success("Success: "),
+        skipped("Skipped: "),
+        unknown("Unknown: ");
 
         private final String logPrefix;
 
-        TestResultType( String logPrefix )
-        {
+        TestResultType(String logPrefix) {
             this.logPrefix = logPrefix;
         }
 
-        public String getLogPrefix()
-        {
+        public String getLogPrefix() {
             return logPrefix;
         }
     }
 
-    private void log( String s, boolean success, boolean failures, boolean errors, boolean skipped, boolean flakes )
-    {
-        Level level = resolveLevel( success, failures, errors, skipped, flakes );
-        log( s, level );
+    private void log(String s, boolean success, boolean failures, boolean errors, boolean skipped, boolean flakes) {
+        Level level = resolveLevel(success, failures, errors, skipped, flakes);
+        log(s, level);
     }
 
-    private void log( String s, Level level )
-    {
-        switch ( level )
-        {
+    private void log(String s, Level level) {
+        switch (level) {
             case FAILURE:
-                failure( s );
+                failure(s);
                 break;
             case UNSTABLE:
-                warning( s );
+                warning(s);
                 break;
             case SUCCESS:
-                success( s );
+                success(s);
                 break;
             default:
-                info( s );
+                info(s);
         }
     }
 
-    private void log( String s )
-    {
-        consoleLogger.info( s );
+    private void log(String s) {
+        consoleLogger.info(s);
     }
 
-    private void info( String s )
-    {
+    private void info(String s) {
         MessageBuilder builder = buffer();
-        consoleLogger.info( builder.a( s ).toString() );
+        consoleLogger.info(builder.a(s).toString());
     }
 
-    private void warning( String s )
-    {
+    private void warning(String s) {
         MessageBuilder builder = buffer();
-        consoleLogger.warning( builder.warning( s ).toString() );
+        consoleLogger.warning(builder.warning(s).toString());
     }
 
-    private void success( String s )
-    {
+    private void success(String s) {
         MessageBuilder builder = buffer();
-        consoleLogger.info( builder.success( s ).toString() );
+        consoleLogger.info(builder.success(s).toString());
     }
 
-    private void failure( String s )
-    {
+    private void failure(String s) {
         MessageBuilder builder = buffer();
-        consoleLogger.error( builder.failure( s ).toString() );
+        consoleLogger.error(builder.failure(s).toString());
     }
 }

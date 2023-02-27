@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.testset;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.testset;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,13 +16,14 @@ package org.apache.maven.surefire.api.testset;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.testset;
 
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@SuppressWarnings( { "javadoc", "checkstyle:javadoctype" } )
+@SuppressWarnings({"javadoc", "checkstyle:javadoctype"})
 /**
  * Inclusive test patters:<p>
  *
@@ -325,259 +324,226 @@ import static org.hamcrest.Matchers.is;
  * </tr>
  * </table>
  */
-public class FundamentalFilterTest
-{
+public class FundamentalFilterTest {
     @Test
-    public void testIncludes1()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsInclusive( null, null ), is( true ) );
+    public void testIncludes1() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsInclusive(null, null), is(true));
     }
 
     @Test
-    public void testIncludes2()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsInclusive( null, null ), is( true ) );
+    public void testIncludes2() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsInclusive(null, null), is(true));
     }
 
     @Test
-    public void testIncludes3()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsInclusive( null, null ), is( true ) );
+    public void testIncludes3() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsInclusive(null, null), is(true));
     }
 
     @Test
-    public void testIncludes4()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsInclusive( null, null ), is( true ) );
+    public void testIncludes4() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsInclusive(null, null), is(true));
     }
 
     @Test
-    public void testIncludes5()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsInclusive( null, "method" ), is( true ) );
+    public void testIncludes5() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsInclusive(null, "method"), is(true));
     }
 
     @Test
-    public void testIncludes6()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsInclusive( null, "method" ), is( true ) );
-        assertThat( pattern.matchAsInclusive( null, "otherMethod" ), is( false ) );
+    public void testIncludes6() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsInclusive(null, "method"), is(true));
+        assertThat(pattern.matchAsInclusive(null, "otherMethod"), is(false));
     }
 
     /**
      * Does not throw NPE due to Cucumber has test class NULL and test method NOT NULL.
      */
     @Test
-    public void testIncludes7()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsInclusive( null, "method" ), is( true ) );
+    public void testIncludes7() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsInclusive(null, "method"), is(true));
     }
 
     /**
      * Does not throw NPE due to Cucumber has test class NULL and test method NOT NULL.
      */
     @Test
-    public void testIncludes8()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsInclusive( null, "method" ), is( true ) );
-        assertThat( pattern.matchAsInclusive( null, "otherMethod" ), is( true ) );
+    public void testIncludes8() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsInclusive(null, "method"), is(true));
+        assertThat(pattern.matchAsInclusive(null, "otherMethod"), is(true));
     }
 
     @Test
-    public void testIncludes9()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsInclusive( "Test.class", null ), is( true ) );
+    public void testIncludes9() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsInclusive("Test.class", null), is(true));
     }
 
     @Test
-    public void testIncludes10()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsInclusive( "Test.class", null ), is( true ) );
+    public void testIncludes10() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsInclusive("Test.class", null), is(true));
     }
 
     @Test
-    public void testIncludes11()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsInclusive( "Test.class", null ), is( true ) );
-        assertThat( pattern.matchAsInclusive( "Other.class", null ), is( false ) );
+    public void testIncludes11() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsInclusive("Test.class", null), is(true));
+        assertThat(pattern.matchAsInclusive("Other.class", null), is(false));
     }
 
     @Test
-    public void testIncludes12()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsInclusive( "Test.class", null ), is( true ) );
-        assertThat( pattern.matchAsInclusive( "Other.class", null ), is( false ) );
+    public void testIncludes12() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsInclusive("Test.class", null), is(true));
+        assertThat(pattern.matchAsInclusive("Other.class", null), is(false));
     }
 
     @Test
-    public void testIncludes13()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsInclusive( "Test.class", "method" ), is( true ) );
+    public void testIncludes13() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsInclusive("Test.class", "method"), is(true));
     }
 
     @Test
-    public void testIncludes14()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsInclusive( "Test.class", "method" ), is( true ) );
-        assertThat( pattern.matchAsInclusive( "Test.class", "otherMethod" ), is( false ) );
+    public void testIncludes14() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsInclusive("Test.class", "method"), is(true));
+        assertThat(pattern.matchAsInclusive("Test.class", "otherMethod"), is(false));
     }
 
     @Test
-    public void testIncludes15()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsInclusive( "Test.class", "method" ), is( true ) );
-        assertThat( pattern.matchAsInclusive( "Other.class", "method" ), is( false ) );
+    public void testIncludes15() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsInclusive("Test.class", "method"), is(true));
+        assertThat(pattern.matchAsInclusive("Other.class", "method"), is(false));
     }
 
     @Test
-    public void testIncludes16()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsInclusive( "Test.class", "method" ), is( true ) );
-        assertThat( pattern.matchAsInclusive( "Test.class", "otherMethod" ), is( false ) );
-        assertThat( pattern.matchAsInclusive( "Other.class", "method" ), is( false ) );
-        assertThat( pattern.matchAsInclusive( "Other.class", "otherMethod" ), is( false ) );
+    public void testIncludes16() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsInclusive("Test.class", "method"), is(true));
+        assertThat(pattern.matchAsInclusive("Test.class", "otherMethod"), is(false));
+        assertThat(pattern.matchAsInclusive("Other.class", "method"), is(false));
+        assertThat(pattern.matchAsInclusive("Other.class", "otherMethod"), is(false));
     }
 
     @Test
-    public void testExcludes1()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsExclusive( null, null ), is( false ) );
+    public void testExcludes1() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsExclusive(null, null), is(false));
     }
 
     @Test
-    public void testExcludes2()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsExclusive( null, null ), is( false ) );
+    public void testExcludes2() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsExclusive(null, null), is(false));
     }
 
     @Test
-    public void testExcludes3()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsExclusive( null, null ), is( false ) );
+    public void testExcludes3() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsExclusive(null, null), is(false));
     }
 
     @Test
-    public void testExcludes4()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsExclusive( null, null ), is( false ) );
+    public void testExcludes4() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsExclusive(null, null), is(false));
     }
 
     @Test
-    public void testExcludes5()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsExclusive( null, "method" ), is( false ) );
+    public void testExcludes5() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsExclusive(null, "method"), is(false));
     }
 
     @Test
-    public void testExcludes6()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsExclusive( null, "method" ), is( true ) );
-        assertThat( pattern.matchAsExclusive( null, "otherMethod" ), is( false ) );
+    public void testExcludes6() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsExclusive(null, "method"), is(true));
+        assertThat(pattern.matchAsExclusive(null, "otherMethod"), is(false));
     }
 
     /**
      * Does not throw NPE due to Cucumber has test class NULL and test method NOT NULL.
      */
     @Test
-    public void testExcludes7()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsExclusive( null, "method" ), is( false ) );
+    public void testExcludes7() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsExclusive(null, "method"), is(false));
     }
 
     /**
      * Does not throw NPE due to Cucumber has test class NULL and test method NOT NULL.
      */
     @Test
-    public void testExcludes8()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsExclusive( null, "method" ), is( false ) );
-        assertThat( pattern.matchAsExclusive( null, "otherMethod" ), is( false ) );
+    public void testExcludes8() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsExclusive(null, "method"), is(false));
+        assertThat(pattern.matchAsExclusive(null, "otherMethod"), is(false));
     }
 
     @Test
-    public void testExcludes9()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsExclusive( "Test.class", null ), is( false ) );
+    public void testExcludes9() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsExclusive("Test.class", null), is(false));
     }
 
     @Test
-    public void testExcludes10()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsExclusive( "Test.class", null ), is( false ) );
+    public void testExcludes10() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsExclusive("Test.class", null), is(false));
     }
 
     @Test
-    public void testExcludes11()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsExclusive( "Test.class", null ), is( true ) );
-        assertThat( pattern.matchAsExclusive( "Other.class", null ), is( false ) );
+    public void testExcludes11() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsExclusive("Test.class", null), is(true));
+        assertThat(pattern.matchAsExclusive("Other.class", null), is(false));
     }
 
     @Test
-    public void testExcludes12()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsExclusive( "Test.class", null ), is( false ) );
-        assertThat( pattern.matchAsExclusive( "Other.class", null ), is( false ) );
+    public void testExcludes12() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsExclusive("Test.class", null), is(false));
+        assertThat(pattern.matchAsExclusive("Other.class", null), is(false));
     }
 
     @Test
-    public void testExcludes13()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, null, false );
-        assertThat( pattern.matchAsExclusive( "Test.class", "method" ), is( false ) );
+    public void testExcludes13() {
+        ResolvedTest pattern = new ResolvedTest((String) null, null, false);
+        assertThat(pattern.matchAsExclusive("Test.class", "method"), is(false));
     }
 
     @Test
-    public void testExcludes14()
-    {
-        ResolvedTest pattern = new ResolvedTest( (String) null, "method", false );
-        assertThat( pattern.matchAsExclusive( "Test.class", "method" ), is( true ) );
-        assertThat( pattern.matchAsExclusive( "Test.class", "otherMethod" ), is( false ) );
+    public void testExcludes14() {
+        ResolvedTest pattern = new ResolvedTest((String) null, "method", false);
+        assertThat(pattern.matchAsExclusive("Test.class", "method"), is(true));
+        assertThat(pattern.matchAsExclusive("Test.class", "otherMethod"), is(false));
     }
 
     @Test
-    public void testExcludes15()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", null, false );
-        assertThat( pattern.matchAsExclusive( "Test.class", "method" ), is( true ) );
-        assertThat( pattern.matchAsExclusive( "Other.class", "method" ), is( false ) );
+    public void testExcludes15() {
+        ResolvedTest pattern = new ResolvedTest("Test", null, false);
+        assertThat(pattern.matchAsExclusive("Test.class", "method"), is(true));
+        assertThat(pattern.matchAsExclusive("Other.class", "method"), is(false));
     }
 
     @Test
-    public void testExcludes16()
-    {
-        ResolvedTest pattern = new ResolvedTest( "Test", "method", false );
-        assertThat( pattern.matchAsExclusive( "Test.class", "method" ), is( true ) );
-        assertThat( pattern.matchAsExclusive( "Test.class", "otherMethod" ), is( false ) );
-        assertThat( pattern.matchAsExclusive( "Other.class", "method" ), is( false ) );
-        assertThat( pattern.matchAsExclusive( "Other.class", "otherMethod" ), is( false ) );
+    public void testExcludes16() {
+        ResolvedTest pattern = new ResolvedTest("Test", "method", false);
+        assertThat(pattern.matchAsExclusive("Test.class", "method"), is(true));
+        assertThat(pattern.matchAsExclusive("Test.class", "otherMethod"), is(false));
+        assertThat(pattern.matchAsExclusive("Other.class", "method"), is(false));
+        assertThat(pattern.matchAsExclusive("Other.class", "otherMethod"), is(false));
     }
 }

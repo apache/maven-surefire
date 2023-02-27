@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore;
 
 /*
@@ -39,275 +57,214 @@ import org.junit.runner.JUnitCore;
 /**
  * @author Kristian Rosenvold
  */
-public class ConcurrentRunListenerTest
-    extends TestCase
-{
+public class ConcurrentRunListenerTest extends TestCase {
     // Tests are in order of increasing complexity
-    public void testNoErrorsCounting()
-        throws Exception
-    {
-        runClasses( 3, 0, 0, DummyAllOk.class );
+    public void testNoErrorsCounting() throws Exception {
+        runClasses(3, 0, 0, DummyAllOk.class);
     }
 
-    public void testNoErrorsCounting2()
-        throws Exception
-    {
-        runClasses( 2, 0, 0, Dummy3.class );
+    public void testNoErrorsCounting2() throws Exception {
+        runClasses(2, 0, 0, Dummy3.class);
     }
 
-    public void testOneIgnoreCounting()
-        throws Exception
-    {
-        runClasses( 3, 1, 0, DummyWithOneIgnore.class );
+    public void testOneIgnoreCounting() throws Exception {
+        runClasses(3, 1, 0, DummyWithOneIgnore.class);
     }
 
-    public void testOneFailureCounting()
-        throws Exception
-    {
-        runClasses( 3, 0, 1, DummyWithFailure.class );
+    public void testOneFailureCounting() throws Exception {
+        runClasses(3, 0, 1, DummyWithFailure.class);
     }
 
-    public void testWithErrorsCountingDemultiplexed()
-        throws Exception
-    {
-        runClasses( 6, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class );
+    public void testWithErrorsCountingDemultiplexed() throws Exception {
+        runClasses(6, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class);
     }
 
-    public void testJunitResultCountingDemultiplexed()
-        throws Exception
-    {
-        runClasses( 8, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class );
+    public void testJunitResultCountingDemultiplexed() throws Exception {
+        runClasses(8, 1, 1, DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class);
     }
 
-    public void testJunitResultCountingJUnit3Demultiplexed()
-        throws Exception
-    {
-        runClasses( 3, 0, 0, Junit3Tc1.class, Junit3Tc2.class );
+    public void testJunitResultCountingJUnit3Demultiplexed() throws Exception {
+        runClasses(3, 0, 0, Junit3Tc1.class, Junit3Tc2.class);
     }
 
-    public void testJunitResultCountingJUnit3OddTest()
-        throws Exception
-    {
-        runClasses( 2, 0, 0, Junit3OddTest1.class );
+    public void testJunitResultCountingJUnit3OddTest() throws Exception {
+        runClasses(2, 0, 0, Junit3OddTest1.class);
     }
 
-    public void testJunit3WithNestedSuite()
-        throws TestSetFailedException
-    {
-        runClasses( 4, 0, 0, Junit3WithNestedSuite.class );
+    public void testJunit3WithNestedSuite() throws TestSetFailedException {
+        runClasses(4, 0, 0, Junit3WithNestedSuite.class);
     }
 
-    public void testJunit3NestedSuite()
-        throws Exception
-    {
-        runClasses( 2, 0, 0, Junit3OddTest1.class );
+    public void testJunit3NestedSuite() throws Exception {
+        runClasses(2, 0, 0, Junit3OddTest1.class);
     }
 
-    public void testSimpleOutput()
-        throws Exception
-    {
+    public void testSimpleOutput() throws Exception {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintStream collector = new PrintStream( byteArrayOutputStream );
+        PrintStream collector = new PrintStream(byteArrayOutputStream);
         PrintStream orgOur = System.out;
-        System.setOut( collector );
+        System.setOut(collector);
 
-        RunStatistics result = runClasses( Dummy3.class );
-        assertReporter( result, 2, 0, 0, "msgs" );
+        RunStatistics result = runClasses(Dummy3.class);
+        assertReporter(result, 2, 0, 0, "msgs");
 
-        String foo = new String( byteArrayOutputStream.toByteArray() );
-        assertNotNull( foo );
+        String foo = new String(byteArrayOutputStream.toByteArray());
+        assertNotNull(foo);
 
-        System.setOut( orgOur );
+        System.setOut(orgOur);
     }
 
-    public void testOutputOrdering()
-        throws Exception
-    {
+    public void testOutputOrdering() throws Exception {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PrintStream collector = new PrintStream( byteArrayOutputStream );
+        PrintStream collector = new PrintStream(byteArrayOutputStream);
         PrintStream orgOur = System.out;
-        System.setOut( collector );
+        System.setOut(collector);
 
-        RunStatistics result = runClasses( DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class );
-        assertReporter( result, 8, 1, 1, "msgs" );
+        RunStatistics result = runClasses(DummyWithOneIgnore.class, DummyWithFailure.class, Dummy3.class);
+        assertReporter(result, 8, 1, 1, "msgs");
 
-        String foo = new String( byteArrayOutputStream.toByteArray() );
-        assertNotNull( foo );
+        String foo = new String(byteArrayOutputStream.toByteArray());
+        assertNotNull(foo);
 
-        System.setOut( orgOur );
+        System.setOut(orgOur);
 
-//        final List<String> stringList = result.getEvents();
-//        assertEquals( 23, stringList.size() );
+        //        final List<String> stringList = result.getEvents();
+        //        assertEquals( 23, stringList.size() );
     }
 
-    private void runClasses( int success, int ignored, int failure, Class<?>... classes )
-        throws TestSetFailedException
-    {
+    private void runClasses(int success, int ignored, int failure, Class<?>... classes) throws TestSetFailedException {
         DefaultReporterFactory reporterFactory = createReporterFactory();
         HashMap<String, TestSet> classMethodCounts = new HashMap<>();
-        ConcurrentRunListener reporter =
-            new ClassesParallelRunListener( classMethodCounts, reporterFactory );
-        JUnitCoreRunListener runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
-        RunStatistics result = runClasses( reporterFactory, runListener, classes );
-        assertReporter( result, success, ignored, failure, "classes" );
+        ConcurrentRunListener reporter = new ClassesParallelRunListener(classMethodCounts, reporterFactory);
+        JUnitCoreRunListener runListener = new JUnitCoreRunListener(reporter, classMethodCounts);
+        RunStatistics result = runClasses(reporterFactory, runListener, classes);
+        assertReporter(result, success, ignored, failure, "classes");
         classMethodCounts.clear();
 
         reporterFactory = createReporterFactory();
-        reporter = new MethodsParallelRunListener( classMethodCounts, reporterFactory, true );
-        runListener = new JUnitCoreRunListener( reporter, classMethodCounts );
-        result = runClasses( reporterFactory, runListener, classes );
-        assertReporter( result, success, ignored, failure, "methods" );
+        reporter = new MethodsParallelRunListener(classMethodCounts, reporterFactory, true);
+        runListener = new JUnitCoreRunListener(reporter, classMethodCounts);
+        result = runClasses(reporterFactory, runListener, classes);
+        assertReporter(result, success, ignored, failure, "methods");
     }
 
-    private RunStatistics runClasses( Class<?>... classes )
-        throws TestSetFailedException
-    {
+    private RunStatistics runClasses(Class<?>... classes) throws TestSetFailedException {
         HashMap<String, TestSet> classMethodCounts = new HashMap<>();
         final DefaultReporterFactory reporterManagerFactory = createReporterFactory();
         org.junit.runner.notification.RunListener demultiplexingRunListener =
-            createRunListener( reporterManagerFactory, classMethodCounts );
+                createRunListener(reporterManagerFactory, classMethodCounts);
 
         JUnitCore jUnitCore = new JUnitCore();
 
-        jUnitCore.addListener( demultiplexingRunListener );
+        jUnitCore.addListener(demultiplexingRunListener);
         Computer computer = new Computer();
 
-        jUnitCore.run( computer, classes );
+        jUnitCore.run(computer, classes);
         reporterManagerFactory.close();
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private RunStatistics runClasses( DefaultReporterFactory reporterManagerFactory,
-                                      org.junit.runner.notification.RunListener demultiplexingRunListener,
-                                      Class<?>... classes )
-        throws TestSetFailedException
-    {
+    private RunStatistics runClasses(
+            DefaultReporterFactory reporterManagerFactory,
+            org.junit.runner.notification.RunListener demultiplexingRunListener,
+            Class<?>... classes)
+            throws TestSetFailedException {
 
         JUnitCore jUnitCore = new JUnitCore();
 
-        jUnitCore.addListener( demultiplexingRunListener );
+        jUnitCore.addListener(demultiplexingRunListener);
         Computer computer = new Computer();
 
-        jUnitCore.run( computer, classes );
+        jUnitCore.run(computer, classes);
         return reporterManagerFactory.getGlobalRunStatistics();
     }
 
-    private org.junit.runner.notification.RunListener createRunListener( ReporterFactory reporterFactory,
-                                                                         Map<String, TestSet> testSetMap )
-    {
-        ConcurrentRunListener handler = new ClassesParallelRunListener( testSetMap, reporterFactory );
-        return new JUnitCoreRunListener( handler, testSetMap );
+    private org.junit.runner.notification.RunListener createRunListener(
+            ReporterFactory reporterFactory, Map<String, TestSet> testSetMap) {
+        ConcurrentRunListener handler = new ClassesParallelRunListener(testSetMap, reporterFactory);
+        return new JUnitCoreRunListener(handler, testSetMap);
     }
 
     /**
      *
      */
-    public static class DummyWithOneIgnore
-    {
+    public static class DummyWithOneIgnore {
         @Test
-        public void testNotMuch()
-        {
-        }
+        public void testNotMuch() {}
 
         @Ignore
         @Test
-        public void testStub1()
-        {
+        public void testStub1() {}
+
+        @Test
+        public void testStub2() {}
+    }
+
+    /**
+     *
+     */
+    public static class DummyWithFailure {
+        @Test
+        public void testBeforeFail() {}
+
+        @Test
+        public void testWillFail() {
+            Assert.fail("We will fail");
         }
 
         @Test
-        public void testStub2()
-        {
+        public void testAfterFail() {}
+    }
+
+    /**
+     *
+     */
+    public static class DummyAllOk {
+
+        @Test
+        public void testNotMuchA() {}
+
+        @Test
+        public void testStub1A() {}
+
+        @Test
+        public void testStub2A() {}
+    }
+
+    /**
+     *
+     */
+    public static class Dummy3 {
+
+        @Test
+        public void testNotMuchA() {
+            System.out.println("tNMA1");
+            System.err.println("tNMA1err");
+        }
+
+        @Test
+        public void testStub2A() {
+            System.out.println("tS2A");
+            System.err.println("tS2AErr");
         }
     }
 
     /**
      *
      */
-    public static class DummyWithFailure
-    {
-        @Test
-        public void testBeforeFail()
-        {
+    public static class Junit3Tc1 extends TestCase {
+
+        public Junit3Tc1() {
+            super("testNotMuchJunit3TC1");
         }
 
-        @Test
-        public void testWillFail()
-        {
-            Assert.fail( "We will fail" );
+        public void testNotMuchJunit3TC1() {
+            System.out.println("Junit3TC1");
         }
 
-        @Test
-        public void testAfterFail()
-        {
-        }
-    }
-
-    /**
-     *
-     */
-    public static class DummyAllOk
-    {
-
-        @Test
-        public void testNotMuchA()
-        {
-        }
-
-        @Test
-        public void testStub1A()
-        {
-        }
-
-        @Test
-        public void testStub2A()
-        {
-        }
-    }
-
-    /**
-     *
-     */
-    public static class Dummy3
-    {
-
-        @Test
-        public void testNotMuchA()
-        {
-            System.out.println( "tNMA1" );
-            System.err.println( "tNMA1err" );
-        }
-
-        @Test
-        public void testStub2A()
-        {
-            System.out.println( "tS2A" );
-            System.err.println( "tS2AErr" );
-        }
-    }
-
-    /**
-     *
-     */
-    public static class Junit3Tc1
-        extends TestCase
-    {
-
-        public Junit3Tc1()
-        {
-            super( "testNotMuchJunit3TC1" );
-        }
-
-        public void testNotMuchJunit3TC1()
-        {
-            System.out.println( "Junit3TC1" );
-        }
-
-
-        public static junit.framework.Test suite()
-        {
+        public static junit.framework.Test suite() {
             TestSuite suite = new TestSuite();
-            suite.addTest( new Junit3Tc1() );
+            suite.addTest(new Junit3Tc1());
             return suite;
         }
     }
@@ -315,29 +272,23 @@ public class ConcurrentRunListenerTest
     /**
      *
      */
-    public static class Junit3Tc2
-        extends TestCase
-    {
-        public Junit3Tc2( String testMethod )
-        {
-            super( testMethod );
+    public static class Junit3Tc2 extends TestCase {
+        public Junit3Tc2(String testMethod) {
+            super(testMethod);
         }
 
-        public void testNotMuchJunit3TC2()
-        {
-            System.out.println( "Junit3TC2" );
+        public void testNotMuchJunit3TC2() {
+            System.out.println("Junit3TC2");
         }
 
-        public void testStubJ3TC2A()
-        {
-            System.out.println( "testStubJ3TC2A" );
+        public void testStubJ3TC2A() {
+            System.out.println("testStubJ3TC2A");
         }
 
-        public static junit.framework.Test suite()
-        {
+        public static junit.framework.Test suite() {
             TestSuite suite = new TestSuite();
-            suite.addTest( new Junit3Tc2( "testNotMuchJunit3TC2" ) );
-            suite.addTest( new Junit3Tc2( "testStubJ3TC2A" ) );
+            suite.addTest(new Junit3Tc2("testNotMuchJunit3TC2"));
+            suite.addTest(new Junit3Tc2("testStubJ3TC2A"));
             return suite;
         }
     }
@@ -345,68 +296,53 @@ public class ConcurrentRunListenerTest
     /**
      *
      */
-    public static class Junit3OddTest1
-        extends TestCase
-    {
-        public static junit.framework.Test suite()
-        {
+    public static class Junit3OddTest1 extends TestCase {
+        public static junit.framework.Test suite() {
             TestSuite suite = new TestSuite();
 
-            suite.addTest( new Junit3OddTest1( "testMe" ) );
-            suite.addTest( new Junit3OddTest1( "testMe2" ) );
+            suite.addTest(new Junit3OddTest1("testMe"));
+            suite.addTest(new Junit3OddTest1("testMe2"));
 
             return suite;
         }
 
-        public Junit3OddTest1( String name )
-        {
-            super( name );
+        public Junit3OddTest1(String name) {
+            super(name);
         }
 
-        public void testMe()
-        {
-            assertTrue( true );
+        public void testMe() {
+            assertTrue(true);
         }
     }
 
     /**
      *
      */
-    public static class Junit3WithNestedSuite
-        extends TestCase
-    {
-        public static junit.framework.Test suite()
-        {
+    public static class Junit3WithNestedSuite extends TestCase {
+        public static junit.framework.Test suite() {
             TestSuite suite = new TestSuite();
 
-            suite.addTest( new Junit3WithNestedSuite( "testMe" ) );
-            suite.addTest( new Junit3WithNestedSuite( "testMe2" ) );
-            suite.addTestSuite( Junit3Tc2.class );
+            suite.addTest(new Junit3WithNestedSuite("testMe"));
+            suite.addTest(new Junit3WithNestedSuite("testMe2"));
+            suite.addTestSuite(Junit3Tc2.class);
             return suite;
         }
 
-        public Junit3WithNestedSuite( String name )
-        {
-            super( name );
+        public Junit3WithNestedSuite(String name) {
+            super(name);
         }
 
-        public void testMe2()
-        {
-            assertTrue( true );
+        public void testMe2() {
+            assertTrue(true);
         }
     }
 
-
-    private DefaultReporterFactory createReporterFactory()
-    {
+    private DefaultReporterFactory createReporterFactory() {
         return JUnitCoreTester.defaultNoXml();
     }
 
-
-    private void assertReporter( RunStatistics result, int success, int ignored, int failure, String message )
-    {
-        assertEquals( message, success, result.getCompletedCount() );
-        assertEquals( message, ignored, result.getSkipped() );
+    private void assertReporter(RunStatistics result, int success, int ignored, int failure, String message) {
+        assertEquals(message, success, result.getCompletedCount());
+        assertEquals(message, ignored, result.getSkipped());
     }
-
 }

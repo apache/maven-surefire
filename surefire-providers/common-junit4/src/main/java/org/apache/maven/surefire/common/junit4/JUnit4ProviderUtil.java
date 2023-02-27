@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.common.junit4;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.common.junit4;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.common.junit4;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.common.junit4;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,11 +39,9 @@ import static org.junit.runner.Description.TEST_MECHANISM;
  * @author Qingzhou Luo
  *
  */
-public final class JUnit4ProviderUtil
-{
-    private JUnit4ProviderUtil()
-    {
-        throw new IllegalStateException( "Cannot instantiate." );
+public final class JUnit4ProviderUtil {
+    private JUnit4ProviderUtil() {
+        throw new IllegalStateException("Cannot instantiate.");
     }
 
     /**
@@ -53,24 +50,20 @@ public final class JUnit4ProviderUtil
      * @param allFailures the list of failures for a given test class
      * @return the list of descriptions
      */
-    public static Set<Description> generateFailingTestDescriptions( List<Failure> allFailures )
-    {
+    public static Set<Description> generateFailingTestDescriptions(List<Failure> allFailures) {
         Set<Description> failingTestDescriptions = new HashSet<>();
 
-        for ( Failure failure : allFailures )
-        {
+        for (Failure failure : allFailures) {
             Description description = failure.getDescription();
-            if ( description.isTest() && !isFailureInsideJUnitItself( description ) )
-            {
-                failingTestDescriptions.add( description );
+            if (description.isTest() && !isFailureInsideJUnitItself(description)) {
+                failingTestDescriptions.add(description);
             }
         }
         return failingTestDescriptions;
     }
 
-    public static boolean isFailureInsideJUnitItself( Description failure )
-    {
-        return TEST_MECHANISM.equals( failure );
+    public static boolean isFailureInsideJUnitItself(Description failure) {
+        return TEST_MECHANISM.equals(failure);
     }
 
     /**
@@ -78,34 +71,28 @@ public final class JUnit4ProviderUtil
      * @param description method(class) or method[#](class) or method[#whatever-literals](class)
      * @return method JUnit test method
      */
-    public static ClassMethod toClassMethod( Description description )
-    {
-        String clazz = extractClassName( description.getDisplayName() );
-        if ( clazz == null || isInsaneJunitNullString( clazz ) )
-        {
+    public static ClassMethod toClassMethod(Description description) {
+        String clazz = extractClassName(description.getDisplayName());
+        if (clazz == null || isInsaneJunitNullString(clazz)) {
             // This can happen upon early failures (class instantiation error etc)
             Iterator<Description> it = description.getChildren().iterator();
-            if ( it.hasNext() )
-            {
+            if (it.hasNext()) {
                 description = it.next();
-                clazz = extractClassName( description.getDisplayName() );
+                clazz = extractClassName(description.getDisplayName());
             }
-            if ( clazz == null )
-            {
+            if (clazz == null) {
                 clazz = "Test Instantiation Error";
             }
         }
-        String method = extractMethodName( description.getDisplayName() );
-        return new ClassMethod( clazz, method );
+        String method = extractMethodName(description.getDisplayName());
+        return new ClassMethod(clazz, method);
     }
 
-    private static boolean isInsaneJunitNullString( String value )
-    {
-        return "null".equals( value );
+    private static boolean isInsaneJunitNullString(String value) {
+        return "null".equals(value);
     }
 
-    public static Filter createMatchAnyDescriptionFilter( Iterable<Description> descriptions )
-    {
-        return new MatchDescriptions( descriptions );
+    public static Filter createMatchAnyDescriptionFilter(Iterable<Description> descriptions) {
+        return new MatchDescriptions(descriptions);
     }
 }

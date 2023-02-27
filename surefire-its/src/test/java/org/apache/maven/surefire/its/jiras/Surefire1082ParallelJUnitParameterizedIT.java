@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.its.jiras;
 
 /*
@@ -19,16 +37,16 @@ package org.apache.maven.surefire.its.jiras;
  * under the License.
  */
 
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.apache.maven.it.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
-
-import java.util.Collection;
-import java.util.Set;
-import java.util.TreeSet;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
@@ -43,115 +61,108 @@ import static org.junit.Assert.assertThat;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1082">SUREFIRE-1082</a>
  * @since 2.18
  */
-public class Surefire1082ParallelJUnitParameterizedIT
-    extends SurefireJUnit4IntegrationTestCase
-{
-    private static Set<String> printOnlyTestLinesFromOutFile( OutputValidator validator )
-    {
-        TestFile report = validator.getSurefireReportsFile( "jiras.surefire1082.Jira1082Test-output.txt" );
+public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnit4IntegrationTestCase {
+    private static Set<String> printOnlyTestLinesFromOutFile(OutputValidator validator) {
+        TestFile report = validator.getSurefireReportsFile("jiras.surefire1082.Jira1082Test-output.txt");
         report.assertFileExists();
-        return printOnlyTestLines( validator.loadFile( report.getFile(), UTF_8 ) );
+        return printOnlyTestLines(validator.loadFile(report.getFile(), UTF_8));
     }
 
-    private static Set<String> printOnlyTestLines( Collection<String> logs )
-    {
+    private static Set<String> printOnlyTestLines(Collection<String> logs) {
         Set<String> log = new TreeSet<>();
-        for ( String line : logs )
-        {
-            if ( line.startsWith( "class jiras.surefire1082." ) )
-            {
-                log.add( line );
+        for (String line : logs) {
+            if (line.startsWith("class jiras.surefire1082.")) {
+                log.add(line);
             }
         }
         return log;
     }
 
-    private static void assertParallelRun( Set<String> log )
-    {
-        assertThat( log.size(), is( 4 ) );
+    private static void assertParallelRun(Set<String> log) {
+        assertThat(log.size(), is(4));
 
         Set<String> expectedLogs1 = new TreeSet<>();
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-1" );
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-1" );
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-2" );
-        expectedLogs1.add( "class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-2" );
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-1");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-1");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-2");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-2");
 
         Set<String> expectedLogs2 = new TreeSet<>();
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-1" );
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-1" );
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-2" );
-        expectedLogs2.add( "class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-2" );
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-1");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-1");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-2");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-2");
 
-        assertThat( log, anyOf( regex( expectedLogs1 ), regex( expectedLogs2 ) ) );
+        assertThat(log, anyOf(regex(expectedLogs1), regex(expectedLogs2)));
     }
 
     @Test
-    public void checkClassesRunParallel()
-        throws VerificationException
-    {
-        OutputValidator validator = unpack().setTestToRun( "Jira1082Test" )
-                                            .parallelClasses()
-                                            .useUnlimitedThreads()
-                                            .executeTest()
-                                            .verifyErrorFree( 4 );
+    public void checkClassesRunParallel() throws VerificationException {
+        OutputValidator validator = unpack().setTestToRun("Jira1082Test")
+                .parallelClasses()
+                .useUnlimitedThreads()
+                .executeTest()
+                .verifyErrorFree(4);
 
-        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1082Test.xml" )
+        validator
+                .getSurefireReportsXmlFile("TEST-jiras.surefire1082.Jira1082Test.xml")
                 .assertFileExists();
 
-        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
+        validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1082Test"), is(1));
 
-        Set<String> log = new TreeSet<>( validator.loadLogLines( startsWith( "class jiras.surefire1082." ) ) );
-        assertParallelRun( log );
+        Set<String> log = new TreeSet<>(validator.loadLogLines(startsWith("class jiras.surefire1082.")));
+        assertParallelRun(log);
     }
 
     @Test
-    public void checkOutFileClassesRunParallel()
-            throws VerificationException
-    {
-        OutputValidator validator = unpack().redirectToFile( true )
-                                            .setTestToRun( "Jira1082Test" )
-                                            .parallelClasses()
-                                            .useUnlimitedThreads()
-                                            .executeTest()
-                                            .verifyErrorFree( 4 );
+    public void checkOutFileClassesRunParallel() throws VerificationException {
+        OutputValidator validator = unpack().redirectToFile(true)
+                .setTestToRun("Jira1082Test")
+                .parallelClasses()
+                .useUnlimitedThreads()
+                .executeTest()
+                .verifyErrorFree(4);
 
-        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1082Test.xml" )
+        validator
+                .getSurefireReportsXmlFile("TEST-jiras.surefire1082.Jira1082Test.xml")
                 .assertFileExists();
 
-        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
+        validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1082Test"), is(1));
 
-        Set<String> log = printOnlyTestLinesFromOutFile( validator );
-        assertParallelRun( log );
+        Set<String> log = printOnlyTestLinesFromOutFile(validator);
+        assertParallelRun(log);
     }
 
     @Test
-    public void shouldRunTwo() throws VerificationException
-    {
-        OutputValidator validator = unpack().redirectToFile( true )
-                                            .parallelClasses()
-                                            .useUnlimitedThreads()
-                                            .executeTest()
-                                            .verifyErrorFree( 8 );
+    public void shouldRunTwo() throws VerificationException {
+        OutputValidator validator = unpack().redirectToFile(true)
+                .parallelClasses()
+                .useUnlimitedThreads()
+                .executeTest()
+                .verifyErrorFree(8);
 
-        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1082Test.xml" )
+        validator
+                .getSurefireReportsXmlFile("TEST-jiras.surefire1082.Jira1082Test.xml")
                 .assertFileExists();
 
-        validator.getSurefireReportsXmlFile( "TEST-jiras.surefire1082.Jira1264Test.xml" )
+        validator
+                .getSurefireReportsXmlFile("TEST-jiras.surefire1082.Jira1264Test.xml")
                 .assertFileExists();
 
-        validator.getSurefireReportsFile( "jiras.surefire1082.Jira1082Test-output.txt" )
+        validator
+                .getSurefireReportsFile("jiras.surefire1082.Jira1082Test-output.txt")
                 .assertFileExists();
 
-        validator.getSurefireReportsFile( "jiras.surefire1082.Jira1264Test-output.txt" )
+        validator
+                .getSurefireReportsFile("jiras.surefire1082.Jira1264Test-output.txt")
                 .assertFileExists();
 
-        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1082Test" ), is( 1 ) );
+        validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1082Test"), is(1));
 
-        validator.assertThatLogLine( containsString( "Running jiras.surefire1082.Jira1264Test" ), is( 1 ) );
+        validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1264Test"), is(1));
     }
 
-    private SurefireLauncher unpack()
-    {
-        return unpack( "surefire-1082-parallel-junit-parameterized" );
+    private SurefireLauncher unpack() {
+        return unpack("surefire-1082-parallel-junit-parameterized");
     }
 }

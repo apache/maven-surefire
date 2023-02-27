@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.providerapi;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.providerapi;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.providerapi;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.providerapi;
 
 import javax.annotation.Nonnull;
 
@@ -45,42 +44,33 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
  *
  * @since 2.20
  */
-@Component( role = ServiceLoader.class )
-public class ServiceLoader
-{
+@Component(role = ServiceLoader.class)
+public class ServiceLoader {
 
     @Nonnull
-    @SuppressWarnings( "unchecked" )
-    public <T> Set<T> load( Class<T> clazz, ClassLoader classLoader )
-    {
-        try
-        {
+    @SuppressWarnings("unchecked")
+    public <T> Set<T> load(Class<T> clazz, ClassLoader classLoader) {
+        try {
             Set<T> implementations = new HashSet<>();
-            for ( String fullyQualifiedClassName : lookup( clazz, classLoader ) )
-            {
-                Class<?> implClass = classLoader.loadClass( fullyQualifiedClassName );
-                implementations.add( (T) getConstructor( implClass ).newInstance() );
+            for (String fullyQualifiedClassName : lookup(clazz, classLoader)) {
+                Class<?> implClass = classLoader.loadClass(fullyQualifiedClassName);
+                implementations.add((T) getConstructor(implClass).newInstance());
             }
             return implementations;
-        }
-        catch ( IOException | ReflectiveOperationException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        } catch (IOException | ReflectiveOperationException e) {
+            throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
     }
 
     @Nonnull
-    public Set<String> lookup( Class<?> clazz, ClassLoader classLoader )
-        throws IOException
-    {
+    public Set<String> lookup(Class<?> clazz, ClassLoader classLoader) throws IOException {
         final String resourceName = "META-INF/services/" + clazz.getName();
 
-        if ( classLoader == null )
-        {
+        if (classLoader == null) {
             return emptySet();
         }
-        final Enumeration<URL> urls = classLoader.getResources( resourceName );
-        return lookupSpiImplementations( urls );
+        final Enumeration<URL> urls = classLoader.getResources(resourceName);
+        return lookupSpiImplementations(urls);
     }
 
     /**
@@ -92,51 +82,39 @@ public class ServiceLoader
      * @throws IOException When reading the streams fails
      */
     @Nonnull
-    @SuppressWarnings( "checkstyle:innerassignment" )
-    private static Set<String> lookupSpiImplementations( final Enumeration<URL> urlEnumeration )
-        throws IOException
-    {
+    @SuppressWarnings("checkstyle:innerassignment")
+    private static Set<String> lookupSpiImplementations(final Enumeration<URL> urlEnumeration) throws IOException {
         final Set<String> names = new HashSet<>();
         nextUrl:
-        while ( urlEnumeration.hasMoreElements() )
-        {
+        while (urlEnumeration.hasMoreElements()) {
             final URL url = urlEnumeration.nextElement();
-            try ( BufferedReader reader = getReader( url ) )
-            {
-                for ( String line; ( line = reader.readLine() ) != null; )
-                {
-                    int ci = line.indexOf( '#' );
-                    if ( ci >= 0 )
-                    {
-                        line = line.substring( 0, ci );
+            try (BufferedReader reader = getReader(url)) {
+                for (String line; (line = reader.readLine()) != null; ) {
+                    int ci = line.indexOf('#');
+                    if (ci >= 0) {
+                        line = line.substring(0, ci);
                     }
                     line = line.trim();
                     int n = line.length();
-                    if ( n == 0 )
-                    {
+                    if (n == 0) {
                         continue; // next line
                     }
 
-                    if ( line.indexOf( ' ' ) >= 0 || line.indexOf( '\t' ) >= 0 )
-                    {
+                    if (line.indexOf(' ') >= 0 || line.indexOf('\t') >= 0) {
                         continue nextUrl; // next url
                     }
-                    char cp = line.charAt( 0 ); // should use codePointAt but this was JDK1.3
-                    if ( !isJavaIdentifierStart( cp ) )
-                    {
+                    char cp = line.charAt(0); // should use codePointAt but this was JDK1.3
+                    if (!isJavaIdentifierStart(cp)) {
                         continue nextUrl; // next url
                     }
-                    for ( int i = 1; i < n; i++ )
-                    {
-                        cp = line.charAt( i );  // should use codePointAt but this was JDK1.3
-                        if ( !isJavaIdentifierPart( cp ) && cp != '.' )
-                        {
+                    for (int i = 1; i < n; i++) {
+                        cp = line.charAt(i); // should use codePointAt but this was JDK1.3
+                        if (!isJavaIdentifierPart(cp) && cp != '.') {
                             continue nextUrl; // next url
                         }
                     }
-                    if ( !names.contains( line ) )
-                    {
-                        names.add( line );
+                    if (!names.contains(line)) {
+                        names.add(line);
                     }
                 }
             }
@@ -146,11 +124,9 @@ public class ServiceLoader
     }
 
     @Nonnull
-    private static BufferedReader getReader( @Nonnull URL url )
-        throws IOException
-    {
+    private static BufferedReader getReader(@Nonnull URL url) throws IOException {
         final InputStream inputStream = url.openStream();
-        final InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
-        return new BufferedReader( inputStreamReader );
+        final InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+        return new BufferedReader(inputStreamReader);
     }
 }

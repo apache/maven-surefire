@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.group.match;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.group.match;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.group.match;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.group.match;
 
 import java.util.Collection;
 
@@ -25,34 +24,25 @@ import java.util.Collection;
  * AND group matcher
  *
  */
-public class AndGroupMatcher
-    extends JoinGroupMatcher
-{
+public class AndGroupMatcher extends JoinGroupMatcher {
 
-    public AndGroupMatcher( GroupMatcher... matchers )
-    {
-        for ( GroupMatcher matcher : matchers )
-        {
-            addMatcher( matcher );
+    public AndGroupMatcher(GroupMatcher... matchers) {
+        for (GroupMatcher matcher : matchers) {
+            addMatcher(matcher);
         }
     }
 
-    public AndGroupMatcher( Collection<GroupMatcher> matchers )
-    {
-        for ( GroupMatcher matcher : matchers )
-        {
-            addMatcher( matcher );
+    public AndGroupMatcher(Collection<GroupMatcher> matchers) {
+        for (GroupMatcher matcher : matchers) {
+            addMatcher(matcher);
         }
     }
 
     @Override
-    public boolean enabled( Class<?>... cats )
-    {
-        for ( GroupMatcher matcher : getMatchers() )
-        {
-            boolean result = matcher.enabled( cats );
-            if ( !result )
-            {
+    public boolean enabled(Class<?>... cats) {
+        for (GroupMatcher matcher : getMatchers()) {
+            boolean result = matcher.enabled(cats);
+            if (!result) {
                 return false;
             }
         }
@@ -61,13 +51,10 @@ public class AndGroupMatcher
     }
 
     @Override
-    public boolean enabled( String... cats )
-    {
-        for ( GroupMatcher matcher : getMatchers() )
-        {
-            boolean result = matcher.enabled( cats );
-            if ( !result )
-            {
+    public boolean enabled(String... cats) {
+        for (GroupMatcher matcher : getMatchers()) {
+            boolean result = matcher.enabled(cats);
+            if (!result) {
                 return false;
             }
         }
@@ -76,51 +63,41 @@ public class AndGroupMatcher
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        for ( GroupMatcher matcher : getMatchers() )
-        {
-            if ( sb.length() > 0 )
-            {
-                sb.append( " AND " );
+        for (GroupMatcher matcher : getMatchers()) {
+            if (sb.length() > 0) {
+                sb.append(" AND ");
             }
-            sb.append( matcher );
+            sb.append(matcher);
         }
 
         return sb.toString();
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result;
-        for ( GroupMatcher matcher : getMatchers() )
-        {
+        for (GroupMatcher matcher : getMatchers()) {
             result += matcher.hashCode();
         }
         return result;
     }
 
     @Override
-    public boolean equals( Object obj )
-    {
-        if ( this == obj )
-        {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if ( obj == null )
-        {
+        if (obj == null) {
             return false;
         }
-        if ( getClass() != obj.getClass() )
-        {
+        if (getClass() != obj.getClass()) {
             return false;
         }
         AndGroupMatcher other = (AndGroupMatcher) obj;
-        return getMatchers().equals( other.getMatchers() );
+        return getMatchers().equals(other.getMatchers());
     }
-
 }

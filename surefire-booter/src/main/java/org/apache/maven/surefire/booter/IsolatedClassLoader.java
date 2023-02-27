@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -27,9 +26,7 @@ import java.util.Set;
 /**
  * Loads classes from jar files added via {@link #addURL(URL)}.
  */
-public class IsolatedClassLoader
-    extends URLClassLoader
-{
+public class IsolatedClassLoader extends URLClassLoader {
     private final ClassLoader parent = ClassLoader.getSystemClassLoader();
 
     private final Set<URL> urls = new HashSet<>();
@@ -40,9 +37,8 @@ public class IsolatedClassLoader
 
     private static final URL[] EMPTY_URL_ARRAY = new URL[0];
 
-    public IsolatedClassLoader( ClassLoader parent, boolean childDelegation, String roleName )
-    {
-        super( EMPTY_URL_ARRAY, parent );
+    public IsolatedClassLoader(ClassLoader parent, boolean childDelegation, String roleName) {
+        super(EMPTY_URL_ARRAY, parent);
 
         this.childDelegation = childDelegation;
 
@@ -55,55 +51,40 @@ public class IsolatedClassLoader
      */
     @Override
     @Deprecated
-    public void addURL( URL url )
-    {
+    public void addURL(URL url) {
         // avoid duplicates
         // todo avoid URL due to calling equals method may cause some overhead due to resolving host or file.
-        if ( !urls.contains( url ) )
-        {
-            super.addURL( url );
-            urls.add( url );
+        if (!urls.contains(url)) {
+            super.addURL(url);
+            urls.add(url);
         }
     }
 
     @Override
-    public synchronized Class loadClass( String name )
-        throws ClassNotFoundException
-    {
-        if ( childDelegation )
-        {
-            Class<?> c = findLoadedClass( name );
+    public synchronized Class loadClass(String name) throws ClassNotFoundException {
+        if (childDelegation) {
+            Class<?> c = findLoadedClass(name);
 
-            if ( c == null )
-            {
-                try
-                {
-                    c = findClass( name );
-                }
-                catch ( ClassNotFoundException e )
-                {
-                    if ( parent == null )
-                    {
+            if (c == null) {
+                try {
+                    c = findClass(name);
+                } catch (ClassNotFoundException e) {
+                    if (parent == null) {
                         throw e;
-                    }
-                    else
-                    {
-                        c = parent.loadClass( name );
+                    } else {
+                        c = parent.loadClass(name);
                     }
                 }
             }
 
             return c;
-        }
-        else
-        {
-            return super.loadClass( name );
+        } else {
+            return super.loadClass(name);
         }
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "IsolatedClassLoader{roleName='" + roleName + "'}";
     }
 }

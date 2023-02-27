@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.report;
 
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 
@@ -28,15 +27,14 @@ import org.apache.maven.surefire.api.provider.SurefireProvider;
  * An instance of a reporter is not guaranteed to be thread-safe and concurrent test frameworks
  * must request an instance of a reporter per-thread from the ReporterFactory.
  */
-public interface RunListener
-{
+public interface RunListener {
     /**
      * Indicates the start of a given test-set
      *
      * @param report the report entry describing the testset
      * @throws ReporterException When reporting fails
      */
-    void testSetStarting( TestSetReportEntry report );
+    void testSetStarting(TestSetReportEntry report);
 
     /**
      * Indicates end of a given test-set
@@ -44,21 +42,21 @@ public interface RunListener
      * @param report the report entry describing the testset
      * @throws ReporterException When reporting fails
      */
-    void testSetCompleted( TestSetReportEntry report );
+    void testSetCompleted(TestSetReportEntry report);
 
     /**
      * Event fired when a test is about to start
      *
      * @param report The report entry to log for
      */
-    void testStarting( ReportEntry report );
+    void testStarting(ReportEntry report);
 
     /**
      * Event fired when a test ended successfully
      *
      * @param report The report entry to log for
      */
-    void testSucceeded( ReportEntry report );
+    void testSucceeded(ReportEntry report);
 
     /**
      * Event fired when a test assumption failure was encountered.
@@ -66,28 +64,28 @@ public interface RunListener
      *
      * @param report The report entry to log for
      */
-    void testAssumptionFailure( ReportEntry report );
+    void testAssumptionFailure(ReportEntry report);
 
     /**
      * Event fired when a test ended with an error (non anticipated problem)
      *
      * @param report The report entry to log for
      */
-    void testError( ReportEntry report );
+    void testError(ReportEntry report);
 
     /**
      * Event fired when a test ended with a failure (anticipated problem)
      *
      * @param report The report entry to log for
      */
-    void testFailed( ReportEntry report );
+    void testFailed(ReportEntry report);
 
     /**
      * Event fired when a test is skipped
      *
      * @param report The report entry to log for
      */
-    void testSkipped( ReportEntry report );
+    void testSkipped(ReportEntry report);
 
     /**
      * Event fired skipping an execution of remaining test-set in other fork(s); or does nothing if no forks.

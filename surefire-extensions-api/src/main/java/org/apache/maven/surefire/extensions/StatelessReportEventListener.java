@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.extensions;
 
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
@@ -31,13 +30,12 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
  * @param <R> report entry type, see <em>WrappedReportEntry</em> from module the <em>maven-surefire-common</em>
  * @param <S> test-set statistics, see <em>TestSetStats</em> from module the <em>maven-surefire-common</em>
  */
-public interface StatelessReportEventListener<R extends TestSetReportEntry, S>
-{
+public interface StatelessReportEventListener<R extends TestSetReportEntry, S> {
     /**
      * The callback is called after the test class has been completed and the state of report is final.
      *
      * @param report <em>WrappedReportEntry</em>
      * @param testSetStats <em>TestSetStats</em>
      */
-     void testSetCompleted( R report, S testSetStats );
+    void testSetCompleted(R report, S testSetStats);
 }

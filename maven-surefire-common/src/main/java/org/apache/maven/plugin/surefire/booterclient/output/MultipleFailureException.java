@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient.output;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,46 +16,38 @@ package org.apache.maven.plugin.surefire.booterclient.output;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.booterclient.output;
 
 import java.io.IOException;
 import java.util.function.Function;
 
-final class MultipleFailureException
-        extends IOException
-{
-    void addException( Throwable exception )
-    {
-        addSuppressed( exception );
+final class MultipleFailureException extends IOException {
+    void addException(Throwable exception) {
+        addSuppressed(exception);
     }
 
-    boolean hasNestedExceptions()
-    {
+    boolean hasNestedExceptions() {
         return getSuppressed().length != 0;
     }
 
     @Override
-    public String getLocalizedMessage()
-    {
-        return toMessage( Throwable::getLocalizedMessage );
+    public String getLocalizedMessage() {
+        return toMessage(Throwable::getLocalizedMessage);
     }
 
     @Override
-    public String getMessage()
-    {
-        return toMessage( Throwable::getMessage );
+    public String getMessage() {
+        return toMessage(Throwable::getMessage);
     }
 
-    private String toMessage( Function<Throwable, String> msg )
-    {
+    private String toMessage(Function<Throwable, String> msg) {
         StringBuilder messages = new StringBuilder();
-        for ( Throwable exception : getSuppressed() )
-        {
-            if ( messages.length() != 0 )
-            {
-                messages.append( '\n' );
+        for (Throwable exception : getSuppressed()) {
+            if (messages.length() != 0) {
+                messages.append('\n');
             }
-            String message = msg.apply( exception );
-            messages.append( message == null ? exception.toString() : message );
+            String message = msg.apply(exception);
+            messages.append(message == null ? exception.toString() : message);
         }
         return messages.toString();
     }

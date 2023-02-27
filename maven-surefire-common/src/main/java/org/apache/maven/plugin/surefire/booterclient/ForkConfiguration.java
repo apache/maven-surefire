@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.booterclient;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.booterclient;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,14 @@ package org.apache.maven.plugin.surefire.booterclient;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.booterclient;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import java.io.File;
+import java.util.Map;
+import java.util.Properties;
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
@@ -27,33 +33,50 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.io.File;
-import java.util.Map;
-import java.util.Properties;
-
 /**
  * Configuration for forking tests.
  */
-public abstract class ForkConfiguration
-{
+public abstract class ForkConfiguration {
     static final String DEFAULT_PROVIDER_CLASS = ForkedBooter.class.getName();
 
-    @Nonnull public abstract ForkNodeFactory getForkNodeFactory();
-    @Nonnull public abstract File getTempDirectory();
-    @Nullable protected abstract String getDebugLine();
-    @Nonnull protected abstract File getWorkingDirectory();
-    @Nonnull protected abstract Properties getModelProperties();
-    @Nullable protected abstract String getArgLine();
-    @Nonnull protected abstract Map<String, String> getEnvironmentVariables();
-    @Nonnull protected abstract String[] getExcludedEnvironmentVariables();
+    @Nonnull
+    public abstract ForkNodeFactory getForkNodeFactory();
+
+    @Nonnull
+    public abstract File getTempDirectory();
+
+    @Nullable
+    protected abstract String getDebugLine();
+
+    @Nonnull
+    protected abstract File getWorkingDirectory();
+
+    @Nonnull
+    protected abstract Properties getModelProperties();
+
+    @Nullable
+    protected abstract String getArgLine();
+
+    @Nonnull
+    protected abstract Map<String, String> getEnvironmentVariables();
+
+    @Nonnull
+    protected abstract String[] getExcludedEnvironmentVariables();
+
     protected abstract boolean isDebug();
+
     protected abstract int getForkCount();
+
     protected abstract boolean isReuseForks();
-    @Nonnull protected abstract Platform getPluginPlatform();
-    @Nonnull protected abstract JdkAttributes getJdkForTests();
-    @Nonnull protected abstract Classpath getBooterClasspath();
+
+    @Nonnull
+    protected abstract Platform getPluginPlatform();
+
+    @Nonnull
+    protected abstract JdkAttributes getJdkForTests();
+
+    @Nonnull
+    protected abstract Classpath getBooterClasspath();
 
     /**
      * @param config               The startup configuration
@@ -64,8 +87,7 @@ public abstract class ForkConfiguration
      *          when unable to perform the fork
      */
     @Nonnull
-    public abstract Commandline createCommandLine( @Nonnull StartupConfiguration config,
-                                                   int forkNumber,
-                                                   @Nonnull File dumpLogDirectory )
+    public abstract Commandline createCommandLine(
+            @Nonnull StartupConfiguration config, int forkNumber, @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException;
 }

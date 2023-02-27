@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.plugin.failsafe;
 
 /*
@@ -19,6 +37,12 @@ package org.apache.maven.plugin.failsafe;
  * under the License.
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
@@ -27,14 +51,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
 import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writeSummary;
 
@@ -44,11 +62,13 @@ import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writ
  * @author Jason van Zyl
  * @author Stephen Connolly
  */
-@Mojo( name = "integration-test", requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST,
-             defaultPhase = LifecyclePhase.INTEGRATION_TEST, threadSafe = true )
-public class IntegrationTestMojo
-        extends AbstractSurefireMojo
-{
+@Mojo(
+        name = "integration-test",
+        requiresProject = true,
+        requiresDependencyResolution = ResolutionScope.TEST,
+        defaultPhase = LifecyclePhase.INTEGRATION_TEST,
+        threadSafe = true)
+public class IntegrationTestMojo extends AbstractSurefireMojo {
 
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
 
@@ -60,7 +80,7 @@ public class IntegrationTestMojo
     @Parameter
     private File classesDirectory;
 
-    @Parameter( defaultValue = "${project.build.outputDirectory}", readonly = true, required = true )
+    @Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true, required = true)
     private File defaultClassesDirectory;
 
     /**
@@ -69,16 +89,16 @@ public class IntegrationTestMojo
      *
      * @since 2.4.3-alpha-2
      */
-    @Parameter( property = "skipITs" )
+    @Parameter(property = "skipITs")
     private boolean skipITs;
 
     /**
      * Base directory where all reports are written to.
      */
-    @Parameter( defaultValue = "${project.build.directory}/failsafe-reports" )
+    @Parameter(defaultValue = "${project.build.directory}/failsafe-reports")
     private File reportsDirectory;
 
-    @SuppressWarnings( "checkstyle:linelength" )
+    @SuppressWarnings("checkstyle:linelength")
     /**
      * Specify this parameter to run individual tests by file name, overriding parameter {@code includes} and
      * {@code excludes}. Each pattern you specify here will be used to create an include pattern formatted like
@@ -101,32 +121,32 @@ public class IntegrationTestMojo
      * method pattern would become: {@code #testMethod[*]}. If using <code>@Parameters(name="{index}: fib({0})={1}")</code>
      * and selecting the index e.g. 5 in pattern, the non-regex method pattern would become {@code #testMethod[5:*]}.
      */
-    @Parameter( property = "it.test" )
+    @Parameter(property = "it.test")
     private String test;
 
     /**
      * The summary file to write integration test results to.
      */
-    @Parameter( defaultValue = "${project.build.directory}/failsafe-reports/failsafe-summary.xml", required = true )
+    @Parameter(defaultValue = "${project.build.directory}/failsafe-reports/failsafe-summary.xml", required = true)
     private File summaryFile;
 
     /**
      * Option to print summary of test suites or just print the test cases that have errors.
      */
-    @Parameter( property = "failsafe.printSummary", defaultValue = "true" )
+    @Parameter(property = "failsafe.printSummary", defaultValue = "true")
     private boolean printSummary;
 
     /**
      * Selects the formatting for the test report to be generated. Can be set as "brief" or "plain".
      * Only applies to the output format of the output files  (target/surefire-reports/testName.txt)
      */
-    @Parameter( property = "failsafe.reportFormat", defaultValue = "brief" )
+    @Parameter(property = "failsafe.reportFormat", defaultValue = "brief")
     private String reportFormat;
 
     /**
      * Option to generate a file test report or just output the test report to the console.
      */
-    @Parameter( property = "failsafe.useFile", defaultValue = "true" )
+    @Parameter(property = "failsafe.useFile", defaultValue = "true")
     private boolean useFile;
 
     /**
@@ -137,7 +157,7 @@ public class IntegrationTestMojo
      * @deprecated Since 3.0.0-M8, use "failsafe.failIfNoSpecifiedTests" instead.
      */
     @Deprecated
-    @Parameter( property = "it.failIfNoSpecifiedTests", defaultValue = "true" )
+    @Parameter(property = "it.failIfNoSpecifiedTests", defaultValue = "true")
     private boolean failIfNoSpecifiedTestsDeprecated;
 
     /**
@@ -147,7 +167,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M8
      */
-    @Parameter( property = "failsafe.failIfNoSpecifiedTests", defaultValue = "true" )
+    @Parameter(property = "failsafe.failIfNoSpecifiedTests", defaultValue = "true")
     private boolean failIfNoSpecifiedTests;
 
     /**
@@ -158,7 +178,7 @@ public class IntegrationTestMojo
      *
      * @since 2.4
      */
-    @Parameter( property = "maven.failsafe.debug" )
+    @Parameter(property = "maven.failsafe.debug")
     private String debugForkedProcess;
 
     /**
@@ -167,7 +187,7 @@ public class IntegrationTestMojo
      *
      * @since 2.4
      */
-    @Parameter( property = "failsafe.timeout" )
+    @Parameter(property = "failsafe.timeout")
     private int forkedProcessTimeoutInSeconds;
 
     /**
@@ -179,7 +199,7 @@ public class IntegrationTestMojo
      *
      * @since 2.20
      */
-    @Parameter( property = "failsafe.exitTimeout", defaultValue = "30" )
+    @Parameter(property = "failsafe.exitTimeout", defaultValue = "30")
     private int forkedProcessExitTimeoutInSeconds;
 
     /**
@@ -192,7 +212,7 @@ public class IntegrationTestMojo
      *
      * @since 2.16
      */
-    @Parameter( property = "failsafe.parallel.timeout" )
+    @Parameter(property = "failsafe.parallel.timeout")
     private double parallelTestsTimeoutInSeconds;
 
     /**
@@ -206,10 +226,10 @@ public class IntegrationTestMojo
      *
      * @since 2.16
      */
-    @Parameter( property = "failsafe.parallel.forcedTimeout" )
+    @Parameter(property = "failsafe.parallel.forcedTimeout")
     private double parallelTestsTimeoutForcedInSeconds;
 
-    @SuppressWarnings( "checkstyle:linelength" )
+    @SuppressWarnings("checkstyle:linelength")
     /**
      * A list of {@literal <include>} elements specifying the test filter (by pattern) of tests which should be
      * included in testing. If it is not specified and the {@code test} parameter is unspecified as well, the default
@@ -237,7 +257,7 @@ public class IntegrationTestMojo
      * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
      * <code>{@literal src/test/java}</code> unless overridden.
      */
-    @Parameter( property = "failsafe.includes" )
+    @Parameter(property = "failsafe.includes")
     // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
     private List<String> includes;
 
@@ -265,7 +285,7 @@ public class IntegrationTestMojo
      * to the POM property <code>${project.build.testOutputDirectory}</code>, typically
      * <code>{@literal src/test/java}</code> unless overridden.
      */
-    @Parameter( property = "failsafe.excludes" )
+    @Parameter(property = "failsafe.excludes")
     // TODO use regex for fully qualified class names in 3.0 and change the filtering abilities
     private List<String> excludes;
 
@@ -276,7 +296,7 @@ public class IntegrationTestMojo
      *
      * @since 2.3
      */
-    @Parameter( property = "failsafe.useSystemClassLoader", defaultValue = "true" )
+    @Parameter(property = "failsafe.useSystemClassLoader", defaultValue = "true")
     private boolean useSystemClassLoader;
 
     /**
@@ -290,7 +310,7 @@ public class IntegrationTestMojo
      *
      * @since 2.4.3
      */
-    @Parameter( property = "failsafe.useManifestOnlyJar", defaultValue = "true" )
+    @Parameter(property = "failsafe.useManifestOnlyJar", defaultValue = "true")
     private boolean useManifestOnlyJar;
 
     /**
@@ -300,7 +320,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M1
      */
-    @Parameter( property = "encoding", defaultValue = "${project.reporting.outputEncoding}" )
+    @Parameter(property = "encoding", defaultValue = "${project.reporting.outputEncoding}")
     private String encoding;
 
     /**
@@ -309,7 +329,7 @@ public class IntegrationTestMojo
      * they fail. If a failing test passes in any of those reruns, it will be marked as pass and reported as a "flake".
      * However, all the failing attempts will be recorded.
      */
-    @Parameter( property = "failsafe.rerunFailingTestsCount", defaultValue = "0" )
+    @Parameter(property = "failsafe.rerunFailingTestsCount", defaultValue = "0")
     private int rerunFailingTestsCount;
 
     /**
@@ -321,7 +341,7 @@ public class IntegrationTestMojo
      *
      * @since 2.2
      */
-    @Parameter( property = "failsafe.suiteXmlFiles" )
+    @Parameter(property = "failsafe.suiteXmlFiles")
     private File[] suiteXmlFiles;
 
     /**
@@ -348,7 +368,7 @@ public class IntegrationTestMojo
      *
      * @since 2.7
      */
-    @Parameter( property = "failsafe.runOrder", defaultValue = "filesystem" )
+    @Parameter(property = "failsafe.runOrder", defaultValue = "filesystem")
     private String runOrder;
 
     /**
@@ -364,7 +384,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "failsafe.runOrder.random.seed" )
+    @Parameter(property = "failsafe.runOrder.random.seed")
     private Long runOrderRandomSeed;
 
     /**
@@ -384,7 +404,7 @@ public class IntegrationTestMojo
      *
      * @since 2.13
      */
-    @Parameter( property = "failsafe.includesFile" )
+    @Parameter(property = "failsafe.includesFile")
     private File includesFile;
 
     /**
@@ -404,7 +424,7 @@ public class IntegrationTestMojo
      *
      * @since 2.13
      */
-    @Parameter( property = "failsafe.excludesFile" )
+    @Parameter(property = "failsafe.excludesFile")
     private File excludesFile;
 
     /**
@@ -418,7 +438,7 @@ public class IntegrationTestMojo
      *
      * @since 2.19
      */
-    @Parameter( property = "failsafe.skipAfterFailureCount", defaultValue = "0" )
+    @Parameter(property = "failsafe.skipAfterFailureCount", defaultValue = "0")
     private int skipAfterFailureCount;
 
     /**
@@ -438,7 +458,7 @@ public class IntegrationTestMojo
      *
      * @since 2.19
      */
-    @Parameter( property = "failsafe.shutdown", defaultValue = "exit" )
+    @Parameter(property = "failsafe.shutdown", defaultValue = "exit")
     private String shutdown;
 
     /**
@@ -449,7 +469,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M2
      */
-    @Parameter( property = "failsafe.useModulePath", defaultValue = "true" )
+    @Parameter(property = "failsafe.useModulePath", defaultValue = "true")
     private boolean useModulePath;
 
     /**
@@ -464,7 +484,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M5
      */
-    @Parameter( property = "failsafe.forkNode" )
+    @Parameter(property = "failsafe.forkNode")
     private ForkNodeFactory forkNode;
 
     /**
@@ -480,7 +500,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M4
      */
-    @Parameter( property = "failsafe.excludedEnvironmentVariables" )
+    @Parameter(property = "failsafe.excludedEnvironmentVariables")
     private String[] excludedEnvironmentVariables;
 
     /**
@@ -521,10 +541,10 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M4
      */
-    @Parameter( property = "failsafe.enableProcessChecker" )
+    @Parameter(property = "failsafe.enableProcessChecker")
     private String enableProcessChecker;
 
-    @Parameter( property = "failsafe.systemPropertiesFile" )
+    @Parameter(property = "failsafe.systemPropertiesFile")
     private File systemPropertiesFile;
 
     /**
@@ -532,7 +552,7 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "failsafe.includeJUnit5Engines" )
+    @Parameter(property = "failsafe.includeJUnit5Engines")
     private String[] includeJUnit5Engines;
 
     /**
@@ -540,152 +560,127 @@ public class IntegrationTestMojo
      *
      * @since 3.0.0-M6
      */
-    @Parameter( property = "failsafe.excludeJUnit5Engines" )
+    @Parameter(property = "failsafe.excludeJUnit5Engines")
     private String[] excludeJUnit5Engines;
 
     @Override
-    protected int getRerunFailingTestsCount()
-    {
+    protected int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
     }
 
     @Override
-    @SuppressWarnings( "unchecked" )
-    protected void handleSummary( RunResult summary, Exception firstForkException )
-            throws MojoExecutionException, MojoFailureException
-    {
+    @SuppressWarnings("unchecked")
+    protected void handleSummary(RunResult summary, Exception firstForkException)
+            throws MojoExecutionException, MojoFailureException {
         File summaryFile = getSummaryFile();
-        if ( !summaryFile.getParentFile().isDirectory() )
-        {
+        if (!summaryFile.getParentFile().isDirectory()) {
             //noinspection ResultOfMethodCallIgnored
             summaryFile.getParentFile().mkdirs();
         }
 
-        try
-        {
-            Object token = getPluginContext().get( FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
-            writeSummary( summary, summaryFile, token != null );
-        }
-        catch ( Exception e )
-        {
-            throw new MojoExecutionException( e.getMessage(), e );
+        try {
+            Object token = getPluginContext().get(FAILSAFE_IN_PROGRESS_CONTEXT_KEY);
+            writeSummary(summary, summaryFile, token != null);
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), e);
         }
 
-        getPluginContext().put( FAILSAFE_IN_PROGRESS_CONTEXT_KEY, FAILSAFE_IN_PROGRESS_CONTEXT_KEY );
+        getPluginContext().put(FAILSAFE_IN_PROGRESS_CONTEXT_KEY, FAILSAFE_IN_PROGRESS_CONTEXT_KEY);
     }
 
-    private boolean isJarArtifact( File artifactFile )
-    {
-        return artifactFile != null && artifactFile.isFile() && artifactFile.getName().toLowerCase().endsWith( ".jar" );
+    private boolean isJarArtifact(File artifactFile) {
+        return artifactFile != null
+                && artifactFile.isFile()
+                && artifactFile.getName().toLowerCase().endsWith(".jar");
     }
 
-    private static File toAbsoluteCanonical( File f )
-    {
-        try
-        {
+    private static File toAbsoluteCanonical(File f) {
+        try {
             return f == null ? null : f.getAbsoluteFile().getCanonicalFile();
-        }
-        catch ( IOException e )
-        {
-            throw new IllegalStateException( e.getLocalizedMessage(), e );
+        } catch (IOException e) {
+            throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
     }
 
     @Override
-    @SuppressWarnings( "deprecation" )
-    protected boolean isSkipExecution()
-    {
+    @SuppressWarnings("deprecation")
+    protected boolean isSkipExecution() {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
     }
 
     @Override
-    protected String getPluginName()
-    {
+    protected String getPluginName() {
         return "failsafe";
     }
 
     @Override
-    protected String[] getDefaultIncludes()
-    {
-        return new String[]{ "**/IT*.java", "**/*IT.java", "**/*ITCase.java" };
+    protected String[] getDefaultIncludes() {
+        return new String[] {"**/IT*.java", "**/*IT.java", "**/*ITCase.java"};
     }
 
     @Override
-    protected String getReportSchemaLocation()
-    {
+    protected String getReportSchemaLocation() {
         return "https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report-3.0.xsd";
     }
 
     @Override
-    public boolean isSkipTests()
-    {
+    public boolean isSkipTests() {
         return skipTests;
     }
 
     @Override
     @Deprecated
-    public void setSkipTests( boolean skipTests )
-    {
+    public void setSkipTests(boolean skipTests) {
         this.skipTests = skipTests;
     }
 
-    public boolean isSkipITs()
-    {
+    public boolean isSkipITs() {
         return skipITs;
     }
 
-    public void setSkipITs( boolean skipITs )
-    {
+    public void setSkipITs(boolean skipITs) {
         this.skipITs = skipITs;
     }
 
     @Override
     @Deprecated
-    public boolean isSkipExec()
-    {
+    public boolean isSkipExec() {
         return skipExec;
     }
 
     @Override
     @Deprecated
-    public void setSkipExec( boolean skipExec )
-    {
+    public void setSkipExec(boolean skipExec) {
         this.skipExec = skipExec;
     }
 
     @Override
-    public boolean isSkip()
-    {
+    public boolean isSkip() {
         return skip;
     }
 
     @Override
-    public void setSkip( boolean skip )
-    {
+    public void setSkip(boolean skip) {
         this.skip = skip;
     }
 
     @Override
-    public File getBasedir()
-    {
+    public File getBasedir() {
         return basedir;
     }
 
     @Override
-    public void setBasedir( File basedir )
-    {
+    public void setBasedir(File basedir) {
         this.basedir = basedir;
     }
 
     @Override
-    public File getTestClassesDirectory()
-    {
+    public File getTestClassesDirectory() {
         return testClassesDirectory;
     }
 
     @Override
-    public void setTestClassesDirectory( File testClassesDirectory )
-    {
+    public void setTestClassesDirectory(File testClassesDirectory) {
         this.testClassesDirectory = testClassesDirectory;
     }
 
@@ -695,392 +690,328 @@ public class IntegrationTestMojo
      * used instead. See the resolution of {@link #getClassLoaderConfiguration() ClassLoaderConfiguration}.
      */
     @Override
-    public File getMainBuildPath()
-    {
+    public File getMainBuildPath() {
         File artifact = getProject().getArtifact().getFile();
         boolean isDefaultClsDir = classesDirectory == null;
-        return isDefaultClsDir ? ( isJarArtifact( artifact ) ? artifact : defaultClassesDirectory ) : classesDirectory;
+        return isDefaultClsDir ? (isJarArtifact(artifact) ? artifact : defaultClassesDirectory) : classesDirectory;
     }
 
     @Override
-    public void setMainBuildPath( File mainBuildPath )
-    {
-        classesDirectory = toAbsoluteCanonical( mainBuildPath );
+    public void setMainBuildPath(File mainBuildPath) {
+        classesDirectory = toAbsoluteCanonical(mainBuildPath);
     }
 
-    public void setDefaultClassesDirectory( File defaultClassesDirectory )
-    {
-        this.defaultClassesDirectory = toAbsoluteCanonical( defaultClassesDirectory );
+    public void setDefaultClassesDirectory(File defaultClassesDirectory) {
+        this.defaultClassesDirectory = toAbsoluteCanonical(defaultClassesDirectory);
     }
 
     @Override
-    public File getReportsDirectory()
-    {
+    public File getReportsDirectory() {
         return reportsDirectory;
     }
 
     @Override
-    public void setReportsDirectory( File reportsDirectory )
-    {
+    public void setReportsDirectory(File reportsDirectory) {
         this.reportsDirectory = reportsDirectory;
     }
 
     @Override
-    public String getTest()
-    {
+    public String getTest() {
         return test;
     }
 
     @Override
-    public void setTest( String test )
-    {
+    public void setTest(String test) {
         this.test = test;
     }
 
-    public File getSummaryFile()
-    {
+    public File getSummaryFile() {
         return summaryFile;
     }
 
-    public void setSummaryFile( File summaryFile )
-    {
+    public void setSummaryFile(File summaryFile) {
         this.summaryFile = summaryFile;
     }
 
     @Override
-    public boolean isPrintSummary()
-    {
+    public boolean isPrintSummary() {
         return printSummary;
     }
 
     @Override
-    public void setPrintSummary( boolean printSummary )
-    {
+    public void setPrintSummary(boolean printSummary) {
         this.printSummary = printSummary;
     }
 
     @Override
-    public String getReportFormat()
-    {
+    public String getReportFormat() {
         return reportFormat;
     }
 
     @Override
-    public void setReportFormat( String reportFormat )
-    {
+    public void setReportFormat(String reportFormat) {
         this.reportFormat = reportFormat;
     }
 
     @Override
-    public boolean isUseFile()
-    {
+    public boolean isUseFile() {
         return useFile;
     }
 
     @Override
-    public void setUseFile( boolean useFile )
-    {
+    public void setUseFile(boolean useFile) {
         this.useFile = useFile;
     }
 
     @Override
-    public String getDebugForkedProcess()
-    {
+    public String getDebugForkedProcess() {
         return debugForkedProcess;
     }
 
     @Override
-    public void setDebugForkedProcess( String debugForkedProcess )
-    {
+    public void setDebugForkedProcess(String debugForkedProcess) {
         this.debugForkedProcess = debugForkedProcess;
     }
 
     @Override
-    public int getForkedProcessTimeoutInSeconds()
-    {
+    public int getForkedProcessTimeoutInSeconds() {
         return forkedProcessTimeoutInSeconds;
     }
 
     @Override
-    public void setForkedProcessTimeoutInSeconds( int forkedProcessTimeoutInSeconds )
-    {
+    public void setForkedProcessTimeoutInSeconds(int forkedProcessTimeoutInSeconds) {
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
     }
 
     @Override
-    public int getForkedProcessExitTimeoutInSeconds()
-    {
+    public int getForkedProcessExitTimeoutInSeconds() {
         return forkedProcessExitTimeoutInSeconds;
     }
 
     @Override
-    public void setForkedProcessExitTimeoutInSeconds( int forkedProcessExitTimeoutInSeconds )
-    {
+    public void setForkedProcessExitTimeoutInSeconds(int forkedProcessExitTimeoutInSeconds) {
         this.forkedProcessExitTimeoutInSeconds = forkedProcessExitTimeoutInSeconds;
     }
 
     @Override
-    public double getParallelTestsTimeoutInSeconds()
-    {
+    public double getParallelTestsTimeoutInSeconds() {
         return parallelTestsTimeoutInSeconds;
     }
 
     @Override
-    public void setParallelTestsTimeoutInSeconds( double parallelTestsTimeoutInSeconds )
-    {
+    public void setParallelTestsTimeoutInSeconds(double parallelTestsTimeoutInSeconds) {
         this.parallelTestsTimeoutInSeconds = parallelTestsTimeoutInSeconds;
     }
 
     @Override
-    public double getParallelTestsTimeoutForcedInSeconds()
-    {
+    public double getParallelTestsTimeoutForcedInSeconds() {
         return parallelTestsTimeoutForcedInSeconds;
     }
 
     @Override
-    public void setParallelTestsTimeoutForcedInSeconds( double parallelTestsTimeoutForcedInSeconds )
-    {
+    public void setParallelTestsTimeoutForcedInSeconds(double parallelTestsTimeoutForcedInSeconds) {
         this.parallelTestsTimeoutForcedInSeconds = parallelTestsTimeoutForcedInSeconds;
     }
 
     @Override
-    public boolean isUseSystemClassLoader()
-    {
+    public boolean isUseSystemClassLoader() {
         return useSystemClassLoader;
     }
 
     @Override
-    public void setUseSystemClassLoader( boolean useSystemClassLoader )
-    {
+    public void setUseSystemClassLoader(boolean useSystemClassLoader) {
         this.useSystemClassLoader = useSystemClassLoader;
     }
 
     @Override
-    public boolean isUseManifestOnlyJar()
-    {
+    public boolean isUseManifestOnlyJar() {
         return useManifestOnlyJar;
     }
 
     @Override
-    public void setUseManifestOnlyJar( boolean useManifestOnlyJar )
-    {
+    public void setUseManifestOnlyJar(boolean useManifestOnlyJar) {
         this.useManifestOnlyJar = useManifestOnlyJar;
     }
 
     @Override
-    public String getEncoding()
-    {
+    public String getEncoding() {
         return encoding;
     }
 
     @Override
-    public void setEncoding( String encoding )
-    {
+    public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
     // the following will be refactored out once the common code is all in one place
 
-    public boolean isTestFailureIgnore()
-    {
+    public boolean isTestFailureIgnore() {
         return true; // ignore
     }
 
-    public void setTestFailureIgnore( boolean testFailureIgnore )
-    {
+    public void setTestFailureIgnore(boolean testFailureIgnore) {
         // ignore
     }
 
     @Override
-    protected void addPluginSpecificChecksumItems( ChecksumCalculator checksum )
-    {
-        checksum.add( skipITs );
-        checksum.add( summaryFile );
+    protected void addPluginSpecificChecksumItems(ChecksumCalculator checksum) {
+        checksum.add(skipITs);
+        checksum.add(summaryFile);
     }
 
     @Override
-    public File getSystemPropertiesFile()
-    {
+    public File getSystemPropertiesFile() {
         return systemPropertiesFile;
     }
 
     @Override
-    public void setSystemPropertiesFile( File systemPropertiesFile )
-    {
+    public void setSystemPropertiesFile(File systemPropertiesFile) {
         this.systemPropertiesFile = systemPropertiesFile;
     }
 
     @Override
-    @SuppressWarnings( "deprecation" )
-    public boolean getFailIfNoSpecifiedTests()
-    {
-        if ( !failIfNoSpecifiedTestsDeprecated )
-        {
-            getConsoleLogger().warning( "Use " + getPluginName()
-                    + ".failIfNoSpecifiedTests property instead of obsolete it.failIfNoSpecifiedTests." );
+    @SuppressWarnings("deprecation")
+    public boolean getFailIfNoSpecifiedTests() {
+        if (!failIfNoSpecifiedTestsDeprecated) {
+            getConsoleLogger()
+                    .warning("Use " + getPluginName()
+                            + ".failIfNoSpecifiedTests property instead of obsolete it.failIfNoSpecifiedTests.");
         }
         // since both have default "true", assuming that any "false" is set by user on purpose
         return failIfNoSpecifiedTests && failIfNoSpecifiedTestsDeprecated;
     }
 
     @Override
-    public void setFailIfNoSpecifiedTests( boolean failIfNoSpecifiedTests )
-    {
+    public void setFailIfNoSpecifiedTests(boolean failIfNoSpecifiedTests) {
         this.failIfNoSpecifiedTests = failIfNoSpecifiedTests;
     }
 
     @Override
-    public int getSkipAfterFailureCount()
-    {
+    public int getSkipAfterFailureCount() {
         return skipAfterFailureCount;
     }
 
     @Override
-    public String getShutdown()
-    {
+    public String getShutdown() {
         return shutdown;
     }
 
     @Override
-    public List<String> getIncludes()
-    {
+    public List<String> getIncludes() {
         return includes;
     }
 
     @Override
-    public void setIncludes( List<String> includes )
-    {
+    public void setIncludes(List<String> includes) {
         this.includes = includes;
     }
 
     @Override
-    public List<String> getExcludes()
-    {
+    public List<String> getExcludes() {
         return excludes;
     }
 
     @Override
-    public void setExcludes( List<String> excludes )
-    {
+    public void setExcludes(List<String> excludes) {
         this.excludes = excludes;
     }
 
     @Override
-    public File[] getSuiteXmlFiles()
-    {
+    public File[] getSuiteXmlFiles() {
         return suiteXmlFiles.clone();
     }
 
     @Override
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setSuiteXmlFiles( File[] suiteXmlFiles )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setSuiteXmlFiles(File[] suiteXmlFiles) {
         this.suiteXmlFiles = suiteXmlFiles.clone();
     }
 
     @Override
-    public String getRunOrder()
-    {
+    public String getRunOrder() {
         return runOrder;
     }
 
     @Override
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setRunOrder( String runOrder )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setRunOrder(String runOrder) {
         this.runOrder = runOrder;
     }
 
     @Override
-    public Long getRunOrderRandomSeed()
-    {
+    public Long getRunOrderRandomSeed() {
         return runOrderRandomSeed;
     }
 
     @Override
-    public void setRunOrderRandomSeed( Long runOrderRandomSeed )
-    {
+    public void setRunOrderRandomSeed(Long runOrderRandomSeed) {
         this.runOrderRandomSeed = runOrderRandomSeed;
     }
 
     @Override
-    public File getIncludesFile()
-    {
+    public File getIncludesFile() {
         return includesFile;
     }
 
     @Override
-    public File getExcludesFile()
-    {
+    public File getExcludesFile() {
         return excludesFile;
     }
 
     @Override
-    protected boolean useModulePath()
-    {
+    protected boolean useModulePath() {
         return useModulePath;
     }
 
     @Override
-    protected void setUseModulePath( boolean useModulePath )
-    {
+    protected void setUseModulePath(boolean useModulePath) {
         this.useModulePath = useModulePath;
     }
 
     @Override
-    protected final List<File> suiteXmlFiles()
-    {
-        return hasSuiteXmlFiles() ? Arrays.asList( suiteXmlFiles ) : Collections.<File>emptyList();
+    protected final List<File> suiteXmlFiles() {
+        return hasSuiteXmlFiles() ? Arrays.asList(suiteXmlFiles) : Collections.<File>emptyList();
     }
 
     @Override
-    protected final boolean hasSuiteXmlFiles()
-    {
+    protected final boolean hasSuiteXmlFiles() {
         return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 
     @Override
-    protected final ForkNodeFactory getForkNode()
-    {
+    protected final ForkNodeFactory getForkNode() {
         return forkNode;
     }
 
     @Override
-    protected final String[] getExcludedEnvironmentVariables()
-    {
+    protected final String[] getExcludedEnvironmentVariables() {
         return excludedEnvironmentVariables == null ? new String[0] : excludedEnvironmentVariables;
     }
 
-    void setExcludedEnvironmentVariables( String[] excludedEnvironmentVariables )
-    {
+    void setExcludedEnvironmentVariables(String[] excludedEnvironmentVariables) {
         this.excludedEnvironmentVariables = excludedEnvironmentVariables;
     }
 
     @Override
-    protected final String getEnableProcessChecker()
-    {
+    protected final String getEnableProcessChecker() {
         return enableProcessChecker;
     }
 
-    public String[] getIncludeJUnit5Engines()
-    {
+    public String[] getIncludeJUnit5Engines() {
         return includeJUnit5Engines;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setIncludeJUnit5Engines( String[] includeJUnit5Engines )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setIncludeJUnit5Engines(String[] includeJUnit5Engines) {
         this.includeJUnit5Engines = includeJUnit5Engines;
     }
 
-    public String[] getExcludeJUnit5Engines()
-    {
+    public String[] getExcludeJUnit5Engines() {
         return excludeJUnit5Engines;
     }
 
-    @SuppressWarnings( "UnusedDeclaration" )
-    public void setExcludeJUnit5Engines( String[] excludeJUnit5Engines )
-    {
+    @SuppressWarnings("UnusedDeclaration")
+    public void setExcludeJUnit5Engines(String[] excludeJUnit5Engines) {
         this.excludeJUnit5Engines = excludeJUnit5Engines;
     }
 }

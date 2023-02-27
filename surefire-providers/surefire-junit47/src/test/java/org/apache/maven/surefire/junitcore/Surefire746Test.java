@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.maven.surefire.junitcore;
 
 /*
@@ -99,91 +117,76 @@ import static org.mockito.Mockito.mock;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
-public class Surefire746Test
-{
+public class Surefire746Test {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Test
-    @SuppressWarnings( "checkstyle:methodname" )
-    public void surefireIsConfused_ByMultipleIgnore_OnClassLevel() throws Exception
-    {
+    @SuppressWarnings("checkstyle:methodname")
+    public void surefireIsConfused_ByMultipleIgnore_OnClassLevel() throws Exception {
         ReporterFactory reporterFactory = JUnitCoreTester.defaultNoXml();
-        BaseProviderFactory providerParameters = new BaseProviderFactory( true );
-        providerParameters.setReporterFactory( reporterFactory );
+        BaseProviderFactory providerParameters = new BaseProviderFactory(true);
+        providerParameters.setReporterFactory(reporterFactory);
 
-        providerParameters.setReporterConfiguration( new ReporterConfiguration( new File( "" ), false ) );
+        providerParameters.setReporterConfiguration(new ReporterConfiguration(new File(""), false));
         Map<String, String> junitProps = new HashMap<>();
-        junitProps.put( ProviderParameterNames.PARALLEL_PROP, "none" );
+        junitProps.put(ProviderParameterNames.PARALLEL_PROP, "none");
 
-        JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters( junitProps );
+        JUnitCoreParameters jUnitCoreParameters = new JUnitCoreParameters(junitProps);
 
         final Map<String, TestSet> testSetMap = new ConcurrentHashMap<>();
 
-        ConcurrentRunListener listener = createInstance( testSetMap, reporterFactory, false, false );
+        ConcurrentRunListener listener = createInstance(testSetMap, reporterFactory, false, false);
 
-        TestsToRun testsToRun = new TestsToRun( Collections.<Class<?>>singleton( TestClassTest.class ) );
+        TestsToRun testsToRun = new TestsToRun(Collections.<Class<?>>singleton(TestClassTest.class));
 
-        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener( listener, testSetMap );
+        org.junit.runner.notification.RunListener jUnit4RunListener = new JUnitCoreRunListener(listener, testSetMap);
 
         List<org.junit.runner.notification.RunListener> customRunListeners = new ArrayList<>();
-        customRunListeners.add( 0, jUnit4RunListener );
+        customRunListeners.add(0, jUnit4RunListener);
 
-        try
-        {
+        try {
             // JUnitCoreWrapper#execute() is calling JUnit4RunListener#rethrowAnyTestMechanismFailures()
             // and rethrows a failure which happened in listener
-            exception.expect( TestSetFailedException.class );
-            JUnit4RunListener dummy = new JUnit4RunListener( new MockReporter() );
-            new JUnitCoreWrapper( new Notifier( dummy, 0 ), jUnitCoreParameters, mock( ConsoleLogger.class ) )
-                .execute( testsToRun, customRunListeners, null );
-        }
-        finally
-        {
+            exception.expect(TestSetFailedException.class);
+            JUnit4RunListener dummy = new JUnit4RunListener(new MockReporter());
+            new JUnitCoreWrapper(new Notifier(dummy, 0), jUnitCoreParameters, mock(ConsoleLogger.class))
+                    .execute(testsToRun, customRunListeners, null);
+        } finally {
             RunResult result = reporterFactory.close();
-            assertEquals( "JUnit should report correctly number of test ran(Finished)", 1,
-                    result.getCompletedCount() );
+            assertEquals("JUnit should report correctly number of test ran(Finished)", 1, result.getCompletedCount());
         }
     }
 
     /**
      *
      */
-    @RunWith( TestCaseRunner.class )
-    public static class TestClassTest
-    {
+    @RunWith(TestCaseRunner.class)
+    public static class TestClassTest {
         @Test
-        public void shouldNeverBeCalled() throws Exception
-        {
-        }
+        public void shouldNeverBeCalled() throws Exception {}
     }
 
     /**
      *
      */
-    public static class TestCaseRunner extends BlockJUnit4ClassRunner
-    {
-        public TestCaseRunner( Class<?> klass ) throws InitializationError
-        {
-            super( klass );
+    public static class TestCaseRunner extends BlockJUnit4ClassRunner {
+        public TestCaseRunner(Class<?> klass) throws InitializationError {
+            super(klass);
         }
 
         @Override
-        public void run( RunNotifier notifier )
-        {
-            notifier.addListener( new Listener() );
-            super.run( notifier );
+        public void run(RunNotifier notifier) {
+            notifier.addListener(new Listener());
+            super.run(notifier);
         }
-
     }
 
-    private static class Listener extends org.junit.runner.notification.RunListener
-    {
+    private static class Listener extends org.junit.runner.notification.RunListener {
         @Override
-        public void testFinished( Description description ) throws Exception
-        {
+        public void testFinished(Description description) throws Exception {
             throw new RuntimeException(
-                    "This Exception will cause Surefire to receive an internal JUnit Description and fail." );
+                    "This Exception will cause Surefire to receive an internal JUnit Description and fail.");
         }
     }
 }

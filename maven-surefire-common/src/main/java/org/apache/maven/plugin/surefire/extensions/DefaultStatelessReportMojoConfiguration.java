@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.extensions;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.extensions;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,13 +16,14 @@ package org.apache.maven.plugin.surefire.extensions;
  * specific language governing permissions and limitations
  * under the License.
  */
-
-import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
-import org.apache.maven.surefire.extensions.StatelessReportMojoConfiguration;
+package org.apache.maven.plugin.surefire.extensions;
 
 import java.io.File;
 import java.util.Deque;
 import java.util.Map;
+
+import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
+import org.apache.maven.surefire.extensions.StatelessReportMojoConfiguration;
 
 /**
  * Why Deprecated: The field {@code testClassMethodRunHistory} makes
@@ -35,24 +34,21 @@ import java.util.Map;
  * {@link org.apache.maven.plugin.surefire.report.TestSetRunListener} keeping it already stateful.
  */
 @Deprecated
-public class DefaultStatelessReportMojoConfiguration
-        extends StatelessReportMojoConfiguration
-{
+public class DefaultStatelessReportMojoConfiguration extends StatelessReportMojoConfiguration {
     private final Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory;
 
-    public DefaultStatelessReportMojoConfiguration( File reportsDirectory,
-                                                    String reportNameSuffix,
-                                                    boolean trimStackTrace,
-                                                    int rerunFailingTestsCount,
-                                                    String xsdSchemaLocation,
-                                                    Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory )
-    {
-        super( reportsDirectory, reportNameSuffix, trimStackTrace, rerunFailingTestsCount, xsdSchemaLocation );
+    public DefaultStatelessReportMojoConfiguration(
+            File reportsDirectory,
+            String reportNameSuffix,
+            boolean trimStackTrace,
+            int rerunFailingTestsCount,
+            String xsdSchemaLocation,
+            Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory) {
+        super(reportsDirectory, reportNameSuffix, trimStackTrace, rerunFailingTestsCount, xsdSchemaLocation);
         this.testClassMethodRunHistory = testClassMethodRunHistory;
     }
 
-    public Map<String, Deque<WrappedReportEntry>> getTestClassMethodRunHistory()
-    {
+    public Map<String, Deque<WrappedReportEntry>> getTestClassMethodRunHistory() {
         return testClassMethodRunHistory;
     }
 }

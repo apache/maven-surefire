@@ -1,5 +1,3 @@
-package org.apache.maven.plugin.surefire.log.api;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.plugin.surefire.log.api;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,79 +16,67 @@ package org.apache.maven.plugin.surefire.log.api;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.plugin.surefire.log.api;
 
 import java.io.PrintStream;
 
 /**
  * Console logger for {@link PrintStream}.
  */
-public class PrintStreamLogger
-    implements ConsoleLogger
-{
+public class PrintStreamLogger implements ConsoleLogger {
     private final PrintStream stream;
 
-    public PrintStreamLogger( PrintStream stream )
-    {
+    public PrintStreamLogger(PrintStream stream) {
         this.stream = stream;
     }
 
     @Override
-    public boolean isDebugEnabled()
-    {
+    public boolean isDebugEnabled() {
         return true;
     }
 
     @Override
-    public void debug( String message )
-    {
-        stream.println( message );
+    public void debug(String message) {
+        stream.println(message);
     }
 
     @Override
-    public boolean isInfoEnabled()
-    {
+    public boolean isInfoEnabled() {
         return true;
     }
 
     @Override
-    public void info( String message )
-    {
-        stream.println( message );
+    public void info(String message) {
+        stream.println(message);
     }
 
     @Override
-    public boolean isWarnEnabled()
-    {
+    public boolean isWarnEnabled() {
         return true;
     }
 
     @Override
-    public void warning( String message )
-    {
-        stream.println( message );
+    public void warning(String message) {
+        stream.println(message);
     }
 
     @Override
-    public boolean isErrorEnabled()
-    {
+    public boolean isErrorEnabled() {
         return true;
     }
 
     @Override
-    public void error( String message )
-    {
-        stream.println( message );
+    public void error(String message) {
+        stream.println(message);
     }
 
     @Override
-    public void error( String message, Throwable t )
-    {
-        error( ConsoleLoggerUtils.toString( message, t ) );
+    public void error(String message, Throwable t) {
+        error(ConsoleLoggerUtils.toString(message, t));
     }
 
     @Override
-    public void error( Throwable t )
-    {
-        error( null, t );
+    public void error(Throwable t) {
+        error(null, t);
     }
 }

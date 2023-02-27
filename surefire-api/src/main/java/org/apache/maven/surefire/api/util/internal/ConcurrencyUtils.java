@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util.internal;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util.internal;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.util.internal;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.util.internal;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,11 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public final class ConcurrencyUtils
-{
-    private ConcurrencyUtils()
-    {
-        throw new IllegalStateException( "not instantiable constructor" );
+public final class ConcurrencyUtils {
+    private ConcurrencyUtils() {
+        throw new IllegalStateException("not instantiable constructor");
     }
 
     /**
@@ -41,27 +38,20 @@ public final class ConcurrencyUtils
      * @param runner run if this Thread has concurrently decremented the counter down to zero
      * @param counter atomic counter
      */
-    @SuppressWarnings( "checkstyle:emptyforiteratorpad" )
-    public static void runIfZeroCountDown( Runnable runner, AtomicInteger counter )
-    {
-        for (;;)
-        {
+    @SuppressWarnings("checkstyle:emptyforiteratorpad")
+    public static void runIfZeroCountDown(Runnable runner, AtomicInteger counter) {
+        for (; ; ) {
             int c = counter.get();
-            if ( c > 0 )
-            {
+            if (c > 0) {
                 int newCounter = c - 1;
-                if ( counter.compareAndSet( c, newCounter ) )
-                {
+                if (counter.compareAndSet(c, newCounter)) {
                     boolean isZero = newCounter == 0;
-                    if ( isZero )
-                    {
+                    if (isZero) {
                         runner.run();
                     }
                     break;
                 }
-            }
-            else
-            {
+            } else {
                 break;
             }
         }

@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.report;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.report;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,23 +16,21 @@ package org.apache.maven.surefire.report;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.report;
 
 import junit.framework.TestCase;
 
 /**
  *
  */
-public class RunStatisticsTest
-    extends TestCase
-{
-    public void testSetRunStatistics()
-    {
+public class RunStatisticsTest extends TestCase {
+    public void testSetRunStatistics() {
         RunStatistics statistics = new RunStatistics();
-        statistics.set( 10, 5, 2, 1, 2 );
-        assertEquals( 10, statistics.getCompletedCount() );
-        assertEquals( 5, statistics.getErrors() );
-        assertEquals( 2, statistics.getFailures() );
-        assertEquals( 1, statistics.getSkipped() );
-        assertEquals( 2, statistics.getFlakes() );
+        statistics.set(10, 5, 2, 1, 2);
+        assertEquals(10, statistics.getCompletedCount());
+        assertEquals(5, statistics.getErrors());
+        assertEquals(2, statistics.getFailures());
+        assertEquals(1, statistics.getSkipped());
+        assertEquals(2, statistics.getFlakes());
     }
 }

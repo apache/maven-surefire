@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.booter;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.booter;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.booter;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.booter;
 
 import javax.annotation.Nonnull;
 
@@ -29,8 +28,7 @@ import static org.apache.maven.surefire.booter.Classpath.join;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.21.0.Jigsaw
  */
-public class ModularClasspathConfiguration extends AbstractPathConfiguration
-{
+public class ModularClasspathConfiguration extends AbstractPathConfiguration {
     private final ModularClasspath modularClasspath;
     private final Classpath testClasspathUrls;
 
@@ -39,52 +37,45 @@ public class ModularClasspathConfiguration extends AbstractPathConfiguration
      */
     private final Classpath inprocClasspath;
 
-    public ModularClasspathConfiguration( @Nonnull ModularClasspath modularClasspath,
-                                          @Nonnull Classpath testClasspathUrls,
-                                          @Nonnull Classpath surefireClasspathUrls,
-                                          @Nonnull Classpath inprocClasspath,
-                                          boolean enableAssertions,
-                                          boolean childDelegation )
-    {
-        super( surefireClasspathUrls, enableAssertions, childDelegation );
+    public ModularClasspathConfiguration(
+            @Nonnull ModularClasspath modularClasspath,
+            @Nonnull Classpath testClasspathUrls,
+            @Nonnull Classpath surefireClasspathUrls,
+            @Nonnull Classpath inprocClasspath,
+            boolean enableAssertions,
+            boolean childDelegation) {
+        super(surefireClasspathUrls, enableAssertions, childDelegation);
         this.modularClasspath = modularClasspath;
         this.testClasspathUrls = testClasspathUrls;
         this.inprocClasspath = inprocClasspath;
     }
 
     @Override
-    public Classpath getTestClasspath()
-    {
+    public Classpath getTestClasspath() {
         return testClasspathUrls;
     }
 
     @Override
-    public final boolean isModularPathConfig()
-    {
+    public final boolean isModularPathConfig() {
         return true;
     }
 
     @Override
-    public final boolean isClassPathConfig()
-    {
+    public final boolean isClassPathConfig() {
         return !isModularPathConfig();
     }
 
-    public ModularClasspath getModularClasspath()
-    {
+    public ModularClasspath getModularClasspath() {
         return modularClasspath;
     }
 
-    public ClassLoader createMergedClassLoader()
-            throws SurefireExecutionException
-    {
+    public ClassLoader createMergedClassLoader() throws SurefireExecutionException {
         Collection<String> modulePath = getModularClasspath().getModulePath();
-        return createMergedClassLoader( join( getInprocTestClasspath(), new Classpath( modulePath ) ) );
+        return createMergedClassLoader(join(getInprocTestClasspath(), new Classpath(modulePath)));
     }
 
     @Override
-    protected Classpath getInprocClasspath()
-    {
+    protected Classpath getInprocClasspath() {
         return inprocClasspath;
     }
 }

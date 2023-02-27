@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.suite;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.suite;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,27 +16,24 @@ package org.apache.maven.surefire.api.suite;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.suite;
 
 import junit.framework.TestCase;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RunResultTest
-        extends TestCase
-{
+public class RunResultTest extends TestCase {
 
-    public void testEmptySummaryShouldBeErrorFree()
-    {
+    public void testEmptySummaryShouldBeErrorFree() {
         RunResult summary = RunResult.noTestsRun();
-        assertTrue( summary.isErrorFree() );
+        assertTrue(summary.isErrorFree());
     }
 
-    @SuppressWarnings( "checkstyle:magicnumber" )
-    public void testFailuresInFirstRun()
-    {
-        RunResult resultOne = new RunResult( 10, 1, 3, 2 );
-        RunResult resultTwo = new RunResult( 20, 0, 0, 0 );
-        assertFalse( resultOne.aggregate( resultTwo ).isErrorFree() );
+    @SuppressWarnings("checkstyle:magicnumber")
+    public void testFailuresInFirstRun() {
+        RunResult resultOne = new RunResult(10, 1, 3, 2);
+        RunResult resultTwo = new RunResult(20, 0, 0, 0);
+        assertFalse(resultOne.aggregate(resultTwo).isErrorFree());
     }
 }

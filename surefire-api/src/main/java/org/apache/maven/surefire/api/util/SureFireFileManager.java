@@ -1,5 +1,3 @@
-package org.apache.maven.surefire.api.util;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -9,7 +7,7 @@ package org.apache.maven.surefire.api.util;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,6 +16,7 @@ package org.apache.maven.surefire.api.util;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.surefire.api.util;
 
 import java.io.File;
 import java.util.Objects;
@@ -29,38 +28,33 @@ import java.util.stream.Stream;
  *
  * @author Markus Spann
  */
-public final class SureFireFileManager
-{
+public final class SureFireFileManager {
 
     private static TempFileManager instance = create();
 
-    private static TempFileManager create()
-    {
+    private static TempFileManager create() {
         String subDirName = "surefire";
 
         // create directory name suffix from legal chars in the current user name
         // or a millisecond timestamp as fallback
-        String userSuffix = Stream.of( "user.name", "USER", "USERNAME" )
-                        .map( System::getProperty )
-                        .filter( Objects::nonNull )
-                        .findFirst()
-                        .map( u -> u.replaceAll( "[^A-Za-z0-9\\-_]", "" ) )
-                        .map( u -> u.isEmpty() ? null : u )
-                        .orElse( Long.toString( System.currentTimeMillis() ) );
+        String userSuffix = Stream.of("user.name", "USER", "USERNAME")
+                .map(System::getProperty)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .map(u -> u.replaceAll("[^A-Za-z0-9\\-_]", ""))
+                .map(u -> u.isEmpty() ? null : u)
+                .orElse(Long.toString(System.currentTimeMillis()));
 
-        if ( userSuffix != null )
-        {
+        if (userSuffix != null) {
             subDirName += "-" + userSuffix;
         }
 
-        TempFileManager tfm = TempFileManager.instance( subDirName );
-        tfm.setDeleteOnExit( true );
+        TempFileManager tfm = TempFileManager.instance(subDirName);
+        tfm.setDeleteOnExit(true);
         return tfm;
     }
 
-    public static File createTempFile( String prefix, String suffix )
-    {
-        return instance.createTempFile( prefix, suffix );
+    public static File createTempFile(String prefix, String suffix) {
+        return instance.createTempFile(prefix, suffix);
     }
-
 }
