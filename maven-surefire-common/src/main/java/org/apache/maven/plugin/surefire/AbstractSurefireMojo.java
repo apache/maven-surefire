@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -45,8 +46,6 @@ import java.util.zip.ZipFile;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ResolutionErrorHandler;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -77,7 +76,6 @@ import org.apache.maven.plugin.surefire.util.DirectoryScanner;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
 import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.booter.Shutdown;
@@ -281,13 +279,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      */
     @Parameter(defaultValue = "${project.build.testSourceDirectory}")
     private File testSourceDirectory;
-
-    /**
-     * ArtifactRepository of the localRepository. To obtain the directory of localRepository in unit tests use
-     * System.getProperty("localRepository").
-     */
-    @Parameter(defaultValue = "${localRepository}", required = true, readonly = true)
-    private ArtifactRepository localRepository;
 
     /**
      * List of System properties to pass to a provider.
@@ -636,17 +627,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean trimStackTrace;
 
     /**
-     * The remote plugin repositories declared in the POM.
-     *
-     * @since 2.2
-     */
-    @Parameter(defaultValue = "${project.pluginArtifactRepositories}", readonly = true, required = true)
-    private List<ArtifactRepository> remoteRepositories;
-
-    @Parameter(defaultValue = "${project.remoteArtifactRepositories}", required = true, readonly = true)
-    private List<ArtifactRepository> projectRemoteRepositories;
-
-    /**
      * Flag to disable the generation of report files in xml format.
      * Deprecated since 3.0.0-M4.
      * Instead use <em>disable</em> within {@code statelessTestsetReporter} since of 3.0.0-M6.
@@ -772,13 +752,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private LocationManager locationManager;
 
     @Component
-    private RepositorySystem repositorySystem;
-
-    @Component
     private ProviderDetector providerDetector;
-
-    @Component
-    private ResolutionErrorHandler resolutionErrorHandler;
 
     private Toolchain toolchain;
 
@@ -855,6 +829,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return "**/*$*";
     }
 
+    @Component(role = SurefireDependencyResolver.class)
     private SurefireDependencyResolver surefireDependencyResolver;
 
     private TestListResolver specificTests;
@@ -905,6 +880,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         this.logger = logger;
     }
 
+    void setSurefireDependencyResolver(SurefireDependencyResolver surefireDependencyResolver) {
+        this.surefireDependencyResolver = surefireDependencyResolver;
+    }
+
     @Nonnull
     protected final PluginConsoleLogger getConsoleLogger() {
         if (consoleLogger == null) {
@@ -952,15 +931,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void setupStuff() throws MojoFailureException {
-        surefireDependencyResolver = new SurefireDependencyResolver(
-                getRepositorySystem(),
-                getConsoleLogger(),
-                getLocalRepository(),
-                getRemoteRepositories(),
-                getProjectRemoteRepositories(),
-                resolutionErrorHandler,
-                getPluginName(),
-                getSession().isOffline());
 
         if (getBooterArtifact() == null) {
             throw new RuntimeException("Unable to locate surefire-booter in the list of plugin artifacts");
@@ -1125,7 +1095,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 getSystemProperties(), getSystemPropertyVariables(), getUserProperties(), sysProps);
 
         result.setProperty("basedir", getBasedir().getAbsolutePath());
-        result.setProperty("localRepository", getLocalRepository().getBasedir());
+        result.setProperty("localRepository", getLocalRepositoryPath());
         if (isForking()) {
             for (Object o : result.propertiesThatCannotBeSetASystemProperties()) {
                 if (getArgLine() == null || !getArgLine().contains("-D" + o + "=")) {
@@ -1267,14 +1237,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     protected void logReportsDirectory() {
         logDebugOrCliShowErrors(capitalizeFirstLetter(getPluginName()) + " report directory: " + getReportsDirectory());
-    }
-
-    public RepositorySystem getRepositorySystem() {
-        return repositorySystem;
-    }
-
-    public void setRepositorySystem(RepositorySystem repositorySystem) {
-        this.repositorySystem = repositorySystem;
     }
 
     private boolean existsModuleDescriptor(ResolvePathResultWrapper resolvedJavaModularityResult) {
@@ -2467,7 +2429,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         checksum.add(getSkipAfterFailureCount());
         checksum.add(getShutdown());
         checksum.add(getExcludes());
-        checksum.add(getLocalRepository());
+        checksum.add(getLocalRepositoryPath());
         checksum.add(getSystemProperties());
         checksum.add(getSystemPropertyVariables());
         checksum.add(getSystemPropertiesFile());
@@ -2505,8 +2467,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         checksum.add(getParallel());
         checksum.add(isParallelOptimized());
         checksum.add(isTrimStackTrace());
-        checksum.add(getRemoteRepositories());
-        checksum.add(getProjectRemoteRepositories());
         checksum.add(isDisableXmlReport());
         checksum.add(isUseSystemClassLoader());
         checksum.add(isUseManifestOnlyJar());
@@ -2610,13 +2570,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         Classpath existing = classpathCache.getCachedClassPath(surefireArtifact.getArtifactId());
         if (existing == null) {
             List<String> items = new ArrayList<>();
-            Set<Artifact> booterArtifacts = surefireDependencyResolver
-                    .resolvePluginArtifact(surefireArtifact)
-                    .getArtifacts();
+            Set<Artifact> booterArtifacts = surefireDependencyResolver.resolveArtifacts(
+                    session.getRepositorySession(), project.getRemotePluginRepositories(), surefireArtifact);
             for (Artifact artifact : booterArtifacts) {
-                getConsoleLogger()
-                        .debug("Adding to " + getPluginName() + " booter test classpath: "
-                                + artifact.getFile().getAbsolutePath() + " Scope: " + artifact.getScope());
                 items.add(artifact.getFile().getAbsolutePath());
             }
             existing = new Classpath(items);
@@ -2797,7 +2753,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
             Artifact surefireArtifact = getBooterArtifact();
             String version = surefireArtifact.getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath("surefire-testng", version);
+            return surefireDependencyResolver.getProviderClasspath(
+                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-testng", version);
         }
     }
 
@@ -2828,7 +2785,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             // add the JUnit provider as default - it doesn't require JUnit to be present,
             // since it supports POJO tests.
             String version = getBooterArtifact().getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath("surefire-junit3", version);
+            return surefireDependencyResolver.getProviderClasspath(
+                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit3", version);
         }
     }
 
@@ -2866,7 +2824,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
             String version = getBooterArtifact().getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath("surefire-junit4", version);
+            return surefireDependencyResolver.getProviderClasspath(
+                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit4", version);
         }
     }
 
@@ -2915,13 +2874,19 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
             String surefireVersion = getBooterArtifact().getBaseVersion();
-            Map<String, Artifact> providerArtifacts =
-                    surefireDependencyResolver.getProviderClasspathAsMap("surefire-junit-platform", surefireVersion);
+            Map<String, Artifact> providerArtifacts = surefireDependencyResolver.getProviderClasspathAsMap(
+                    session.getRepositorySession(),
+                    project.getRemotePluginRepositories(),
+                    "surefire-junit-platform",
+                    surefireVersion);
             Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
 
             Plugin plugin = getPluginDescriptor().getPlugin();
-            Map<String, Artifact> pluginDeps =
-                    surefireDependencyResolver.resolvePluginDependencies(plugin, getPluginArtifactMap());
+            Map<String, Artifact> pluginDeps = surefireDependencyResolver.resolvePluginDependencies(
+                    session.getRepositorySession(),
+                    project.getRemotePluginRepositories(),
+                    plugin,
+                    getPluginArtifactMap());
 
             if (hasDependencyPlatformEngine(pluginDeps)) {
                 providerArtifacts.putAll(pluginDeps);
@@ -3006,8 +2971,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ArtifactHandler handler = junitPlatformArtifact.getArtifactHandler();
             Artifact artifact = new DefaultArtifact(g, a, v, null, t, c, handler);
             getConsoleLogger().debug("Resolving artifact " + g + ":" + a + ":" + v);
-            Set<Artifact> r =
-                    surefireDependencyResolver.resolveProjectArtifact(artifact).getArtifacts();
+            Set<Artifact> r = surefireDependencyResolver.resolveArtifacts(
+                    session.getRepositorySession(), project.getRemoteProjectRepositories(), artifact);
             getConsoleLogger().debug("Resolved artifact " + g + ":" + a + ":" + v + " to " + r);
             return r;
         }
@@ -3071,7 +3036,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
             String version = getBooterArtifact().getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath("surefire-junit47", version);
+            return surefireDependencyResolver.getProviderClasspath(
+                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit47", version);
         }
     }
 
@@ -3118,8 +3084,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
             Plugin plugin = getPluginDescriptor().getPlugin();
-            Map<String, Artifact> providerArtifacts =
-                    surefireDependencyResolver.resolvePluginDependencies(plugin, getPluginArtifactMap());
+            Map<String, Artifact> providerArtifacts = surefireDependencyResolver.resolvePluginDependencies(
+                    session.getRepositorySession(),
+                    project.getRemotePluginRepositories(),
+                    plugin,
+                    getPluginArtifactMap());
             return new LinkedHashSet<>(providerArtifacts.values());
         }
     }
@@ -3140,13 +3109,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     @Override
-    public ArtifactRepository getLocalRepository() {
-        return localRepository;
-    }
-
-    @Override
-    public void setLocalRepository(ArtifactRepository localRepository) {
-        this.localRepository = localRepository;
+    public String getLocalRepositoryPath() {
+        return Optional.ofNullable(
+                        session.getRepositorySession().getLocalRepository().getBasedir())
+                .map(File::getAbsolutePath)
+                .orElse(".");
     }
 
     public Properties getSystemProperties() {
@@ -3383,24 +3350,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         this.trimStackTrace = trimStackTrace;
     }
 
-    public List<ArtifactRepository> getProjectRemoteRepositories() {
-        return projectRemoteRepositories;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void setProjectRemoteRepositories(List<ArtifactRepository> projectRemoteRepositories) {
-        this.projectRemoteRepositories = projectRemoteRepositories;
-    }
-
-    public List<ArtifactRepository> getRemoteRepositories() {
-        return remoteRepositories;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void setRemoteRepositories(List<ArtifactRepository> remoteRepositories) {
-        this.remoteRepositories = remoteRepositories;
-    }
-
     public boolean isDisableXmlReport() {
         return disableXmlReport;
     }
@@ -3554,10 +3503,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     public void setTempDir(String tempDir) {
         this.tempDir = tempDir;
-    }
-
-    public void setResolutionErrorHandler(ResolutionErrorHandler resolutionErrorHandler) {
-        this.resolutionErrorHandler = resolutionErrorHandler;
     }
 
     private static final class ClasspathCache {
