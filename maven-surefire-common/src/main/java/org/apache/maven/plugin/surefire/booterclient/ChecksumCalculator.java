@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -66,10 +65,6 @@ public class ChecksumCalculator {
 
     public void add(File workingDirectory) {
         appendObject(workingDirectory);
-    }
-
-    public void add(ArtifactRepository localRepository) {
-        appendObject(localRepository);
     }
 
     public void add(List<?> items) {

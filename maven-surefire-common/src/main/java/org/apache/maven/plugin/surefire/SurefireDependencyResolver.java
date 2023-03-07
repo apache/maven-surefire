@@ -20,6 +20,9 @@ package org.apache.maven.plugin.surefire;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,14 +31,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.ResolutionErrorHandler;
-import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.OverConstrainedVersionException;
@@ -43,13 +42,17 @@ import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.repository.RepositorySystem;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
+import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
-import static java.util.Arrays.asList;
-import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE;
-import static org.apache.maven.artifact.Artifact.SCOPE_COMPILE_PLUS_RUNTIME;
-import static org.apache.maven.artifact.Artifact.SCOPE_RUNTIME;
 import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 
@@ -59,7 +62,10 @@ import static org.apache.maven.artifact.versioning.VersionRange.createFromVersio
  * @author Stephen Connolly
  * @author Kristian Rosenvold
  */
-final class SurefireDependencyResolver {
+@Named
+@Singleton
+class SurefireDependencyResolver {
+
     static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
     private static final String[] PROVIDER_CLASSPATH_ORDER = {
@@ -80,37 +86,9 @@ final class SurefireDependencyResolver {
 
     private final RepositorySystem repositorySystem;
 
-    private final ConsoleLogger log;
-
-    private final ArtifactRepository localRepository;
-
-    private final List<ArtifactRepository> pluginRemoteRepositories;
-
-    private final List<ArtifactRepository> projectRemoteRepositories;
-
-    private final ResolutionErrorHandler resolutionErrorHandler;
-
-    private final String pluginName;
-
-    private final boolean offline;
-
-    SurefireDependencyResolver(
-            RepositorySystem repositorySystem,
-            ConsoleLogger log,
-            ArtifactRepository localRepository,
-            List<ArtifactRepository> pluginRemoteRepositories,
-            List<ArtifactRepository> projectRemoteRepositories,
-            ResolutionErrorHandler resolutionErrorHandler,
-            String pluginName,
-            boolean offline) {
+    @Inject
+    SurefireDependencyResolver(RepositorySystem repositorySystem) {
         this.repositorySystem = repositorySystem;
-        this.log = log;
-        this.localRepository = localRepository;
-        this.pluginRemoteRepositories = pluginRemoteRepositories;
-        this.projectRemoteRepositories = projectRemoteRepositories;
-        this.resolutionErrorHandler = resolutionErrorHandler;
-        this.pluginName = pluginName;
-        this.offline = offline;
     }
 
     static boolean isWithinVersionSpec(@Nullable Artifact artifact, @Nonnull String versionSpec) {
@@ -129,15 +107,19 @@ final class SurefireDependencyResolver {
         }
     }
 
-    Map<String, Artifact> resolvePluginDependencies(Plugin plugin, Map<String, Artifact> pluginResolvedDependencies)
+    Map<String, Artifact> resolvePluginDependencies(
+            RepositorySystemSession session,
+            List<RemoteRepository> repositories,
+            Plugin plugin,
+            Map<String, Artifact> pluginResolvedDependencies)
             throws MojoExecutionException {
         Map<String, Artifact> resolved = new LinkedHashMap<>();
         Collection<Dependency> pluginDependencies = plugin.getDependencies();
 
         for (Dependency dependency : pluginDependencies) {
-            Artifact dependencyArtifact = repositorySystem.createDependencyArtifact(dependency);
-            ArtifactResolutionResult artifactResolutionResult = resolvePluginArtifact(dependencyArtifact);
-            for (Artifact artifact : artifactResolutionResult.getArtifacts()) {
+            Set<Artifact> artifacts = resolveDependencies(
+                    session, repositories, RepositoryUtils.toDependency(dependency, session.getArtifactTypeRegistry()));
+            for (Artifact artifact : artifacts) {
                 String key = artifact.getGroupId() + ":" + artifact.getArtifactId();
                 Artifact resolvedPluginDependency = pluginResolvedDependencies.get(key);
                 if (resolvedPluginDependency != null) {
@@ -148,69 +130,65 @@ final class SurefireDependencyResolver {
         return resolved;
     }
 
-    ArtifactResolutionResult resolvePluginArtifact(Artifact artifact) throws MojoExecutionException {
-        return resolvePluginArtifact(artifact, new RuntimeArtifactFilter());
-    }
-
-    ArtifactResolutionResult resolveProjectArtifact(Artifact artifact) throws MojoExecutionException {
-        return resolveProjectArtifact(artifact, new RuntimeArtifactFilter());
-    }
-
-    private ArtifactResolutionResult resolvePluginArtifact(Artifact artifact, ArtifactFilter filter)
+    public Set<Artifact> resolveArtifacts(
+            RepositorySystemSession session, List<RemoteRepository> repositories, Artifact artifact)
             throws MojoExecutionException {
-        return resolveArtifact(artifact, pluginRemoteRepositories, filter);
+        return resolveDependencies(session, repositories, RepositoryUtils.toDependency(artifact, null));
     }
 
-    private ArtifactResolutionResult resolveProjectArtifact(Artifact artifact, ArtifactFilter filter)
+    private Set<Artifact> resolveDependencies(
+            RepositorySystemSession session,
+            List<RemoteRepository> repositories,
+            org.eclipse.aether.graph.Dependency dependency)
             throws MojoExecutionException {
-        return resolveArtifact(artifact, projectRemoteRepositories, filter);
-    }
 
-    private ArtifactResolutionResult resolveArtifact(
-            Artifact artifact, List<ArtifactRepository> repositories, ArtifactFilter filter)
-            throws MojoExecutionException {
-        ArtifactResolutionRequest request = new ArtifactResolutionRequest()
-                .setOffline(offline)
-                .setArtifact(artifact)
-                .setLocalRepository(localRepository)
-                .setResolveTransitively(true)
-                .setCollectionFilter(filter)
-                .setRemoteRepositories(repositories);
-
-        ArtifactResolutionResult result = repositorySystem.resolve(request);
         try {
-            resolutionErrorHandler.throwErrors(request, result);
-        } catch (ArtifactResolutionException e) {
+
+            CollectRequest collectRequest = new CollectRequest();
+            collectRequest.setRoot(dependency);
+            collectRequest.setRepositories(repositories);
+
+            DependencyRequest request = new DependencyRequest();
+            request.setCollectRequest(collectRequest);
+            request.setFilter(DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME));
+
+            DependencyResult dependencyResult = repositorySystem.resolveDependencies(session, request);
+            return dependencyResult.getArtifactResults().stream()
+                    .map(ArtifactResult::getArtifact)
+                    .map(RepositoryUtils::toArtifact)
+                    .collect(Collectors.toSet());
+
+        } catch (DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
-
-        return result;
     }
 
     @Nonnull
-    Set<Artifact> getProviderClasspath(String providerArtifactId, String providerVersion)
+    Set<Artifact> getProviderClasspath(
+            RepositorySystemSession session,
+            List<RemoteRepository> repositories,
+            String providerArtifactId,
+            String providerVersion)
             throws MojoExecutionException {
         Dependency provider = toProviderDependency(providerArtifactId, providerVersion);
 
-        Artifact providerArtifact = repositorySystem.createDependencyArtifact(provider);
+        org.eclipse.aether.graph.Dependency dependency =
+                RepositoryUtils.toDependency(provider, session.getArtifactTypeRegistry());
 
-        ArtifactResolutionResult result = resolvePluginArtifact(providerArtifact);
+        Set<Artifact> result = resolveDependencies(session, repositories, dependency);
 
-        if (log.isDebugEnabled()) {
-            for (Artifact artifact : result.getArtifacts()) {
-                String artifactPath = artifact.getFile().getAbsolutePath();
-                String scope = artifact.getScope();
-                log.debug("Adding to " + pluginName + " test classpath: " + artifactPath + " Scope: " + scope);
-            }
-        }
-
-        return orderProviderArtifacts(result.getArtifacts());
+        return orderProviderArtifacts(result);
     }
 
     @Nonnull
-    Map<String, Artifact> getProviderClasspathAsMap(String providerArtifactId, String providerVersion)
+    Map<String, Artifact> getProviderClasspathAsMap(
+            RepositorySystemSession session,
+            List<RemoteRepository> repositories,
+            String providerArtifactId,
+            String providerVersion)
             throws MojoExecutionException {
-        return artifactMapByVersionlessId(getProviderClasspath(providerArtifactId, providerVersion));
+        return artifactMapByVersionlessId(
+                getProviderClasspath(session, repositories, providerArtifactId, providerVersion));
     }
 
     // FIXME
@@ -239,28 +217,5 @@ final class SurefireDependencyResolver {
         dependency.setVersion(providerVersion);
         dependency.setType("jar");
         return dependency;
-    }
-
-    static class RuntimeArtifactFilter implements ArtifactFilter {
-        private static final Collection<String> SCOPES =
-                asList(SCOPE_COMPILE, SCOPE_COMPILE_PLUS_RUNTIME, SCOPE_RUNTIME);
-
-        private final Artifact filter;
-
-        RuntimeArtifactFilter() {
-            this(null);
-        }
-
-        RuntimeArtifactFilter(Artifact filter) {
-            this.filter = filter;
-        }
-
-        @Override
-        public boolean include(Artifact artifact) {
-            String scope = artifact.getScope();
-            return (filter == null || artifact.equals(filter))
-                    && !artifact.isOptional()
-                    && (scope == null || SCOPES.contains(scope));
-        }
     }
 }

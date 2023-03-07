@@ -19,40 +19,44 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
-import org.apache.maven.artifact.resolver.DefaultResolutionErrorHandler;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.surefire.SurefireDependencyResolver.RuntimeArtifactFilter;
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.repository.RepositorySystem;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.DependencyResult;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.PROVIDER_GROUP_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.any;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -101,39 +105,29 @@ public class SurefireDependencyResolverTest {
     }
 
     @Test
-    public void testResolveArtifact() throws InvalidVersionSpecificationException, MojoExecutionException {
-        final Artifact provider = createArtifact("surefire-junit-platform");
+    public void testResolveArtifact()
+            throws InvalidVersionSpecificationException, MojoExecutionException, DependencyResolutionException {
+
+        Artifact provider = createArtifact("surefire-junit-platform");
         RepositorySystem repositorySystem = mock(RepositorySystem.class);
-        final ArtifactResolutionResult expectedResult = mock(ArtifactResolutionResult.class);
-        when(repositorySystem.resolve(any(ArtifactResolutionRequest.class)))
-                .then(new Answer<ArtifactResolutionResult>() {
-                    @Override
-                    public ArtifactResolutionResult answer(InvocationOnMock invocation) {
-                        Object[] args = invocation.getArguments();
-                        assertThat(args).hasSize(1);
-                        ArtifactResolutionRequest request = (ArtifactResolutionRequest) args[0];
-                        assertThat(request.getArtifact()).isSameAs(provider);
-                        assertThat(request.isResolveTransitively()).isTrue();
-                        assertThat(request.getArtifactDependencies()).isNull();
-                        assertThat(request.getRemoteRepositories()).isNull();
-                        assertThat(request.getLocalRepository()).isNull();
-                        assertThat(request.getCollectionFilter()).isNotNull();
-                        assertThat(request.getCollectionFilter()).isInstanceOf(RuntimeArtifactFilter.class);
-                        assertThat(request.getManagedVersionMap()).isNull();
-                        assertThat(request.getMirrors()).isEmpty();
-                        assertThat(request.getProxies()).isEmpty();
-                        assertThat(request.getResolutionFilter()).isNull();
-                        assertThat(request.getServers()).isEmpty();
-                        return expectedResult;
-                    }
-                });
+        RepositorySystemSession session = mock(RepositorySystemSession.class);
+        ArgumentCaptor<DependencyRequest> requestCaptor = ArgumentCaptor.forClass(DependencyRequest.class);
 
-        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(
-                repositorySystem, null, null, null, null, new DefaultResolutionErrorHandler(), null, false);
+        DependencyResult result = new DependencyResult(new DependencyRequest());
+        when(repositorySystem.resolveDependencies(eq(session), requestCaptor.capture()))
+                .thenReturn(result);
 
-        ArtifactResolutionResult actualResult = surefireDependencyResolver.resolvePluginArtifact(provider);
+        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(repositorySystem);
+        surefireDependencyResolver.resolveArtifacts(session, Collections.emptyList(), provider);
 
-        assertThat(actualResult).isSameAs(expectedResult);
+        DependencyRequest value = requestCaptor.getValue();
+        assertThat(value).isNotNull();
+        org.eclipse.aether.graph.Dependency requestDependency =
+                value.getCollectRequest().getRoot();
+        assertThat(requestDependency.getArtifact().getGroupId()).isEqualTo(provider.getGroupId());
+        assertThat(requestDependency.getArtifact().getArtifactId()).isEqualTo(provider.getArtifactId());
+        assertThat(requestDependency.getArtifact().getVersion()).isEqualTo(provider.getVersion());
+        assertThat(requestDependency.getArtifact().getExtension()).isEqualTo(provider.getType());
     }
 
     @Test
@@ -141,7 +135,7 @@ public class SurefireDependencyResolverTest {
 
         Artifact commonJunit4 = createArtifact("common-junit4");
         Artifact api = createArtifact("surefire-api");
-        final Artifact provider = createArtifact("surefire-junit-platform");
+        Artifact provider = createArtifact("surefire-junit-platform");
         Artifact ext = createArtifact("org.apiguardian", "apiguardian-api");
         Artifact logger = createArtifact("surefire-logger-api");
 
@@ -152,104 +146,53 @@ public class SurefireDependencyResolverTest {
         providerArtifacts.add(ext);
         providerArtifacts.add(logger);
 
-        final ArtifactResolutionResult result = mock(ArtifactResolutionResult.class);
-        when(result.getArtifacts()).thenReturn(providerArtifacts);
+        List<ArtifactResult> artifactResults = providerArtifacts.stream()
+                .map(RepositoryUtils::toArtifact)
+                .map(a -> new ArtifactResult(new ArtifactRequest()).setArtifact(a))
+                .collect(Collectors.toList());
+
+        DependencyResult result = new DependencyResult(new DependencyRequest());
+        result.setArtifactResults(artifactResults);
 
         RepositorySystem repositorySystem = mock(RepositorySystem.class);
-        when(repositorySystem.resolve(any(ArtifactResolutionRequest.class)))
-                .then(new Answer<ArtifactResolutionResult>() {
-                    @Override
-                    public ArtifactResolutionResult answer(InvocationOnMock invocation) {
-                        Object[] args = invocation.getArguments();
-                        assertThat(args).hasSize(1);
-                        ArtifactResolutionRequest request = (ArtifactResolutionRequest) args[0];
-                        assertThat(request.getArtifact()).isSameAs(provider);
-                        assertThat(request.isResolveTransitively()).isTrue();
-                        assertThat(request.getArtifactDependencies()).isNull();
-                        assertThat(request.getRemoteRepositories()).isNull();
-                        assertThat(request.getLocalRepository()).isNull();
-                        assertThat(request.getCollectionFilter()).isNotNull();
-                        assertThat(request.getCollectionFilter()).isInstanceOf(RuntimeArtifactFilter.class);
-                        assertThat(request.getManagedVersionMap()).isNull();
-                        assertThat(request.getMirrors()).isEmpty();
-                        assertThat(request.getProxies()).isEmpty();
-                        assertThat(request.getResolutionFilter()).isNull();
-                        assertThat(request.getServers()).isEmpty();
-                        return result;
-                    }
-                });
-        when(repositorySystem.createDependencyArtifact(any(Dependency.class))).then(new Answer<Artifact>() {
-            @Override
-            public Artifact answer(InvocationOnMock invocation) {
-                Object[] args = invocation.getArguments();
-                assertThat(args).hasSize(1);
-                Dependency request = (Dependency) args[0];
-                assertThat(request.getGroupId()).isEqualTo(provider.getGroupId());
-                assertThat(request.getArtifactId()).isEqualTo(provider.getArtifactId());
-                assertThat(request.getVersion()).isEqualTo(provider.getVersion());
-                assertThat(request.getType()).isEqualTo(provider.getType());
-                assertThat(request.getScope()).isNull();
-                return provider;
-            }
-        });
+        RepositorySystemSession session = mock(RepositorySystemSession.class);
 
-        ConsoleLogger log = mock(ConsoleLogger.class);
+        when(session.getArtifactTypeRegistry()).thenReturn(mock(ArtifactTypeRegistry.class));
+        when(repositorySystem.resolveDependencies(eq(session), any())).thenReturn(result);
 
-        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(
-                repositorySystem, log, null, null, null, new DefaultResolutionErrorHandler(), null, false);
-
-        when(log.isDebugEnabled()).thenReturn(true);
-
-        Set<Artifact> classpath = surefireDependencyResolver.getProviderClasspath("surefire-junit-platform", "1");
+        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(repositorySystem);
+        Set<Artifact> classpath = surefireDependencyResolver.getProviderClasspath(
+                session, Collections.emptyList(), "surefire-junit-platform", "1");
 
         assertThat(classpath).hasSize(5);
 
         Iterator<Artifact> it = classpath.iterator();
 
         // result should be ordered
-        assertThat(it.next()).isSameAs(provider);
-
-        assertThat(it.next()).isSameAs(api);
-
-        assertThat(it.next()).isSameAs(logger);
-
-        assertThat(it.next()).isSameAs(commonJunit4);
-
-        assertThat(it.next()).isSameAs(ext);
+        assertThat(it.next()).isEqualTo(provider);
+        assertThat(it.next()).isEqualTo(api);
+        assertThat(it.next()).isEqualTo(logger);
+        assertThat(it.next()).isEqualTo(commonJunit4);
+        assertThat(it.next()).isEqualTo(ext);
     }
 
     @Test
     public void testGetProviderClasspathShouldPropagateTheResolutionException() throws Exception {
-        Artifact provider = createArtifact("surefire-junit-platform");
-        provider.setFile(null);
-
-        Set<Artifact> providerArtifacts = new LinkedHashSet<>();
-        providerArtifacts.add(provider);
-
-        ArtifactResolutionResult result = mock(ArtifactResolutionResult.class);
-        when(result.getArtifacts()).thenReturn(providerArtifacts);
-        when(result.hasMetadataResolutionExceptions()).thenReturn(true);
-        ArtifactResolutionException resolutionException =
-                new ArtifactResolutionException("failed to resolve", provider);
-        when(result.getMetadataResolutionException(0)).thenReturn(resolutionException);
 
         RepositorySystem repositorySystem = mock(RepositorySystem.class);
-        when(repositorySystem.resolve(any(ArtifactResolutionRequest.class))).thenReturn(result);
-        when(repositorySystem.createDependencyArtifact(any(Dependency.class))).thenReturn(provider);
+        RepositorySystemSession session = mock(RepositorySystemSession.class);
+        when(session.getArtifactTypeRegistry()).thenReturn(mock(ArtifactTypeRegistry.class));
 
-        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(
-                repositorySystem,
-                mock(ConsoleLogger.class),
-                null,
-                null,
-                null,
-                new DefaultResolutionErrorHandler(),
-                null,
-                false);
+        DependencyResolutionException dependencyResolutionException =
+                new DependencyResolutionException(new DependencyResult(new DependencyRequest()), new Exception());
+        when(repositorySystem.resolveDependencies(eq(session), any())).thenThrow(dependencyResolutionException);
 
-        assertThatThrownBy(() -> surefireDependencyResolver.getProviderClasspath("surefire-junit-platform", "1"))
+        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(repositorySystem);
+
+        assertThatThrownBy(() -> surefireDependencyResolver.getProviderClasspath(
+                        session, Collections.emptyList(), "surefire-junit-platform", "1"))
                 .isInstanceOf(MojoExecutionException.class)
-                .hasCause(resolutionException);
+                .hasCause(dependencyResolutionException);
     }
 
     @Test
@@ -265,34 +208,28 @@ public class SurefireDependencyResolverTest {
         when(plugin.getDependencies()).thenReturn(singletonList(providerAsDependency));
 
         RepositorySystem repositorySystem = mock(RepositorySystem.class);
-        when(repositorySystem.createDependencyArtifact(providerAsDependency)).thenReturn(providerAsArtifact);
+        RepositorySystemSession session = mock(RepositorySystemSession.class);
+        when(session.getArtifactTypeRegistry()).thenReturn(mock(ArtifactTypeRegistry.class));
 
-        ArtifactResolutionResult resolutionResult = mock(ArtifactResolutionResult.class);
-        when(resolutionResult.getArtifacts()).thenReturn(singleton(providerAsArtifact));
+        ArtifactResult artifactResult =
+                new ArtifactResult(new ArtifactRequest().setArtifact(RepositoryUtils.toArtifact(providerAsArtifact)));
+        artifactResult.setArtifact(RepositoryUtils.toArtifact(providerAsArtifact));
+        DependencyResult result = new DependencyResult(new DependencyRequest());
+        result.setArtifactResults(Collections.singletonList(artifactResult));
 
-        ArgumentCaptor<ArtifactResolutionRequest> resolutionRequestCaptor =
-                ArgumentCaptor.forClass(ArtifactResolutionRequest.class);
-        when(repositorySystem.resolve(resolutionRequestCaptor.capture())).thenReturn(resolutionResult);
+        when(repositorySystem.resolveDependencies(eq(session), any())).thenReturn(result);
 
         Map<String, Artifact> pluginResolvedDependencies =
                 singletonMap(PROVIDER_GROUP_ID + ":surefire-shadefire", providerAsArtifact);
 
-        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(
-                repositorySystem, null, null, null, null, new DefaultResolutionErrorHandler(), null, false);
+        SurefireDependencyResolver surefireDependencyResolver = new SurefireDependencyResolver(repositorySystem);
 
-        Map<String, Artifact> providers =
-                surefireDependencyResolver.resolvePluginDependencies(plugin, pluginResolvedDependencies);
+        Map<String, Artifact> providers = surefireDependencyResolver.resolvePluginDependencies(
+                session, Collections.emptyList(), plugin, pluginResolvedDependencies);
 
         assertThat(providers.values()).hasSize(1).containsOnly(providerAsArtifact);
 
-        assertThat(resolutionRequestCaptor.getAllValues()).hasSize(1);
-
-        ArtifactResolutionRequest resolutionRequest = resolutionRequestCaptor.getValue();
-
-        assertThat(resolutionRequest.getArtifact()).isSameAs(providerAsArtifact);
-
-        verify(repositorySystem).createDependencyArtifact(any(Dependency.class));
-        verify(repositorySystem).resolve(any(ArtifactResolutionRequest.class));
+        verify(repositorySystem).resolveDependencies(eq(session), any());
         verifyNoMoreInteractions(repositorySystem);
     }
 
@@ -308,8 +245,8 @@ public class SurefireDependencyResolverTest {
     private static Artifact createArtifact(String groupId, String artifactId, String version)
             throws InvalidVersionSpecificationException {
         VersionRange versionSpec = createFromVersionSpec(version);
-        DefaultArtifact defaultArtifact =
-                new DefaultArtifact(groupId, artifactId, versionSpec, "compile", "jar", "", null);
+        DefaultArtifact defaultArtifact = new DefaultArtifact(
+                groupId, artifactId, versionSpec, null, "jar", null, new DefaultArtifactHandler("jar"));
         defaultArtifact.setFile(new File(""));
         return defaultArtifact;
     }

@@ -21,8 +21,6 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.util.List;
 
-import org.apache.maven.artifact.repository.ArtifactRepository;
-
 /**
  * This interface contains all the common parameters that have different implementations in Surefire vs IntegrationTest
  *
@@ -73,9 +71,7 @@ public interface SurefireExecutionParameters {
 
     void setExcludes(List<String> excludes);
 
-    ArtifactRepository getLocalRepository();
-
-    void setLocalRepository(ArtifactRepository localRepository);
+    String getLocalRepositoryPath();
 
     boolean isPrintSummary();
 
