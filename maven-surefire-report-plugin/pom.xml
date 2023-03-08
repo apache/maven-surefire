@@ -46,7 +46,7 @@
   </prerequisites>
 
   <properties>
-    <doxiaVersion>1.11.1</doxiaVersion>
+    <doxiaVersion>1.12.0</doxiaVersion>
     <aetherVersion>1.0.0.v20140518</aetherVersion>
   </properties>
 
