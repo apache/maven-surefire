@@ -128,7 +128,7 @@ public class SmartStackTraceParserTest extends TestCase {
         } catch (NullPointerException e) {
             SmartStackTraceParser smartStackTraceParser = new SmartStackTraceParser(ASubClass.class.getName(), e, null);
             String res = smartStackTraceParser.getString();
-            assertEquals("ASubClass>ABaseClass.npe:45 » NullPointer It was null", res);
+            assertEquals("ASubClass>ABaseClass.npe:26 » NullPointer It was null", res);
         }
     }
 
