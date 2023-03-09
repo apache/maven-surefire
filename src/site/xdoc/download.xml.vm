@@ -23,102 +23,51 @@ under the License.
   <properties>
     <title>Download ${project.name} Source</title>
   </properties>
+
   <body>
     <section name="Download ${project.name} ${project.version} Source">
 
-      <p>${project.name} ${project.version} is distributed in source format. Use a source archive if you intend to build
-      ${project.name} yourself. Otherwise, simply use the ready-made binary artifacts from central repository.</p>
+      <p><strong>${project.name} ${project.version}</strong> is distributed in source format.</p>
 
-      <p>You will be prompted for a mirror - if the file is not found on yours, please be patient, as it may take 24
-      hours to reach all mirrors.<p/>
+      <p>Use a source archive if you intend to build <strong>${project.name}</strong> yourself.</p>
 
-      <p>In order to guard against corrupted downloads/installations, it is highly recommended to
-      <a href="http://www.apache.org/dev/release-signing#verifying-signature">verify the signature</a>
-      of the release bundles against the public <a href="https://www.apache.org/dist/maven/KEYS">KEYS</a> used by the Apache Maven
-      developers.</p>
+      <p>Otherwise, simply use the ready-made binary artifacts from <strong>central repository</strong>.</p>
 
-      <p>${project.name} is distributed under the <a href="http://www.apache.org/licenses/">Apache License, version 2.0</a>.</p>
+      <p><strong>${project.name}</strong> is distributed under the <a href="https://www.apache.org/licenses/">Apache License, version 2.0</a>.</p>
 
-      <p></p>We <b>strongly</b> encourage our users to configure a Maven repository mirror closer to their location, please read <a href="./guides/mini/guide-mirror-settings.html">How to Use Mirrors for Repositories</a>.</p>
+      <subsection name="Files">
+        
+        <p>This is the current stable version of <strong>${project.name}</strong>.</p>
 
-      <a name="mirror"/>
-      <subsection name="Mirror">
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Link</th>
+              <th>Checksum</th>
+              <th>Signature</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${project.name} ${project.version} (Source zip)</td>
+              <td><a href="https://dlcdn.apache.org/maven/surefire/${project.artifactId}-${project.version}-source-release.zip">${project.artifactId}-${project.version}-source-release.zip</a></td>
+              <td><a href="https://downloads.apache.org/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512">${project.artifactId}-${project.version}-source-release.zip.sha512</a></td>
+              <td><a href="https://downloads.apache.org/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc">${project.artifactId}-${project.version}-source-release.zip.asc</a></td>
+            </tr>
+          </tbody>
+        </table>
 
-        <p>
-          [if-any logo]
-          <a href="[link]">
-            <img align="right" src="[logo]" border="0"
-                 alt="logo"/>
-          </a>
-          [end]
-          The currently selected mirror is
-          <b>[preferred]</b>.
-          If you encounter a problem with this mirror,
-          please select another mirror.
-          If all mirrors are failing, there are
-          <i>backup</i>
-          mirrors
-          (at the end of the mirrors list) that should be available.
+        <p>It is essential that you <a href="https://www.apache.org/info/verification.html">verify the integrity</a> of the downloaded file
+          using the checksum (.sha512 file)
+          or using the signature (.asc file) against the public <a href="https://downloads.apache.org/maven/KEYS">KEYS</a> used by the Apache Maven developers.
         </p>
 
-        <form action="[location]" method="get" id="SelectMirror">
-          Other mirrors:
-          <select name="Preferred">
-            [if-any http]
-            [for http]
-            <option value="[http]">[http]</option>
-            [end]
-            [end]
-            [if-any ftp]
-            [for ftp]
-            <option value="[ftp]">[ftp]</option>
-            [end]
-            [end]
-            [if-any backup]
-            [for backup]
-            <option value="[backup]">[backup] (backup)</option>
-            [end]
-            [end]
-          </select>
-          <input type="submit" value="Change"/>
-        </form>
-
-        <p>
-          You may also consult the
-          <a href="http://www.apache.org/mirrors/">complete list of
-            mirrors.</a>
-        </p>
-
-      </subsection>
-      
-      <subsection name="${project.name} ${project.version}">
-        
-      <p>This is the current stable version of ${project.name}.</p>
-        
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Link</th>
-            <th>Checksum</th>
-            <th>Signature</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>${project.name} ${project.version} (Source zip)</td>
-            <td><a href="[preferred]maven/surefire/${project.artifactId}-${project.version}-source-release.zip">maven/surefire/${project.artifactId}-${project.version}-source-release.zip</a></td>
-            <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.sha512</a></td>
-            <td><a href="https://www.apache.org/dist/maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc">maven/surefire/${project.artifactId}-${project.version}-source-release.zip.asc</a></td>
-          </tr>
-        </tbody>
-      </table>
       </subsection>
 
       <subsection name="Previous Versions">
-        
-      <p>Older non-recommended releases can be found on our <a href="http://archive.apache.org/dist/maven/surefire/">archive site</a>.</p>
-
+        <p>It is strongly recommended to use the latest release version of <strong>${project.name}</strong> to take advantage of the newest features and bug fixes.</p>
+        <p>Older non-recommended releases can be found on our <a href="https://archive.apache.org/dist/maven/surefire/">archive site</a>.</p>
       </subsection>
     </section>
   </body>
