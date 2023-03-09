@@ -31,7 +31,7 @@ jobs:
       ff-goal: 'clean install site site:stage -P reporting -nsu'
       ff-site-goal: '-v'
       verify-goal: 'clean install -nsu -P run-its'
-      verify-fail-fast: true
+      verify-fail-fast: false
       failure-upload-path: |
         surefire-its/target/*/log.txt
         surefire-its/target/**/surefire-reports/*
