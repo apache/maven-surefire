@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitplatform;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryListener;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
@@ -35,6 +36,11 @@ class LazyLauncher implements Launcher, AutoCloseable {
     private Launcher launcher;
 
     @Override
+    public void registerLauncherDiscoveryListeners(LauncherDiscoveryListener... listeners) {
+        launcher().registerLauncherDiscoveryListeners(listeners);
+    }
+
+    @Override
     public void registerTestExecutionListeners(TestExecutionListener... testExecutionListeners) {
         launcher().registerTestExecutionListeners(testExecutionListeners);
     }
@@ -48,6 +54,11 @@ class LazyLauncher implements Launcher, AutoCloseable {
     public void execute(
             LauncherDiscoveryRequest launcherDiscoveryRequest, TestExecutionListener... testExecutionListeners) {
         launcher().execute(launcherDiscoveryRequest, testExecutionListeners);
+    }
+
+    @Override
+    public void execute(TestPlan testPlan, TestExecutionListener... listeners) {
+        launcher().execute(testPlan, listeners);
     }
 
     private Launcher launcher() {

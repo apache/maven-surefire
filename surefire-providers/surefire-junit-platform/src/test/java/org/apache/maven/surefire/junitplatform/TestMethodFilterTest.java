@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.Test;
+import org.junit.jupiter.engine.config.DefaultJupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
 import org.junit.platform.engine.ConfigurationParameters;
@@ -78,12 +79,13 @@ public class TestMethodFilterTest {
         UniqueId uniqueId = UniqueId.forEngine("method");
         Class<TestClass> testClass = TestClass.class;
         Method testMethod = testClass.getMethod("testMethod");
-        return new TestMethodTestDescriptor(uniqueId, testClass, testMethod);
+        return new TestMethodTestDescriptor(
+                uniqueId, testClass, testMethod, new DefaultJupiterConfiguration(CONFIG_PARAMS));
     }
 
     private static ClassTestDescriptor newClassTestDescriptor() {
         UniqueId uniqueId = UniqueId.forEngine("class");
-        return new ClassTestDescriptor(uniqueId, TestClass.class, CONFIG_PARAMS);
+        return new ClassTestDescriptor(uniqueId, TestClass.class, new DefaultJupiterConfiguration(CONFIG_PARAMS));
     }
 
     /**
