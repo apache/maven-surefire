@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>3.0.0-M10-SNAPSHOT</version>
+    <version>3.0.0</version>
   </parent>
 
   <artifactId>surefire-api</artifactId>
