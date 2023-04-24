@@ -28,11 +28,13 @@ github:
     - maven-surefire-report-plugin
     - maven
   enabled_merge_buttons:
-    # enable squash button:
     squash:  true
-    # enable merge button:
     merge:   false
-    # enable rebase button:
     rebase:  true
   autolink_jira:
     - SUREFIRE
+notifications:
+  commits: commits@maven.apache.org
+  issues: issues@maven.apache.org
+  pullrequests: issues@maven.apache.org
+  jira_options: link label comment
