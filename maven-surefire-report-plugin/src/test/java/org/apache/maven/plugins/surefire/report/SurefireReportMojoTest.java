@@ -19,26 +19,17 @@
 package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Locale;
 
-import org.apache.maven.doxia.site.decoration.DecorationModel;
-import org.apache.maven.doxia.siterenderer.Renderer;
-import org.apache.maven.doxia.siterenderer.RendererException;
-import org.apache.maven.doxia.siterenderer.SiteRenderingContext;
-import org.apache.maven.doxia.siterenderer.sink.SiteRendererSink;
 import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugin.testing.ArtifactStubFactory;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
 import org.apache.maven.plugins.surefire.report.stubs.DependencyArtifactStubFactory;
-import org.apache.maven.shared.utils.WriterFactory;
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.apache.maven.shared.utils.io.IOUtil;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.LocalRepository;
@@ -54,15 +45,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class SurefireReportMojoTest extends AbstractMojoTestCase {
     private ArtifactStubFactory artifactStubFactory;
 
-    private Renderer renderer;
+    // Can be removed with Doxia 2.0.0
+    private Locale origLocale;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        renderer = (Renderer) lookup(Renderer.ROLE);
-
         artifactStubFactory = new DependencyArtifactStubFactory(getTestFile("target"), true, false);
         artifactStubFactory.getWorkingDir().mkdirs();
+
+        origLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ROOT);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Locale.setDefault(origLocale);
+        super.tearDown();
     }
 
     protected SurefireReportMojo createReportMojo(File pluginXmlFile) throws Exception {
@@ -105,7 +104,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
 
         mojo.execute();
         File report = new File(getBasedir(), "target/site/unit/basic-surefire-report-test/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -127,7 +125,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         mojo.execute();
         File report =
                 new File(getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -142,8 +139,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         assertFalse(linkXRef);
         mojo.execute();
         File report =
-                new File(getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire-report.html");
-        renderer(mojo, report);
+                new File(getBasedir(), "target/site/unit/basic-surefire-report-linkxref-false/surefire-report.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -157,7 +153,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         mojo.execute();
         File report =
                 new File(getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -172,14 +167,13 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         mojo.execute();
         File report =
                 new File(getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
-        int idx = htmlContent.indexOf("<td align=\"left\"><a id=\"TC_com.shape.CircleTest.testX\"></a>testX</td>");
+        int idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testX\"></a>testX</td>");
         assertTrue(idx > 0);
 
-        idx = htmlContent.indexOf("<td align=\"left\"><a id=\"TC_com.shape.CircleTest.testRadius\"></a>"
+        idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testRadius\"></a>"
                 + "<a href=\"#com.shape.CircleTest.testRadius\">testRadius</a>");
         assertTrue(idx > 0);
     }
@@ -189,7 +183,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         SurefireReportMojo mojo = createReportMojo(testPom);
         mojo.execute();
         File report = new File(getBasedir(), "target/site/unit/surefire-report-single-error/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -197,22 +190,22 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td>")));
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td>")));
 
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
@@ -221,13 +214,13 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
                         + "</a>"
                         + "</td>\n"
-                        + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
 
         assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
 
@@ -278,7 +271,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         mojo.execute();
         File report = new File(
                 getBasedir(), "target/site/unit/surefire-report-nestedClass-trimStackTrace/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -286,22 +278,22 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td>")));
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td>")));
 
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
@@ -310,13 +302,13 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
                         + "</a>"
                         + "</td>\n"
-                        + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
 
         assertThat(htmlContent, containsString("./xref-test/surefire/MyTest.html#L13"));
@@ -342,7 +334,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         SurefireReportMojo mojo = createReportMojo(testPom);
         mojo.execute();
         File report = new File(getBasedir(), "target/site/unit/surefire-report-nestedClass/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -350,22 +341,22 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td>")));
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td>")));
 
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
@@ -374,13 +365,13 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
                         + "</a>"
                         + "</td>\n"
-                        + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
 
         assertThat(htmlContent, containsString("./xref-test/surefire/MyTest.html#L13"));
@@ -431,7 +422,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         mojo.execute();
         File report =
                 new File(getBasedir(), "target/site/unit/surefire-report-enclosed-trimStackTrace/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -439,22 +429,22 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td>")));
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td>")));
 
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
@@ -463,13 +453,13 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
                         + "</a>"
                         + "</td>\n"
-                        + "<td align=\"left\"><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
 
         assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
 
@@ -495,7 +485,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         SurefireReportMojo mojo = createReportMojo(testPom);
         mojo.execute();
         File report = new File(getBasedir(), "target/site/unit/surefire-report-enclosed/surefire-report.html");
-        renderer(mojo, report);
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -503,22 +492,22 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td>")));
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td>")));
 
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
@@ -527,13 +516,13 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<img src=\"images/icon_error_sml.gif\" alt=\"\" />"
                         + "</a>"
                         + "</td>\n"
-                        + "<td align=\"left\"><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr>")));
+                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr>")));
 
         assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
 
@@ -609,37 +598,11 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
 
         mojo.execute();
 
-        File report = new File(getBasedir(), "target/site/acceptance-test-report.html");
-        renderer(mojo, report);
+        File report = new File(getBasedir(), "target/site/unit/surefire-1183/acceptance-test-report.html");
 
         assertTrue(report.exists());
 
         String htmlContent = FileUtils.fileRead(report);
         assertTrue(htmlContent.contains("<h2><a name=\"Acceptance_Test\"></a>Acceptance Test</h2></section>"));
-    }
-
-    /**
-     * Renderer the sink from the report mojo.
-     *
-     * @param mojo       not null
-     * @param outputHtml not null
-     * @throws RendererException if any
-     * @throws IOException       if any
-     */
-    private void renderer(SurefireReportMojo mojo, File outputHtml) throws RendererException, IOException {
-        Writer writer = null;
-        SiteRenderingContext context = new SiteRenderingContext();
-        context.setDecoration(new DecorationModel());
-        context.setTemplateName("org/apache/maven/doxia/siterenderer/resources/default-site.vm");
-        context.setLocale(Locale.ENGLISH);
-
-        try {
-            outputHtml.getParentFile().mkdirs();
-            writer = WriterFactory.newXmlWriter(outputHtml);
-
-            renderer.generateDocument(writer, (SiteRendererSink) mojo.getSink(), context);
-        } finally {
-            IOUtil.close(writer);
-        }
     }
 }

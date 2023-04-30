@@ -24,11 +24,11 @@ import java.io.StringWriter;
 import junit.framework.TestCase;
 import org.apache.maven.doxia.module.xhtml5.Xhtml5Sink;
 import org.apache.maven.doxia.sink.Sink;
+import org.apache.maven.doxia.tools.SiteTool;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 
 import static java.util.Collections.singletonList;
-import static java.util.Locale.ENGLISH;
 import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,11 +41,18 @@ public class Surefire597Test extends TestCase {
     public void testCorruptedTestCaseFailureWithMissingErrorTypeAndMessage() throws Exception {
         File basedir = new File(".").getCanonicalFile();
         File report = new File(basedir, "target/test-classes/surefire-597");
-        ConsoleLogger log = new NullConsoleLogger();
-        SurefireReportGenerator gen = new SurefireReportGenerator(singletonList(report), ENGLISH, true, null, log);
         StringWriter writer = new StringWriter();
         Sink sink = new Xhtml5Sink(writer) {};
-        gen.doGenerateReport(new SurefireReportMojo().getBundle(ENGLISH), sink);
+        ConsoleLogger consoleLogger = new NullConsoleLogger();
+        SurefireReportRenderer r = new SurefireReportRenderer(
+                sink,
+                SiteTool.DEFAULT_LOCALE,
+                new SurefireReportMojo().getBundle(SiteTool.DEFAULT_LOCALE),
+                consoleLogger,
+                true,
+                singletonList(report),
+                null);
+        r.render();
         String xml = writer.toString();
         assertThat(
                 xml,
@@ -59,11 +66,11 @@ public class Surefire597Test extends TestCase {
                         + "<th>Time</th></tr>\n"
                         + "<tr class=\"b\">\n"
                         + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td>"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td>"
                         + "</tr>"
                         + "</table>")));
         assertThat(
@@ -79,17 +86,17 @@ public class Surefire597Test extends TestCase {
                         + "<th>Time</th></tr>\n"
                         + "<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr></table>")));
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr></table>")));
         assertThat(
                 xml,
                 containsString(toSystemNewLine("<table border=\"0\" class=\"bodyTable\">\n"
                         + "<tr class=\"a\">\n"
-                        + "<th></th>\n"
+                        + "<th>-</th>\n"
                         + "<th>Class</th>\n"
                         + "<th>Tests</th>\n"
                         + "<th>Errors</th>\n"
@@ -99,25 +106,25 @@ public class Surefire597Test extends TestCase {
                         + "<th>Time</th></tr>\n"
                         + "<tr class=\"b\">\n"
                         + "<td align=\"left\"><a href=\"#surefire.MyTest\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></a></td>\n"
-                        + "<td align=\"left\"><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">1</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0</td>\n"
-                        + "<td align=\"left\">0%</td>\n"
-                        + "<td align=\"left\">0</td></tr></table>")));
+                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>1</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0</td>\n"
+                        + "<td>0.0%</td>\n"
+                        + "<td>0 s</td></tr></table>")));
         assertThat(
                 xml,
                 containsString(toSystemNewLine("<table border=\"0\" class=\"bodyTable\">\n"
                         + "<tr class=\"a\">\n"
                         + "<td align=\"left\"><img src=\"images/icon_error_sml.gif\" alt=\"\" /></td>\n"
-                        + "<td align=\"left\"><a id=\"surefire.MyTest.test\"></a>test</td></tr>\n"
+                        + "<td><a id=\"surefire.MyTest.test\"></a>test</td></tr>\n"
                         + "<tr class=\"b\">\n"
-                        + "<td align=\"left\"></td>\n"
-                        + "<td align=\"left\">java.lang.RuntimeException: java.lang.IndexOutOfBoundsException: msg</td></tr>\n"
+                        + "<td align=\"left\">-</td>\n"
+                        + "<td>java.lang.RuntimeException: java.lang.IndexOutOfBoundsException: msg</td></tr>\n"
                         + "<tr class=\"a\">\n"
-                        + "<td align=\"left\"></td>\n"
-                        + "<td align=\"left\">\n"
+                        + "<td align=\"left\">-</td>\n"
+                        + "<td>\n"
                         + "<div id=\"test-error\">surefire.MyTest:13</div></td></tr></table>")));
     }
 }

@@ -22,16 +22,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.shared.utils.io.DirectoryScanner;
 import org.xml.sax.SAXException;
 
@@ -46,23 +43,18 @@ public final class SurefireReportParser {
     private static final String EXCLUDES =
             "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml, failsafe-summary*.xml";
 
-    private static final int PCENT = 100;
-
     private final List<ReportTestSuite> testSuites = new ArrayList<>();
-
-    private final NumberFormat numberFormat;
 
     private final ConsoleLogger consoleLogger;
 
     private final List<File> reportsDirectories;
 
-    public SurefireReportParser(List<File> reportsDirectories, Locale locale, ConsoleLogger consoleLogger) {
+    public SurefireReportParser(List<File> reportsDirectories, ConsoleLogger consoleLogger) {
         this.reportsDirectories = reportsDirectories;
-        numberFormat = NumberFormat.getInstance(locale);
         this.consoleLogger = consoleLogger;
     }
 
-    public List<ReportTestSuite> parseXMLReportFiles() throws MavenReportException {
+    public List<ReportTestSuite> parseXMLReportFiles() {
         final Collection<File> xmlReportFiles = new ArrayList<>();
         for (File reportsDirectory : reportsDirectories) {
             if (reportsDirectory.exists()) {
@@ -76,19 +68,19 @@ public final class SurefireReportParser {
             try {
                 testSuites.addAll(parser.parse(aXmlReportFileList.getAbsolutePath()));
             } catch (ParserConfigurationException e) {
-                throw new MavenReportException("Error setting up parser for JUnit XML report", e);
+                throw new RuntimeException("Error setting up parser for JUnit XML report", e);
             } catch (SAXException e) {
-                throw new MavenReportException("Error parsing JUnit XML report " + aXmlReportFileList, e);
+                throw new RuntimeException("Error parsing JUnit XML report " + aXmlReportFileList, e);
             } catch (IOException e) {
-                throw new MavenReportException("Error reading JUnit XML report " + aXmlReportFileList, e);
+                throw new RuntimeException("Error reading JUnit XML report " + aXmlReportFileList, e);
             }
         }
 
         return testSuites;
     }
 
-    public Map<String, String> getSummary(List<ReportTestSuite> suites) {
-        Map<String, String> totalSummary = new HashMap<>();
+    public Map<String, Object> getSummary(List<ReportTestSuite> suites) {
+        Map<String, Object> totalSummary = new HashMap<>();
 
         int totalNumberOfTests = 0;
 
@@ -112,26 +104,22 @@ public final class SurefireReportParser {
             totalElapsedTime += suite.getTimeElapsed();
         }
 
-        String totalPercentage =
+        float totalPercentage =
                 computePercentage(totalNumberOfTests, totalNumberOfErrors, totalNumberOfFailures, totalNumberOfSkipped);
 
-        totalSummary.put("totalTests", Integer.toString(totalNumberOfTests));
+        totalSummary.put("totalTests", totalNumberOfTests);
 
-        totalSummary.put("totalErrors", Integer.toString(totalNumberOfErrors));
+        totalSummary.put("totalErrors", totalNumberOfErrors);
 
-        totalSummary.put("totalFailures", Integer.toString(totalNumberOfFailures));
+        totalSummary.put("totalFailures", totalNumberOfFailures);
 
-        totalSummary.put("totalSkipped", Integer.toString(totalNumberOfSkipped));
+        totalSummary.put("totalSkipped", totalNumberOfSkipped);
 
-        totalSummary.put("totalElapsedTime", numberFormat.format(totalElapsedTime));
+        totalSummary.put("totalElapsedTime", totalElapsedTime);
 
         totalSummary.put("totalPercentage", totalPercentage);
 
         return totalSummary;
-    }
-
-    public NumberFormat getNumberFormat() {
-        return numberFormat;
     }
 
     public Map<String, List<ReportTestSuite>> getSuitesGroupByPackage(List<ReportTestSuite> testSuitesList) {
@@ -152,9 +140,12 @@ public final class SurefireReportParser {
         return suitePackage;
     }
 
-    public String computePercentage(int tests, int errors, int failures, int skipped) {
-        float percentage = tests == 0 ? 0 : ((float) (tests - errors - failures - skipped) / (float) tests) * PCENT;
-        return numberFormat.format(percentage);
+    /**
+     * @return a float between 0.0 and 1.0
+     */
+    public float computePercentage(int tests, int errors, int failures, int skipped) {
+        float percentage = tests == 0 ? 0 : ((float) (tests - errors - failures - skipped) / (float) tests);
+        return percentage;
     }
 
     public List<ReportTestCase> getFailureDetails(List<ReportTestSuite> testSuites) {

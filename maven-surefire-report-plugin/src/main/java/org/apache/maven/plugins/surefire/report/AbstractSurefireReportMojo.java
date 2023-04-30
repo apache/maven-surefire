@@ -126,9 +126,15 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
             return;
         }
 
-        new SurefireReportGenerator(
-                        getReportsDirectories(), locale, showSuccess, determineXrefLocation(), getConsoleLogger())
-                .doGenerateReport(getBundle(locale), getSink());
+        SurefireReportRenderer r = new SurefireReportRenderer(
+                getSink(),
+                locale,
+                getBundle(locale),
+                getConsoleLogger(),
+                showSuccess,
+                getReportsDirectories(),
+                determineXrefLocation());
+        r.render();
     }
 
     @Override

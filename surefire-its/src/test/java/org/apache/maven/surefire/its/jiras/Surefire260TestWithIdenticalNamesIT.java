@@ -23,8 +23,9 @@ import java.net.URI;
 
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlTableRow;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -58,7 +59,7 @@ public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnit4Integrati
             HtmlAnchor a = (HtmlAnchor)
                     page.getByXPath("//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]")
                             .get(0);
-            HtmlDivision content = (HtmlDivision) page.getElementById("surefire260.TestB.testDup-failure");
+            HtmlTableRow content = (HtmlTableRow) page.getElementById("surefire260.TestB.testDup-failure");
             assertNotNull(content);
             assertTrue(content.getAttribute("style").contains("none"));
             a.click();

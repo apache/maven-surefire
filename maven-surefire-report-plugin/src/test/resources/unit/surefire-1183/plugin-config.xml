@@ -31,8 +31,7 @@
                     <outputName>acceptance-test-report</outputName>
                     <localRepository>${localRepository}</localRepository>
                     <outputDirectory>${basedir}/target/site/unit/surefire-1183</outputDirectory>
-                    <reportsDirectory>${basedir}/src/test/resources/unit/surefire-1183/acceptancetest-reports
-                    </reportsDirectory>
+                    <reportsDirectory>${basedir}/src/test/resources/unit/surefire-1183/acceptancetest-reports</reportsDirectory>
                 </configuration>
             </plugin>
         </plugins>

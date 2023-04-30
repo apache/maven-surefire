@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 
 import static java.util.Collections.singletonList;
-import static java.util.Locale.ENGLISH;
 
 /**
  *
@@ -39,10 +37,9 @@ import static java.util.Locale.ENGLISH;
 @SuppressWarnings("checkstyle:magicnumber")
 public class SurefireReportParserTest extends TestCase {
     public void testParseXMLReportFiles() throws Exception {
-        SurefireReportParser report =
-                new SurefireReportParser(singletonList(getTestDir()), ENGLISH, new NullConsoleLogger());
+        SurefireReportParser parser = new SurefireReportParser(singletonList(getTestDir()), new NullConsoleLogger());
 
-        List<ReportTestSuite> suites = report.parseXMLReportFiles();
+        List<ReportTestSuite> suites = parser.parseXMLReportFiles();
 
         assertEquals(8, suites.size());
 
@@ -80,23 +77,21 @@ public class SurefireReportParserTest extends TestCase {
 
         suites.add(tSuite2);
 
-        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
+        SurefireReportParser parser = new SurefireReportParser(null, new NullConsoleLogger());
 
-        Map<String, String> testMap = report.getSummary(suites);
+        Map<String, Object> testMap = parser.getSummary(suites);
 
-        assertEquals(20, Integer.parseInt(testMap.get("totalErrors")));
+        assertEquals(20, (int) testMap.get("totalErrors"));
 
-        assertEquals(40, Integer.parseInt(testMap.get("totalFailures")));
+        assertEquals(40, (int) testMap.get("totalFailures"));
 
-        assertEquals(200, Integer.parseInt(testMap.get("totalTests")));
+        assertEquals(200, (int) testMap.get("totalTests"));
 
-        assertEquals(4, Integer.parseInt(testMap.get("totalSkipped")));
+        assertEquals(4, (int) testMap.get("totalSkipped"));
 
-        NumberFormat numberFormat = report.getNumberFormat();
+        assertEquals(2.0f, (float) testMap.get("totalElapsedTime"));
 
-        assertEquals(2.0f, numberFormat.parse(testMap.get("totalElapsedTime")).floatValue(), 0.0f);
-
-        assertEquals(68.00f, numberFormat.parse(testMap.get("totalPercentage")).floatValue(), 0);
+        assertEquals(0.68f, (float) testMap.get("totalPercentage"));
     }
 
     public void testGetSuitesGroupByPackage() {
@@ -120,9 +115,9 @@ public class SurefireReportParserTest extends TestCase {
 
         suites.add(tSuite3);
 
-        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
+        SurefireReportParser parser = new SurefireReportParser(null, new NullConsoleLogger());
 
-        Map<String, List<ReportTestSuite>> groupMap = report.getSuitesGroupByPackage(suites);
+        Map<String, List<ReportTestSuite>> groupMap = parser.getSuitesGroupByPackage(suites);
 
         assertEquals(2, groupMap.size());
 
@@ -134,13 +129,9 @@ public class SurefireReportParserTest extends TestCase {
     }
 
     public void testComputePercentage() throws Exception {
-        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
-        NumberFormat numberFormat = report.getNumberFormat();
+        SurefireReportParser parser = new SurefireReportParser(null, new NullConsoleLogger());
 
-        assertEquals(
-                70.00f,
-                numberFormat.parse(report.computePercentage(100, 20, 10, 0)).floatValue(),
-                0);
+        assertEquals(0.7f, (float) parser.computePercentage(100, 20, 10, 0));
     }
 
     public void testGetFailureDetails() {
@@ -178,9 +169,9 @@ public class SurefireReportParserTest extends TestCase {
 
         suites.add(tSuite2);
 
-        SurefireReportParser report = new SurefireReportParser(null, ENGLISH, new NullConsoleLogger());
+        SurefireReportParser parser = new SurefireReportParser(null, new NullConsoleLogger());
 
-        List<ReportTestCase> failures = report.getFailureDetails(suites);
+        List<ReportTestCase> failures = parser.getFailureDetails(suites);
 
         assertEquals(2, failures.size());
 
