@@ -1,5 +1,5 @@
 # Auto detect text files and perform LF normalization
-* text eol=lf
+*        text eol=auto
 
 *.xml    text diff=xml
 *.java   text diff=java
@@ -7,7 +7,4 @@
 *.vm     text
 *.fml    text
 *.md     text
-*.css    text
-*.js     text
-*.sql    text
 *.png    binary
