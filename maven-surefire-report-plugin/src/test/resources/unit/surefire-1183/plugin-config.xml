@@ -26,10 +26,9 @@
                 <configuration>
                     <project
                             implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireRepMavenProjectStub"/>
-                    <title>Acceptance Test</title>
-                    <description>Acceptance Test Description</description>
                     <outputName>acceptance-test-report</outputName>
                     <localRepository>${localRepository}</localRepository>
+                    <customBundle>${basedir}/src/test/resources/unit/surefire-1183/src/site/custom/surefire-report.properties</customBundle>
                     <outputDirectory>${basedir}/target/site/unit/surefire-1183</outputDirectory>
                     <reportsDirectory>${basedir}/src/test/resources/unit/surefire-1183/acceptancetest-reports</reportsDirectory>
                 </configuration>

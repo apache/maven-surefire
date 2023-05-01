@@ -29,7 +29,7 @@
     </parent>
 
     <groupId>org.apache.maven.plugins.surefire</groupId>
-    <artifactId>surefire-1490</artifactId>
+    <artifactId>surefire-1490-custom</artifactId>
     <version>1.0</version>
 
     <dependencies>

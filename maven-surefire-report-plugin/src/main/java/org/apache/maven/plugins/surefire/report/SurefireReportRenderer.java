@@ -31,6 +31,7 @@ import org.apache.maven.doxia.sink.impl.SinkEventAttributeSet;
 import org.apache.maven.doxia.util.DoxiaUtils;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.reporting.AbstractMavenReportRenderer;
+import org.codehaus.plexus.i18n.I18N;
 
 import static org.apache.maven.doxia.markup.HtmlMarkup.A;
 import static org.apache.maven.doxia.sink.SinkEventAttributes.CLASS;
@@ -45,9 +46,9 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     private static final Object[] TAG_TYPE_START = {HtmlMarkup.TAG_TYPE_START};
     private static final Object[] TAG_TYPE_END = {HtmlMarkup.TAG_TYPE_END};
 
-    // Not used at the moment
+    private final I18N i18n;
+    private final String i18nSection;
     private final Locale locale;
-    private final LocalizedProperties bundle;
 
     private final SurefireReportParser parser;
     private final boolean showSuccess;
@@ -56,15 +57,17 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
     public SurefireReportRenderer(
             Sink sink,
+            I18N i18n,
+            String i18nSection,
             Locale locale,
-            LocalizedProperties bundle,
             ConsoleLogger consoleLogger,
             boolean showSuccess,
             List<File> reportsDirectories,
             String xrefLocation) {
         super(sink);
+        this.i18n = i18n;
+        this.i18nSection = i18nSection;
         this.locale = locale;
-        this.bundle = bundle;
         parser = new SurefireReportParser(reportsDirectories, consoleLogger);
         testSuites = parser.parseXMLReportFiles();
         this.showSuccess = showSuccess;
@@ -73,7 +76,28 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
     @Override
     public String getTitle() {
-        return bundle.getReportHeader();
+        return getI18nString("title");
+    }
+
+    /**
+     * @param key The key.
+     * @return The translated string.
+     */
+    private String getI18nString(String key) {
+        return getI18nString(getI18Nsection(), key);
+    }
+
+    private String getI18Nsection() {
+        return i18nSection;
+    }
+
+    /**
+     * @param section The section.
+     * @param key The key to translate.
+     * @return the translated key.
+     */
+    private String getI18nString(String section, String key) {
+        return i18n.getString("surefire-report", locale, "report." + section + '.' + key);
     }
 
     public void renderBody() {
@@ -103,7 +127,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         sink.section1();
         sinkAnchor("Summary");
         sink.sectionTitle1();
-        sink.text(bundle.getReportLabelSummary());
+        sink.text(getI18nString("surefire", "label.summary"));
         sink.sectionTitle1_();
 
         constructHotLinks();
@@ -113,12 +137,12 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         startTable();
 
         tableHeader(new String[] {
-            bundle.getReportLabelTests(),
-            bundle.getReportLabelErrors(),
-            bundle.getReportLabelFailures(),
-            bundle.getReportLabelSkipped(),
-            bundle.getReportLabelSuccessRate(),
-            bundle.getReportLabelTime()
+            getI18nString("surefire", "label.tests"),
+            getI18nString("surefire", "label.errors"),
+            getI18nString("surefire", "label.failures"),
+            getI18nString("surefire", "label.skipped"),
+            getI18nString("surefire", "label.successrate"),
+            getI18nString("surefire", "label.time")
         });
 
         tableRow(new String[] {
@@ -134,7 +158,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         sink.lineBreak();
 
-        paragraph(bundle.getReportTextNode1());
+        paragraph(getI18nString("surefire", "text.note1"));
 
         sink.lineBreak();
 
@@ -154,7 +178,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         sink.section1();
         sinkAnchor("Package_List");
         sink.sectionTitle1();
-        sink.text(bundle.getReportLabelPackageList());
+        sink.text(getI18nString("surefire", "label.packagelist"));
         sink.sectionTitle1_();
 
         constructHotLinks();
@@ -164,13 +188,13 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         startTable();
 
         tableHeader(new String[] {
-            bundle.getReportLabelPackage(),
-            bundle.getReportLabelTests(),
-            bundle.getReportLabelErrors(),
-            bundle.getReportLabelFailures(),
-            bundle.getReportLabelSkipped(),
-            bundle.getReportLabelSuccessRate(),
-            bundle.getReportLabelTime()
+            getI18nString("surefire", "label.package"),
+            getI18nString("surefire", "label.tests"),
+            getI18nString("surefire", "label.errors"),
+            getI18nString("surefire", "label.failures"),
+            getI18nString("surefire", "label.skipped"),
+            getI18nString("surefire", "label.successrate"),
+            getI18nString("surefire", "label.time")
         });
 
         for (Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet()) {
@@ -194,7 +218,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         endTable();
         sink.lineBreak();
 
-        paragraph(bundle.getReportTextNode2());
+        paragraph(getI18nString("surefire", "text.note2"));
 
         for (Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet()) {
             String packageName = entry.getKey();
@@ -222,13 +246,13 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
                 tableHeader(new String[] {
                     "",
-                    bundle.getReportLabelClass(),
-                    bundle.getReportLabelTests(),
-                    bundle.getReportLabelErrors(),
-                    bundle.getReportLabelFailures(),
-                    bundle.getReportLabelSkipped(),
-                    bundle.getReportLabelSuccessRate(),
-                    bundle.getReportLabelTime()
+                    getI18nString("surefire", "label.class"),
+                    getI18nString("surefire", "label.tests"),
+                    getI18nString("surefire", "label.errors"),
+                    getI18nString("surefire", "label.failures"),
+                    getI18nString("surefire", "label.skipped"),
+                    getI18nString("surefire", "label.successrate"),
+                    getI18nString("surefire", "label.time")
                 });
 
                 for (ReportTestSuite suite : testSuiteList) {
@@ -301,7 +325,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         sink.section1();
         sinkAnchor("Test_Cases");
         sink.sectionTitle1();
-        sink.text(bundle.getReportLabelTestCases());
+        sink.text(getI18nString("surefire", "label.testcases"));
         sink.sectionTitle1_();
 
         constructHotLinks();
@@ -448,7 +472,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         sink.section1();
         sinkAnchor("Failure_Details");
         sink.sectionTitle1();
-        sink.text(bundle.getReportLabelFailureDetails());
+        sink.text(getI18nString("surefire", "label.failuredetails"));
         sink.sectionTitle1_();
 
         constructHotLinks();
@@ -524,15 +548,15 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             sink.paragraph();
 
             sink.text("[");
-            link("#Summary", bundle.getReportLabelSummary());
+            link("#Summary", getI18nString("surefire", "label.summary"));
             sink.text("]");
 
             sink.text(" [");
-            link("#Package_List", bundle.getReportLabelPackageList());
+            link("#Package_List", getI18nString("surefire", "label.packagelist"));
             sink.text("]");
 
             sink.text(" [");
-            link("#Test_Cases", bundle.getReportLabelTestCases());
+            link("#Test_Cases", getI18nString("surefire", "label.testcases"));
             sink.text("]");
 
             sink.paragraph_();

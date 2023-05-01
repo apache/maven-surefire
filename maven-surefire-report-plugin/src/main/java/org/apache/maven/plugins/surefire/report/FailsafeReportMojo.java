@@ -19,14 +19,10 @@
 package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-
-import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * Creates a nicely formatted Failsafe Test Report in html format.
@@ -62,20 +58,6 @@ public class FailsafeReportMojo extends AbstractSurefireReportMojo {
     @Parameter(defaultValue = "false", property = "skipFailsafeReport")
     private boolean skipFailsafeReport;
 
-    /**
-     * A custom title of the report for the menu and the project reports page.
-     * @since 2.21.0
-     */
-    @Parameter(defaultValue = "", property = "failsafe.report.title")
-    private String title;
-
-    /**
-     * A custom description for the project reports page.
-     * @since 2.21.0
-     */
-    @Parameter(defaultValue = "", property = "failsafe.report.description")
-    private String description;
-
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {
         String buildDir = subProject.getBuild().getDirectory();
@@ -85,33 +67,6 @@ public class FailsafeReportMojo extends AbstractSurefireReportMojo {
     @Override
     public String getOutputName() {
         return outputName;
-    }
-
-    @Override
-    protected LocalizedProperties getBundle(Locale locale, ClassLoader resourceBundleClassLoader) {
-        ResourceBundle bundle = ResourceBundle.getBundle("surefire-report", locale, resourceBundleClassLoader);
-        return new LocalizedProperties(bundle) {
-            @Override
-            public String getReportName() {
-                return isEmpty(FailsafeReportMojo.this.getTitle())
-                        ? toLocalizedValue("report.failsafe.name")
-                        : FailsafeReportMojo.this.getTitle();
-            }
-
-            @Override
-            public String getReportDescription() {
-                return isEmpty(FailsafeReportMojo.this.getDescription())
-                        ? toLocalizedValue("report.failsafe.description")
-                        : FailsafeReportMojo.this.getDescription();
-            }
-
-            @Override
-            public String getReportHeader() {
-                return isEmpty(FailsafeReportMojo.this.getTitle())
-                        ? toLocalizedValue("report.failsafe.header")
-                        : FailsafeReportMojo.this.getTitle();
-            }
-        };
     }
 
     @Override
@@ -125,22 +80,7 @@ public class FailsafeReportMojo extends AbstractSurefireReportMojo {
     }
 
     @Override
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
+    protected String getI18Nsection() {
+        return "failsafe";
     }
 }

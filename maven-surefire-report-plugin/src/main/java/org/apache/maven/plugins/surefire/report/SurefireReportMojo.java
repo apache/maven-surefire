@@ -19,16 +19,12 @@
 package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-
-import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
@@ -61,20 +57,6 @@ public class SurefireReportMojo extends AbstractSurefireReportMojo {
     @Parameter(defaultValue = "false", property = "skipSurefireReport")
     private boolean skipSurefireReport;
 
-    /**
-     * A custom title of the report for the menu and the project reports page.
-     * @since 2.21.0
-     */
-    @Parameter(defaultValue = "", property = "surefire.report.title")
-    private String title;
-
-    /**
-     * A custom description for the project reports page.
-     * @since 2.21.0
-     */
-    @Parameter(defaultValue = "", property = "surefire.report.description")
-    private String description;
-
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {
         String buildDir = subProject.getBuild().getDirectory();
@@ -84,33 +66,6 @@ public class SurefireReportMojo extends AbstractSurefireReportMojo {
     @Override
     public String getOutputName() {
         return outputName;
-    }
-
-    @Override
-    protected LocalizedProperties getBundle(Locale locale, ClassLoader resourceBundleClassLoader) {
-        ResourceBundle bundle = ResourceBundle.getBundle("surefire-report", locale, resourceBundleClassLoader);
-        return new LocalizedProperties(bundle) {
-            @Override
-            public String getReportName() {
-                return isEmpty(SurefireReportMojo.this.getTitle())
-                        ? toLocalizedValue("report.surefire.name")
-                        : SurefireReportMojo.this.getTitle();
-            }
-
-            @Override
-            public String getReportDescription() {
-                return isEmpty(SurefireReportMojo.this.getDescription())
-                        ? toLocalizedValue("report.surefire.description")
-                        : SurefireReportMojo.this.getDescription();
-            }
-
-            @Override
-            public String getReportHeader() {
-                return isEmpty(SurefireReportMojo.this.getTitle())
-                        ? toLocalizedValue("report.surefire.header")
-                        : SurefireReportMojo.this.getTitle();
-            }
-        };
     }
 
     @Override
@@ -124,22 +79,7 @@ public class SurefireReportMojo extends AbstractSurefireReportMojo {
     }
 
     @Override
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
+    protected String getI18Nsection() {
+        return "surefire";
     }
 }

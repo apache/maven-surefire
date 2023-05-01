@@ -27,6 +27,7 @@ import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.tools.SiteTool;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.codehaus.plexus.i18n.DefaultI18N;
 
 import static java.util.Collections.singletonList;
 import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
@@ -43,15 +44,11 @@ public class Surefire597Test extends TestCase {
         File report = new File(basedir, "target/test-classes/surefire-597");
         StringWriter writer = new StringWriter();
         Sink sink = new Xhtml5Sink(writer) {};
+        DefaultI18N i18n = new DefaultI18N();
+        i18n.initialize();
         ConsoleLogger consoleLogger = new NullConsoleLogger();
         SurefireReportRenderer r = new SurefireReportRenderer(
-                sink,
-                SiteTool.DEFAULT_LOCALE,
-                new SurefireReportMojo().getBundle(SiteTool.DEFAULT_LOCALE),
-                consoleLogger,
-                true,
-                singletonList(report),
-                null);
+                sink, i18n, "surefire", SiteTool.DEFAULT_LOCALE, consoleLogger, true, singletonList(report), null);
         r.render();
         String xml = writer.toString();
         assertThat(

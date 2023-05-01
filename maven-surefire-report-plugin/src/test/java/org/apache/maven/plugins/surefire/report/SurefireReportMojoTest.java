@@ -584,8 +584,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
         File outputDir = (File) getVariableValueFromObject(mojo, "outputDirectory");
         String outputName = (String) getVariableValueFromObject(mojo, "outputName");
         File reportsDir = (File) getVariableValueFromObject(mojo, "reportsDirectory");
-        String title = (String) getVariableValueFromObject(mojo, "title");
-        String description = (String) getVariableValueFromObject(mojo, "description");
 
         assertEquals(new File(getBasedir() + "/target/site/unit/surefire-1183"), outputDir);
         assertEquals(
@@ -593,8 +591,6 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         .getAbsolutePath(),
                 reportsDir.getAbsolutePath());
         assertEquals("acceptance-test-report", outputName);
-        assertEquals("Acceptance Test", title);
-        assertEquals("Acceptance Test Description", description);
 
         mojo.execute();
 

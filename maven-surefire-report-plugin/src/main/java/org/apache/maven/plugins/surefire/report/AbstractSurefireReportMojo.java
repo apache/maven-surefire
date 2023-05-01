@@ -19,18 +19,33 @@
 package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import org.apache.maven.model.ReportPlugin;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
 import org.apache.maven.reporting.MavenReportException;
+import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.utils.PathTool;
+import org.codehaus.plexus.i18n.I18N;
+import org.codehaus.plexus.interpolation.EnvarBasedValueSource;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.PrefixedObjectValueSource;
+import org.codehaus.plexus.interpolation.PropertiesBasedValueSource;
+import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
 
 import static java.util.Collections.addAll;
 import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasReportFiles;
@@ -87,6 +102,27 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
     @Parameter(defaultValue = "false", property = "aggregate")
     private boolean aggregate;
 
+    /**
+     * The current user system settings for use in Maven.
+     */
+    @Parameter(defaultValue = "${settings}", readonly = true, required = true)
+    private Settings settings;
+
+    /**
+     * Path for a custom bundle instead of using the default one. <br>
+     * Using this field, you could change the texts in the generated reports.
+     *
+     * @since 3.1.0
+     */
+    @Parameter(defaultValue = "src/site/custom/surefire-report.properties")
+    private String customBundle;
+
+    /**
+     * Internationalization component
+     */
+    @Component
+    private I18N i18n;
+
     private List<File> resolvedReportsDirectories;
 
     /**
@@ -109,14 +145,6 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
         return false;
     }
 
-    public abstract void setTitle(String title);
-
-    public abstract String getTitle();
-
-    public abstract void setDescription(String description);
-
-    public abstract String getDescription();
-
     /**
      * {@inheritDoc}
      */
@@ -128,8 +156,9 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
 
         SurefireReportRenderer r = new SurefireReportRenderer(
                 getSink(),
+                getI18N(locale),
+                getI18Nsection(),
                 locale,
-                getBundle(locale),
                 getConsoleLogger(),
                 showSuccess,
                 getReportsDirectories(),
@@ -270,19 +299,44 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
     }
 
     /**
-     * {@inheritDoc}
+     * @param locale The locale
+     * @param key The key to search for
+     * @return The text appropriate for the locale.
      */
-    @Override
+    protected String getI18nString(Locale locale, String key) {
+        return getI18N(locale).getString("surefire-report", locale, "report." + getI18Nsection() + '.' + key);
+    }
+    /**
+     * @param locale The local.
+     * @return I18N for the locale
+     */
+    protected I18N getI18N(Locale locale) {
+        if (customBundle != null) {
+            File customBundleFile = new File(customBundle);
+            if (customBundleFile.isFile() && customBundleFile.getName().endsWith(".properties")) {
+                if (!i18n.getClass().isAssignableFrom(CustomI18N.class)
+                        || !i18n.getDefaultLanguage().equals(locale.getLanguage())) {
+                    // first load
+                    i18n = new CustomI18N(project, settings, customBundleFile, locale, i18n);
+                }
+            }
+        }
+
+        return i18n;
+    }
+    /**
+     * @return The according string for the section.
+     */
+    protected abstract String getI18Nsection();
+
+    /** {@inheritDoc} */
     public String getName(Locale locale) {
-        return getBundle(locale).getReportName();
+        return getI18nString(locale, "name");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
+    /** {@inheritDoc} */
     public String getDescription(Locale locale) {
-        return getBundle(locale).getReportDescription();
+        return getI18nString(locale, "description");
     }
 
     /**
@@ -291,18 +345,199 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
     @Override
     public abstract String getOutputName();
 
-    protected abstract LocalizedProperties getBundle(Locale locale, ClassLoader resourceBundleClassLoader);
-
     protected final ConsoleLogger getConsoleLogger() {
         return new PluginConsoleLogger(getLog());
-    }
-
-    final LocalizedProperties getBundle(Locale locale) {
-        return getBundle(locale, getClass().getClassLoader());
     }
 
     @Override
     protected MavenProject getProject() {
         return project;
+    }
+
+    // TODO Review, especially Locale.getDefault()
+    private static class CustomI18N implements I18N {
+        private final MavenProject project;
+
+        private final Settings settings;
+
+        private final String bundleName;
+
+        private final Locale locale;
+
+        private final I18N i18nOriginal;
+
+        private ResourceBundle bundle;
+
+        private static final Object[] NO_ARGS = new Object[0];
+
+        CustomI18N(MavenProject project, Settings settings, File customBundleFile, Locale locale, I18N i18nOriginal) {
+            super();
+            this.project = project;
+            this.settings = settings;
+            this.locale = locale;
+            this.i18nOriginal = i18nOriginal;
+            this.bundleName = customBundleFile
+                    .getName()
+                    .substring(0, customBundleFile.getName().indexOf(".properties"));
+
+            URLClassLoader classLoader = null;
+            try {
+                classLoader = new URLClassLoader(
+                        new URL[] {customBundleFile.getParentFile().toURI().toURL()}, null);
+            } catch (MalformedURLException e) {
+                // could not happen.
+            }
+
+            this.bundle = ResourceBundle.getBundle(this.bundleName, locale, classLoader);
+            if (!this.bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
+                this.bundle = ResourceBundle.getBundle(this.bundleName, Locale.getDefault(), classLoader);
+            }
+        }
+
+        /** {@inheritDoc} */
+        public String getDefaultLanguage() {
+            return locale.getLanguage();
+        }
+
+        /** {@inheritDoc} */
+        public String getDefaultCountry() {
+            return locale.getCountry();
+        }
+
+        /** {@inheritDoc} */
+        public String getDefaultBundleName() {
+            return bundleName;
+        }
+
+        /** {@inheritDoc} */
+        public String[] getBundleNames() {
+            return new String[] {bundleName};
+        }
+
+        /** {@inheritDoc} */
+        public ResourceBundle getBundle() {
+            return bundle;
+        }
+
+        /** {@inheritDoc} */
+        public ResourceBundle getBundle(String bundleName) {
+            return bundle;
+        }
+
+        /** {@inheritDoc} */
+        public ResourceBundle getBundle(String bundleName, String languageHeader) {
+            return bundle;
+        }
+
+        /** {@inheritDoc} */
+        public ResourceBundle getBundle(String bundleName, Locale locale) {
+            return bundle;
+        }
+
+        /** {@inheritDoc} */
+        public Locale getLocale(String languageHeader) {
+            return new Locale(languageHeader);
+        }
+
+        /** {@inheritDoc} */
+        public String getString(String key) {
+            return getString(bundleName, locale, key);
+        }
+
+        /** {@inheritDoc} */
+        public String getString(String key, Locale locale) {
+            return getString(bundleName, locale, key);
+        }
+
+        /** {@inheritDoc} */
+        public String getString(String bundleName, Locale locale, String key) {
+            String value;
+
+            if (locale == null) {
+                locale = getLocale(null);
+            }
+
+            ResourceBundle rb = getBundle(bundleName, locale);
+            value = getStringOrNull(rb, key);
+
+            if (value == null) {
+                // try to load default
+                value = i18nOriginal.getString(bundleName, locale, key);
+            }
+
+            if (!value.contains("${")) {
+                return value;
+            }
+
+            final RegexBasedInterpolator interpolator = new RegexBasedInterpolator();
+            try {
+                interpolator.addValueSource(new EnvarBasedValueSource());
+            } catch (final IOException e) {
+                // In which cases could this happen? And what should we do?
+            }
+
+            interpolator.addValueSource(new PropertiesBasedValueSource(System.getProperties()));
+            interpolator.addValueSource(new PropertiesBasedValueSource(project.getProperties()));
+            interpolator.addValueSource(new PrefixedObjectValueSource("project", project));
+            interpolator.addValueSource(new PrefixedObjectValueSource("pom", project));
+            interpolator.addValueSource(new PrefixedObjectValueSource("settings", settings));
+
+            try {
+                value = interpolator.interpolate(value);
+            } catch (final InterpolationException e) {
+                // What does this exception mean?
+            }
+
+            return value;
+        }
+
+        /** {@inheritDoc} */
+        public String format(String key, Object arg1) {
+            return format(bundleName, locale, key, new Object[] {arg1});
+        }
+
+        /** {@inheritDoc} */
+        public String format(String key, Object arg1, Object arg2) {
+            return format(bundleName, locale, key, new Object[] {arg1, arg2});
+        }
+
+        /** {@inheritDoc} */
+        public String format(String bundleName, Locale locale, String key, Object arg1) {
+            return format(bundleName, locale, key, new Object[] {arg1});
+        }
+
+        /** {@inheritDoc} */
+        public String format(String bundleName, Locale locale, String key, Object arg1, Object arg2) {
+            return format(bundleName, locale, key, new Object[] {arg1, arg2});
+        }
+
+        /** {@inheritDoc} */
+        public String format(String bundleName, Locale locale, String key, Object[] args) {
+            if (locale == null) {
+                locale = getLocale(null);
+            }
+
+            String value = getString(bundleName, locale, key);
+            if (args == null) {
+                args = NO_ARGS;
+            }
+
+            MessageFormat messageFormat = new MessageFormat("");
+            messageFormat.setLocale(locale);
+            messageFormat.applyPattern(value);
+
+            return messageFormat.format(args);
+        }
+
+        private String getStringOrNull(ResourceBundle rb, String key) {
+            if (rb != null) {
+                try {
+                    return rb.getString(key);
+                } catch (MissingResourceException ignored) {
+                    // intentional
+                }
+            }
+            return null;
+        }
     }
 }
