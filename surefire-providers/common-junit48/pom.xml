@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.1.0</version>
   </parent>
 
   <artifactId>common-junit48</artifactId>
@@ -32,7 +32,7 @@
   <description>Shared JUnit48 Provider Code</description>
 
   <scm>
-    <tag>surefire-3.0.0-M8</tag>
+    <tag>surefire-3.1.0</tag>
   </scm>
 
   <dependencies>
