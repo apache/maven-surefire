@@ -1,5 +1,5 @@
 # Auto detect text files and perform LF normalization
-*        text eol=auto
+*        text=auto
 
 *.xml    text diff=xml
 *.java   text diff=java
