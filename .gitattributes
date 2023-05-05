@@ -8,3 +8,4 @@
 *.fml    text
 *.md     text
 *.png    binary
+*.class  binary
