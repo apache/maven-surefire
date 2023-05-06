@@ -59,7 +59,7 @@ Usage
 mvn surefire-report:report  
 +---+
 
-  A HTML report should be generated in <<<$\{basedir\}/target/site/surefire-report.html>>>.
+  An HTML report should be generated in <<<$\{basedir\}/target/reports/surefire.html>>>.
 
 [images/surefire-sample2.png] Sample standalone surefire-report
 

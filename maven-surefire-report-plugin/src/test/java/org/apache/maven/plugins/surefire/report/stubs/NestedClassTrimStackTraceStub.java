@@ -18,21 +18,10 @@
  */
 package org.apache.maven.plugins.surefire.report.stubs;
 
-import java.util.ArrayList;
-import java.util.List;
+public class NestedClassTrimStackTraceStub extends SurefireReportMavenProjectStub {
 
-import org.apache.maven.model.ReportPlugin;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-
-/**
- * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
- */
-public class SurefireReportMavenProjectStub2 extends MavenProjectStub {
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public List<ReportPlugin> getReportPlugins() {
-        return new ArrayList<>();
+    protected String getProjectDirName() {
+        return "surefire-report-nestedClass-trimStackTrace";
     }
 }

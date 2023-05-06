@@ -24,8 +24,7 @@
         <artifactId>maven-surefire-report-plugin</artifactId>
         <configuration>
           <outputDirectory>${basedir}/target/site/unit/surefire-report-enclosed</outputDirectory>
-          <localRepository>${localRepository}</localRepository>
-          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireReportMavenProjectStub"/>
+          <project implementation="org.apache.maven.plugins.surefire.report.stubs.EnclosedStub"/>
           <showSuccess>true</showSuccess>
           <reportsDirectory>${basedir}/src/test/resources/unit/surefire-report-enclosed/surefire-reports
           </reportsDirectory>

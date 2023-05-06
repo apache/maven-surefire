@@ -329,7 +329,7 @@ public final class SurefireLauncher {
     }
 
     public SurefireLauncher addFailsafeReportOnlyGoal() {
-        mavenLauncher.addGoal(getReportPluginGoal(":failsafe-report-only"));
+        mavenLauncher.addGoal(getReportPluginGoal("failsafe-report-only"));
         return this;
     }
 

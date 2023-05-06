@@ -61,7 +61,7 @@ public class FailsafeOnlyReport extends AbstractSurefireReport {
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {
         String buildDir = subProject.getBuild().getDirectory();
-        return new File(buildDir + "/failsafe-reports");
+        return new File(buildDir, "failsafe-reports");
     }
 
     @Override

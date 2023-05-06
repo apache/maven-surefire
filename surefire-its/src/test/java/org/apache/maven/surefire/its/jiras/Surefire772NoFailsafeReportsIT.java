@@ -41,7 +41,7 @@ public class Surefire772NoFailsafeReportsIT extends SurefireJUnit4IntegrationTes
                 unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
         assertSurefireReportPresent(site);
-        assertNoFailsefeReport(site);
+        assertNoFailsafeReport(site);
     }
 
     @Test
@@ -51,7 +51,7 @@ public class Surefire772NoFailsafeReportsIT extends SurefireJUnit4IntegrationTes
                 .addSurefireReportOnlyGoal()
                 .executeCurrentGoals();
         assertSurefireReportPresent(validator);
-        assertNoFailsefeReport(validator);
+        assertNoFailsafeReport(validator);
     }
 
     @Test
@@ -73,27 +73,27 @@ public class Surefire772NoFailsafeReportsIT extends SurefireJUnit4IntegrationTes
                 .executeCurrentGoals();
 
         assertSurefireReportPresent(validator);
-        assertNoFailsefeReport(validator);
+        assertNoFailsafeReport(validator);
     }
 
-    private void assertNoFailsefeReport(OutputValidator site) {
-        TestFile siteFile = site.getSiteFile("failsafe.html");
-        assertFalse("Expecting no failsafe report file", siteFile.isFile());
+    private void assertNoFailsafeReport(OutputValidator validator) {
+        TestFile reportFile = validator.getReportsFile("failsafe.html");
+        assertFalse("Expecting no failsafe report file", reportFile.isFile());
     }
 
-    private void assertFailsafeReport(OutputValidator site) {
-        TestFile siteFile = site.getSiteFile("failsafe.html");
-        assertTrue("Expecting no failsafe report file", siteFile.isFile());
+    private void assertFailsafeReport(OutputValidator validator) {
+        TestFile reportFile = validator.getReportsFile("failsafe.html");
+        assertTrue("Expecting no failsafe report file", reportFile.isFile());
     }
 
-    private void assertSurefireReportPresent(OutputValidator site) {
-        TestFile siteFile = site.getSiteFile("surefire.html");
-        assertTrue("Expecting surefire report file", siteFile.isFile());
+    private void assertSurefireReportPresent(OutputValidator validator) {
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        assertTrue("Expecting surefire report file", reportFile.isFile());
     }
 
     private SurefireLauncher unpack() throws VerificationException {
         final SurefireLauncher unpack = unpack("surefire-772-no-failsafe-reports");
-        unpack.maven().deleteSiteDir().skipClean().failNever().verifyFileNotPresent("site");
+        unpack.maven().deleteReportsDir().skipClean().failNever().verifyFileNotPresent("reports");
         return unpack;
     }
 }
