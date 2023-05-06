@@ -38,10 +38,10 @@ public class Surefire570MultipleReportDirectoriesIT extends SurefireJUnit4Integr
         surefireLauncher.executeTest();
         surefireLauncher.addGoal("-Daggregate=true");
         OutputValidator validator = surefireLauncher.executeSurefireReport();
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        siteFile.assertContainsText("MyModule1ClassTest");
-        siteFile.assertContainsText("MyModule2ClassTest");
-        siteFile.assertContainsText("MyDummyClassM1Test");
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        reportFile.assertContainsText("MyModule1ClassTest");
+        reportFile.assertContainsText("MyModule2ClassTest");
+        reportFile.assertContainsText("MyDummyClassM1Test");
     }
 
     @Test
@@ -51,9 +51,9 @@ public class Surefire570MultipleReportDirectoriesIT extends SurefireJUnit4Integr
         surefireLauncher.reset();
         surefireLauncher.executeSurefireReport();
         OutputValidator module1 = surefireLauncher.getSubProjectValidator("module1");
-        TestFile siteFile = module1.getSiteFile("surefire.html");
-        siteFile.assertContainsText("MyModule1ClassTest");
-        siteFile.assertContainsText("MyDummyClassM1Test");
+        TestFile reportFile = module1.getReportsFile("surefire.html");
+        reportFile.assertContainsText("MyModule1ClassTest");
+        reportFile.assertContainsText("MyDummyClassM1Test");
     }
 
     public SurefireLauncher unpack() {

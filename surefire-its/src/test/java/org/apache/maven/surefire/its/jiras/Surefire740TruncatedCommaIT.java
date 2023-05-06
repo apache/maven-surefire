@@ -39,8 +39,8 @@ public class Surefire740TruncatedCommaIT extends SurefireJUnit4IntegrationTestCa
                 .addSurefireReportGoal()
                 .executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        assertTrue("Expecting file", siteFile.exists());
-        siteFile.assertContainsText("027"); // Avoid asserting with the "," or "." ;)
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        assertTrue("Expecting file", reportFile.exists());
+        reportFile.assertContainsText("027"); // Avoid asserting with the "," or "." ;)
     }
 }

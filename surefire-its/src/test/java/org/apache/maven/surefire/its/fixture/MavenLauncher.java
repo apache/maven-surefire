@@ -307,9 +307,9 @@ public final class MavenLauncher {
         return this;
     }
 
-    public MavenLauncher deleteSiteDir() {
+    public MavenLauncher deleteReportsDir() {
         try {
-            FileUtils.deleteDirectory(getValidator().getSubFile("site"));
+            FileUtils.deleteDirectory(getValidator().getSubFile("reports"));
         } catch (IOException e) {
             throw new SurefireVerifierException(e);
         }

@@ -38,7 +38,7 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
                 .addSurefireReportGoal()
                 .executeCurrentGoals()
                 .verifyErrorFree(3)
-                .getSiteFile("surefire.html")
+                .getReportsFile("surefire.html")
                 .assertFileExists();
     }
 

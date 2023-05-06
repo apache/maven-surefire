@@ -37,7 +37,6 @@ import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
-import org.apache.maven.reporting.MavenReportException;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.shared.utils.PathTool;
 import org.codehaus.plexus.i18n.I18N;
@@ -149,16 +148,16 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
      * {@inheritDoc}
      */
     @Override
-    public void executeReport(Locale locale) throws MavenReportException {
+    public void executeReport(Locale locale) {
         SurefireReportRenderer r = new SurefireReportRenderer(
                 getSink(),
                 getI18N(locale),
                 getI18Nsection(),
                 locale,
                 getConsoleLogger(),
-                showSuccess,
                 getReportsDirectories(),
-                determineXrefLocation());
+                determineXrefLocation(),
+                showSuccess);
         r.render();
     }
 
@@ -263,7 +262,8 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
         String location = null;
 
         if (linkXRef) {
-            String relativePath = PathTool.getRelativePath(getOutputDirectory(), xrefLocation.getAbsolutePath());
+            String relativePath = PathTool.getRelativePath(
+                    getReportOutputDirectory().getAbsolutePath(), xrefLocation.getAbsolutePath());
             if (relativePath == null || relativePath.isEmpty()) {
                 relativePath = ".";
             }
@@ -344,6 +344,10 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     @Override
     protected MavenProject getProject() {
         return project;
+    }
+
+    protected List<MavenProject> getReactorProjects() {
+        return reactorProjects;
     }
 
     // TODO Review, especially Locale.getDefault()
