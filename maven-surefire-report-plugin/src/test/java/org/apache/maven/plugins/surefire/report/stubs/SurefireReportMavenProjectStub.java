@@ -18,22 +18,35 @@
  */
 package org.apache.maven.plugins.surefire.report.stubs;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.artifact.repository.MavenArtifactRepository;
 import org.apache.maven.artifact.repository.layout.DefaultRepositoryLayout;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.ReportPlugin;
-import org.apache.maven.model.Reporting;
 import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
+import org.eclipse.aether.repository.RemoteRepository;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
  */
-public class SurefireReportMavenProjectStub extends MavenProjectStub {
+public abstract class SurefireReportMavenProjectStub extends MavenProjectStub {
+
+    protected abstract String getProjectDirName();
+
+    @Override
+    public File getBasedir() {
+        return new File(super.getBasedir() + "/src/test/resources/unit/" + getProjectDirName());
+    }
+
+    @Override
+    public File getFile() {
+        return new File(getBasedir(), "plugin-config.xml");
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -46,10 +59,6 @@ public class SurefireReportMavenProjectStub extends MavenProjectStub {
         reportPlugin.setArtifactId("maven-jxr-plugin");
         reportPlugin.setVersion("2.0-SNAPSHOT");
         reporting.addPlugin(reportPlugin);
-
-        Model model = new Model();
-
-        model.setReporting(reporting);
 
         return reporting.getPlugins();
     }
@@ -64,5 +73,10 @@ public class SurefireReportMavenProjectStub extends MavenProjectStub {
                 new ArtifactRepositoryPolicy());
 
         return Collections.singletonList(repository);
+    }
+
+    @Override
+    public List<RemoteRepository> getRemoteProjectRepositories() {
+        return RepositoryUtils.toRepos(getRemoteArtifactRepositories());
     }
 }
