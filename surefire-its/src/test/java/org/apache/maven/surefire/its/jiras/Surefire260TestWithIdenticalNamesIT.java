@@ -46,12 +46,11 @@ public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnit4Integrati
     public void testWithIdenticalNames() throws IOException {
         OutputValidator validator = unpack("surefire-260-testWithIdenticalNames")
                 .failNever()
-                .addGoal("site")
                 .addSurefireReportGoal()
                 .executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        final URI uri = siteFile.toURI();
+        TestFile reportsFile = validator.getReportsFile("surefire.html");
+        final URI uri = reportsFile.toURI();
 
         try (WebClient webClient = new WebClient()) {
             HtmlPage page = webClient.getPage(uri.toURL());

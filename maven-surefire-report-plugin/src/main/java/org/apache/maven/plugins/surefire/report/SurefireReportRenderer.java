@@ -50,9 +50,9 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     private final Locale locale;
 
     private final SurefireReportParser parser;
-    private final boolean showSuccess;
-    private final String xrefLocation;
     private final List<ReportTestSuite> testSuites;
+    private final String xrefLocation;
+    private final boolean showSuccess;
 
     public SurefireReportRenderer(
             Sink sink,
@@ -60,9 +60,9 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             String i18nSection,
             Locale locale,
             ConsoleLogger consoleLogger,
-            boolean showSuccess,
             List<File> reportsDirectories,
-            String xrefLocation) {
+            String xrefLocation,
+            boolean showSuccess) {
         super(sink);
         this.i18n = i18n;
         this.i18nSection = i18nSection;
@@ -112,11 +112,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     public void renderBody() {
         javaScript(javascriptToggleDisplayCode());
 
-        sink.section1();
-        sink.sectionTitle1();
-        sink.text(getTitle());
-        sink.sectionTitle1_();
-        sink.section1_();
+        startSection(getTitle());
 
         renderSectionSummary();
 
@@ -125,16 +121,14 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         renderSectionTestCases();
 
         renderSectionFailureDetails();
+
+        endSection();
     }
 
     private void renderSectionSummary() {
         Map<String, Object> summary = parser.getSummary(testSuites);
 
-        sink.section1();
-        sinkAnchor("Summary");
-        sink.sectionTitle1();
-        sink.text(getI18nString("surefire", "label.summary"));
-        sink.sectionTitle1_();
+        startSection(getI18nString("surefire", "label.summary"), "Summary");
 
         constructHotLinks();
 
@@ -168,7 +162,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         sink.lineBreak();
 
-        sink.section1_();
+        endSection();
     }
 
     private void renderSectionPackages() {
@@ -177,11 +171,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             return;
         }
 
-        sink.section1();
-        sinkAnchor("Package_List");
-        sink.sectionTitle1();
-        sink.text(getI18nString("surefire", "label.packagelist"));
-        sink.sectionTitle1_();
+        startSection(getI18nString("surefire", "label.packagelist"), "Package_List");
 
         constructHotLinks();
 
@@ -227,11 +217,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
             List<ReportTestSuite> testSuiteList = entry.getValue();
 
-            sink.section2();
-            sinkAnchor(packageName);
-            sink.sectionTitle2();
-            sink.text(packageName);
-            sink.sectionTitle2_();
+            startSection(packageName);
 
             boolean showTable = false;
 
@@ -266,12 +252,12 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
                 endTable();
             }
 
-            sink.section2_();
+            endSection();
         }
 
         sink.lineBreak();
 
-        sink.section1_();
+        endSection();
     }
 
     private void renderSectionTestSuite(ReportTestSuite suite) {
@@ -320,11 +306,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             return;
         }
 
-        sink.section1();
-        sinkAnchor("Test_Cases");
-        sink.sectionTitle1();
-        sink.text(getI18nString("surefire", "label.testcases"));
-        sink.sectionTitle1_();
+        startSection(getI18nString("surefire", "label.testcases"), "Test_Cases");
 
         constructHotLinks();
 
@@ -332,11 +314,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             List<ReportTestCase> testCases = suite.getTestCases();
 
             if (!testCases.isEmpty()) {
-                sink.section2();
-                sinkAnchor(suite.getPackageName() + '.' + suite.getName());
-                sink.sectionTitle2();
-                sink.text(suite.getName());
-                sink.sectionTitle2_();
+                startSection(suite.getName(), suite.getPackageName() + '.' + suite.getName());
 
                 boolean showTable = false;
 
@@ -360,13 +338,13 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
                     endTable();
                 }
 
-                sink.section2_();
+                endSection();
             }
         }
 
         sink.lineBreak();
 
-        sink.section1_();
+        endSection();
     }
 
     private void constructTestCaseSection(ReportTestCase testCase) {
@@ -469,7 +447,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     }
 
     private String toHtmlId(String id) {
-        return DoxiaUtils.isValidId(id) ? id : DoxiaUtils.encodeId(id, true);
+        return DoxiaUtils.isValidId(id) ? id : DoxiaUtils.encodeId(id);
     }
 
     private void renderSectionFailureDetails() {
@@ -478,11 +456,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             return;
         }
 
-        sink.section1();
-        sinkAnchor("Failure_Details");
-        sink.sectionTitle1();
-        sink.text(getI18nString("surefire", "label.failuredetails"));
-        sink.sectionTitle1_();
+        startSection(getI18nString("surefire", "label.failuredetails"), "Failure_Details");
 
         constructHotLinks();
 
@@ -554,7 +528,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         sink.lineBreak();
 
-        sink.section1_();
+        endSection();
     }
 
     private void constructHotLinks() {

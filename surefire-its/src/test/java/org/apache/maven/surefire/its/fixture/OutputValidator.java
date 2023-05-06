@@ -178,6 +178,11 @@ public class OutputValidator {
         return new TestFile(new File(targetDir, fileName), this);
     }
 
+    public TestFile getReportsFile(String fileName) {
+        File targetDir = getSubFile("target/reports");
+        return new TestFile(new File(targetDir, fileName), this);
+    }
+
     public File getBaseDir() {
         return baseDir;
     }

@@ -24,8 +24,7 @@
         <artifactId>maven-surefire-report-plugin</artifactId>
         <configuration>
           <outputDirectory>${basedir}/target/site/unit/basic-surefire-report-anchor-test-cases</outputDirectory>
-          <localRepository>${localRepository}</localRepository>
-          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireReportMavenProjectStub"/>
+          <project implementation="org.apache.maven.plugins.surefire.report.stubs.AnchorTestCasesStub"/>
           <showSuccess>true</showSuccess>
           <reportsDirectory>${basedir}/src/test/resources/unit/basic-surefire-report-anchor-test-cases/surefire-reports
           </reportsDirectory>

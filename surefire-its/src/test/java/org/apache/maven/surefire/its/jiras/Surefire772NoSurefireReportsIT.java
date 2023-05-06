@@ -38,11 +38,11 @@ public class Surefire772NoSurefireReportsIT extends SurefireJUnit4IntegrationTes
         OutputValidator validator =
                 unpack().addFailsafeReportOnlyGoal().addSurefireReportOnlyGoal().executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        assertTrue("Expecting surefire report file", siteFile.isFile());
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        assertTrue("Expecting surefire report file", reportFile.isFile());
 
-        siteFile = validator.getSiteFile("failsafe.html");
-        assertTrue("Expecting failsafe report file", siteFile.isFile());
+        reportFile = validator.getReportsFile("failsafe.html");
+        assertTrue("Expecting failsafe report file", reportFile.isFile());
     }
 
     @Test
@@ -52,11 +52,11 @@ public class Surefire772NoSurefireReportsIT extends SurefireJUnit4IntegrationTes
                 .addSurefireReportOnlyGoal()
                 .executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        assertFalse("Expecting no surefire report file", siteFile.isFile());
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        assertFalse("Expecting no surefire report file", reportFile.isFile());
 
-        siteFile = validator.getSiteFile("failsafe.html");
-        assertTrue("Expecting failsafe report file", siteFile.isFile());
+        reportFile = validator.getReportsFile("failsafe.html");
+        assertTrue("Expecting failsafe report file", reportFile.isFile());
     }
 
     @Test
@@ -66,11 +66,11 @@ public class Surefire772NoSurefireReportsIT extends SurefireJUnit4IntegrationTes
                 .addSurefireReportOnlyGoal()
                 .executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        assertFalse("Expecting no surefire report file", siteFile.isFile());
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        assertFalse("Expecting no surefire report file", reportFile.isFile());
 
-        siteFile = validator.getSiteFile("failsafe.html");
-        assertTrue("Expecting failsafe report file", siteFile.isFile());
+        reportFile = validator.getReportsFile("failsafe.html");
+        assertTrue("Expecting failsafe report file", reportFile.isFile());
     }
 
     @Test
@@ -81,16 +81,16 @@ public class Surefire772NoSurefireReportsIT extends SurefireJUnit4IntegrationTes
                 .addSurefireReportOnlyGoal()
                 .executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire.html");
-        assertFalse("Expecting no surefire report file", siteFile.isFile());
+        TestFile reportFile = validator.getReportsFile("surefire.html");
+        assertFalse("Expecting no surefire report file", reportFile.isFile());
 
-        siteFile = validator.getSiteFile("failsafe.html");
-        assertTrue("Expecting failsafe report file", siteFile.isFile());
+        reportFile = validator.getReportsFile("failsafe.html");
+        assertTrue("Expecting failsafe report file", reportFile.isFile());
     }
 
     public SurefireLauncher unpack() {
         SurefireLauncher unpack = unpack("/surefire-772-no-surefire-reports");
-        unpack.maven().failNever().deleteSiteDir().skipClean();
+        unpack.maven().failNever().deleteReportsDir().skipClean();
         return unpack;
     }
 }
