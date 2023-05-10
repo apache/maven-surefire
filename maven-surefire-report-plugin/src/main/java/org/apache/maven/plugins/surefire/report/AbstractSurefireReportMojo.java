@@ -114,7 +114,7 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
      *
      * @since 3.1.0
      */
-    @Parameter(defaultValue = "src/site/custom/surefire-report.properties")
+    @Parameter(defaultValue = "${basedir}/src/site/custom/surefire-report.properties")
     private String customBundle;
 
     /**
