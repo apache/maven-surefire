@@ -32,9 +32,9 @@ import static org.hamcrest.Matchers.is;
  * Example, UnlistedTest is the problem here because it runs with filtered out methods:
  *
  * Running pkg.UnlistedTest
- * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec - in pkg.UnlistedTest
+ * Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec -- in pkg.UnlistedTest
  * Running pkg.RunningTest
- * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec - in pkg.RunningTest
+ * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec -- in pkg.RunningTest
  *
  * Results:
  *
