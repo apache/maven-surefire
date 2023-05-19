@@ -381,7 +381,7 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
 
         validator
                 .getSurefireReportsFile("junitplatformenginejupiter.DisplayNameTest.txt", UTF_8)
-                .assertContainsText(" - in << ✨ >>");
+                .assertContainsText(" -- in << ✨ >>");
 
         validator
                 .getSurefireReportsFile("junitplatformenginejupiter.DisplayNameTest-output.txt", UTF_8)

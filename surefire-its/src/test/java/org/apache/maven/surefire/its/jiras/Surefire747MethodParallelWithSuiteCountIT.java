@@ -115,7 +115,9 @@ public class Surefire747MethodParallelWithSuiteCountIT extends SurefireJUnit4Int
                                 containsString("Time elapsed: " + delayMax)));
                 assertThat(
                         line,
-                        anyOf(endsWith(" s - in surefire747.SuiteTest1"), endsWith(" s - in surefire747.SuiteTest2")));
+                        anyOf(
+                                endsWith(" s -- in surefire747.SuiteTest1"),
+                                endsWith(" s -- in surefire747.SuiteTest2")));
             }
         }
     }

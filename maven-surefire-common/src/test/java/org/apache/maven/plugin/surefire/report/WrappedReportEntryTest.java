@@ -76,9 +76,9 @@ public class WrappedReportEntryTest extends TestCase {
         assertTrue(wr.isErrorOrFailure());
         assertFalse(wr.isSkipped());
         assertNull(wr.getStackTraceWriter());
-        assertEquals("surefire.testcase.JunitParamsTest.testSum  Time elapsed: 0.012 s", wr.getElapsedTimeSummary());
+        assertEquals("surefire.testcase.JunitParamsTest.testSum -- Time elapsed: 0.012 s", wr.getElapsedTimeSummary());
         assertEquals(
-                "surefire.testcase.JunitParamsTest.testSum  Time elapsed: 0.012 s <<< ERROR!", wr.getOutput(false));
+                "surefire.testcase.JunitParamsTest.testSum -- Time elapsed: 0.012 s <<< ERROR!", wr.getOutput(false));
         assertEquals("exception", wr.getMessage());
     }
 
@@ -147,6 +147,6 @@ public class WrappedReportEntryTest extends TestCase {
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, null, null, null);
         WrappedReportEntry wr = new WrappedReportEntry(reportEntry, null, 12, null, null);
         String elapsedTimeSummary = wr.getElapsedTimeSummary();
-        assertEquals("[0] 1, 2, 3 (testSum)  Time elapsed: 0.012 s", elapsedTimeSummary);
+        assertEquals("[0] 1, 2, 3 (testSum) -- Time elapsed: 0.012 s", elapsedTimeSummary);
     }
 }

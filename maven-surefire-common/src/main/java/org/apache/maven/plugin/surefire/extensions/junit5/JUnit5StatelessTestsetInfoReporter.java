@@ -56,7 +56,7 @@ public class JUnit5StatelessTestsetInfoReporter extends SurefireStatelessTestset
 
     /**
      * Phrased class name of test case in the log (see xxx)
-     * <em>Tests run: ., Failures: ., Errors: ., Skipped: ., Time elapsed: . s, - in xxx</em>.
+     * <em>Tests run: ., Failures: ., Errors: ., Skipped: ., Time elapsed: . s, -- in xxx</em>.
      * {@code false} by default.
      * <br>
      * This action takes effect only in JUnit5 provider together with a test class annotated <em>DisplayName</em>.
