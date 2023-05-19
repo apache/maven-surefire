@@ -19,7 +19,6 @@
 package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
-import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -100,6 +99,16 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         return i18n.getString("surefire-report", locale, "report." + section + '.' + key);
     }
 
+    /**
+     * @param section The section.
+     * @param key The key to translate.
+     * @param args The args to pass to translated string.
+     * @return the translated key.
+     */
+    private String formatI18nString(String section, String key, Object... args) {
+        return i18n.format("surefire-report", locale, "report." + section + '.' + key, args);
+    }
+
     public void renderBody() {
         javaScript(javascriptToggleDisplayCode());
 
@@ -120,9 +129,6 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
     private void renderSectionSummary() {
         Map<String, Object> summary = parser.getSummary(testSuites);
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-        NumberFormat percentFormat = NumberFormat.getPercentInstance(locale);
-        percentFormat.setMinimumFractionDigits(1);
 
         sink.section1();
         sinkAnchor("Summary");
@@ -150,8 +156,8 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             String.valueOf(summary.get("totalErrors")),
             String.valueOf(summary.get("totalFailures")),
             String.valueOf(summary.get("totalSkipped")),
-            percentFormat.format(summary.get("totalPercentage")),
-            numberFormat.format(summary.get("totalElapsedTime")) + " s"
+            formatI18nString("surefire", "value.successrate", summary.get("totalPercentage")),
+            formatI18nString("surefire", "value.time", summary.get("totalElapsedTime"))
         });
 
         endTable();
@@ -170,10 +176,6 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         if (suitePackages.isEmpty()) {
             return;
         }
-
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-        NumberFormat percentFormat = NumberFormat.getPercentInstance(locale);
-        percentFormat.setMinimumFractionDigits(1);
 
         sink.section1();
         sinkAnchor("Package_List");
@@ -210,8 +212,8 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
                 String.valueOf(packageSummary.get("totalErrors")),
                 String.valueOf(packageSummary.get("totalFailures")),
                 String.valueOf(packageSummary.get("totalSkipped")),
-                percentFormat.format(packageSummary.get("totalPercentage")),
-                numberFormat.format(packageSummary.get("totalElapsedTime")) + " s"
+                formatI18nString("surefire", "value.successrate", packageSummary.get("totalPercentage")),
+                formatI18nString("surefire", "value.time", packageSummary.get("totalElapsedTime"))
             });
         }
 
@@ -273,10 +275,6 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     }
 
     private void renderSectionTestSuite(ReportTestSuite suite) {
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-        NumberFormat percentFormat = NumberFormat.getPercentInstance(locale);
-        percentFormat.setMinimumFractionDigits(1);
-
         sink.tableRow();
 
         sink.tableCell();
@@ -310,9 +308,9 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         float percentage = parser.computePercentage(
                 suite.getNumberOfTests(), suite.getNumberOfErrors(),
                 suite.getNumberOfFailures(), suite.getNumberOfSkipped());
-        tableCell(percentFormat.format(percentage));
+        tableCell(formatI18nString("surefire", "value.successrate", percentage));
 
-        tableCell(numberFormat.format(suite.getTimeElapsed()) + " s");
+        tableCell(formatI18nString("surefire", "value.time", suite.getTimeElapsed()));
 
         sink.tableRow_();
     }
@@ -372,8 +370,6 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     }
 
     private void constructTestCaseSection(ReportTestCase testCase) {
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-
         sink.tableRow();
 
         sink.tableCell();
@@ -427,7 +423,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             sinkCellAnchor(testCase.getName(), "TC_" + toHtmlId(testCase.getFullName()));
         }
 
-        tableCell(numberFormat.format(testCase.getTime()) + " s");
+        tableCell(formatI18nString("surefire", "value.time", testCase.getTime()));
 
         sink.tableRow_();
 

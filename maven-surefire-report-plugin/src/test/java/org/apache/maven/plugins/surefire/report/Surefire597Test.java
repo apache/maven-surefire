@@ -66,7 +66,7 @@ public class Surefire597Test extends TestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td>"
                         + "</tr>"
                         + "</table>")));
@@ -87,7 +87,7 @@ public class Surefire597Test extends TestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr></table>")));
         assertThat(
                 xml,
@@ -108,7 +108,7 @@ public class Surefire597Test extends TestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr></table>")));
         assertThat(
                 xml,

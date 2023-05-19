@@ -193,7 +193,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td>")));
 
         assertThat(
@@ -204,7 +204,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
@@ -219,7 +219,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
 
         assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
@@ -281,7 +281,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td>")));
 
         assertThat(
@@ -292,7 +292,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
@@ -307,7 +307,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
 
@@ -344,7 +344,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td>")));
 
         assertThat(
@@ -355,7 +355,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
@@ -370,7 +370,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
 
@@ -432,7 +432,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td>")));
 
         assertThat(
@@ -443,7 +443,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
@@ -458,7 +458,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
 
         assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
@@ -495,7 +495,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td>")));
 
         assertThat(
@@ -506,7 +506,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
         assertThat(
                 htmlContent,
@@ -521,7 +521,7 @@ public class SurefireReportMojoTest extends AbstractMojoTestCase {
                         + "<td>1</td>\n"
                         + "<td>0</td>\n"
                         + "<td>0</td>\n"
-                        + "<td>0.0%</td>\n"
+                        + "<td>0%</td>\n"
                         + "<td>0 s</td></tr>")));
 
         assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
