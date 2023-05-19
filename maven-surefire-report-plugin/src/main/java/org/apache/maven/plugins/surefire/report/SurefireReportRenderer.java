@@ -205,7 +205,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             Map<String, Object> packageSummary = parser.getSummary(testSuiteList);
 
             tableRow(new String[] {
-                '{' + packageName + ", #" + packageName + '}',
+                createLinkPatternedText(packageName, '#' + packageName),
                 String.valueOf(packageSummary.get("totalTests")),
                 String.valueOf(packageSummary.get("totalErrors")),
                 String.valueOf(packageSummary.get("totalFailures")),
@@ -297,7 +297,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         sink.tableCell_();
 
-        tableCell('{' + suite.getName() + ", #" + suite.getPackageName() + '.' + suite.getName() + '}');
+        tableCell(createLinkPatternedText(suite.getName(), '#' + suite.getPackageName() + '.' + suite.getName()));
 
         tableCell(Integer.toString(suite.getNumberOfTests()));
 
