@@ -20,7 +20,9 @@ package org.apache.maven.plugin.surefire.report;
 
 import javax.annotation.Nonnull;
 
+import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.maven.surefire.api.report.ReportEntry;
@@ -29,7 +31,6 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import static java.util.Collections.unmodifiableMap;
-import static org.apache.maven.plugin.surefire.report.ReporterUtils.formatElapsedTime;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
@@ -37,6 +38,8 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
  * @author Kristian Rosenvold
  */
 public class WrappedReportEntry implements TestSetReportEntry {
+    private static final float ONE_SECOND = 1000.0f;
+
     private final ReportEntry original;
 
     private final ReportEntryType reportEntryType;
@@ -48,6 +51,11 @@ public class WrappedReportEntry implements TestSetReportEntry {
     private final Utf8RecodingDeferredFileOutputStream stdErr;
 
     private final Map<String, String> systemProperties;
+
+    // The idea is to always display four digits for visually consistent output
+    private final MessageFormat elapsedTimeFormat = new MessageFormat(
+            "{0,choice,0#0|0.0<{0,number,0.000}|10#{0,number,0.00}|100#{0,number,0.0}|1000#{0,number,0}} s",
+            Locale.ROOT);
 
     public WrappedReportEntry(
             ReportEntry original,
@@ -140,7 +148,7 @@ public class WrappedReportEntry implements TestSetReportEntry {
     }
 
     public String elapsedTimeAsString() {
-        return formatElapsedTime(getElapsed());
+        return getElapsed() != null ? elapsedTimeFormat.format(new Object[] {getElapsed() / ONE_SECOND}) : null;
     }
 
     String getReportSourceName() {
@@ -165,13 +173,13 @@ public class WrappedReportEntry implements TestSetReportEntry {
 
     public String getOutput(boolean trimStackTrace) {
         String outputLine =
-                getElapsedTimeSummary() + "  <<< " + getReportEntryType().name() + "!";
+                getElapsedTimeSummary() + " <<< " + getReportEntryType().name() + "!";
         String trimmedStackTrace = getStackTrace(trimStackTrace);
         return trimmedStackTrace == null ? outputLine : outputLine + NL + trimmedStackTrace;
     }
 
     public String getElapsedTimeVerbose() {
-        return "Time elapsed: " + elapsedTimeAsString() + " s";
+        return "Time elapsed: " + (getElapsed() != null ? elapsedTimeAsString() : "(unknown)");
     }
 
     public String getElapsedTimeSummary() {
