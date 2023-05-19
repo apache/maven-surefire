@@ -48,42 +48,45 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 
-@SuppressWarnings({"javadoc", "checkstyle:javadoctype"})
 // CHECKSTYLE_OFF: LineLength
-/*
+/**
  * XML format reporter writing to <code>TEST-<i>reportName</i>[-<i>suffix</i>].xml</code> file like written and read
  * by Ant's <a href="http://ant.apache.org/manual/Tasks/junit.html"><code>&lt;junit&gt;</code></a> and
  * <a href="http://ant.apache.org/manual/Tasks/junitreport.html"><code>&lt;junitreport&gt;</code></a> tasks,
  * then supported by many tools like CI servers.
  * <br>
- * <pre>&lt;?xml version="1.0" encoding="UTF-8"?>
- * &lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>0,###.###</i>">
- *  &lt;properties>
- *    &lt;property name="<i>name</i>" value="<i>value</i>"/>
+ * <pre>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+ * &lt;testsuite name="<i>suite name</i>" [group="<i>group</i>"] tests="<i>0</i>" failures="<i>0</i>" errors="<i>0</i>" skipped="<i>0</i>" time="<i>{float}</i>"&gt;
+ *  &lt;properties&gt;
+ *    &lt;property name="<i>name</i>" value="<i>value</i>"/&gt;
  *    [...]
- *  &lt;/properties>
- *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]"/>
- *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]">
- *    &lt;<b>error</b> message="<i>message</i>" type="<i>exception class name</i>"><i>stacktrace</i>&lt;/error>
- *    &lt;system-out><i>system out content (present only if not empty)</i>&lt;/system-out>
- *    &lt;system-err><i>system err content (present only if not empty)</i>&lt;/system-err>
- *  &lt;/testcase>
- *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]">
- *    &lt;<b>failure</b> message="<i>message</i>" type="<i>exception class name</i>"><i>stacktrace</i>&lt;/failure>
- *    &lt;system-out><i>system out content (present only if not empty)</i>&lt;/system-out>
- *    &lt;system-err><i>system err content (present only if not empty)</i>&lt;/system-err>
- *  &lt;/testcase>
- *  &lt;testcase time="<i>0,###.###</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]">
- *    &lt;<b>skipped</b>/>
- *  &lt;/testcase>
+ *  &lt;/properties&gt;
+ *  &lt;testcase time="<i>{float}</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]"/&gt;
+ *  &lt;testcase time="<i>{float}</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]"&gt;
+ *    &lt;<b>error</b> message="<i>message</i>" type="<i>exception class name</i>"&gt;<i>stacktrace</i>&lt;/error&gt;
+ *    &lt;system-out&gt;<i>system out content (present only if not empty)</i>&lt;/system-out&gt;
+ *    &lt;system-err&gt;<i>system err content (present only if not empty)</i>&lt;/system-err&gt;
+ *  &lt;/testcase&gt;
+ *  &lt;testcase time="<i>{float}</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]"&gt;
+ *    &lt;<b>failure</b> message="<i>message</i>" type="<i>exception class name</i>"&gt;<i>stacktrace</i>&lt;/failure&gt;
+ *    &lt;system-out&gt;<i>system out content (present only if not empty)</i>&lt;/system-out&gt;
+ *    &lt;system-err&gt;<i>system err content (present only if not empty)</i>&lt;/system-err&gt;
+ *  &lt;/testcase&gt;
+ *  &lt;testcase time="<i>{float}</i>" name="<i>test name</i> [classname="<i>class name</i>"] [group="<i>group</i>"]"&gt;
+ *    &lt;<b>skipped</b>/&gt;
+ *  &lt;/testcase&gt;
  *  [...]</pre>
  *
  * @author Kristian Rosenvold
- * @see <a href="http://wiki.apache.org/ant/Proposals/EnhancedTestReports">Ant's format enhancement proposal</a>
+ * @see <a href="https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=115528872">Ant's format enhancement proposal</a>
  *      (not yet implemented by Ant 1.8.2)
+ * @see <a href="https://github.com/apache/ant/blob/6f68fbdefad521741b37304cfdfc6d8646cf1839/src/main/org/apache/tools/ant/taskdefs/optional/junit/XMLJUnitResultFormatter.java">Ant's <code>XMLJUnitResultFormatter</code></a>
  */
-// todo this is no more stateless due to existence of testClassMethodRunHistoryMap since of 2.19.
+@SuppressWarnings({"javadoc", "checkstyle:javadoctype"})
+// TODO this is no more stateless due to existence of testClassMethodRunHistoryMap since of 2.19.
 public class StatelessXmlReporter implements StatelessReportEventListener<WrappedReportEntry, TestSetStats> {
+    private static final float ONE_SECOND = 1000.0f;
+
     private static final String XML_INDENT = "  ";
 
     private static final String XML_NL = "\n";
@@ -387,7 +390,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             ppw.addAttribute("classname", extraEscapeAttribute(className));
         }
 
-        ppw.addAttribute("time", report.elapsedTimeAsString());
+        if (report.getElapsed() != null) {
+            ppw.addAttribute("time", String.valueOf(report.getElapsed() / ONE_SECOND));
+        }
     }
 
     private void createTestSuiteElement(XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats)
@@ -407,7 +412,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             ppw.addAttribute("group", report.getGroup());
         }
 
-        ppw.addAttribute("time", report.elapsedTimeAsString());
+        if (report.getElapsed() != null) {
+            ppw.addAttribute("time", String.valueOf(report.getElapsed() / ONE_SECOND));
+        }
 
         ppw.addAttribute("tests", String.valueOf(testSetStats.getCompletedCount()));
 
