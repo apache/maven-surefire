@@ -78,7 +78,7 @@ public class WrappedReportEntryTest extends TestCase {
         assertNull(wr.getStackTraceWriter());
         assertEquals("surefire.testcase.JunitParamsTest.testSum  Time elapsed: 0.012 s", wr.getElapsedTimeSummary());
         assertEquals(
-                "surefire.testcase.JunitParamsTest.testSum  Time elapsed: 0.012 s  <<< ERROR!", wr.getOutput(false));
+                "surefire.testcase.JunitParamsTest.testSum  Time elapsed: 0.012 s <<< ERROR!", wr.getOutput(false));
         assertEquals("exception", wr.getMessage());
     }
 
