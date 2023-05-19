@@ -84,10 +84,10 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
      * @return The translated string.
      */
     private String getI18nString(String key) {
-        return getI18nString(getI18Nsection(), key);
+        return getI18nString(getI18nSection(), key);
     }
 
-    private String getI18Nsection() {
+    private String getI18nSection() {
         return i18nSection;
     }
 
