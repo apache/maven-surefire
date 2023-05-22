@@ -131,6 +131,8 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         classesToSuitesIndex.put(defaultSuite.getFullClassName(), suites.size() - 1);
                         break;
                     case "testcase":
+                        // Although this element does not contain any text, this line must be retained because the
+                        // nested elements do have text content.
                         currentElement = new StringBuilder();
 
                         testCase = new ReportTestCase().setName(attributes.getValue("name"));
@@ -162,10 +164,14 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         }
                         break;
                     case "failure":
+                        currentElement = new StringBuilder();
+
                         testCase.setFailure(attributes.getValue("message"), attributes.getValue("type"));
                         currentSuite.incrementNumberOfFailures();
                         break;
                     case "error":
+                        currentElement = new StringBuilder();
+
                         testCase.setError(attributes.getValue("message"), attributes.getValue("type"));
                         currentSuite.incrementNumberOfErrors();
                         break;
@@ -180,6 +186,9 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         break;
                     case "failsafe-summary":
                         valid = false;
+                        break;
+                    case "time":
+                        currentElement = new StringBuilder();
                         break;
                     default:
                         break;
