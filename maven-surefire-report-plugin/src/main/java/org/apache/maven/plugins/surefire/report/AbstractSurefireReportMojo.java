@@ -49,7 +49,6 @@ import org.codehaus.plexus.interpolation.RegexBasedInterpolator;
 
 import static java.util.Collections.addAll;
 import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasReportFiles;
-import static org.apache.maven.shared.utils.StringUtils.isEmpty;
 
 /**
  * Abstract base class for reporting test results using Surefire.
@@ -272,7 +271,7 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
 
         if (linkXRef) {
             String relativePath = PathTool.getRelativePath(getOutputDirectory(), xrefLocation.getAbsolutePath());
-            if (isEmpty(relativePath)) {
+            if (relativePath == null || relativePath.isEmpty()) {
                 relativePath = ".";
             }
             relativePath = relativePath + "/" + xrefLocation.getName();
