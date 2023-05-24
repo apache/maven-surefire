@@ -41,7 +41,7 @@ public class TestSetStats {
     private static final String ERRORS = "Errors: ";
     private static final String SKIPPED = "Skipped: ";
     private static final String FAILURE_MARKER = " <<< FAILURE!";
-    private static final String IN_MARKER = " - in ";
+    private static final String IN_MARKER = " -- in ";
     private static final String COMMA = ", ";
 
     private final Queue<WrappedReportEntry> reportEntries = new ConcurrentLinkedQueue<>();

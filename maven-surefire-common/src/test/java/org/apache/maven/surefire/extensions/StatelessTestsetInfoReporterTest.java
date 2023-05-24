@@ -193,7 +193,7 @@ public class StatelessTestsetInfoReporterTest {
                 .hasSize(2)
                 .containsSequence(
                         "Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 1.03 s "
-                                + "<<< FAILURE! - in pkg.MyTest",
+                                + "<<< FAILURE! -- in pkg.MyTest",
                         "pkg.MyTest failed");
         verifyNoMoreInteractions(consoleLogger);
     }

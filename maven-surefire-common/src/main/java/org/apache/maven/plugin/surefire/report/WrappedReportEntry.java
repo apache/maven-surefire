@@ -176,7 +176,7 @@ public class WrappedReportEntry implements TestSetReportEntry {
 
     public String getElapsedTimeSummary() {
         String description = getName() == null ? getSourceName() : getClassMethodName();
-        return description + "  " + getElapsedTimeVerbose();
+        return description + " -- " + getElapsedTimeVerbose();
     }
 
     public boolean isErrorOrFailure() {
