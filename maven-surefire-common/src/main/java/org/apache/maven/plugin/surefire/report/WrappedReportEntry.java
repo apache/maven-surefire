@@ -140,7 +140,7 @@ public class WrappedReportEntry implements TestSetReportEntry {
     }
 
     public String elapsedTimeAsString() {
-        return formatElapsedTime(getElapsed());
+        return getElapsed() != null ? formatElapsedTime(getElapsed()) : null;
     }
 
     String getReportSourceName() {
@@ -171,7 +171,7 @@ public class WrappedReportEntry implements TestSetReportEntry {
     }
 
     public String getElapsedTimeVerbose() {
-        return "Time elapsed: " + elapsedTimeAsString() + " s";
+        return "Time elapsed: " + (getElapsed() != null ? elapsedTimeAsString() + " s" : "(unknown)");
     }
 
     public String getElapsedTimeSummary() {
