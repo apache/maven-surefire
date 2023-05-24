@@ -135,13 +135,13 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void serial() {
-        // takes 7.2 sec
+        // takes 7.2 s
         unpack().setTestToRun("Suite*Test").executeTest().verifyErrorFree(24);
     }
 
     @Test
     public void unlimitedThreadsSuites1() {
-        // takes 3.6 sec
+        // takes 3.6 s
         unpack().parallelSuites()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -151,7 +151,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsSuites2() {
-        // takes 3.6 sec
+        // takes 3.6 s
         unpack().parallelSuites()
                 .useUnlimitedThreads()
                 .threadCountSuites(5)
@@ -162,7 +162,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsClasses1() {
-        // takes 1.8 sec
+        // takes 1.8 s
         unpack().parallelClasses()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -172,7 +172,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsClasses2() {
-        // takes 1.8 sec
+        // takes 1.8 s
         unpack().parallelClasses()
                 .useUnlimitedThreads()
                 .threadCountClasses(5)
@@ -183,7 +183,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsMethods1() {
-        // takes 2.4 sec
+        // takes 2.4 s
         unpack().parallelMethods()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -193,7 +193,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsMethods2() {
-        // takes 2.4 sec
+        // takes 2.4 s
         unpack().parallelMethods()
                 .useUnlimitedThreads()
                 .threadCountMethods(5)
@@ -204,7 +204,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsSuitesAndClasses1() {
-        // takes 0.9 sec
+        // takes 0.9 s
         unpack().parallelSuitesAndClasses()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -214,8 +214,8 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsSuitesAndClasses2() {
-        // takes 0.9 sec
-        // 1.8 sec with 4 parallel classes
+        // takes 0.9 s
+        // 1.8 s with 4 parallel classes
         unpack().parallelSuitesAndClasses()
                 .useUnlimitedThreads()
                 .threadCountSuites(5)
@@ -227,7 +227,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsSuitesAndMethods1() {
-        // takes 1.2 sec
+        // takes 1.2 s
         unpack().parallelSuitesAndMethods()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -237,7 +237,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsSuitesAndMethods2() {
-        // takes 1.2 sec
+        // takes 1.2 s
         unpack().parallelSuitesAndMethods()
                 .useUnlimitedThreads()
                 .threadCountSuites(5)
@@ -249,7 +249,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsClassesAndMethods1() {
-        // takes 0.6 sec
+        // takes 0.6 s
         unpack().parallelClassesAndMethods()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -259,7 +259,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsClassesAndMethods2() {
-        // takes 0.6 sec
+        // takes 0.6 s
         unpack().parallelClassesAndMethods()
                 .useUnlimitedThreads()
                 .threadCountClasses(5)
@@ -271,7 +271,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsAll1() {
-        // takes 0.3 sec
+        // takes 0.3 s
         unpack().parallelAll()
                 .useUnlimitedThreads()
                 .setTestToRun("Suite*Test")
@@ -281,7 +281,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void unlimitedThreadsAll2() {
-        // takes 0.3 sec
+        // takes 0.3 s
         unpack().parallelAll()
                 .useUnlimitedThreads()
                 .threadCountSuites(5)
@@ -294,7 +294,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void threadCountSuites() {
-        // takes 3.6 sec
+        // takes 3.6 s
         unpack().parallelSuites()
                 .threadCount(3)
                 .setTestToRun("Suite*Test")
@@ -304,8 +304,8 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void threadCountClasses() {
-        // takes 3.6 sec for single core
-        // takes 1.8 sec for double core
+        // takes 3.6 s for single core
+        // takes 1.8 s for double core
         unpack().parallelClasses()
                 .threadCount(3)
                 .setTestToRun("Suite*Test")
@@ -315,7 +315,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void threadCountMethods() {
-        // takes 2.4 sec
+        // takes 2.4 s
         unpack().parallelMethods()
                 .threadCount(3)
                 .setTestToRun("Suite*Test")
@@ -325,7 +325,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void threadCountClassesAndMethodsOneCore() {
-        // takes 4.8 sec
+        // takes 4.8 s
         unpack().disablePerCoreThreadCount()
                 .disableParallelOptimization()
                 .parallelClassesAndMethods()
@@ -348,7 +348,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void threadCountClassesAndMethods() {
-        // takes 2.4 sec for double core CPU
+        // takes 2.4 s for double core CPU
         unpack().disableParallelOptimization()
                 .parallelClassesAndMethods()
                 .threadCount(3)
@@ -369,8 +369,8 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void threadCountSuitesAndMethods() {
-        // usually 24 times 0.3 sec = 7.2 sec with one core CPU
-        // takes 1.8 sec for double core CPU
+        // usually 24 times 0.3 s = 7.2 s with one core CPU
+        // takes 1.8 s for double core CPU
         unpack().disableParallelOptimization()
                 .parallelSuitesAndMethods()
                 .threadCount(3)
@@ -431,7 +431,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void everyThreadCountSuitesAndClasses() {
-        // takes 1.8 sec for double core CPU
+        // takes 1.8 s for double core CPU
         unpack().parallelSuitesAndClasses()
                 .threadCount(3)
                 .threadCountSuites(34)
@@ -443,7 +443,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void everyThreadCountSuitesAndMethods() {
-        // takes 1.8 sec for double core CPU
+        // takes 1.8 s for double core CPU
         unpack().parallelSuitesAndMethods()
                 .threadCount(3)
                 .threadCountSuites(34)
@@ -455,7 +455,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void everyThreadCountClassesAndMethods() {
-        // takes 1.8 sec for double core CPU
+        // takes 1.8 s for double core CPU
         unpack().parallelClassesAndMethods()
                 .threadCount(3)
                 .threadCountClasses(34)
@@ -467,7 +467,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void everyThreadCountAll() {
-        // takes 2.4 sec for double core CPU
+        // takes 2.4 s for double core CPU
         unpack().parallelAll()
                 .threadCount(3)
                 .threadCountSuites(17)
@@ -481,7 +481,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void reusableThreadCountSuitesAndClasses() {
         // 4 * cpu to 5 * cpu threads to run test classes
-        // takes cca 1.8 sec
+        // takes cca 1.8 s
         unpack().disableParallelOptimization()
                 .parallelSuitesAndClasses()
                 .disablePerCoreThreadCount()
@@ -507,7 +507,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void reusableThreadCountSuitesAndMethods() {
         // 4 * cpu to 5 * cpu threads to run test methods
-        // takes cca 1.8 sec
+        // takes cca 1.8 s
         unpack().disableParallelOptimization()
                 .parallelSuitesAndMethods()
                 .disablePerCoreThreadCount()
@@ -533,7 +533,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void reusableThreadCountClassesAndMethods() {
         // 4 * cpu to 5 * cpu threads to run test methods
-        // takes cca 1.8 sec
+        // takes cca 1.8 s
         unpack().disableParallelOptimization()
                 .parallelClassesAndMethods()
                 .disablePerCoreThreadCount()
@@ -559,7 +559,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void reusableThreadCountAll() {
         // 8 * cpu to 13 * cpu threads to run test methods
-        // takes 0.9 sec
+        // takes 0.9 s
         unpack().disableParallelOptimization()
                 .parallelAll()
                 .disablePerCoreThreadCount()
@@ -586,7 +586,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void suites() {
-        // takes 3.6 sec
+        // takes 3.6 s
         unpack().parallelSuites()
                 .threadCountSuites(5)
                 .setTestToRun("Suite*Test")
@@ -596,7 +596,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void classes() {
-        // takes 1.8 sec on any CPU because the suites are running in a sequence
+        // takes 1.8 s on any CPU because the suites are running in a sequence
         unpack().parallelClasses()
                 .threadCountClasses(5)
                 .setTestToRun("Suite*Test")
@@ -606,7 +606,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void methods() {
-        // takes 2.4 sec on any CPU because every class has only three methods
+        // takes 2.4 s on any CPU because every class has only three methods
         // and the suites and classes are running in a sequence
         unpack().parallelMethods()
                 .threadCountMethods(5)
@@ -617,7 +617,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void suitesAndClasses() {
-        // takes 0.9 sec
+        // takes 0.9 s
         unpack().parallelSuitesAndClasses()
                 .threadCountSuites(5)
                 .threadCountClasses(15)
@@ -628,7 +628,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void suitesAndMethods() {
-        // takes 1.2 sec on any CPU
+        // takes 1.2 s on any CPU
         unpack().parallelSuitesAndMethods()
                 .threadCountSuites(5)
                 .threadCountMethods(15)
@@ -639,7 +639,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void classesAndMethods() {
-        // takes 0.6 sec on any CPU
+        // takes 0.6 s on any CPU
         unpack().parallelClassesAndMethods()
                 .threadCountClasses(5)
                 .threadCountMethods(15)
@@ -650,7 +650,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void all() {
-        // takes 0.3 sec on any CPU
+        // takes 0.3 s on any CPU
         unpack().parallelAll()
                 .threadCountSuites(5)
                 .threadCountClasses(15)
@@ -662,7 +662,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void shutdown() {
-        // executes for 2.5 sec until timeout has elapsed
+        // executes for 2.5 s until timeout has elapsed
         unpack().parallelMethods()
                 .threadCountMethods(2)
                 .parallelTestsTimeoutInSeconds(2.5d)
@@ -674,7 +674,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void forcedShutdown() {
-        // executes for 2.5 sec until timeout has elapsed
+        // executes for 2.5 s until timeout has elapsed
         unpack().parallelMethods()
                 .threadCountMethods(2)
                 .parallelTestsTimeoutForcedInSeconds(2.5d)
@@ -686,7 +686,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void timeoutAndForcedShutdown() {
-        // executes for one sec until timeout has elapsed
+        // executes for one s until timeout has elapsed
         unpack().parallelMethods()
                 .threadCountMethods(2)
                 .parallelTestsTimeoutInSeconds(1)
@@ -699,7 +699,7 @@ public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void forcedShutdownVerifyingLogs() throws Exception {
-        // attempts to run for 2.4 sec until timeout has elapsed
+        // attempts to run for 2.4 s until timeout has elapsed
         OutputValidator validator = unpack().parallelMethods()
                 .threadCountMethods(3)
                 .disablePerCoreThreadCount()
