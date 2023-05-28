@@ -21,7 +21,6 @@ package org.apache.maven.surefire.its.fixture;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
@@ -129,7 +128,7 @@ public final class HelperAssertions {
             reportsDirs.add(reportsDir);
         }
         ConsoleLogger logger = new PrintStreamLogger(System.out);
-        SurefireReportParser parser = new SurefireReportParser(reportsDirs, Locale.ROOT, logger);
+        SurefireReportParser parser = new SurefireReportParser(reportsDirs, logger);
         try {
             return parser.parseXMLReportFiles();
         } catch (Exception e) {
@@ -145,7 +144,7 @@ public final class HelperAssertions {
             reportsDirs.add(reportsDir);
         }
         ConsoleLogger logger = new PrintStreamLogger(System.out);
-        SurefireReportParser parser = new SurefireReportParser(reportsDirs, Locale.ROOT, logger);
+        SurefireReportParser parser = new SurefireReportParser(reportsDirs, logger);
         try {
             return parser.parseXMLReportFiles();
         } catch (Exception e) {
