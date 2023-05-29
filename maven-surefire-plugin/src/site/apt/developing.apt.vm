@@ -136,13 +136,8 @@ ForkedBooter#main
 * Shadefire
 
   "Shadefire" is the first module to be run in the
-  Surefire build. This creates as shaded version of the JUnit provider, and this provider
-  is thereafter used to build Surefire itself (as of Surefire 2.8). This is
+  Surefire build. This creates a shaded version of the JUnit provider, and this provider
+  is thereafter used to build Surefire itself. This is
   because the SUT overrides the provider, and the Shadefire provider has been
   relocated to avoid this overriding when Surefire is building itself.
 
-* Deploying and Releasing Surefire
-
-  Surefire depends on a previous version of itself, which
-  is too advanced for the Maven 2.2.x dependency resolution. Thus Maven 3.x is
-  required to build Surefire.
