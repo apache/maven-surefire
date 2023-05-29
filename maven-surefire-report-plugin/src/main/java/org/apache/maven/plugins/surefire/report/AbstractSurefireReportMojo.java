@@ -163,10 +163,6 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
 
     @Override
     public boolean canGenerateReport() {
-        return hasReportDirectories() && super.canGenerateReport();
-    }
-
-    private boolean hasReportDirectories() {
         if (isSkipped()) {
             return false;
         }
