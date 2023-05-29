@@ -221,10 +221,10 @@
         <version>2.57.0</version>
       </dependency>
       <dependency>
-        <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
         <groupId>org.fusesource.jansi</groupId>
         <artifactId>jansi</artifactId>
         <version>2.4.0</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
