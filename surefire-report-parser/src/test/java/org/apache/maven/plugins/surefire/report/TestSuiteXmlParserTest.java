@@ -113,12 +113,12 @@ public class TestSuiteXmlParserTest {
     public void testParse() throws Exception {
         TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser(consoleLogger);
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
-                + "<testsuite failures=\"4\" time=\"0.005\" errors=\"0\" skipped=\"0\" tests=\"4\" name=\"wellFormedXmlFailures.TestSurefire3\">\n"
+                + "<testsuite failures=\"4\" time=\"0.00005\" errors=\"0\" skipped=\"0\" tests=\"4\" name=\"wellFormedXmlFailures.TestSurefire3\">\n"
                 + "  <properties>\n"
                 + "    <property name=\"java.runtime.name\" value=\"Java(TM) SE Runtime Environment\"/>\n"
                 + "    <property name=\"sun.cpu.isalist\" value=\"amd64\"/>\n"
                 + "  </properties>\n"
-                + "  <testcase time=\"0.005\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testLower\">\n"
+                + "  <testcase time=\"5E-3\" classname=\"wellFormedXmlFailures.TestSurefire3\" name=\"testLower\">\n"
                 + "    <failure message=\"&lt;\" type=\"junit.framework.AssertionFailedError\"><![CDATA[junit.framework.AssertionFailedError: <\n"
                 + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
                 + "\tat wellFormedXmlFailures.TestSurefire3.testLower(TestSurefire3.java:30)\n"
@@ -155,7 +155,7 @@ public class TestSuiteXmlParserTest {
         assertThat(report.getNumberOfErrors(), is(0));
         assertThat(report.getNumberOfFailures(), is(4));
         assertThat(report.getNumberOfFlakes(), is(0));
-        assertThat(report.getTimeElapsed(), is(0.005f));
+        assertThat(report.getTimeElapsed(), is(0.00005f));
         assertThat(report.getTestCases().size(), is(4));
 
         List<ReportTestCase> tests = report.getTestCases();
