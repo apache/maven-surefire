@@ -60,7 +60,7 @@ public class SurefireReportMojo extends AbstractSurefireReportMojo {
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {
         String buildDir = subProject.getBuild().getDirectory();
-        return new File(buildDir + "/surefire-reports");
+        return new File(buildDir, "surefire-reports");
     }
 
     @Override
