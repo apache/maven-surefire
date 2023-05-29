@@ -403,12 +403,3 @@ public class TestSuite {
   therefore the threads will encounter race conditions when setting
   properties, e.g. <<<baseDir>>>, which may lead to changing system properties
   and unexpected runtime behaviour.
-
-* Known issues and limitations
-
- * <<<$\{surefire.forkNumber\}>>> propagation is not supported on Maven 2.x
-   (the variable will be resolved to null value all the time)
-
- * <<<$\{surefire.forkNumber\}>>> is properly propagated within <<<workingDirectory>>>
- since ${project.artifactId}:2.19, more details in
- {{{https://issues.apache.org/jira/browse/SUREFIRE-1136}SUREFIRE-1136}}

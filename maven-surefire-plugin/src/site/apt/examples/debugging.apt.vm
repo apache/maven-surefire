@@ -76,7 +76,7 @@ mvn -DforkCount=0 verify
 +---+
 #{end}
 
-  Then all you need to do is debug Maven itself.  Since Maven 2.0.8, Maven ships with a <<<mvnDebug>>> shell script that you can
+  Then all you need to do is debug Maven itself.  Maven ships with a <<<mvnDebug>>> shell script that you can
   use to launch Maven with convenient debugging options:
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
