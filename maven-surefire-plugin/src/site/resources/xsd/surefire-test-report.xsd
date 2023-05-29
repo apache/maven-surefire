@@ -18,11 +18,6 @@
   ~ under the License.
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0">
-    <xs:simpleType name="SUREFIRE_TIME">
-        <xs:restriction base="xs:string">
-            <xs:pattern value="(([0-9]{0,3},)*[0-9]{3}|[0-9]{0,3})*(\.[0-9]{0,3})?"/>
-        </xs:restriction>
-    </xs:simpleType>
     <xs:element name="testsuite">
         <xs:complexType>
             <xs:sequence>
@@ -120,13 +115,13 @@
                         <xs:attribute name="name" type="xs:string" use="required"/>
                         <xs:attribute name="classname" type="xs:string"/>
                         <xs:attribute name="group" type="xs:string"/>
-                        <xs:attribute name="time" type="SUREFIRE_TIME" use="required"/>
+                        <xs:attribute name="time" type="xs:float" use="required"/>
                     </xs:complexType>
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="version" type="xs:string"/>
             <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="time" type="SUREFIRE_TIME"/>
+            <xs:attribute name="time" type="xs:float"/>
             <xs:attribute name="tests" type="xs:string" use="required"/>
             <xs:attribute name="errors" type="xs:string" use="required"/>
             <xs:attribute name="skipped" type="xs:string" use="required"/>
