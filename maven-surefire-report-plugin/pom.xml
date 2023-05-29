@@ -95,11 +95,6 @@
       <artifactId>maven-reporting-impl</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <scope>test</scope>
@@ -179,9 +174,6 @@
           <includes>
             <include>**/JUnit4SuiteTest.java</include>
           </includes>
-          <classpathDependencyExcludes>
-            <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
-          </classpathDependencyExcludes>
         </configuration>
         <dependencies>
           <dependency>
