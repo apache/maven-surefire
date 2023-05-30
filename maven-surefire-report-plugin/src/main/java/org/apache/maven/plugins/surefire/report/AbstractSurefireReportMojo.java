@@ -149,10 +149,6 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
      */
     @Override
     public void executeReport(Locale locale) throws MavenReportException {
-        if (!hasReportDirectories()) {
-            return;
-        }
-
         SurefireReportRenderer r = new SurefireReportRenderer(
                 getSink(),
                 getI18N(locale),
