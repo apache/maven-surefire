@@ -225,7 +225,7 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
                         }
                         File reportsDirectory = new File(moduleBaseDir, reportDir);
                         if (reportsDirectory.exists() && reportsDirectory.isDirectory()) {
-                            getConsoleLogger().debug("Adding report dir : " + moduleBaseDir + reportDir);
+                            getConsoleLogger().debug("Adding report dir: " + moduleBaseDir + reportDir);
                             resolvedReportsDirectories.add(reportsDirectory);
                         }
                     }
