@@ -101,7 +101,7 @@ public class SurefireSchemaValidationTest extends TestCase {
                 "site",
                 "resources",
                 "xsd",
-                "surefire-test-report-3.0.xsd");
+                "surefire-test-report.xsd");
         return xsd.toFile().getCanonicalFile();
     }
 }
