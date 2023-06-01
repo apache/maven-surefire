@@ -139,6 +139,11 @@ public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
+    public void test751() {
+        runTestNgTest("7.5.1");
+    }
+
+    @Test
     public void test685() {
         runTestNgTestWithRunOrder("6.8.5");
     }
