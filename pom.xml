@@ -93,7 +93,6 @@
     <commonsCompress>1.23.0</commonsCompress>
     <commonsIoVersion>2.12.0</commonsIoVersion>
     <plexus-java-version>1.1.2</plexus-java-version>
-    <junit5Version>5.9.3</junit5Version>
     <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
@@ -234,21 +233,6 @@
         <version>${plexus-java-version}</version>
       </dependency>
       <dependency>
-        <groupId>org.junit.platform</groupId>
-        <artifactId>junit-platform-launcher</artifactId>
-        <version>1.9.2</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>${junit5Version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-params</artifactId>
-        <version>${junit5Version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>2.28.2</version>
@@ -320,6 +304,13 @@
         <artifactId>org.jacoco.agent</artifactId>
         <version>${jacocoVersion}</version>
         <classifier>runtime</classifier>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.9.3</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
