@@ -147,6 +147,68 @@ public class ForkConfigurationTest {
     }
 
     @Test
+    public void testEnvInterpolateForkNumber() throws Exception {
+        Map<String, String> env = new HashMap<>();
+        env.put("FORK_ID", "${surefire.forkNumber}");
+        String[] exclEnv = {"PATH"};
+
+        String jvm = new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath();
+        Platform platform = new Platform().withJdkExecAttributesForTests(new JdkAttributes(jvm, false));
+
+        ForkConfiguration config =
+                new DefaultForkConfiguration(
+                        emptyClasspath(),
+                        basedir,
+                        "",
+                        basedir,
+                        new Properties(),
+                        "",
+                        env,
+                        exclEnv,
+                        false,
+                        2,
+                        true,
+                        platform,
+                        new NullConsoleLogger(),
+                        mock(ForkNodeFactory.class)) {
+
+                    @Override
+                    protected void resolveClasspath(
+                            @Nonnull Commandline cli,
+                            @Nonnull String booterThatHasMainMethod,
+                            @Nonnull StartupConfiguration config,
+                            @Nonnull File dumpLogDirectory) {}
+                };
+
+        List<String[]> providerJpmsArgs = new ArrayList<>();
+        providerJpmsArgs.add(new String[] {"arg2", "arg3"});
+
+        File cpElement = getTempClasspathFile();
+        List<String> cp = singletonList(cpElement.getAbsolutePath());
+
+        ClasspathConfiguration cpConfig =
+                new ClasspathConfiguration(new Classpath(cp), emptyClasspath(), emptyClasspath(), true, true);
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration(true, true);
+        StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
+
+        org.apache.maven.surefire.shared.utils.cli.Commandline cliFork1 =
+                config.createCommandLine(startup, 1, getTempDirectory());
+
+        assertThat(cliFork1.getEnvironmentVariables())
+                .contains("FORK_ID=1")
+                .doesNotContain("PATH=")
+                .doesNotHaveDuplicates();
+
+        org.apache.maven.surefire.shared.utils.cli.Commandline cliFork2 =
+                config.createCommandLine(startup, 2, getTempDirectory());
+
+        assertThat(cliFork2.getEnvironmentVariables())
+                .contains("FORK_ID=2")
+                .doesNotContain("PATH=")
+                .doesNotHaveDuplicates();
+    }
+
+    @Test
     public void testCliArgs() throws Exception {
         String jvm = new File(new File(System.getProperty("java.home"), "bin"), "java").getCanonicalPath();
         Platform platform = new Platform().withJdkExecAttributesForTests(new JdkAttributes(jvm, false));
