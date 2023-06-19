@@ -281,16 +281,17 @@ public class TestSuite {
   specify variables and values to be added to the system properties during the
   test execution.
 
-  You can use the place holder <<<$\{surefire.forkNumber\}>>> within 
-  <<<argLine>>>, or within the system properties (both those specified via 
+  You can use the placeholder <<<$\{surefire.forkNumber\}>>> within <<<argLine>>>,
+  <<<environmentVariables>>> (since ${project.artifactId}:3.2.0),
+  or within the system properties (both those specified via
   <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing 
-  the tests, the ${thisPlugin.toLowerCase()} plugin replaces that place holder
+  the tests, the ${thisPlugin.toLowerCase()} plugin replaces that placeholder
   by the number of the actually executing process, counting from 1 to the
   effective value of <<<forkCount>>> times the maximum number of parallel
   executions in Maven parallel builds, i.e. the effective value of the <<<-T>>>
   command line argument of Maven core.
 
-  In case of disabled forking (<<<forkCount=0>>>), the place holder will be
+  In case of disabled forking (<<<forkCount=0>>>), the placeholder will be
   replaced with <1>.
 
   The following is an example configuration that makes use of up to three forked

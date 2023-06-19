@@ -157,6 +157,9 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
 
             for (Entry<String, String> entry : getEnvironmentVariables().entrySet()) {
                 String value = entry.getValue();
+                if (value != null) {
+                    value = replaceThreadNumberPlaceholders(value, forkNumber);
+                }
                 cli.addEnvironment(entry.getKey(), value == null ? "" : value);
             }
 
