@@ -1166,7 +1166,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     (Properties) System.getProperties().clone();
             try {
                 createCopyAndReplaceForkNumPlaceholder(effectiveProperties, 1).copyToSystemProperties();
-
+                getConsoleLogger().debug("Using in-process starter");
                 InPluginVMSurefireStarter surefireStarter = createInprocessStarter(
                         provider,
                         classLoaderConfiguration,
@@ -1181,6 +1181,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         } else {
             ForkConfiguration forkConfiguration = createForkConfiguration(platform, resolvedJavaModularityResult);
             if (getConsoleLogger().isDebugEnabled()) {
+                getConsoleLogger()
+                        .debug("Using fork starter with configuration "
+                                + forkConfiguration.getClass().getName());
                 showMap(getEnvironmentVariables(), "environment variable");
                 showArray(getExcludedEnvironmentVariables(), "excluded environment variable");
             }
