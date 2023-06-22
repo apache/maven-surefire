@@ -1182,7 +1182,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ForkConfiguration forkConfiguration = createForkConfiguration(platform, resolvedJavaModularityResult);
             if (getConsoleLogger().isDebugEnabled()) {
                 getConsoleLogger()
-                        .debug("Using fork starter with configuration "
+                        .debug("Using fork starter with configuration implementation "
                                 + forkConfiguration.getClass().getName());
                 showMap(getEnvironmentVariables(), "environment variable");
                 showArray(getExcludedEnvironmentVariables(), "excluded environment variable");
