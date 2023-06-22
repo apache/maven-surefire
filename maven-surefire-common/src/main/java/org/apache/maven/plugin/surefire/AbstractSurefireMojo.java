@@ -232,15 +232,23 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     /**
      * The directory containing generated test classes of the project being tested. This will be included at the
-     * beginning of the test classpath. *
+     * beginning of the test classpath.
      */
     @Parameter(defaultValue = "${project.build.testOutputDirectory}")
     protected File testClassesDirectory;
 
     /**
-     * List of dependencies to exclude from the test classpath. Each dependency string must follow the format
-     * <i>groupId:artifactId</i>. For example: <i>org.acme:project-a</i>
-     *
+     * List of dependencies to exclude from the test classpath.
+     * Each item is passed as pattern to {@link PatternIncludesArtifactFilter}.
+     * The pattern is matched against the following artifact ids:
+     * <ul>
+     * <li>{@code groupId:artifactId} (Short ID)</li>
+     * <li>{@code groupId:artifactId:type:classifier} (Dependency Conflict ID)</li>
+     * <li>{@code groupId:artifactId:type:classifier:version} (Full ID)</li>
+     * </ul>
+     * The matching algorithm is described in detail in <a href="https://maven.apache.org/plugins/maven-assembly-plugin/advanced-descriptor-topics.html#advanced-artifact-matching-in-includes-and-excludes">Advanced Artifact-Matching</a> for the maven-assembly-plugin. This parameter behaves the same as the {@code excludes} pattern described there.
+     * The dependency matching is applied to the project dependency IDs (including transitive ones) <i>after resolving</i>, i.e. excluding
+     * one dependency will not exclude its transitive dependencies!
      * @since 2.6
      */
     @Parameter(property = "maven.test.dependency.excludes")
@@ -265,6 +273,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     /**
      * Additional elements to be appended to the classpath.
+     * Each element must be a file system path to a JAR file or a directory containing classes.
+     * No wildcards are allowed here.
      *
      * @since 2.4
      */
@@ -2537,10 +2547,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     /**
-     * Return a new set containing only the artifacts accepted by the given filter.
+     * Return a new set containing only the artifacts not accepted by the given filter.
      *
      * @param artifacts The unfiltered artifacts
-     * @param filter    The filter to apply
+     * @param filter    The excludes filter to apply
      * @return The filtered result
      */
     private static Set<Artifact> filterArtifacts(Set<Artifact> artifacts, ArtifactFilter filter) {
