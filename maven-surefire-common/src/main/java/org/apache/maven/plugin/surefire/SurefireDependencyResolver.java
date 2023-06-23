@@ -25,6 +25,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -45,6 +46,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
@@ -136,6 +138,13 @@ class SurefireDependencyResolver {
         return resolveDependencies(session, repositories, RepositoryUtils.toDependency(artifact, null));
     }
 
+    public Set<Artifact> resolveDependencies(
+            RepositorySystemSession session, List<RemoteRepository> repositories, Dependency dependency)
+            throws MojoExecutionException {
+        return resolveDependencies(
+                session, repositories, RepositoryUtils.toDependency(dependency, session.getArtifactTypeRegistry()));
+    }
+
     private Set<Artifact> resolveDependencies(
             RepositorySystemSession session,
             List<RemoteRepository> repositories,
@@ -143,24 +152,34 @@ class SurefireDependencyResolver {
             throws MojoExecutionException {
 
         try {
-
-            CollectRequest collectRequest = new CollectRequest();
-            collectRequest.setRoot(dependency);
-            collectRequest.setRepositories(repositories);
-
-            DependencyRequest request = new DependencyRequest();
-            request.setCollectRequest(collectRequest);
-            request.setFilter(DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME));
-
-            DependencyResult dependencyResult = repositorySystem.resolveDependencies(session, request);
-            return dependencyResult.getArtifactResults().stream()
+            List<ArtifactResult> results = resolveDependencies(
+                    session, repositories, dependency, DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME));
+            return results.stream()
                     .map(ArtifactResult::getArtifact)
                     .map(RepositoryUtils::toArtifact)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
         } catch (DependencyResolutionException e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }
+    }
+
+    private List<ArtifactResult> resolveDependencies(
+            RepositorySystemSession session,
+            List<RemoteRepository> repositories,
+            org.eclipse.aether.graph.Dependency dependency,
+            DependencyFilter dependencyFilter)
+            throws DependencyResolutionException {
+
+        // use a collect request without a root in order to not resolve optional dependencies
+        CollectRequest collectRequest = new CollectRequest(Collections.singletonList(dependency), null, repositories);
+
+        DependencyRequest request = new DependencyRequest();
+        request.setCollectRequest(collectRequest);
+        request.setFilter(dependencyFilter);
+
+        DependencyResult dependencyResult = repositorySystem.resolveDependencies(session, request);
+        return dependencyResult.getArtifactResults();
     }
 
     @Nonnull

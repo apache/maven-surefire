@@ -86,11 +86,51 @@ Additional Classpath Elements
 </project>
 +---+
 
+  Since version 3.2.0 the <<<additionalClasspathDependencies>>> parameter can be used to add arbitrary dependencies to your test execution classpath (via their regular Maven coordinates).
+  Those are resolved from the repository like regular Maven dependencies and afterwards added as additional classpath elements to the end of the classpath, so you cannot use these to
+  override project dependencies or resources (except those which are filtered with <<<classpathDependencyExclude>>>).
+  All artifacts of scope <<<compile>>> and <<<runtime>>> scope from the dependency tree rooted in the given dependency are added.
+  The parametrization works like for regular {{{https://maven.apache.org/pom.html#dependencies}}Maven dependencies in a POM}.
+  Also exclusions can be used.
+  The dependency management section from the underlying POM is not used, though.
+
++---+
+<project>
+  [...]
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <additionalClasspathDependencies>
+            <additionalClasspathDependency>
+              <groupId>myGroupId</groupId>
+              <artifactId>myArtifactId</artfactId>
+              <version>1.0.0</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>org.apache.maven</groupId>
+                  <artifactId>maven-core</artifactId>
+                </exclusion>
+              </exclusions>
+            </additionalClasspathDependency>
+          </additionalClasspathDependencies>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  [...]
+</project>
++---+
 Removing Dependency Classpath Elements
 
   Dependencies can be removed from the test classpath using the parameters <<<classpathDependencyExcludes>>> and
   <<<classpathDependencyScopeExclude>>>.  A list of specific dependencies can be removed from the
-  classpath by specifying the <<<groupId:artifactId>>> to be removed.
+  classpath by specifying the <<<groupId:artifactId>>> to be removed. Details of the pattern matching mechanism
+  are outlined in the goal parameter description for <<<classpathDependencyScopeExcludes>>>.
+  It is important to note that this filtering is only applied to the effective project dependencies (this includes transitive project dependencies).
 
 +---+
 <project>
