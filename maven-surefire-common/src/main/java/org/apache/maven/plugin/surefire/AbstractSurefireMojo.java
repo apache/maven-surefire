@@ -294,11 +294,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * (after the ones from {@link #additionalClasspathElements}).
      * <p>
      * The dependency management from the project is not taken into account.
+     * Also conflicts between the different items and the project dependencies are not resolved.
      *
      * @since 3.2
      */
     @Parameter(property = "maven.test.additionalClasspathDependencies")
-    private Dependency[] additionalClasspathDependencies;
+    private List<Dependency> additionalClasspathDependencies;
 
     /**
      * The test source directory containing test class sources.
@@ -2568,8 +2569,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         if (getAdditionalClasspathElements() != null) {
             Arrays.stream(getAdditionalClasspathElements()).forEach(additionalClasspathElements::add);
         }
-        if (getAdditionalClasspathDependencies() != null) {
-            Collection<Artifact> additionalArtifacts = resolveDependencies(getAdditionalClasspathDependencies());
+        if (additionalClasspathDependencies != null && !additionalClasspathDependencies.isEmpty()) {
+            Collection<Artifact> additionalArtifacts = resolveDependencies(additionalClasspathDependencies);
             // check for potential conflicts with project dependencies
             for (Artifact additionalArtifact : additionalArtifacts) {
                 Artifact conflictingArtifact =
@@ -2590,10 +2591,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 classpathArtifacts, getMainBuildPath(), getTestClassesDirectory(), additionalClasspathElements);
     }
 
-    protected Collection<Artifact> resolveDependencies(Dependency[] dependencies) throws MojoFailureException {
+    protected Collection<Artifact> resolveDependencies(List<Dependency> dependencies) throws MojoFailureException {
         Map<String, Artifact> dependencyConflictIdsAndArtifacts = new HashMap<>();
         try {
-            Arrays.stream(dependencies)
+            dependencies.stream()
                     .map(dependency -> {
                         try {
                             return surefireDependencyResolver.resolveDependencies(
@@ -3550,14 +3551,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     public void setAdditionalClasspathElements(String[] additionalClasspathElements) {
         this.additionalClasspathElements = additionalClasspathElements;
-    }
-
-    public Dependency[] getAdditionalClasspathDependencies() {
-        return additionalClasspathDependencies;
-    }
-
-    public void setAdditionalClasspathDependencies(Dependency[] additionalClasspathDependencies) {
-        this.additionalClasspathDependencies = additionalClasspathDependencies;
     }
 
     public String[] getClasspathDependencyExcludes() {
