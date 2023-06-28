@@ -86,13 +86,15 @@ Additional Classpath Elements
 </project>
 +---+
 
-  Since version 3.2.0 the <<<additionalClasspathDependencies>>> parameter can be used to add arbitrary dependencies to your test execution classpath (via their regular Maven coordinates).
-  Those are resolved from the repository like regular Maven dependencies and afterwards added as additional classpath elements to the end of the classpath, so you cannot use these to
+  Since version 3.2.0 the <<<additionalClasspathDependencies>>> parameter can be used to add arbitrary dependencies to your test execution classpath via their regular Maven coordinates.
+  Those are resolved from the repository like regular Maven project dependencies and afterwards added as additional classpath elements to the end of the classpath, so you cannot use these to
   override project dependencies or resources (except those which are filtered with <<<classpathDependencyExclude>>>).
   All artifacts of scope <<<compile>>> and <<<runtime>>> scope from the dependency tree rooted in the given dependency are added.
-  The parametrization works like for regular {{{https://maven.apache.org/pom.html#dependencies}}Maven dependencies in a POM}.
-  Also exclusions can be used.
-  The dependency management section from the underlying POM is not used, though.
+  The parametrization works like for regular {{{https://maven.apache.org/pom.html#dependencies}Maven dependencies in a POM}}.
+  {{{https://maven.apache.org/pom.html#exclusions}Exlusions}} are supported as well.
+  Neither the dependency management section from the underlying POM is used nor are the conflicts among the different dependency trees 
+  (from the project dependencies or from the additional dependencies) automatically resolved. 
+  Conflicts lead to warnings, though, which help you clean up the classpath manually.
 
 +---+
 <project>
