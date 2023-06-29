@@ -28,7 +28,7 @@
 
 The Default Classpath
 
-  The Surefire plugin builds the test classpath in the following order:
+  The Surefire plugin builds the test classpath at runtime in the following order:
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
   [[1]] The {{{../test-mojo.html#testClassesDirectory}test-classes}} directory
@@ -41,7 +41,7 @@ The Default Classpath
   [[2]] The {{{../integration-test-mojo.html#classesDirectory}classes}} JAR file or directory
 
 #{end}
-  [[3]] The project dependencies
+  [[3]] The project dependencies (with all scopes)
 
   [[4]] Additional classpath elements
 
@@ -55,11 +55,13 @@ The Default Classpath
 Additional Classpath Elements
 
   If you need to put more stuff in your classpath when ${thisPlugin} executes (e.g some funky resources or a container specific JAR),
-  we normally recommend you add it to your classpath as a dependency.  Consider deploying shared JARs to a private remote repository for your
+  we normally recommend you add it to your classpath as a regular project dependency (with scope <<<test>>>). Consider deploying shared JARs to a private remote repository for your
   organization.
 
-  But, if you must, you can use the <<<additionalClasspathElements>>> element to add custom resources/JARs to your classpath.
-  This will be treated as an absolute file system path, so you may want use $\{basedir\} or another property combined with a relative path.
+  In case this leads to dependency conflicts usually separating the test classes from the actual test execution into separate Maven modules is the recommended approach then.
+
+  But, if you must, you can use the <<<additionalClasspathElements>>> element to add custom resources/JARs to your test classpath at runtime (without affecting the test classpath used for compilation).
+  The items will be treated as absolute file system paths, so you may want use $\{basedir\} or another property combined with a relative path.
   Note that additional classpath elements are added to the end of the classpath, so you cannot use these to
   override project dependencies or resources.
 

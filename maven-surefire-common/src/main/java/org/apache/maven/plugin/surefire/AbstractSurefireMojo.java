@@ -242,7 +242,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     protected File testClassesDirectory;
 
     /**
-     * List of dependencies to exclude from the test classpath.
+     * List of dependencies to exclude from the test classpath at runtime.
      * Each item is passed as pattern to {@link PatternIncludesArtifactFilter}.
      * The pattern is matched against the following artifact ids:
      * <ul>
@@ -259,7 +259,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String[] classpathDependencyExcludes;
 
     /**
-     * A dependency scope to exclude from the test classpath. The scope should be one of the scopes defined by
+     * A dependency scope to exclude from the test classpath at runtime. The scope should be one of the scopes defined by
      * org.apache.maven.artifact.Artifact. This includes the following:
      * <br>
      * <ul>
@@ -276,7 +276,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String classpathDependencyScopeExclude;
 
     /**
-     * Additional elements to be appended to the classpath.
+     * Additional elements to be appended to the test classpath at runtime.
      * Each element must be a file system path to a JAR file or a directory containing classes.
      * No wildcards are allowed here.
      *
@@ -286,11 +286,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String[] additionalClasspathElements;
 
     /**
-     * Additional Maven dependencies to be added to the test classpath at runtime
+     * Additional Maven dependencies to be added to the test classpath at runtime.
      * Each element supports the parametrization like documented in <a href="https://maven.apache.org/pom.html#dependencies">POM Reference: Dependencies</a>.
      * <p>
      * Those dependencies are automatically collected (i.e. have their full dependency tree calculated) and then all underlying artifacts are resolved from the repository (including their transitive dependencies).
-     * Afterwards the resolved artifacts are filtered to only contain {@code compile} and {@code runtime} scoped ones and appended to the test execution classpath
+     * Afterwards the resolved artifacts are filtered to only contain {@code compile} and {@code runtime} scoped ones and appended to the test classpath at runtime
      * (after the ones from {@link #additionalClasspathElements}).
      * <p>
      * The following differences to regular project dependency resolving apply:
