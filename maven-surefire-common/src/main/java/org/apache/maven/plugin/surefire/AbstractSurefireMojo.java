@@ -286,7 +286,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String[] additionalClasspathElements;
 
     /**
-     * Additional Maven dependencies to be used in the test execution classpath.
+     * Additional Maven dependencies to be added to the test classpath at runtime
      * Each element supports the parametrization like documented in <a href="https://maven.apache.org/pom.html#dependencies">POM Reference: Dependencies</a>.
      * <p>
      * Those dependencies are automatically collected (i.e. have their full dependency tree calculated) and then all underlying artifacts are resolved from the repository (including their transitive dependencies).
