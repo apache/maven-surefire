@@ -95,6 +95,7 @@ Additional Classpath Elements
   Neither the dependency management section from the underlying POM is used nor are the conflicts among the different dependency trees 
   (from the project dependencies or from the additional dependencies) automatically resolved. 
   Conflicts lead to warnings, though, which help you clean up the classpath manually.
+  Only external dependencies (outside the current Maven reactor) are supported.
 
 +---+
 <project>

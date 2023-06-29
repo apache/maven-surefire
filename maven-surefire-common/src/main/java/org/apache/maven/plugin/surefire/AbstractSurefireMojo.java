@@ -293,8 +293,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Afterwards the resolved artifacts are filtered to only contain {@code compile} and {@code runtime} scoped ones and appended to the test execution classpath
      * (after the ones from {@link #additionalClasspathElements}).
      * <p>
-     * The dependency management from the project is not taken into account.
-     * Also conflicts between the different items and the project dependencies are not resolved.
+     * The following differences to regular project dependency resolving apply:
+     * <ul>
+     * <li>The dependency management from the project is not taken into account.</li>
+     * <li>Conflicts between the different items and the project dependencies are not resolved.</li>
+     * <li>Only external dependencies (outside the current Maven reactor) are supported.</li>
+     * </ul>
      *
      * @since 3.2
      */
