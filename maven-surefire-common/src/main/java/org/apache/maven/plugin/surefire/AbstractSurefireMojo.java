@@ -26,6 +26,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -41,6 +42,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
@@ -53,6 +56,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -238,7 +242,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     protected File testClassesDirectory;
 
     /**
-     * List of dependencies to exclude from the test classpath.
+     * List of dependencies to exclude from the test classpath at runtime.
      * Each item is passed as pattern to {@link PatternIncludesArtifactFilter}.
      * The pattern is matched against the following artifact ids:
      * <ul>
@@ -255,7 +259,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String[] classpathDependencyExcludes;
 
     /**
-     * A dependency scope to exclude from the test classpath. The scope should be one of the scopes defined by
+     * A dependency scope to exclude from the test classpath at runtime. The scope should be one of the scopes defined by
      * org.apache.maven.artifact.Artifact. This includes the following:
      * <br>
      * <ul>
@@ -272,7 +276,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String classpathDependencyScopeExclude;
 
     /**
-     * Additional elements to be appended to the classpath.
+     * Additional elements to be appended to the test classpath at runtime.
      * Each element must be a file system path to a JAR file or a directory containing classes.
      * No wildcards are allowed here.
      *
@@ -280,6 +284,26 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      */
     @Parameter(property = "maven.test.additionalClasspath")
     private String[] additionalClasspathElements;
+
+    /**
+     * Additional Maven dependencies to be added to the test classpath at runtime.
+     * Each element supports the parametrization like documented in <a href="https://maven.apache.org/pom.html#dependencies">POM Reference: Dependencies</a>.
+     * <p>
+     * Those dependencies are automatically collected (i.e. have their full dependency tree calculated) and then all underlying artifacts are resolved from the repository (including their transitive dependencies).
+     * Afterwards the resolved artifacts are filtered to only contain {@code compile} and {@code runtime} scoped ones and appended to the test classpath at runtime
+     * (after the ones from {@link #additionalClasspathElements}).
+     * <p>
+     * The following differences to regular project dependency resolving apply:
+     * <ul>
+     * <li>The dependency management from the project is not taken into account.</li>
+     * <li>Conflicts between the different items and the project dependencies are not resolved.</li>
+     * <li>Only external dependencies (outside the current Maven reactor) are supported.</li>
+     * </ul>
+     *
+     * @since 3.2
+     */
+    @Parameter(property = "maven.test.additionalClasspathDependencies")
+    private List<Dependency> additionalClasspathDependencies;
 
     /**
      * The test source directory containing test class sources.
@@ -2526,8 +2550,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Generates the test classpath.
      *
      * @return the classpath elements
+     * @throws MojoFailureException
      */
-    private TestClassPath generateTestClasspath() {
+    private TestClassPath generateTestClasspath() throws MojoFailureException {
         Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
         if (getClasspathDependencyScopeExclude() != null
@@ -2542,8 +2567,66 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             classpathArtifacts = filterArtifacts(classpathArtifacts, dependencyFilter);
         }
 
+        Map<String, Artifact> dependencyConflictIdsProjectArtifacts = classpathArtifacts.stream()
+                .collect(Collectors.toMap(Artifact::getDependencyConflictId, Function.identity()));
+        Set<String> additionalClasspathElements = new HashSet<>();
+        if (getAdditionalClasspathElements() != null) {
+            Arrays.stream(getAdditionalClasspathElements()).forEach(additionalClasspathElements::add);
+        }
+        if (additionalClasspathDependencies != null && !additionalClasspathDependencies.isEmpty()) {
+            Collection<Artifact> additionalArtifacts = resolveDependencies(additionalClasspathDependencies);
+            // check for potential conflicts with project dependencies
+            for (Artifact additionalArtifact : additionalArtifacts) {
+                Artifact conflictingArtifact =
+                        dependencyConflictIdsProjectArtifacts.get(additionalArtifact.getDependencyConflictId());
+                if (conflictingArtifact != null
+                        && !additionalArtifact.getVersion().equals(conflictingArtifact.getVersion())) {
+                    getConsoleLogger()
+                            .warning(
+                                    "Potential classpath conflict between project dependency and resolved additionalClasspathDependency: Found multiple versions of "
+                                            + additionalArtifact.getDependencyConflictId() + ": "
+                                            + additionalArtifact.getVersion() + " and "
+                                            + conflictingArtifact.getVersion());
+                }
+                additionalClasspathElements.add(additionalArtifact.getFile().getAbsolutePath());
+            }
+        }
         return new TestClassPath(
-                classpathArtifacts, getMainBuildPath(), getTestClassesDirectory(), getAdditionalClasspathElements());
+                classpathArtifacts, getMainBuildPath(), getTestClassesDirectory(), additionalClasspathElements);
+    }
+
+    protected Collection<Artifact> resolveDependencies(List<Dependency> dependencies) throws MojoFailureException {
+        Map<String, Artifact> dependencyConflictIdsAndArtifacts = new HashMap<>();
+        try {
+            dependencies.stream()
+                    .map(dependency -> {
+                        try {
+                            return surefireDependencyResolver.resolveDependencies(
+                                    session.getRepositorySession(), project.getRemoteProjectRepositories(), dependency);
+                        } catch (MojoExecutionException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    })
+                    .forEach(artifacts -> {
+                        for (Artifact a : artifacts) {
+                            Artifact conflictingArtifact =
+                                    dependencyConflictIdsAndArtifacts.get(a.getDependencyConflictId());
+                            if (conflictingArtifact != null
+                                    && !a.getVersion().equals(conflictingArtifact.getVersion())) {
+                                getConsoleLogger()
+                                        .warning(
+                                                "Potential classpath conflict among resolved additionalClasspathDependencies: Found multiple versions of "
+                                                        + a.getDependencyConflictId() + ": " + a.getVersion() + " and "
+                                                        + conflictingArtifact.getVersion());
+                            } else {
+                                dependencyConflictIdsAndArtifacts.put(a.getDependencyConflictId(), a);
+                            }
+                        }
+                    });
+        } catch (IllegalStateException e) {
+            throw new MojoFailureException(e.getMessage(), e.getCause());
+        }
+        return dependencyConflictIdsAndArtifacts.values();
     }
 
     /**

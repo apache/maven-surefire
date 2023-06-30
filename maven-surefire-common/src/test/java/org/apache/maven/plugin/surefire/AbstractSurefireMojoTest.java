@@ -606,7 +606,7 @@ public class AbstractSurefireMojoTest {
         File classesDir = mockFile("classes");
         File testClassesDir = mockFile("test-classes");
         TestClassPath testClassPath =
-                new TestClassPath(new ArrayList<Artifact>(), classesDir, testClassesDir, new String[0]);
+                new TestClassPath(new ArrayList<Artifact>(), classesDir, testClassesDir, Collections.emptyList());
 
         Artifact common = new DefaultArtifact(
                 "org.apache.maven.surefire",
@@ -711,7 +711,7 @@ public class AbstractSurefireMojoTest {
         File testClassesDirectory = new File(baseDir, "mock-dir");
         mojo.setTestClassesDirectory(testClassesDirectory);
         TestClassPath testClassPath = new TestClassPath(
-                Collections.<Artifact>emptySet(), classesDirectory, testClassesDirectory, new String[0]);
+                Collections.<Artifact>emptySet(), classesDirectory, testClassesDirectory, Collections.emptyList());
 
         ProviderInfo providerInfo = mock(ProviderInfo.class);
         when(providerInfo.getProviderName()).thenReturn("provider mock");
@@ -855,7 +855,7 @@ public class AbstractSurefireMojoTest {
         when(dependencyResolver.getProviderClasspathAsMap(any(), any(), anyString(), anyString()))
                 .thenReturn(artifactMapByVersionlessId(createSurefireProviderResolutionResult(surefireVersion)));
 
-        when(dependencyResolver.resolveArtifacts(any(), any(), any()))
+        when(dependencyResolver.resolveArtifacts(any(), any(), any(Artifact.class)))
                 .thenReturn(createExpectedJUnitPlatformLauncherResolutionResult());
 
         final Artifact pluginDep1 = new DefaultArtifact(
@@ -1063,7 +1063,7 @@ public class AbstractSurefireMojoTest {
         when(dependencyResolver.getProviderClasspathAsMap(any(), any(), anyString(), anyString()))
                 .thenReturn(artifactMapByVersionlessId(createSurefireProviderResolutionResult(surefireVersion)));
 
-        when(dependencyResolver.resolveArtifacts(any(), any(), any()))
+        when(dependencyResolver.resolveArtifacts(any(), any(), any(Artifact.class)))
                 .thenReturn(createExpectedJUnitPlatformLauncherResolutionResult());
 
         mojo.setLogger(mock(Logger.class));
@@ -1154,7 +1154,7 @@ public class AbstractSurefireMojoTest {
         when(dependencyResolver.getProviderClasspathAsMap(any(), any(), anyString(), anyString()))
                 .thenReturn(artifactMapByVersionlessId(createSurefireProviderResolutionResult(surefireVersion)));
 
-        when(dependencyResolver.resolveArtifacts(any(), any(), any()))
+        when(dependencyResolver.resolveArtifacts(any(), any(), any(Artifact.class)))
                 .thenReturn(createExpectedJUnitPlatformLauncherResolutionResult());
 
         mojo.setLogger(mock(Logger.class));
@@ -1268,7 +1268,7 @@ public class AbstractSurefireMojoTest {
         when(dependencyResolver.getProviderClasspathAsMap(any(), any(), anyString(), anyString()))
                 .thenReturn(artifactMapByVersionlessId(createSurefireProviderResolutionResult(surefireVersion)));
 
-        when(dependencyResolver.resolveArtifacts(any(), any(), any()))
+        when(dependencyResolver.resolveArtifacts(any(), any(), any(Artifact.class)))
                 .thenReturn(createExpectedJUnitPlatformLauncherResolutionResult());
 
         mojo.setLogger(mock(Logger.class));
@@ -1541,7 +1541,7 @@ public class AbstractSurefireMojoTest {
         when(dependencyResolver.getProviderClasspathAsMap(any(), any(), anyString(), anyString()))
                 .thenReturn(artifactMapByVersionlessId(createSurefireProviderResolutionResult(surefireVersion)));
 
-        when(dependencyResolver.resolveArtifacts(any(), any(), any()))
+        when(dependencyResolver.resolveArtifacts(any(), any(), any(Artifact.class)))
                 .thenReturn(createExpectedJUnitPlatformLauncherResolutionResult());
 
         mojo.setLogger(mock(Logger.class));
@@ -1724,7 +1724,7 @@ public class AbstractSurefireMojoTest {
         when(dependencyResolver.getProviderClasspathAsMap(any(), any(), anyString(), anyString()))
                 .thenReturn(artifactMapByVersionlessId(createSurefireProviderResolutionResult(surefireVersion)));
 
-        when(dependencyResolver.resolveArtifacts(any(), any(), any()))
+        when(dependencyResolver.resolveArtifacts(any(), any(), any(Artifact.class)))
                 .thenReturn(createExpectedJUnitPlatformLauncherResolutionResult());
 
         mojo.setLogger(mock(Logger.class));

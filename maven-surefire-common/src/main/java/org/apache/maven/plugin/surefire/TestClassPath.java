@@ -34,13 +34,13 @@ final class TestClassPath {
     private final Iterable<Artifact> artifacts;
     private final File classesDirectory;
     private final File testClassesDirectory;
-    private final String[] additionalClasspathElements;
+    private final Iterable<String> additionalClasspathElements;
 
     TestClassPath(
             Iterable<Artifact> artifacts,
             File classesDirectory,
             File testClassesDirectory,
-            String[] additionalClasspathElements) {
+            Iterable<String> additionalClasspathElements) {
         this.artifacts = artifacts;
         this.classesDirectory = classesDirectory;
         this.testClassesDirectory = testClassesDirectory;
