@@ -194,17 +194,15 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
                             .append(NL);
                 }
 
-                args.append("--add-modules").append(NL).append(moduleName).append(NL);
-
                 args.append("--add-reads")
                         .append(NL)
                         .append(moduleName)
                         .append('=')
                         .append("ALL-UNNAMED")
                         .append(NL);
-            } else {
-                args.append("--add-modules").append(NL).append(moduleName).append(NL);
             }
+
+            args.append("--add-modules").append(NL).append("ALL-MODULE-PATH").append(NL);
 
             for (String[] entries : providerJpmsArguments) {
                 for (String entry : entries) {

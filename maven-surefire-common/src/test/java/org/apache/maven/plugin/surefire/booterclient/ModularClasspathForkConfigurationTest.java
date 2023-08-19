@@ -127,13 +127,13 @@ public class ModularClasspathForkConfigurationTest {
 
         assertThat(argsFileLines.get(7)).isEqualTo("abc/org.apache.abc=ALL-UNNAMED");
 
-        assertThat(argsFileLines.get(8)).isEqualTo("--add-modules");
+        assertThat(argsFileLines.get(8)).isEqualTo("--add-reads");
 
-        assertThat(argsFileLines.get(9)).isEqualTo("abc");
+        assertThat(argsFileLines.get(9)).isEqualTo("abc=ALL-UNNAMED");
 
-        assertThat(argsFileLines.get(10)).isEqualTo("--add-reads");
+        assertThat(argsFileLines.get(10)).isEqualTo("--add-modules");
 
-        assertThat(argsFileLines.get(11)).isEqualTo("abc=ALL-UNNAMED");
+        assertThat(argsFileLines.get(11)).isEqualTo("ALL-MODULE-PATH");
 
         assertThat(argsFileLines.get(12)).isEqualTo(ForkedBooter.class.getName());
 
