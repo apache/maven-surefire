@@ -131,7 +131,7 @@ public class AbstractSurefireMojoTest {
     public void setupMojo() {
         Artifact mojoArtifact = mojo.getMojoArtifact();
 
-        mojo.setPluginArtifactMap(new LinkedHashMap<String, Artifact>());
+        mojo.setPluginArtifactMap(new LinkedHashMap<>());
         mojo.getPluginArtifactMap().put(mojoArtifact.getGroupId() + ":" + mojoArtifact.getArtifactId(), mojoArtifact);
         Artifact forkedBooter = new DefaultArtifact(
                 "org.apache.maven.surefire",
@@ -143,7 +143,7 @@ public class AbstractSurefireMojoTest {
                 mock(ArtifactHandler.class));
         mojo.getPluginArtifactMap().put("org.apache.maven.surefire:surefire-booter", forkedBooter);
 
-        mojo.setProjectArtifactMap(new LinkedHashMap<String, Artifact>());
+        mojo.setProjectArtifactMap(new LinkedHashMap<>());
 
         MavenSession session = mock(MavenSession.class);
         mojo.setSession(session);

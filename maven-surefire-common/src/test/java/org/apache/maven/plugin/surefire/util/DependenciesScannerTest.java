@@ -157,9 +157,9 @@ public class DependenciesScannerTest {
         List<String> scanDependencies = new ArrayList<>();
         scanDependencies.add("org.surefire.dependency:dependent-artifact3:test-jar");
 
-        List<String> include = new ArrayList<String>();
+        List<String> include = new ArrayList<>();
         include.add("**/*A.java");
-        List<String> exclude = new ArrayList<String>();
+        List<String> exclude = new ArrayList<>();
 
         List<Artifact> artifacts = Arrays.asList(mainArtifact, testArtifact);
 
@@ -223,7 +223,7 @@ public class DependenciesScannerTest {
         assertEquals(1, classNames.size());
         assertEquals("org.test2.ClassA", classNames.getClassName(0));
 
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         classNames.writeTo(props);
         assertEquals(1, props.size());
         assertFalse(props.values().contains("org.test.ClassA"));

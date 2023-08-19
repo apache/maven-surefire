@@ -21,7 +21,7 @@ public class ParallelTest
     @DataProvider( parallel = true, name = "dataProvider" )
     public Iterator<Object[]> dataProvider()
     {
-        List<Object[]> data = new ArrayList<Object[]>();
+        List<Object[]> data = new ArrayList<>();
         for ( int i = 0; i < 5000; i++ )
         {
             data.add( new Object[]{ "ID_" + i } );

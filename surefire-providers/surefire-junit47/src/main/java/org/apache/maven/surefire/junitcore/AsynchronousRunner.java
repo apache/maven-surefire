@@ -36,7 +36,7 @@ import org.junit.runners.model.RunnerScheduler;
  */
 @Deprecated
 public class AsynchronousRunner implements RunnerScheduler {
-    private final List<Future<Object>> futures = Collections.synchronizedList(new ArrayList<Future<Object>>());
+    private final List<Future<Object>> futures = Collections.synchronizedList(new ArrayList<>());
 
     private final ExecutorService fService;
 

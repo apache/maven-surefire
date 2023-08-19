@@ -49,7 +49,7 @@ public class JUnit4ProviderTest {
 
     private JUnit4Provider getJUnit4Provider() {
         BaseProviderFactory providerParameters = new BaseProviderFactory(true);
-        providerParameters.setProviderProperties(new HashMap<String, String>());
+        providerParameters.setProviderProperties(new HashMap<>());
         providerParameters.setClassLoaders(getClass().getClassLoader());
         providerParameters.setTestRequest(new TestRequest(null, null, null));
         providerParameters.setRunOrderParameters(new RunOrderParameters("hourly", new File("")));

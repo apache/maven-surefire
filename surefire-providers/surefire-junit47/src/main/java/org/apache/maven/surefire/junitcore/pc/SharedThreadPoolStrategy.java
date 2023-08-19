@@ -35,7 +35,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
  */
 final class SharedThreadPoolStrategy extends AbstractThreadPoolStrategy {
     SharedThreadPoolStrategy(ConsoleLogger logger, ExecutorService threadPool) {
-        super(logger, threadPool, new ConcurrentLinkedQueue<Future<?>>());
+        super(logger, threadPool, new ConcurrentLinkedQueue<>());
     }
 
     @Override
