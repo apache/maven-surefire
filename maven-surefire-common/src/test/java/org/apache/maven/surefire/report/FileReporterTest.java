@@ -49,7 +49,7 @@ public class FileReporterTest extends TestCase {
         WrappedReportEntry wrappedReportEntry =
                 new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 12, null, null);
         reporter = new FileReporter(reportDir, null, Charset.defaultCharset(), false, false, false);
-        reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<String>());
+        reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
 
         File expectedReportFile = new File(reportDir, TEST_NAME + ".txt");
         assertTrue(
@@ -70,7 +70,7 @@ public class FileReporterTest extends TestCase {
         WrappedReportEntry wrappedReportEntry =
                 new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 12, null, null);
         reporter = new FileReporter(reportDir, suffixText, Charset.defaultCharset(), false, false, false);
-        reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<String>());
+        reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
 
         File expectedReportFile = new File(reportDir, TEST_NAME + "-" + suffixText + ".txt");
         assertTrue(

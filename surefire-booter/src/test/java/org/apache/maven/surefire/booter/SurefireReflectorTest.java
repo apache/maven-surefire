@@ -158,7 +158,7 @@ public class SurefireReflectorTest extends TestCase {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        surefireReflector.setProviderProperties(foo, new HashMap<String, String>());
+        surefireReflector.setProviderProperties(foo, new HashMap<>());
         assertTrue(isCalled(foo));
     }
 

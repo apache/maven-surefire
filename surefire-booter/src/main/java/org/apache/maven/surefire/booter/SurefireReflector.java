@@ -198,7 +198,7 @@ public final class SurefireReflector {
 
     public void setMainCliOptions(Object o, List<CommandLineOption> options) {
         if (baseProviderFactory.isAssignableFrom(o.getClass())) {
-            List<Enum<?>> newOptions = checkedList(new ArrayList<Enum<?>>(options.size()), commandLineOptionsClass);
+            List<Enum<?>> newOptions = checkedList(new ArrayList<>(options.size()), commandLineOptionsClass);
             Collection<Integer> ordinals = toOrdinals(options);
             for (Enum<?> e : commandLineOptionsClass.getEnumConstants()) {
                 if (ordinals.contains(e.ordinal())) {

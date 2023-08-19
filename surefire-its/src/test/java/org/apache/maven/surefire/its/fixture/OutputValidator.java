@@ -184,7 +184,7 @@ public class OutputValidator {
 
     public String[] getStringsOrderInLog(String[] strings) throws VerificationException {
         String[] retArr = new String[strings.length];
-        List<String> strList = new ArrayList<String>(Arrays.asList(strings));
+        List<String> strList = new ArrayList<>(Arrays.asList(strings));
         int i = 0;
         for (String line : loadLogLines()) {
             for (int j = 0; j < strList.size(); j++) {
