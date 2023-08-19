@@ -53,8 +53,7 @@ public class ConfigurableParallelComputer extends Computer {
 
     private final ExecutorService fService;
 
-    private final List<AsynchronousRunner> nonBlockers =
-            Collections.synchronizedList(new ArrayList<>());
+    private final List<AsynchronousRunner> nonBlockers = Collections.synchronizedList(new ArrayList<>());
 
     public ConfigurableParallelComputer() {
         this(true, true, Executors.newCachedThreadPool(DAEMON_THREAD_FACTORY), false);
