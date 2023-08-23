@@ -192,7 +192,7 @@ public class ForkConfigurationTest {
         assertThat(endOfFileArg).isPositive();
         Path argFile = Paths.get(cliAsString.substring(beginOfFileArg + 1, endOfFileArg));
         String argFileText = new String(readAllBytes(argFile));
-        assertThat(argFileText).contains("arg2").contains("arg3").contains("--add-modules" + NL + "test.module");
+        assertThat(argFileText).contains("arg2").contains("arg3").contains("--add-modules" + NL + "ALL-MODULE-PATH");
     }
 
     @Test
