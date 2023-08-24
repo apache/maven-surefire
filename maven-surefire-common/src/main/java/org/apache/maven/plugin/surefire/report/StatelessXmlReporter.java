@@ -101,6 +101,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     private final String xsdSchemaLocation;
 
+    private final boolean enableOutputElements;
+
     private final String xsdVersion;
 
     // Map between test class name and a map between test method name
@@ -122,6 +124,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             int rerunFailingTestsCount,
             Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistoryMap,
             String xsdSchemaLocation,
+            boolean enableOutputElements,
             String xsdVersion,
             boolean phrasedFileName,
             boolean phrasedSuiteName,
@@ -133,6 +136,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
+        this.enableOutputElements = enableOutputElements;
         this.xsdVersion = xsdVersion;
         this.phrasedFileName = phrasedFileName;
         this.phrasedSuiteName = phrasedSuiteName;
@@ -223,11 +227,14 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                         ppw,
                         methodEntry,
                         trimStackTrace,
+                        enableOutputElements,
                         outputStream,
                         methodEntry.getReportEntryType().getXmlTag(),
                         false);
             }
-            createOutErrElements(fw, ppw, methodEntry, outputStream);
+            if (enableOutputElements) {
+                createOutErrElements(fw, ppw, methodEntry, outputStream);
+            }
             ppw.endElement();
         }
     }
@@ -258,10 +265,13 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                                 ppw,
                                 singleRunEntry,
                                 trimStackTrace,
+                                enableOutputElements,
                                 outputStream,
                                 singleRunEntry.getReportEntryType().getXmlTag(),
                                 false);
-                        createOutErrElements(fw, ppw, singleRunEntry, outputStream);
+                        if (enableOutputElements) {
+                            createOutErrElements(fw, ppw, singleRunEntry, outputStream);
+                        }
                     } else if (singleRunEntry.getReportEntryType() == SKIPPED) {
                         // The version 3.1.0 should produce a new XSD schema with version 3.1.0, see SUREFIRE-1986,
                         // and the XSD schema should add a new element "rerunSkipped"
@@ -274,6 +284,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                                 ppw,
                                 singleRunEntry,
                                 trimStackTrace,
+                                enableOutputElements,
                                 outputStream,
                                 singleRunEntry.getReportEntryType().getRerunXmlTag(),
                                 true);
@@ -299,6 +310,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                                 ppw,
                                 singleRunEntry,
                                 trimStackTrace,
+                                enableOutputElements,
                                 outputStream,
                                 singleRunEntry.getReportEntryType().getFlakyXmlTag(),
                                 true);
@@ -313,6 +325,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                         ppw,
                         firstMethodEntry,
                         trimStackTrace,
+                        enableOutputElements,
                         outputStream,
                         firstMethodEntry.getReportEntryType().getXmlTag(),
                         false);
@@ -430,6 +443,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             XMLWriter ppw,
             WrappedReportEntry report,
             boolean trimStackTrace,
+            boolean enableOutputElements,
             OutputStream fw,
             String testErrorType,
             boolean createOutErrElementsInside)
@@ -470,7 +484,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             }
         }
 
-        if (createOutErrElementsInside) {
+        if (enableOutputElements && createOutErrElementsInside) {
             createOutErrElements(outputStreamWriter, ppw, report, fw);
         }
 

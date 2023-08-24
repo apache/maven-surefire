@@ -103,6 +103,7 @@ public class JUnit5Xml30StatelessReporter extends SurefireStatelessReporter {
                 configuration.getRerunFailingTestsCount(),
                 configuration.getTestClassMethodRunHistory(),
                 configuration.getXsdSchemaLocation(),
+                configuration.isEnableOutputElements(),
                 getVersion(),
                 getUsePhrasedFileName(),
                 getUsePhrasedTestSuiteClassName(),

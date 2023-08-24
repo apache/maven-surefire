@@ -82,6 +82,7 @@ public class CommonReflectorTest {
                 null,
                 null,
                 false,
+                true,
                 xmlReporter,
                 consoleOutputReporter,
                 infoReporter);

@@ -162,6 +162,7 @@ public class ForkStarterTest {
                 null,
                 null,
                 true,
+                true,
                 xmlReporter,
                 outputReporter,
                 statelessTestsetInfoReporter);
@@ -246,6 +247,7 @@ public class ForkStarterTest {
                 0,
                 null,
                 null,
+                true,
                 true,
                 xmlReporter,
                 outputReporter,
