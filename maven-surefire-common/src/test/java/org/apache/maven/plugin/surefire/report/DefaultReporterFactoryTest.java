@@ -85,6 +85,7 @@ public class DefaultReporterFactoryTest extends TestCase {
                 null,
                 null,
                 false,
+                true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
                 new SurefireStatelessTestsetInfoReporter());
@@ -288,6 +289,7 @@ public class DefaultReporterFactoryTest extends TestCase {
                 null,
                 null,
                 false,
+                true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
                 new SurefireStatelessTestsetInfoReporter());
@@ -352,6 +354,7 @@ public class DefaultReporterFactoryTest extends TestCase {
                 null,
                 null,
                 false,
+                true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
                 new SurefireStatelessTestsetInfoReporter());

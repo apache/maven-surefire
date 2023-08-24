@@ -116,6 +116,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     private final boolean phrasedMethodName;
 
+    private final boolean enableOutErrElements;
+
     public StatelessXmlReporter(
             File reportsDirectory,
             String reportNameSuffix,
@@ -127,13 +129,15 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             boolean phrasedFileName,
             boolean phrasedSuiteName,
             boolean phrasedClassName,
-            boolean phrasedMethodName) {
+            boolean phrasedMethodName,
+            boolean enableOutErrElements) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
+        this.enableOutErrElements = enableOutErrElements;
         this.xsdVersion = xsdVersion;
         this.phrasedFileName = phrasedFileName;
         this.phrasedSuiteName = phrasedSuiteName;
@@ -228,7 +232,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                         methodEntry.getReportEntryType().getXmlTag(),
                         false);
             }
-            createOutErrElements(fw, ppw, methodEntry, outputStream);
+            if (methodEntry.getReportEntryType() != SUCCESS || enableOutErrElements) {
+                createOutErrElements(fw, ppw, methodEntry, outputStream);
+            }
             ppw.endElement();
         }
     }

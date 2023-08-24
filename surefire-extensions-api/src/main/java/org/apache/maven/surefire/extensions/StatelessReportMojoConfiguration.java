@@ -36,17 +36,21 @@ public class StatelessReportMojoConfiguration {
 
     private final String xsdSchemaLocation;
 
+    private final boolean enableOutErrElements;
+
     public StatelessReportMojoConfiguration(
             File reportsDirectory,
             String reportNameSuffix,
             boolean trimStackTrace,
             int rerunFailingTestsCount,
-            String xsdSchemaLocation) {
+            String xsdSchemaLocation,
+            boolean enableOutErrElements) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.xsdSchemaLocation = xsdSchemaLocation;
+        this.enableOutErrElements = enableOutErrElements;
     }
 
     public File getReportsDirectory() {
@@ -67,5 +71,9 @@ public class StatelessReportMojoConfiguration {
 
     public String getXsdSchemaLocation() {
         return xsdSchemaLocation;
+    }
+
+    public boolean isEnableOutErrElements() {
+        return enableOutErrElements;
     }
 }

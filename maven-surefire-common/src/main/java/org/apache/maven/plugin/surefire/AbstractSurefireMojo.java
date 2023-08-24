@@ -691,6 +691,16 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean enableAssertions;
 
     /**
+     * Flag for including/excluding {@code <system-out />} and {@code <system-err />} elements for
+     * successfully passed tests in XML reports.
+     * Note that the default value may change to {@code false} is a future version.
+     *
+     * @since 3.3.1
+     */
+    @Parameter(property = "enableOutErrElements", defaultValue = "true")
+    private boolean enableOutErrElements;
+
+    /**
      * The current build session instance.
      */
     @Parameter(defaultValue = "${session}", required = true, readonly = true)
@@ -1474,6 +1484,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         Double.toString(getParallelTestsTimeoutForcedInSeconds()));
         getProperties()
                 .setProperty(ProviderParameterNames.PARALLEL_OPTIMIZE_PROP, Boolean.toString(isParallelOptimized()));
+        getProperties()
+                .setProperty(
+                        ProviderParameterNames.ENABLE_OUT_ERR_ELEMENTS_PROP,
+                        Boolean.toString(isEnableOutErrElements()));
 
         String message = "parallel='" + usedParallel + '\''
                 + ", perCoreThreadCount=" + getPerCoreThreadCount()
@@ -1482,7 +1496,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 + ", threadCountSuites=" + getThreadCountSuites()
                 + ", threadCountClasses=" + getThreadCountClasses()
                 + ", threadCountMethods=" + getThreadCountMethods()
-                + ", parallelOptimized=" + isParallelOptimized();
+                + ", parallelOptimized=" + isParallelOptimized()
+                + ", enableOutErrElements=" + isEnableOutErrElements();
 
         logDebugOrCliShowErrors(message);
     }
@@ -1976,6 +1991,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 getReportSchemaLocation(),
                 getEncoding(),
                 isForking,
+                isEnableOutErrElements(),
                 xmlReporter,
                 outReporter,
                 testsetReporter);
@@ -2516,6 +2532,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         checksum.add(getTempDir());
         checksum.add(useModulePath());
         checksum.add(getEnableProcessChecker());
+        checksum.add(isEnableOutErrElements());
         addPluginSpecificChecksumItems(checksum);
         return checksum.getSha1();
     }
@@ -3470,6 +3487,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @SuppressWarnings("UnusedDeclaration")
     public void setEnableAssertions(boolean enableAssertions) {
         this.enableAssertions = enableAssertions;
+    }
+
+    public boolean isEnableOutErrElements() {
+        return enableOutErrElements;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public void setEnableOutErrElements(boolean enableOutErrElements) {
+        this.enableOutErrElements = enableOutErrElements;
     }
 
     public MavenSession getSession() {

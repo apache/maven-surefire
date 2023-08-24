@@ -43,8 +43,15 @@ public class DefaultStatelessReportMojoConfiguration extends StatelessReportMojo
             boolean trimStackTrace,
             int rerunFailingTestsCount,
             String xsdSchemaLocation,
+            boolean enableOutErrElements,
             Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory) {
-        super(reportsDirectory, reportNameSuffix, trimStackTrace, rerunFailingTestsCount, xsdSchemaLocation);
+        super(
+                reportsDirectory,
+                reportNameSuffix,
+                trimStackTrace,
+                rerunFailingTestsCount,
+                xsdSchemaLocation,
+                enableOutErrElements);
         this.testClassMethodRunHistory = testClassMethodRunHistory;
     }
 

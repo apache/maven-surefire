@@ -85,6 +85,8 @@ public final class StartupReportConfiguration {
 
     private final boolean isForking;
 
+    private final boolean enableOutErrElements;
+
     private final SurefireStatelessReporter xmlReporter;
 
     private final SurefireConsoleOutputReporter consoleOutputReporter;
@@ -108,6 +110,7 @@ public final class StartupReportConfiguration {
             String xsdSchemaLocation,
             String encoding,
             boolean isForking,
+            boolean enableOutErrElements,
             SurefireStatelessReporter xmlReporter,
             SurefireConsoleOutputReporter consoleOutputReporter,
             SurefireStatelessTestsetInfoReporter testsetReporter) {
@@ -127,6 +130,7 @@ public final class StartupReportConfiguration {
         String charset = trimToNull(encoding);
         this.encoding = charset == null ? UTF_8 : Charset.forName(charset);
         this.isForking = isForking;
+        this.enableOutErrElements = enableOutErrElements;
         this.xmlReporter = xmlReporter;
         this.consoleOutputReporter = consoleOutputReporter;
         this.testsetReporter = testsetReporter;
@@ -177,6 +181,7 @@ public final class StartupReportConfiguration {
                 trimStackTrace,
                 rerunFailingTestsCount,
                 xsdSchemaLocation,
+                enableOutErrElements,
                 testClassMethodRunHistory);
 
         return xmlReporter.isDisable() ? null : xmlReporter.createListener(xmlReporterConfig);
@@ -237,6 +242,10 @@ public final class StartupReportConfiguration {
 
     public boolean isForking() {
         return isForking;
+    }
+
+    public boolean isEnableOutErrElements() {
+        return enableOutErrElements;
     }
 
     private File resolveReportsDirectory(Integer forkNumber) {

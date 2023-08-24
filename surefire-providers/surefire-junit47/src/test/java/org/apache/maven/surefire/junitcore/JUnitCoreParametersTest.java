@@ -45,6 +45,7 @@ public class JUnitCoreParametersTest {
         assertThat(newTestSetDefault().getParallelTestsTimeoutInSeconds(), is(0d));
         assertThat(newTestSetDefault().getParallelTestsTimeoutForcedInSeconds(), is(0d));
         assertTrue(newTestSetDefault().isParallelOptimization());
+        assertTrue(newTestSetDefault().isEnableOutErrElements());
     }
 
     @Test
