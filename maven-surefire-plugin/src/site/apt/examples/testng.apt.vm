@@ -281,7 +281,7 @@ Using TestNG
 </plugins>
 +---+
 
-  For more information on TestNG, see the {{{http://www.testng.org}TestNG web site}}.
+  For more information on TestNG, see the {{{https://testng.org}TestNG web site}}.
 
   You can implement TestNG listener interface <<<org.testng.ITestListener>>> in
   a separate test artifact <<<your-testng-listener-artifact>>> with scope=test, or in project test source code
