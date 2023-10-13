@@ -61,7 +61,9 @@ public class MethodSelector implements IMethodSelector {
         boolean hasTestResolver = resolver != null && !resolver.isEmpty();
         if (hasTestResolver) {
             boolean run = false;
-            for (Class<?> clazz = test.getRealClass(); !run && clazz != Object.class; clazz = clazz.getSuperclass()) {
+            for (Class<?> clazz = test.getRealClass();
+                    !run && clazz != null && clazz != Object.class;
+                    clazz = clazz.getSuperclass()) {
                 run = resolver.shouldRun(clazz, test.getMethodName());
             }
             return run;
