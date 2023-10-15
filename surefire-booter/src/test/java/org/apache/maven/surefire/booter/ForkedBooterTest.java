@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
@@ -76,9 +77,7 @@ public class ForkedBooterTest {
 
     @Test
     public void shouldReadSurefireProperties() throws Exception {
-        File target = new File(System.getProperty("user.dir", "target"));
-        File tmpDir = new File(target, "ForkedBooterTest.1");
-        assertThat(tmpDir.mkdirs()).isTrue();
+        File tmpDir = Files.createTempDirectory("ForkedBooterTest.1.").toFile();
 
         try {
             try (InputStream is = invokeMethod(
