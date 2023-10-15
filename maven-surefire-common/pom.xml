@@ -72,11 +72,6 @@
       <artifactId>plexus-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.fusesource.jansi</groupId>
-      <artifactId>jansi</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-shared-utils</artifactId>
       <version>${surefire-shared-utils.version}</version>
