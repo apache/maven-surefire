@@ -430,7 +430,20 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         if (!testCase.isSuccessful()) {
             String message = testCase.getFailureMessage();
             if (message != null) {
-                tableRow(new String[] {"", message, ""});
+                sink.tableRow();
+
+                tableCell("");
+
+                sink.tableCell();
+
+                //This shall not be subject to #linkPatternedText()
+                text(message);
+
+                sink.tableCell_();
+
+                tableCell("");
+
+                sink.tableRow_();
             }
 
             String detail = testCase.getFailureDetail();
@@ -498,7 +511,12 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
             tableCell("");
 
-            tableCell(message == null ? type : type + ": " + message);
+            sink.tableCell();
+
+            //This shall not be subject to #linkPatternedText()
+            text(message == null ? type : type + ": " + message);
+
+            sink.tableCell_();
 
             sink.tableRow_();
 
