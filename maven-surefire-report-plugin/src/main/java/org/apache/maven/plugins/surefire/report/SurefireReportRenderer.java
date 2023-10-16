@@ -436,7 +436,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
                 sink.tableCell();
 
-                //This shall not be subject to #linkPatternedText()
+                // This shall not be subject to #linkPatternedText()
                 text(message);
 
                 sink.tableCell_();
@@ -513,7 +513,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
             sink.tableCell();
 
-            //This shall not be subject to #linkPatternedText()
+            // This shall not be subject to #linkPatternedText()
             text(message == null ? type : type + ": " + message);
 
             sink.tableCell_();
