@@ -56,18 +56,18 @@ public class RunResultTest {
 
     @Test
     public void testFailures() throws Exception {
-        writeReadCheck(new RunResult(0, 1, 2, 3, "stacktraceHere", false));
+        writeReadCheck(new RunResult(0, 1, 2, 3, 220, "stacktraceHere", false));
     }
 
     @Test
     public void testSkipped() throws Exception {
-        writeReadCheck(new RunResult(3, 2, 1, 0, null, true));
+        writeReadCheck(new RunResult(3, 2, 1, 0, 50, null, true));
     }
 
     @Test
     public void testAppendSerialization() throws Exception {
         RunResult simpleAggregate = getSimpleAggregate();
-        RunResult additional = new RunResult(2, 1, 2, 2, "msg " + ((char) 0x0E01), true);
+        RunResult additional = new RunResult(2, 1, 2, 2, 500, "msg " + ((char) 0x0E01), true);
 
         File summary = SureFireFileManager.createTempFile("failsafe", "test");
         FailsafeSummaryXmlUtils.writeSummary(simpleAggregate, summary, false);
@@ -87,6 +87,8 @@ public class RunResultTest {
         assertThat(expected.getSkipped()).isEqualTo(6);
 
         assertThat(expected.getFlakes()).isEqualTo(2);
+
+        assertThat(expected.getElapsed()).isEqualTo(500);
 
         assertThat(expected.getFailure()).isEqualTo("msg " + ((char) 0x0E01));
 

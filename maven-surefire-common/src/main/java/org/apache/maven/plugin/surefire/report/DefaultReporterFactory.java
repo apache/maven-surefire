@@ -263,7 +263,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
         }
 
         // Update globalStatistics by iterating through mergedTestHistoryResult
-        int completedCount = 0, skipped = 0;
+        int completedCount = 0, skipped = 0, elapsed = -1;
 
         for (Map.Entry<String, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet()) {
             List<TestMethodStats> testMethodStats = entry.getValue();
@@ -273,6 +273,12 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             List<ReportEntryType> resultTypes = new ArrayList<>();
             for (TestMethodStats methodStats : testMethodStats) {
                 resultTypes.add(methodStats.getResultType());
+                if (methodStats.getElapsed() != null) {
+                    if (elapsed == -1) {
+                        elapsed = 0;
+                    }
+                    elapsed += methodStats.getElapsed();
+                }
             }
 
             switch (getTestResultType(resultTypes, reportConfiguration.getRerunFailingTestsCount())) {
@@ -303,7 +309,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             }
         }
 
-        globalStats.set(completedCount, errorTests.size(), failedTests.size(), skipped, flakyTests.size());
+        globalStats.set(completedCount, errorTests.size(), failedTests.size(), skipped, flakyTests.size(), (elapsed != -1 ? elapsed : null));
     }
 
     /**

@@ -72,6 +72,7 @@ public class DefaultReporterFactoryTest extends TestCase {
 
     private static final String ERROR = "error";
 
+    @SuppressWarnings("checkstyle:MagicNumber")
     public void testMergeTestHistoryResult() throws Exception {
         MessageUtils.setColorEnabled(false);
         File target = new File(System.getProperty("user.dir"), "target");
@@ -100,26 +101,28 @@ public class DefaultReporterFactoryTest extends TestCase {
 
         // First run, four tests failed and one passed
         Queue<TestMethodStats> firstRunStats = new ArrayDeque<>();
-        firstRunStats.add(new TestMethodStats(TEST_ONE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
-        firstRunStats.add(new TestMethodStats(TEST_TWO, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
+        //CHECKSTYLE:OFF
+        firstRunStats.add(new TestMethodStats(TEST_ONE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR), null));
+        firstRunStats.add(new TestMethodStats(TEST_TWO, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR), null));
         firstRunStats.add(
-                new TestMethodStats(TEST_THREE, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL)));
+                new TestMethodStats(TEST_THREE, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL), 50));
         firstRunStats.add(
-                new TestMethodStats(TEST_FOUR, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL)));
-        firstRunStats.add(new TestMethodStats(TEST_FIVE, ReportEntryType.SUCCESS, null));
+                new TestMethodStats(TEST_FOUR, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL), 50));
+        firstRunStats.add(new TestMethodStats(TEST_FIVE, ReportEntryType.SUCCESS, null, 50));
 
         // Second run, two tests passed
         Queue<TestMethodStats> secondRunStats = new ArrayDeque<>();
         secondRunStats.add(
-                new TestMethodStats(TEST_ONE, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL)));
-        secondRunStats.add(new TestMethodStats(TEST_TWO, ReportEntryType.SUCCESS, null));
-        secondRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
-        secondRunStats.add(new TestMethodStats(TEST_FOUR, ReportEntryType.SUCCESS, null));
+                new TestMethodStats(TEST_ONE, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL), 50));
+        secondRunStats.add(new TestMethodStats(TEST_TWO, ReportEntryType.SUCCESS, null, 25));
+        secondRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR), 50));
+        secondRunStats.add(new TestMethodStats(TEST_FOUR, ReportEntryType.SUCCESS, null, 25));
 
         // Third run, another test passed
         Queue<TestMethodStats> thirdRunStats = new ArrayDeque<>();
-        thirdRunStats.add(new TestMethodStats(TEST_ONE, ReportEntryType.SUCCESS, null));
-        thirdRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
+        thirdRunStats.add(new TestMethodStats(TEST_ONE, ReportEntryType.SUCCESS, null, 10));
+        thirdRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR), null));
+        //CHECKSTYLE:ON
 
         TestSetRunListener firstRunListener = mock(TestSetRunListener.class);
         TestSetRunListener secondRunListener = mock(TestSetRunListener.class);
@@ -402,7 +405,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals(0, statistics.getErrors());
         assertEquals(0, statistics.getSkipped());
         assertEquals(0, statistics.getFlakes());
-        assertEquals("Tests run: 0, Failures: 0, Errors: 0, Skipped: 0", statistics.getSummary());
+        assertEquals("Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: (unknown)", statistics.getSummary());
         assertEquals(0, statistics.getCompletedCount());
 
         List<String> messages = reporter.getMessages();
@@ -413,7 +416,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals("", messages.get(4));
         assertEquals("Results:", messages.get(5));
         assertEquals("", messages.get(6));
-        assertEquals("Tests run: 0, Failures: 0, Errors: 0, Skipped: 0", messages.get(7));
+        assertEquals("Tests run: 0, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: (unknown)", messages.get(7));
         assertEquals("", messages.get(8));
         assertEquals(9, messages.size());
     }

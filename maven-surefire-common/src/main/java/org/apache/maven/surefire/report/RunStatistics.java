@@ -18,12 +18,25 @@
  */
 package org.apache.maven.surefire.report;
 
+import java.text.MessageFormat;
+import java.util.Locale;
+
 import org.apache.maven.surefire.api.suite.RunResult;
 
 /**
  * @author Kristian Rosenvold
  */
 public final class RunStatistics {
+    private static final float ONE_SECOND = 1000.0f;
+
+    /*
+     * Rationale: The idea is to always display four digits for visually consistent output
+     * Important: Keep in sync with maven-surefire-report-plugin/src/main/resources/surefire-report.properties
+     */
+    private final MessageFormat elapsedTimeFormat = new MessageFormat(
+            "{0,choice,0#0|0.0<{0,number,0.000}|10#{0,number,0.00}|100#{0,number,0.0}|1000#{0,number,0}} s",
+            Locale.ROOT);
+
     private int completedCount;
 
     private int errors;
@@ -33,6 +46,8 @@ public final class RunStatistics {
     private int skipped;
 
     private int flakes;
+
+    private Integer elapsed;
 
     public synchronized int getCompletedCount() {
         return completedCount;
@@ -54,12 +69,17 @@ public final class RunStatistics {
         return flakes;
     }
 
-    public synchronized void set(int completedCount, int errors, int failures, int skipped, int flakes) {
+    public synchronized Integer getElapsed() {
+        return elapsed;
+    }
+
+    public synchronized void set(int completedCount, int errors, int failures, int skipped, int flakes, Integer elapsed) {
         this.completedCount = completedCount;
         this.errors = errors;
         this.failures = failures;
         this.skipped = skipped;
         this.flakes = flakes;
+        this.elapsed = elapsed;
     }
 
     public synchronized RunResult getRunResult() {
@@ -72,6 +92,7 @@ public final class RunStatistics {
         if (flakes > 0) {
             summary += ", Flakes: " + flakes;
         }
+        summary += ", Time elapsed: " + (elapsed != null ? elapsedTimeFormat.format(new Object[] {elapsed / ONE_SECOND}): "(unknown)");
         return summary;
     }
 }

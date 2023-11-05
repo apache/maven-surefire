@@ -34,10 +34,13 @@ public class TestMethodStats {
 
     private final StackTraceWriter stackTraceWriter;
 
-    public TestMethodStats(String testClassMethodName, ReportEntryType resultType, StackTraceWriter stackTraceWriter) {
+    private final Integer elapsed;
+
+    public TestMethodStats(String testClassMethodName, ReportEntryType resultType, StackTraceWriter stackTraceWriter, Integer elapsed) {
         this.testClassMethodName = testClassMethodName;
         this.resultType = resultType;
         this.stackTraceWriter = stackTraceWriter;
+        this.elapsed = elapsed;
     }
 
     public String getTestClassMethodName() {
@@ -50,5 +53,9 @@ public class TestMethodStats {
 
     public StackTraceWriter getStackTraceWriter() {
         return stackTraceWriter;
+    }
+
+    public Integer getElapsed() {
+        return elapsed;
     }
 }

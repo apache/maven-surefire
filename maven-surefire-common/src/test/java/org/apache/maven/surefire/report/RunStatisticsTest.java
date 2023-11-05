@@ -23,10 +23,11 @@ import junit.framework.TestCase;
 /**
  *
  */
+@SuppressWarnings("checkstyle:MagicNumber")
 public class RunStatisticsTest extends TestCase {
     public void testSetRunStatistics() {
         RunStatistics statistics = new RunStatistics();
-        statistics.set(10, 5, 2, 1, 2);
+        statistics.set(10, 5, 2, 1, 2, 5500);
         assertEquals(10, statistics.getCompletedCount());
         assertEquals(5, statistics.getErrors());
         assertEquals(2, statistics.getFailures());

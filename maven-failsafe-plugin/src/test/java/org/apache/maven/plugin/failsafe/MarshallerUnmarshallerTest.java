@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class MarshallerUnmarshallerTest {
     @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
     public void shouldUnmarshallExistingXmlFile() throws Exception {
         File xml = new File("target/test-classes/org/apache/maven/plugin/failsafe/failsafe-summary.xml");
         RunResult summary = FailsafeSummaryXmlUtils.toRunResult(xml);
@@ -43,6 +44,8 @@ public class MarshallerUnmarshallerTest {
         assertThat(summary.getFailures()).isEqualTo(2);
 
         assertThat(summary.getSkipped()).isEqualTo(3);
+
+        assertThat(summary.getElapsed()).isEqualTo(1500);
 
         assertThat(summary.getFailure())
                 .contains("There was an error in the forked processtest "
@@ -56,6 +59,7 @@ public class MarshallerUnmarshallerTest {
     }
 
     @Test
+    @SuppressWarnings("checkstyle:MagicNumber")
     public void shouldMarshallAndUnmarshallSameXml() throws Exception {
         RunResult expected = new RunResult(
                 7,
@@ -63,6 +67,7 @@ public class MarshallerUnmarshallerTest {
                 2,
                 3,
                 2,
+                1500,
                 "There was an error in the forked processtest "
                         + "subsystem#no method RuntimeException Hi There! $&>>"
                         + "\n\tat org.apache.maven.plugin.surefire.booterclient.ForkStarter"
@@ -83,6 +88,8 @@ public class MarshallerUnmarshallerTest {
         assertThat(actual.getErrors()).isEqualTo(expected.getErrors());
 
         assertThat(actual.getFailures()).isEqualTo(expected.getFailures());
+
+        assertThat(actual.getElapsed()).isEqualTo(expected.getElapsed());
 
         assertThat(actual.getSkipped()).isEqualTo(expected.getSkipped());
 

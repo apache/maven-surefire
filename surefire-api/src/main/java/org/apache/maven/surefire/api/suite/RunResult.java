@@ -40,6 +40,8 @@ public class RunResult {
 
     private final int flakes;
 
+    private final Integer elapsed;
+
     private final String failure;
 
     private final boolean timeout;
@@ -58,37 +60,44 @@ public class RunResult {
         return errorCode(accumulatedAtTimeout, getStackTrace(cause), accumulatedAtTimeout.isTimeout());
     }
 
+    // TODO What happened to flakes?
     private static RunResult errorCode(RunResult other, String failure, boolean timeout) {
         return new RunResult(
                 other.getCompletedCount(),
                 other.getErrors(),
                 other.getFailures(),
                 other.getSkipped(),
+                other.getElapsed(),
                 failure,
                 timeout);
     }
 
     public RunResult(int completedCount, int errors, int failures, int skipped) {
-        this(completedCount, errors, failures, skipped, null, false);
+        this(completedCount, errors, failures, skipped, null, null, false);
     }
 
     public RunResult(int completedCount, int errors, int failures, int skipped, int flakes) {
-        this(completedCount, errors, failures, skipped, flakes, null, false);
+        this(completedCount, errors, failures, skipped, flakes, null, null, false);
     }
 
-    public RunResult(int completedCount, int errors, int failures, int skipped, String failure, boolean timeout) {
-        this(completedCount, errors, failures, skipped, 0, failure, timeout);
+    public RunResult(int completedCount, int errors, int failures, int skipped, int flakes, Integer elapsed) {
+        this(completedCount, errors, failures, skipped, flakes, elapsed, null, false);
+    }
+
+    public RunResult(int completedCount, int errors, int failures, int skipped, Integer elapsed, String failure, boolean timeout) {
+        this(completedCount, errors, failures, skipped, 0, elapsed, failure, timeout);
     }
 
     public RunResult(
-            int completedCount, int errors, int failures, int skipped, int flakes, String failure, boolean timeout) {
+            int completedCount, int errors, int failures, int skipped, int flakes, Integer elapsed, String failure, boolean timeout) {
         this.completedCount = completedCount;
         this.errors = errors;
         this.failures = failures;
         this.skipped = skipped;
+        this.flakes = flakes;
+        this.elapsed = elapsed;
         this.failure = failure;
         this.timeout = timeout;
-        this.flakes = flakes;
     }
 
     private static String getStackTrace(Exception e) {
@@ -120,6 +129,10 @@ public class RunResult {
 
     public int getSkipped() {
         return skipped;
+    }
+
+    public Integer getElapsed() {
+        return elapsed;
     }
 
     public Integer getFailsafeCode() // Only used for compatibility reasons.
@@ -167,13 +180,24 @@ public class RunResult {
         int ign = getSkipped() + other.getSkipped();
         int err = getErrors() + other.getErrors();
         int flakes = getFlakes() + other.getFlakes();
-        return new RunResult(completed, err, fail, ign, flakes, failureMessage, timeout);
+        Integer elapsed;
+        if (getElapsed() == null) {
+            elapsed = other.getElapsed();
+        } else {
+            if (other.getElapsed() == null) {
+                elapsed = getElapsed();
+            } else {
+                elapsed = getElapsed() + other.getElapsed();
+            }
+        }
+        return new RunResult(completed, err, fail, ign, flakes, elapsed, failureMessage, timeout);
     }
 
     public static RunResult noTestsRun() {
         return new RunResult(0, 0, 0, 0);
     }
 
+    // TODO What happened to flakes?
     @Override
     @SuppressWarnings("RedundantIfStatement")
     public boolean equals(Object o) {
@@ -208,6 +232,7 @@ public class RunResult {
         return true;
     }
 
+    // TODO What happened to flakes?
     @Override
     public int hashCode() {
         int result = completedCount;

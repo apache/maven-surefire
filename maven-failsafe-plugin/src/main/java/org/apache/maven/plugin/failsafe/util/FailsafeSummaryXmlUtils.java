@@ -35,6 +35,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
 import static java.lang.Boolean.parseBoolean;
+import static java.lang.Float.parseFloat;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -48,6 +49,8 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
  * @since 2.20
  */
 public final class FailsafeSummaryXmlUtils {
+	private static final float ONE_SECOND = 1000.0f;
+
     private static final String FAILSAFE_SUMMARY_XML_SCHEMA_LOCATION =
             "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/failsafe-summary.xsd";
 
@@ -56,6 +59,7 @@ public final class FailsafeSummaryXmlUtils {
 
     private static final String MESSAGE_ELEMENT = "<failureMessage>%s</failureMessage>";
 
+    // TODO What happened to flakes?
     private static final String FAILSAFE_SUMMARY_XML_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             + "<failsafe-summary xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
             + " xsi:noNamespaceSchemaLocation=\"" + FAILSAFE_SUMMARY_XML_SCHEMA_LOCATION + "\""
@@ -64,6 +68,7 @@ public final class FailsafeSummaryXmlUtils {
             + "    <errors>%d</errors>\n"
             + "    <failures>%d</failures>\n"
             + "    <skipped>%d</skipped>\n"
+            + "    <time>%s</time>\n"
             + "    %s\n"
             + "</failsafe-summary>";
 
@@ -82,6 +87,7 @@ public final class FailsafeSummaryXmlUtils {
             String errors = xpath.evaluate("/failsafe-summary/errors", root);
             String failures = xpath.evaluate("/failsafe-summary/failures", root);
             String skipped = xpath.evaluate("/failsafe-summary/skipped", root);
+            String elapsed = xpath.evaluate("/failsafe-summary/time", root);
             String failureMessage = xpath.evaluate("/failsafe-summary/failureMessage", root);
             String timeout = xpath.evaluate("/failsafe-summary/@timeout", root);
 
@@ -90,6 +96,8 @@ public final class FailsafeSummaryXmlUtils {
                     parseInt(errors),
                     parseInt(failures),
                     parseInt(skipped),
+                    0,
+                    isBlank(elapsed) ? null : ((int) (parseFloat(elapsed) * ONE_SECOND)),
                     isBlank(failureMessage) ? null : unescapeXml(failureMessage),
                     parseBoolean(timeout));
         }
@@ -107,6 +115,7 @@ public final class FailsafeSummaryXmlUtils {
                 fromRunResult.getErrors(),
                 fromRunResult.getFailures(),
                 fromRunResult.getSkipped(),
+                fromRunResult.getElapsed() != null ? String.valueOf(fromRunResult.getElapsed() / ONE_SECOND) : "",
                 msg);
 
         try (FileOutputStream os = new FileOutputStream(toFailsafeSummaryXml)) {

@@ -288,7 +288,8 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
             TestMethodStats methodStats = new TestMethodStats(
                     reportEntry.getClassMethodName(),
                     reportEntry.getReportEntryType(),
-                    reportEntry.getStackTraceWriter());
+                    reportEntry.getStackTraceWriter(),
+                    reportEntry.getElapsed());
             testMethodStats.add(methodStats);
         }
     }
