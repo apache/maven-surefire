@@ -2569,7 +2569,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         Map<String, Artifact> dependencyConflictIdsProjectArtifacts = classpathArtifacts.stream()
                 .collect(Collectors.toMap(Artifact::getDependencyConflictId, Function.identity()));
-        Set<String> additionalClasspathElements = new HashSet<>();
+        Set<String> additionalClasspathElements = new LinkedHashSet<>();
         if (getAdditionalClasspathElements() != null) {
             Arrays.stream(getAdditionalClasspathElements()).forEach(additionalClasspathElements::add);
         }
