@@ -30,7 +30,7 @@ import org.junit.Test;
 public class AdditionalClasspathIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void additionalClasspathElements() {
-        unpack("/additional-classpath").executeTest().verifyErrorFree(1);
+        unpack("/additional-classpath").executeTest().verifyErrorFree(2);
     }
 
     @Test
