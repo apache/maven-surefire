@@ -60,6 +60,8 @@ public final class TestSuiteXmlParser extends DefaultHandler {
 
     private boolean valid;
 
+    private boolean parseContent;
+
     public TestSuiteXmlParser(ConsoleLogger consoleLogger) {
         this.consoleLogger = consoleLogger;
     }
@@ -157,12 +159,14 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         break;
                     case "failure":
                         currentElement = new StringBuilder();
+                        parseContent = true;
 
                         testCase.setFailure(attributes.getValue("message"), attributes.getValue("type"));
                         currentSuite.incrementNumberOfFailures();
                         break;
                     case "error":
                         currentElement = new StringBuilder();
+                        parseContent = true;
 
                         testCase.setError(attributes.getValue("message"), attributes.getValue("type"));
                         currentSuite.incrementNumberOfErrors();
@@ -181,6 +185,7 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         break;
                     case "time":
                         currentElement = new StringBuilder();
+                        parseContent = true;
                         break;
                     default:
                         break;
@@ -215,6 +220,7 @@ public final class TestSuiteXmlParser extends DefaultHandler {
             default:
                 break;
         }
+        parseContent = false;
         // TODO extract real skipped reasons
     }
 
@@ -225,7 +231,7 @@ public final class TestSuiteXmlParser extends DefaultHandler {
     public void characters(char[] ch, int start, int length) {
         assert start >= 0;
         assert length >= 0;
-        if (valid && isNotBlank(start, length, ch)) {
+        if (valid && parseContent && isNotBlank(start, length, ch)) {
             currentElement.append(ch, start, length);
         }
     }

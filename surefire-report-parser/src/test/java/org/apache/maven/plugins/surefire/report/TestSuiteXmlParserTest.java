@@ -18,10 +18,9 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -631,5 +630,82 @@ public class TestSuiteXmlParserTest {
         assertFalse(TestSuiteXmlParser.isNumeric(new StringBuilder("0?5142"), 1, 3));
         assertTrue(TestSuiteXmlParser.isNumeric(new StringBuilder("0?51M2"), 2, 4));
         assertFalse(TestSuiteXmlParser.isNumeric(new StringBuilder("0?51M2"), 2, 5));
+    }
+
+    @Test
+    public void shouldParseLargeFile() throws Exception {
+        // Create test file
+        Path tempFile = Files.createTempFile("largeReport", ".xml");
+
+        try (BufferedWriter w = Files.newBufferedWriter(tempFile)) {
+            w.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+                    + "<testsuite failures=\"1\" time=\"2.413\" errors=\"0\" skipped=\"0\" tests=\"2\" name=\"largeFile.TestSurefire3\">\n"
+                    + "  <properties></properties>\n"
+                    + "  <testcase time=\"0.005\" classname=\"largeFile.TestSurefire3\" name=\"testSuccess\" />\n"
+                    + "  <testcase time=\"2.20\" classname=\"largeFile.TestSurefire3\" name=\"testFailure\">\n"
+                    + "    <failure message=\"test failure\" type=\"junit.framework.AssertionFailedError\">junit.framework.AssertionFailedError:  \n"
+                    + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                    + "\tat largeFile.TestSurefire3.testFailure(TestSurefire3.java:40)\n"
+                    + "</failure>\n"
+                    + "    <system-err><![CDATA[\n");
+
+            // Adding CDATA which should be ignored during parsing and not cause memory issues
+            for (int i = 0; i < 100000; i++) {
+                w.write(
+                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n");
+                w.flush();
+            }
+            w.write("]]></system-err>\n" + "  </testcase>\n" + "</testsuite>\n");
+            w.flush();
+        }
+
+        System.err.println(Files.size(tempFile));
+
+        // Parse test file
+        TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser(consoleLogger);
+
+        try (InputStreamReader is = new InputStreamReader(Files.newInputStream(tempFile), UTF_8)) {
+            List<ReportTestSuite> parse = testSuiteXmlParser.parse(is);
+
+            assertThat(parse.size(), is(1));
+            ReportTestSuite report = parse.get(0);
+            assertThat(report.getFullClassName(), is("largeFile.TestSurefire3"));
+            assertThat(report.getName(), is("TestSurefire3"));
+            assertThat(report.getPackageName(), is("largeFile"));
+            assertThat(report.getNumberOfTests(), is(2));
+            assertThat(report.getNumberOfSkipped(), is(0));
+            assertThat(report.getNumberOfErrors(), is(0));
+            assertThat(report.getNumberOfFailures(), is(1));
+            assertThat(report.getNumberOfFlakes(), is(0));
+            assertThat(report.getTimeElapsed(), is(2.413f));
+            assertThat(report.getTestCases().size(), is(2));
+
+            List<ReportTestCase> tests = report.getTestCases();
+            assertThat(tests.get(0).getFullClassName(), is("largeFile.TestSurefire3"));
+            assertThat(tests.get(0).getName(), is("testSuccess"));
+            assertNull(tests.get(0).getFailureDetail());
+            assertThat(tests.get(0).getClassName(), is("TestSurefire3"));
+            assertThat(tests.get(0).getTime(), is(0.005f));
+            assertThat(tests.get(0).getFullName(), is("largeFile.TestSurefire3.testSuccess"));
+            assertThat(tests.get(0).hasError(), is(false));
+
+            assertThat(tests.get(1).getFullClassName(), is("largeFile.TestSurefire3"));
+            assertThat(tests.get(1).getName(), is("testFailure"));
+            assertThat(
+                    tests.get(1).getFailureDetail(),
+                    is("junit.framework.AssertionFailedError:  \n"
+                            + "\tat junit.framework.Assert.fail(Assert.java:47)\n"
+                            + "\tat largeFile.TestSurefire3.testFailure(TestSurefire3.java:40)\n"));
+            assertThat(tests.get(1).getClassName(), is("TestSurefire3"));
+            assertThat(tests.get(1).getTime(), is(2.20f));
+            assertThat(tests.get(1).getFailureErrorLine(), is("40"));
+            assertThat(tests.get(1).getFailureMessage(), is("test failure"));
+            assertThat(tests.get(1).getFullName(), is("largeFile.TestSurefire3.testFailure"));
+            assertThat(tests.get(1).getFailureType(), is("junit.framework.AssertionFailedError"));
+            assertThat(tests.get(1).hasError(), is(false));
+        }
+
+        // Delete test file
+        Files.delete(tempFile);
     }
 }
