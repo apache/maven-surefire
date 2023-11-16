@@ -18,7 +18,40 @@
  */
 package org.apache.maven.plugins.surefire.report.stubs;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.maven.model.Model;
+import org.apache.maven.model.ReportPlugin;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+
 public class NestedClassStub extends SurefireReportMavenProjectStub {
+    private List<ReportPlugin> reportPlugins = new ArrayList<>();
+
+    public NestedClassStub() {
+        MavenXpp3Reader pomReader = new MavenXpp3Reader();
+        Model model = null;
+
+        try (InputStream is = new FileInputStream(getFile())) {
+            model = pomReader.read(is);
+            setModel(model);
+        } catch (Exception e) {
+        }
+
+        setReportPlugins(model.getReporting().getPlugins());
+    }
+
+    public void setReportPlugins(List<ReportPlugin> plugins) {
+        this.reportPlugins = plugins;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ReportPlugin> getReportPlugins() {
+        return reportPlugins;
+    }
 
     @Override
     protected String getProjectDirName() {
