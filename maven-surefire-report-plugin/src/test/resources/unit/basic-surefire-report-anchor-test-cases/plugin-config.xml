@@ -29,7 +29,7 @@
           <reportsDirectory>${basedir}/src/test/resources/unit/basic-surefire-report-anchor-test-cases/surefire-reports
           </reportsDirectory>
           <outputName>surefire</outputName>
-          <xrefLocation>${basedir}/target/site/unit/basic-surefire-report-anchor-test-cases/xref-test</xrefLocation>
+          <xrefTestLocation>${basedir}/target/site/unit/basic-surefire-report-anchor-test-cases/xref-test</xrefTestLocation>
         </configuration>
       </plugin>
     </plugins>

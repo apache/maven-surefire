@@ -29,10 +29,18 @@
           <reportsDirectory>${basedir}/src/test/resources/unit/surefire-report-nestedClass-trimStackTrace/surefire-reports
           </reportsDirectory>
           <outputName>surefire</outputName>
-          <xrefLocation>${basedir}/target/site/unit/surefire-report-nestedClass-trimStackTrace/xref-test</xrefLocation>
+          <xrefTestLocation>${basedir}/target/site/unit/surefire-report-nestedClass-trimStackTrace/xref-test</xrefTestLocation>
           <linkXRef>true</linkXRef>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>

@@ -51,7 +51,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
     private final SurefireReportParser parser;
     private final List<ReportTestSuite> testSuites;
-    private final String xrefLocation;
+    private final String xrefTestLocation;
     private final boolean showSuccess;
 
     public SurefireReportRenderer(
@@ -61,7 +61,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             Locale locale,
             ConsoleLogger consoleLogger,
             List<File> reportsDirectories,
-            String xrefLocation,
+            String xrefTestLocation,
             boolean showSuccess) {
         super(sink);
         this.i18n = i18n;
@@ -70,7 +70,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         parser = new SurefireReportParser(reportsDirectories, consoleLogger);
         testSuites = parser.parseXMLReportFiles();
         this.showSuccess = showSuccess;
-        this.xrefLocation = xrefLocation;
+        this.xrefTestLocation = xrefTestLocation;
     }
 
     @Override
@@ -507,13 +507,13 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
                 String fullClassName = testCase.getFullClassName();
                 String errorLineNumber = testCase.getFailureErrorLine();
-                if (xrefLocation != null) {
+                if (xrefTestLocation != null) {
                     String path = fullClassName.replace('.', '/');
-                    sink.link(xrefLocation + "/" + path + ".html#L" + errorLineNumber);
+                    sink.link(xrefTestLocation + "/" + path + ".html#L" + errorLineNumber);
                 }
                 sink.text(fullClassName + ":" + errorLineNumber);
 
-                if (xrefLocation != null) {
+                if (xrefTestLocation != null) {
                     sink.link_();
                 }
                 sink.unknown("div", TAG_TYPE_END, null);
