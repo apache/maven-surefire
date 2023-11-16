@@ -47,22 +47,6 @@ public abstract class SurefireReportMavenProjectStub extends MavenProjectStub {
         return new File(getBasedir(), "plugin-config.xml");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<ReportPlugin> getReportPlugins() {
-        Reporting reporting = new Reporting();
-
-        ReportPlugin reportPlugin = new ReportPlugin();
-        reportPlugin.setGroupId("org.apache.maven.plugins");
-        reportPlugin.setArtifactId("maven-jxr-plugin");
-        reportPlugin.setVersion("2.0-SNAPSHOT");
-        reporting.addPlugin(reportPlugin);
-
-        return reporting.getPlugins();
-    }
-
     @Override
     public List<ArtifactRepository> getRemoteArtifactRepositories() {
         ArtifactRepository repository = new MavenArtifactRepository(

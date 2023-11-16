@@ -91,7 +91,7 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         boolean showSuccess = (Boolean) getVariableValueFromObject(mojo, "showSuccess");
         File reportsDir = (File) getVariableValueFromObject(mojo, "reportsDirectory");
         String outputName = (String) getVariableValueFromObject(mojo, "outputName");
-        File xrefLocation = (File) getVariableValueFromObject(mojo, "xrefLocation");
+        File xrefTestLocation = (File) getVariableValueFromObject(mojo, "xrefTestLocation");
         boolean linkXRef = (Boolean) getVariableValueFromObject(mojo, "linkXRef");
 
         assertEquals(new File(getBasedir() + "/target/site/unit/basic-surefire-report-test"), outputDir);
@@ -103,7 +103,7 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         assertEquals("surefire", outputName);
         assertEquals(
                 new File(getBasedir() + "/target/site/unit/basic-surefire-report-test/xref-test").getAbsolutePath(),
-                xrefLocation.getAbsolutePath());
+                xrefTestLocation.getAbsolutePath());
         assertTrue(linkXRef);
 
         mojo.execute();
