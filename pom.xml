@@ -212,9 +212,9 @@
         <version>2.9.1</version>
       </dependency>
       <dependency>
-        <groupId>net.sourceforge.htmlunit</groupId>
+        <groupId>org.htmlunit</groupId>
         <artifactId>htmlunit</artifactId>
-        <version>2.70.0</version>
+        <version>3.8.0</version>
       </dependency>
       <dependency>
         <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
