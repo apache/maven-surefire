@@ -21,8 +21,8 @@ package basic;
 import java.io.IOException;
 import java.util.Properties;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.WebClient;
+import org.htmlunit.html.HtmlPage;
 import junit.framework.TestCase;
 
 public class BasicIT
@@ -47,7 +47,7 @@ public class BasicIT
     {
         if ( client != null )
         {
-            client.closeAllWindows();
+            client.close();
             client = null;
         }
     }
@@ -55,8 +55,8 @@ public class BasicIT
     public void testSmokes()
         throws Exception
     {
-        client.setThrowExceptionOnFailingStatusCode( false );
+        client.getOptions().setThrowExceptionOnFailingStatusCode( false );
         HtmlPage page = client.getPage( baseUrl + "index.html" );
-        assertTrue( page.asText().contains( "Hello World" ) );
+        assertTrue( page.asNormalizedText().contains( "Hello World" ) );
     }
 }
