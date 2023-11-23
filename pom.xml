@@ -89,11 +89,11 @@
   <properties>
     <javaVersion>8</javaVersion>
     <mavenVersion>3.2.5</mavenVersion>
-    <commonsLang3Version>3.12.0</commonsLang3Version>
-    <commonsCompress>1.23.0</commonsCompress>
-    <commonsIoVersion>2.12.0</commonsIoVersion>
+    <commonsLang3Version>3.14.0</commonsLang3Version>
+    <commonsCompress>1.25.0</commonsCompress>
+    <commonsIoVersion>2.15.0</commonsIoVersion>
     <plexus-java-version>1.2.0</plexus-java-version>
-    <!-- maven-shared-utils:3.3.4 uses org.fusesource.jansi:jansi:2.2.0 -->
+    <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
     <jacocoVersion>0.8.8</jacocoVersion>
@@ -183,6 +183,7 @@
         </exclusions>
       </dependency>
       <dependency>
+        <!-- Do not upgrade, leads to test failures, needs analysis -->
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-common-artifact-filters</artifactId>
         <version>3.1.1</version>
@@ -223,6 +224,7 @@
         <version>2.4.0</version>
       </dependency>
       <dependency>
+        <!-- Do not upgrade, needs code changes -->
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-verifier</artifactId>
         <version>1.8.0</version>
@@ -306,16 +308,12 @@
         <classifier>runtime</classifier>
       </dependency>
       <dependency>
+        <!-- Do not upgrade, leads to test failures, needs analysis -->
         <groupId>org.junit</groupId>
         <artifactId>junit-bom</artifactId>
         <version>5.9.3</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-xml</artifactId>
-        <version>3.0.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -367,7 +365,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.2.2</version>
           <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
@@ -514,7 +512,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.2</version>
         <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
       </plugin>
     </plugins>
