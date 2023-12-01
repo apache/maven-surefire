@@ -179,6 +179,11 @@ public final class JarManifestForkConfiguration extends AbstractClasspathForkCon
     }
 
     static String toAbsoluteUri(@Nonnull Path absolutePath) {
+        // UNC paths need to be written as file:////
+        // see https://bugs.openjdk.org/browse/JDK-8320760
+        if (absolutePath.toString().startsWith("\\\\")) {
+            return absolutePath.toFile().toURI().toASCIIString();
+        }
         return absolutePath.toUri().toASCIIString();
     }
 
