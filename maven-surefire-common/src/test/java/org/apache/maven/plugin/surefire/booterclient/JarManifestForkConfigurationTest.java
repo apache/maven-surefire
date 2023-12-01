@@ -31,20 +31,24 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.escapeUri;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.relativize;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.toAbsoluteUri;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.toClasspathElementUri;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Files.delete;
 import static org.assertj.core.util.Files.newTemporaryFolder;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -57,6 +61,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * Unit tests for {@link JarManifestForkConfiguration}.
  */
 @RunWith(PowerMockRunner.class)
+@PowerMockRunnerDelegate(JUnit4.class)
 @PrepareForTest({JarManifestForkConfiguration.class, InPluginProcessDumpSingleton.class})
 @PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
 public class JarManifestForkConfigurationTest {
@@ -161,6 +166,33 @@ public class JarManifestForkConfigurationTest {
         when(toAbsoluteUri(same(classPathElement))).thenCallRealMethod();
         assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
                 .isEqualTo("file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+    }
+
+    @Test
+    public void uncWindows() throws Exception {
+        assumeTrue(IS_OS_WINDOWS);
+        mockStatic(JarManifestForkConfiguration.class);
+        mockStatic(InPluginProcessDumpSingleton.class);
+        when(InPluginProcessDumpSingleton.getSingleton()).thenReturn(mock(InPluginProcessDumpSingleton.class));
+        Path parent = mock(Path.class);
+        when(parent.toString()).thenReturn("C:\\Windows\\Temp\\surefire");
+        Path classPathElement = mock(Path.class);
+        when(classPathElement.toString()).thenReturn("\\\\server\\grp\\art\\1.0\\art-1.0.jar");
+        when(classPathElement.toFile()).thenAnswer(new Answer<File>() {
+            @Override
+            public File answer(InvocationOnMock invocation) {
+                String path = invocation.getMock().toString();
+                return new File(path);
+            }
+        });
+        when(relativize(same(parent), same(classPathElement)))
+                .thenThrow(new IllegalArgumentException("'other' has different root"));
+        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
+                .thenCallRealMethod();
+        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
+        when(toAbsoluteUri(same(classPathElement))).thenCallRealMethod();
+        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                .isEqualTo("file:////server/grp/art/1.0/art-1.0.jar");
     }
 
     @Test
