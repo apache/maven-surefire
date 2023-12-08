@@ -148,6 +148,7 @@
           </includes>
           <systemPropertyVariables>
             <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
+            <java.net.preferIPv6Addresses>true</java.net.preferIPv6Addresses>
           </systemPropertyVariables>
         </configuration>
         <dependencies>

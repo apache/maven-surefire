@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketOption;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
@@ -112,7 +114,19 @@ final class SurefireForkChannel extends ForkChannel {
 
     @Override
     public String getForkNodeConnectionString() {
-        return "tcp://" + localHost + ":" + localPort + (isBlank(sessionId) ? "" : "?sessionId=" + sessionId);
+        try {
+            URI uri = new URI(
+                    "tcp",
+                    null,
+                    localHost,
+                    localPort,
+                    null,
+                    isBlank(sessionId) ? null : "sessionId=" + sessionId,
+                    null);
+            return uri.toASCIIString();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override
