@@ -121,14 +121,16 @@ public class ForkChannelTest {
             assertThat(channel.getCountdownCloseablePermits()).isEqualTo(3);
 
             String localHost = InetAddress.getLoopbackAddress().getHostAddress();
-            assertThat(channel.getForkNodeConnectionString())
-                    .startsWith("tcp://" + localHost + ":")
-                    .isNotEqualTo("tcp://" + localHost + ":")
-                    .endsWith("?sessionId=" + sessionId);
-
-            URI uri = new URI(channel.getForkNodeConnectionString());
-
+            String connectionString = channel.getForkNodeConnectionString();
+            URI uri = new URI(connectionString);
+            assertThat(uri.getScheme()).isEqualTo("tcp");
+            String uriHost = uri.getHost();
+            if (uriHost.startsWith("[") && uriHost.endsWith("]")) {
+                uriHost = uriHost.substring(1, uriHost.length() - 1);
+            }
+            assertThat(uriHost).isEqualTo(localHost);
             assertThat(uri.getPort()).isPositive();
+            assertThat(uri.getQuery()).isEqualTo("sessionId=" + sessionId);
 
             final TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
             TestLessInputStream commandReader = builder.build();
