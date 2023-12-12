@@ -18,6 +18,9 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 
 /**
@@ -47,6 +50,10 @@ public final class ReportTestCase {
     private boolean hasError;
 
     private boolean hasSkipped;
+
+    private List<FlakyError> flakyErrors = new ArrayList<>();
+
+    private List<FlakyFailure> flakyFailures = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -161,6 +168,26 @@ public final class ReportTestCase {
         return hasSkipped;
     }
 
+    public boolean hasFlake() {
+        return !flakyErrors.isEmpty() || !flakyFailures.isEmpty();
+    }
+
+    public void addFlakyError(FlakyError flakyError) {
+        flakyErrors.add(flakyError);
+    }
+
+    public List<FlakyError> getFlakyErrors() {
+        return flakyErrors;
+    }
+
+    public void addFlakyFailure(FlakyFailure flakyFailure) {
+        flakyFailures.add(flakyFailure);
+    }
+
+    public List<FlakyFailure> getFlakyFailures() {
+        return flakyFailures;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -172,5 +199,105 @@ public final class ReportTestCase {
     private ReportTestCase setFailureType(String failureType) {
         this.failureType = failureType;
         return this;
+    }
+
+    public static class FlakyFailure {
+
+        private String message;
+
+        private String type;
+
+        private String systemOut;
+
+        private String systemErr;
+
+        private String stackTrace;
+
+        FlakyFailure(String message, String type) {
+            this.message = message;
+            this.type = type;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setSystemOut(String systemOut) {
+            this.systemOut = systemOut;
+        }
+
+        public String getSystemOut() {
+            return systemOut;
+        }
+
+        public void setSystemErr(String systemErr) {
+            this.systemErr = systemErr;
+        }
+
+        public String getSystemErr() {
+            return systemErr;
+        }
+
+        public void setStackTrace(String stackTrace) {
+            this.stackTrace = stackTrace;
+        }
+
+        public String getStackTrace() {
+            return stackTrace;
+        }
+    }
+
+    public static class FlakyError {
+
+        private String message;
+
+        private String type;
+
+        private String systemOut;
+
+        private String systemErr;
+
+        private String stackTrace;
+
+        FlakyError(String message, String type) {
+            this.message = message;
+            this.type = type;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setSystemOut(String systemOut) {
+            this.systemOut = systemOut;
+        }
+
+        public String getSystemOut() {
+            return systemOut;
+        }
+
+        public void setSystemErr(String systemErr) {
+            this.systemErr = systemErr;
+        }
+
+        public String getSystemErr() {
+            return systemErr;
+        }
+
+        public void setStackTrace(String stackTrace) {
+            this.stackTrace = stackTrace;
+        }
+
+        public String getStackTrace() {
+            return stackTrace;
+        }
     }
 }

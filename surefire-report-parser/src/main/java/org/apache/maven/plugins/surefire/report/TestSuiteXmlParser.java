@@ -58,6 +58,10 @@ public final class TestSuiteXmlParser extends DefaultHandler {
 
     private ReportTestCase testCase;
 
+    private ReportTestCase.FlakyFailure testCaseFlakyFailure;
+
+    private ReportTestCase.FlakyError testCaseFlakyError;
+
     private boolean valid;
 
     private boolean parseContent;
@@ -131,6 +135,8 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         currentElement = new StringBuilder();
 
                         testCase = new ReportTestCase().setName(attributes.getValue("name"));
+                        testCaseFlakyFailure = null;
+                        testCaseFlakyError = null;
 
                         String fullClassName = attributes.getValue("classname");
 
@@ -177,8 +183,26 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         currentSuite.incrementNumberOfSkipped();
                         break;
                     case "flakyFailure":
-                    case "flakyError":
+                        testCaseFlakyFailure = new ReportTestCase.FlakyFailure(
+                                attributes.getValue("message"), attributes.getValue("type"));
                         currentSuite.incrementNumberOfFlakes();
+                        break;
+                    case "flakyError":
+                        testCaseFlakyError = new ReportTestCase.FlakyError(
+                                attributes.getValue("message"), attributes.getValue("type"));
+                        currentSuite.incrementNumberOfFlakes();
+                        break;
+                    case "stackTrace":
+                        currentElement = new StringBuilder();
+                        parseContent = true;
+                        break;
+                    case "system-out":
+                        currentElement = new StringBuilder();
+                        parseContent = true;
+                        break;
+                    case "system-err":
+                        currentElement = new StringBuilder();
+                        parseContent = true;
                         break;
                     case "failsafe-summary":
                         valid = false;
@@ -215,6 +239,38 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                     defaultSuite.setTimeElapsed(Float.parseFloat(currentElement.toString()));
                 } catch (NumberFormatException e) {
                     throw new SAXException("Failed to parse time value", e);
+                }
+                break;
+            case "flakyFailure":
+                testCase.addFlakyFailure(testCaseFlakyFailure);
+                testCaseFlakyFailure = null;
+                break;
+            case "flakyError":
+                testCase.addFlakyError(testCaseFlakyError);
+                testCaseFlakyError = null;
+                break;
+            case "stackTrace":
+                if (testCaseFlakyFailure != null) {
+                    testCaseFlakyFailure.setStackTrace(currentElement.toString());
+                }
+                if (testCaseFlakyError != null) {
+                    testCaseFlakyError.setStackTrace(currentElement.toString());
+                }
+                break;
+            case "system-out":
+                if (testCaseFlakyFailure != null) {
+                    testCaseFlakyFailure.setSystemOut(currentElement.toString());
+                }
+                if (testCaseFlakyError != null) {
+                    testCaseFlakyError.setSystemOut(currentElement.toString());
+                }
+                break;
+            case "system-err":
+                if (testCaseFlakyFailure != null) {
+                    testCaseFlakyFailure.setSystemErr(currentElement.toString());
+                }
+                if (testCaseFlakyError != null) {
+                    testCaseFlakyError.setSystemErr(currentElement.toString());
                 }
                 break;
             default:
