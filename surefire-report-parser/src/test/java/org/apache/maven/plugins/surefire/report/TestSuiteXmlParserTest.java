@@ -26,14 +26,18 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugins.surefire.report.ReportTestCase.FlakyError;
+import org.apache.maven.plugins.surefire.report.ReportTestCase.FlakyFailure;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -707,5 +711,76 @@ public class TestSuiteXmlParserTest {
 
         // Delete test file
         Files.delete(tempFile);
+    }
+
+    @Test
+    public void shouldParseFlakes() throws Exception {
+        // Parse test file
+        TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
+
+        List<ReportTestSuite> testSuites =
+                parser.parse("src/test/resources/fixture/testsuitexmlparser/TEST-org.acme.FlakyTest.xml");
+        assertTrue(parser.isValid());
+        assertThat(testSuites.size(), is(1));
+
+        assertThat(testSuites.size(), is(1));
+        ReportTestSuite report = testSuites.get(0);
+        assertThat(report.getFullClassName(), is("org.acme.FlakyTest"));
+        assertThat(report.getName(), is("FlakyTest"));
+        assertThat(report.getPackageName(), is("org.acme"));
+        assertThat(report.getNumberOfTests(), is(2));
+        assertThat(report.getNumberOfSkipped(), is(0));
+        assertThat(report.getNumberOfErrors(), is(0));
+        assertThat(report.getNumberOfFailures(), is(0));
+        assertThat(report.getNumberOfFlakes(), is(4));
+        assertThat(report.getTimeElapsed(), is(1.324f));
+        assertThat(report.getTestCases().size(), is(2));
+
+        List<ReportTestCase> tests = report.getTestCases();
+        assertThat(tests.get(0).getFullClassName(), is("org.acme.FlakyTest"));
+        assertThat(tests.get(0).getName(), is("testFlaky"));
+        assertNull(tests.get(0).getFailureDetail());
+        assertThat(tests.get(0).getClassName(), is("FlakyTest"));
+        assertThat(tests.get(0).getTime(), is(0.034f));
+        assertThat(tests.get(0).getFullName(), is("org.acme.FlakyTest.testFlaky"));
+        assertThat(tests.get(0).hasError(), is(false));
+        assertThat(tests.get(0).hasFlakes(), is(true));
+
+        List<FlakyFailure> flakyFailures = tests.get(0).getFlakyFailures();
+        assertThat(flakyFailures.size(), is(3));
+
+        assertThat(flakyFailures.get(0).getMessage(), startsWith("expected: <1> but was: <0>"));
+        assertThat(flakyFailures.get(0).getType(), is("org.opentest4j.AssertionFailedError"));
+        assertThat(
+                flakyFailures.get(0).getStackTrace(),
+                containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
+
+        assertThat(flakyFailures.get(1).getMessage(), startsWith("expected: <1> but was: <3>"));
+        assertThat(flakyFailures.get(1).getType(), is("org.opentest4j.AssertionFailedError"));
+        assertThat(
+                flakyFailures.get(1).getStackTrace(),
+                containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
+
+        assertThat(flakyFailures.get(2).getMessage(), startsWith("expected: <1> but was: <4>"));
+        assertThat(flakyFailures.get(2).getType(), is("org.opentest4j.AssertionFailedError"));
+        assertThat(
+                flakyFailures.get(2).getStackTrace(),
+                containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
+
+        List<FlakyError> flakyErrors = tests.get(0).getFlakyErrors();
+        assertThat(flakyErrors.size(), is(1));
+        assertThat(flakyErrors.get(0).getMessage(), startsWith("expected: <1> but was: <0>"));
+        assertThat(flakyErrors.get(0).getType(), is("org.opentest4j.AssertionFailedError"));
+        assertThat(
+                flakyErrors.get(0).getStackTrace(),
+                containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
+
+        assertThat(tests.get(1).getFullClassName(), is("org.acme.FlakyTest"));
+        assertThat(tests.get(1).getName(), is("testStable"));
+        assertThat(tests.get(1).getClassName(), is("FlakyTest"));
+        assertThat(tests.get(1).getTime(), is(0.001f));
+        assertThat(tests.get(1).getFullName(), is("org.acme.FlakyTest.testStable"));
+        assertThat(tests.get(1).hasError(), is(false));
+        assertThat(tests.get(1).hasFlakes(), is(false));
     }
 }
