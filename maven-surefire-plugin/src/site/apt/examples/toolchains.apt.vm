@@ -30,7 +30,7 @@
     {{{https://maven.apache.org/guides/mini/guide-using-toolchains.html}Guide to Using Toolchains}}
 
 
-Using Maven Toolchains with ${thisPlugin}.
+Using Maven Toolchains with ${thisPlugin}
 
     By default, if the pom configures the toolchains plugin as specified in the aforementioned
     guide, ${thisPlugin} will launch the test jvm using the main toolchain
@@ -46,11 +46,44 @@ Using Maven Toolchains with ${thisPlugin}.
 <configuration>
     [...]
     <jdkToolchain>
-        <version>1.11</version>
+        <version>8</version>
         <vendor>zulu</vendor>
     </jdkToolchain>
     [...]
 </configuration>
 +---+
 
-         The above example assumes that your toolchains.xml contains a valid entry with these values.
+     The above example assumes that your `toolchains.xml` contains a valid entry with these values.
+
+* Minimum Java Version for Toolchains
+
+    The minimum version of Java that can be used as a toolchain is limited by the Surefire Booter requirement.
+
+*---------------------+-----------------------+---------------------+
+|| Surefire Version   || Minimum Java Version || Class File Version |
+*---------------------+-----------------------+---------------------+
+| 3.0.0-M6 or higher  |    Java 8             |    52               |
+*---------------------+-----------------------+---------------------+
+| 3.0.0-M5 and lower  |    Java 7             |    51               |
+*---------------------+-----------------------+---------------------+
+| lower than 3.0.0-M1 |    Java 6             |    50               |
+*---------------------+-----------------------+---------------------+
+
+    If you try to use a version older than the minimum supported version, you should face something like:
+
+---
+Exception in thread "main" java.lang.UnsupportedClassVersionError: org/apache/maven/surefire/booter/ForkedBooter: Unsupported major.minor version 52.0
+	at java.lang.ClassLoader.defineClass1(Native Method)
+	at java.lang.ClassLoader.defineClass(ClassLoader.java:800)
+	at java.security.SecureClassLoader.defineClass(SecureClassLoader.java:142)
+	at java.net.URLClassLoader.defineClass(URLClassLoader.java:449)
+	at java.net.URLClassLoader.access${esc.d}100(URLClassLoader.java:71)
+	at java.net.URLClassLoader${esc.d}1.run(URLClassLoader.java:361)
+	at java.net.URLClassLoader${esc.d}1.run(URLClassLoader.java:355)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:354)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:425)
+	at sun.misc.Launcher${esc.d}AppClassLoader.loadClass(Launcher.java:308)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:358)
+	at sun.launcher.LauncherHelper.checkAndLoadMain(LauncherHelper.java:482)
+---
