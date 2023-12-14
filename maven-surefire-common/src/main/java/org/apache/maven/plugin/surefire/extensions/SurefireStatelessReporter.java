@@ -64,6 +64,7 @@ public class SurefireStatelessReporter
                 configuration.getRerunFailingTestsCount(),
                 configuration.getTestClassMethodRunHistory(),
                 configuration.getXsdSchemaLocation(),
+                configuration.isEnableOutputElements(),
                 getVersion(),
                 false,
                 false,
