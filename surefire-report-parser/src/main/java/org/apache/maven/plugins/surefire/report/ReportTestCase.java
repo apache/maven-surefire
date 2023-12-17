@@ -19,6 +19,7 @@
 package org.apache.maven.plugins.surefire.report;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
@@ -168,7 +169,7 @@ public final class ReportTestCase {
         return hasSkipped;
     }
 
-    public boolean hasFlake() {
+    public boolean hasFlakes() {
         return !flakyErrors.isEmpty() || !flakyFailures.isEmpty();
     }
 
@@ -177,7 +178,7 @@ public final class ReportTestCase {
     }
 
     public List<FlakyError> getFlakyErrors() {
-        return flakyErrors;
+        return Collections.unmodifiableList(flakyErrors);
     }
 
     public void addFlakyFailure(FlakyFailure flakyFailure) {
@@ -185,7 +186,7 @@ public final class ReportTestCase {
     }
 
     public List<FlakyFailure> getFlakyFailures() {
-        return flakyFailures;
+        return Collections.unmodifiableList(flakyFailures);
     }
 
     /**

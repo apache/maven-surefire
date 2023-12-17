@@ -744,7 +744,7 @@ public class TestSuiteXmlParserTest {
         assertThat(tests.get(0).getTime(), is(0.034f));
         assertThat(tests.get(0).getFullName(), is("org.acme.FlakyTest.testFlaky"));
         assertThat(tests.get(0).hasError(), is(false));
-        assertThat(tests.get(0).hasFlake(), is(true));
+        assertThat(tests.get(0).hasFlakes(), is(true));
 
         List<FlakyFailure> flakyFailures = tests.get(0).getFlakyFailures();
         assertThat(flakyFailures.size(), is(3));
@@ -781,6 +781,6 @@ public class TestSuiteXmlParserTest {
         assertThat(tests.get(1).getTime(), is(0.001f));
         assertThat(tests.get(1).getFullName(), is("org.acme.FlakyTest.testStable"));
         assertThat(tests.get(1).hasError(), is(false));
-        assertThat(tests.get(1).hasFlake(), is(false));
+        assertThat(tests.get(1).hasFlakes(), is(false));
     }
 }
