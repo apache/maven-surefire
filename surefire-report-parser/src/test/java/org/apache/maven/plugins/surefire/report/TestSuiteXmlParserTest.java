@@ -754,41 +754,18 @@ public class TestSuiteXmlParserTest {
         assertThat(
                 flakyFailures.get(0).getStackTrace(),
                 containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
-        assertThat(
-                flakyFailures.get(0).getSystemOut(),
-                is(
-                        "2023-06-23 17:27:31,351 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.493s. Listening on: http://localhost:8081\n"
-                                + "2023-06-23 17:27:31,353 INFO  [io.quarkus] (main) Profile test activated. \n"
-                                + "2023-06-23 17:27:31,353 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]\n"));
-        assertNull(flakyFailures.get(0).getSystemErr());
 
         assertThat(flakyFailures.get(1).getMessage(), startsWith("expected: <1> but was: <3>"));
         assertThat(flakyFailures.get(1).getType(), is("org.opentest4j.AssertionFailedError"));
         assertThat(
                 flakyFailures.get(1).getStackTrace(),
                 containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
-        assertThat(
-                flakyFailures.get(1).getSystemOut(),
-                is(
-                        "2023-06-23 17:27:31,695 INFO  [io.quarkus] (main) code-with-quarkus stopped in 0.022s\n"
-                                + "2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.200s. Listening on: http://localhost:8081\n"
-                                + "2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) Profile test activated. \n"
-                                + "2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]\n"));
-        assertNull(flakyFailures.get(1).getSystemErr());
 
         assertThat(flakyFailures.get(2).getMessage(), startsWith("expected: <1> but was: <4>"));
         assertThat(flakyFailures.get(2).getType(), is("org.opentest4j.AssertionFailedError"));
         assertThat(
                 flakyFailures.get(2).getStackTrace(),
                 containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
-        assertThat(
-                flakyFailures.get(2).getSystemOut(),
-                is(
-                        "2023-06-23 17:27:33,117 INFO  [io.quarkus] (main) code-with-quarkus stopped in 0.016s\n"
-                                + "2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.180s. Listening on: http://localhost:8081\n"
-                                + "2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) Profile test activated. \n"
-                                + "2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]\n"));
-        assertNull(flakyFailures.get(2).getSystemErr());
 
         List<FlakyError> flakyErrors = tests.get(0).getFlakyErrors();
         assertThat(flakyErrors.size(), is(1));
@@ -797,14 +774,6 @@ public class TestSuiteXmlParserTest {
         assertThat(
                 flakyErrors.get(0).getStackTrace(),
                 containsString("at org.acme.FlakyTest.testFlaky(FlakyTest.java:18)"));
-        assertThat(
-                flakyErrors.get(0).getSystemOut(),
-                is(
-                        "2023-06-23 17:27:34,461 INFO  [io.quarkus] (main) code-with-quarkus stopped in 0.014s\n"
-                                + "2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.159s. Listening on: http://localhost:8081\n"
-                                + "2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) Profile test activated. \n"
-                                + "2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]\n"));
-        assertThat(flakyErrors.get(0).getSystemErr(), is("Test system.err\n"));
 
         assertThat(tests.get(1).getFullClassName(), is("org.acme.FlakyTest"));
         assertThat(tests.get(1).getName(), is("testStable"));

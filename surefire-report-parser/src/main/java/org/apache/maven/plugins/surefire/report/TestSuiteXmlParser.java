@@ -196,14 +196,6 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         currentElement = new StringBuilder();
                         parseContent = true;
                         break;
-                    case "system-out":
-                        currentElement = new StringBuilder();
-                        parseContent = true;
-                        break;
-                    case "system-err":
-                        currentElement = new StringBuilder();
-                        parseContent = true;
-                        break;
                     case "failsafe-summary":
                         valid = false;
                         break;
@@ -255,22 +247,6 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                 }
                 if (testCaseFlakyError != null) {
                     testCaseFlakyError.setStackTrace(currentElement.toString());
-                }
-                break;
-            case "system-out":
-                if (testCaseFlakyFailure != null) {
-                    testCaseFlakyFailure.setSystemOut(currentElement.toString());
-                }
-                if (testCaseFlakyError != null) {
-                    testCaseFlakyError.setSystemOut(currentElement.toString());
-                }
-                break;
-            case "system-err":
-                if (testCaseFlakyFailure != null) {
-                    testCaseFlakyFailure.setSystemErr(currentElement.toString());
-                }
-                if (testCaseFlakyError != null) {
-                    testCaseFlakyError.setSystemErr(currentElement.toString());
                 }
                 break;
             default:

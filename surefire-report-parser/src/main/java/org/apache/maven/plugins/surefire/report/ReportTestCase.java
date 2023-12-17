@@ -207,10 +207,6 @@ public final class ReportTestCase {
 
         private String type;
 
-        private String systemOut;
-
-        private String systemErr;
-
         private String stackTrace;
 
         FlakyFailure(String message, String type) {
@@ -224,22 +220,6 @@ public final class ReportTestCase {
 
         public String getType() {
             return type;
-        }
-
-        public void setSystemOut(String systemOut) {
-            this.systemOut = systemOut;
-        }
-
-        public String getSystemOut() {
-            return systemOut;
-        }
-
-        public void setSystemErr(String systemErr) {
-            this.systemErr = systemErr;
-        }
-
-        public String getSystemErr() {
-            return systemErr;
         }
 
         public void setStackTrace(String stackTrace) {
@@ -257,10 +237,6 @@ public final class ReportTestCase {
 
         private String type;
 
-        private String systemOut;
-
-        private String systemErr;
-
         private String stackTrace;
 
         FlakyError(String message, String type) {
@@ -274,22 +250,6 @@ public final class ReportTestCase {
 
         public String getType() {
             return type;
-        }
-
-        public void setSystemOut(String systemOut) {
-            this.systemOut = systemOut;
-        }
-
-        public String getSystemOut() {
-            return systemOut;
-        }
-
-        public void setSystemErr(String systemErr) {
-            this.systemErr = systemErr;
-        }
-
-        public String getSystemErr() {
-            return systemErr;
         }
 
         public void setStackTrace(String stackTrace) {
