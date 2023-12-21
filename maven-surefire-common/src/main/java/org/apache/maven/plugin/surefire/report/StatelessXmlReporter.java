@@ -432,7 +432,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             boolean trimStackTrace,
             OutputStream fw,
             String testErrorType,
-            boolean createOutErrElementsInside)
+            boolean enableNestedOutErrElements)
             throws IOException {
         ppw.startElement(testErrorType);
 
@@ -456,21 +456,13 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             }
         }
 
-        boolean hasNestedElements = createOutErrElementsInside & stackTrace != null;
-
-        if (stackTrace != null) {
-            if (hasNestedElements) {
-                ppw.startElement("stackTrace");
+        if (enableNestedOutErrElements) {
+            ppw.startElement("stackTrace");
+            if (stackTrace != null) {
+                extraEscapeElementValue(stackTrace, outputStreamWriter, ppw, fw);
             }
+            ppw.endElement();
 
-            extraEscapeElementValue(stackTrace, outputStreamWriter, ppw, fw);
-
-            if (hasNestedElements) {
-                ppw.endElement();
-            }
-        }
-
-        if (createOutErrElementsInside) {
             createOutErrElements(outputStreamWriter, ppw, report, fw);
         }
 
