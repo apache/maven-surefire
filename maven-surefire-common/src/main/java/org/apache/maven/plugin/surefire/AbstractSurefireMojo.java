@@ -876,6 +876,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (isSkipExecution()) {
+            getConsoleLogger().info("Tests are skipped.");
+            return;
+        }
+
         cli = commandLineOptions();
         // Stuff that should have been final
         setupStuff();
@@ -1030,10 +1035,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     boolean verifyParameters() throws MojoFailureException, MojoExecutionException {
         setProperties(new SurefireProperties(getProperties()));
-        if (isSkipExecution()) {
-            getConsoleLogger().info("Tests are skipped.");
-            return false;
-        }
 
         String jvmToUse = getJvm();
         if (toolchain != null) {
