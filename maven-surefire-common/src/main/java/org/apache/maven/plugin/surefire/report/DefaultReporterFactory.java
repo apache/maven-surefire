@@ -45,12 +45,12 @@ import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.apache.maven.plugin.surefire.report.ConsoleReporter.PLAIN;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.flake;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.skipped;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.success;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.unknown;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.ERROR;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.FAILURE;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.FLAKE;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.SKIPPED;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.SUCCESS;
+import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.UNKNOWN;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
@@ -179,9 +179,9 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             log("Results:");
             log("");
         }
-        boolean printedFailures = printTestFailures(failure);
-        boolean printedErrors = printTestFailures(error);
-        boolean printedFlakes = printTestFailures(flake);
+        boolean printedFailures = printTestFailures(TestResultType.FAILURE);
+        boolean printedErrors = printTestFailures(TestResultType.ERROR);
+        boolean printedFlakes = printTestFailures(TestResultType.FLAKE);
         if (reportConfiguration.isPrintSummary()) {
             if (printedFailures | printedErrors | printedFlakes) {
                 log("");
@@ -209,30 +209,30 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
     // Use default visibility for testing
     static TestResultType getTestResultType(List<ReportEntryType> reportEntries, int rerunFailingTestsCount) {
         if (reportEntries == null || reportEntries.isEmpty()) {
-            return unknown;
+            return UNKNOWN;
         }
 
         boolean seenSuccess = false, seenFailure = false, seenError = false;
         for (ReportEntryType resultType : reportEntries) {
-            if (resultType == SUCCESS) {
+            if (resultType == ReportEntryType.SUCCESS) {
                 seenSuccess = true;
-            } else if (resultType == FAILURE) {
+            } else if (resultType == ReportEntryType.FAILURE) {
                 seenFailure = true;
-            } else if (resultType == ERROR) {
+            } else if (resultType == ReportEntryType.ERROR) {
                 seenError = true;
             }
         }
 
         if (seenFailure || seenError) {
             if (seenSuccess && rerunFailingTestsCount > 0) {
-                return flake;
+                return TestResultType.FLAKE;
             } else {
-                return seenError ? error : failure;
+                return seenError ? TestResultType.ERROR : TestResultType.FAILURE;
             }
         } else if (seenSuccess) {
-            return success;
+            return TestResultType.SUCCESS;
         } else {
-            return skipped;
+            return SKIPPED;
         }
     }
 
@@ -276,26 +276,26 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             }
 
             switch (getTestResultType(resultTypes, reportConfiguration.getRerunFailingTestsCount())) {
-                case success:
+                case SUCCESS:
                     // If there are multiple successful runs of the same test, count all of them
                     int successCount = 0;
                     for (ReportEntryType type : resultTypes) {
-                        if (type == SUCCESS) {
+                        if (type == ReportEntryType.SUCCESS) {
                             successCount++;
                         }
                     }
                     completedCount += successCount - 1;
                     break;
-                case skipped:
+                case SKIPPED:
                     skipped++;
                     break;
-                case flake:
+                case FLAKE:
                     flakyTests.put(testClassMethodName, testMethodStats);
                     break;
-                case failure:
+                case FAILURE:
                     failedTests.put(testClassMethodName, testMethodStats);
                     break;
-                case error:
+                case ERROR:
                     errorTests.put(testClassMethodName, testMethodStats);
                     break;
                 default:
@@ -318,15 +318,15 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
         final Map<String, List<TestMethodStats>> testStats;
         final Level level;
         switch (type) {
-            case failure:
+            case FAILURE:
                 testStats = failedTests;
                 level = Level.FAILURE;
                 break;
-            case error:
+            case ERROR:
                 testStats = errorTests;
                 level = Level.FAILURE;
                 break;
-            case flake:
+            case FLAKE:
                 testStats = flakyTests;
                 level = Level.UNSTABLE;
                 break;
@@ -363,12 +363,12 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
 
     // Describe the result of a given test
     enum TestResultType {
-        error("Errors: "),
-        failure("Failures: "),
-        flake("Flakes: "),
-        success("Success: "),
-        skipped("Skipped: "),
-        unknown("Unknown: ");
+        ERROR("Errors: "),
+        FAILURE("Failures: "),
+        FLAKE("Flakes: "),
+        SUCCESS("Success: "),
+        SKIPPED("Skipped: "),
+        UNKNOWN("Unknown: ");
 
         private final String logPrefix;
 

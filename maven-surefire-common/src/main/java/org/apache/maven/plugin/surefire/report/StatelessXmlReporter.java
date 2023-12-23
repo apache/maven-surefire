@@ -237,7 +237,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             throws IOException {
         WrappedReportEntry firstMethodEntry = methodEntries.get(0);
         switch (getTestResultType(methodEntries)) {
-            case success:
+            case SUCCESS:
                 for (WrappedReportEntry methodEntry : methodEntries) {
                     if (methodEntry.getReportEntryType() == SUCCESS) {
                         startTestElement(ppw, methodEntry);
@@ -245,8 +245,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                     }
                 }
                 break;
-            case error:
-            case failure:
+            case ERROR:
+            case FAILURE:
                 // When rerunFailingTestsCount is set to larger than 0
                 startTestElement(ppw, firstMethodEntry);
                 boolean firstRun = true;
@@ -281,7 +281,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 }
                 ppw.endElement();
                 break;
-            case flake:
+            case FLAKE:
                 WrappedReportEntry successful = null;
                 // Get the run time of the first successful run
                 for (WrappedReportEntry singleRunEntry : methodEntries) {
@@ -306,7 +306,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 }
                 ppw.endElement();
                 break;
-            case skipped:
+            case SKIPPED:
                 startTestElement(ppw, firstMethodEntry);
                 getTestProblems(
                         fw,

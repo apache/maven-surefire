@@ -31,6 +31,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
@@ -42,12 +43,6 @@ import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.error;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.failure;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.flake;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.skipped;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.success;
-import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType.unknown;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.getTestResultType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -143,7 +138,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals(0, mergedStatistics.getSkipped());
 
         // Now test the result will be printed out correctly
-        factory.printTestFailures(flake);
+        factory.printTestFailures(TestResultType.FLAKE);
         String[] expectedFlakeOutput = {
             "Flakes: ",
             TEST_FOUR,
@@ -163,14 +158,14 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals(asList(expectedFlakeOutput), reporter.getMessages());
 
         reporter.reset();
-        factory.printTestFailures(error);
+        factory.printTestFailures(TestResultType.ERROR);
         String[] expectedFailureOutput = {
             "Errors: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
         };
         assertEquals(asList(expectedFailureOutput), reporter.getMessages());
 
         reporter.reset();
-        factory.printTestFailures(failure);
+        factory.printTestFailures(TestResultType.FAILURE);
         assertEquals(emptyList(), reporter.getMessages());
     }
 
@@ -238,41 +233,41 @@ public class DefaultReporterFactoryTest extends TestCase {
 
     public void testGetTestResultType() {
         List<ReportEntryType> emptyList = new ArrayList<>();
-        assertEquals(unknown, getTestResultType(emptyList, 1));
+        assertEquals(TestResultType.UNKNOWN, getTestResultType(emptyList, 1));
 
         List<ReportEntryType> successList = new ArrayList<>();
         successList.add(ReportEntryType.SUCCESS);
         successList.add(ReportEntryType.SUCCESS);
-        assertEquals(success, getTestResultType(successList, 1));
+        assertEquals(TestResultType.SUCCESS, getTestResultType(successList, 1));
 
         List<ReportEntryType> failureErrorList = new ArrayList<>();
         failureErrorList.add(ReportEntryType.FAILURE);
         failureErrorList.add(ReportEntryType.ERROR);
-        assertEquals(error, getTestResultType(failureErrorList, 1));
+        assertEquals(TestResultType.ERROR, getTestResultType(failureErrorList, 1));
 
         List<ReportEntryType> errorFailureList = new ArrayList<>();
         errorFailureList.add(ReportEntryType.ERROR);
         errorFailureList.add(ReportEntryType.FAILURE);
-        assertEquals(error, getTestResultType(errorFailureList, 1));
+        assertEquals(TestResultType.ERROR, getTestResultType(errorFailureList, 1));
 
         List<ReportEntryType> flakeList = new ArrayList<>();
         flakeList.add(ReportEntryType.SUCCESS);
         flakeList.add(ReportEntryType.FAILURE);
-        assertEquals(flake, getTestResultType(flakeList, 1));
+        assertEquals(TestResultType.FLAKE, getTestResultType(flakeList, 1));
 
-        assertEquals(failure, getTestResultType(flakeList, 0));
+        assertEquals(TestResultType.FAILURE, getTestResultType(flakeList, 0));
 
         flakeList = new ArrayList<>();
         flakeList.add(ReportEntryType.ERROR);
         flakeList.add(ReportEntryType.SUCCESS);
         flakeList.add(ReportEntryType.FAILURE);
-        assertEquals(flake, getTestResultType(flakeList, 1));
+        assertEquals(TestResultType.FLAKE, getTestResultType(flakeList, 1));
 
-        assertEquals(error, getTestResultType(flakeList, 0));
+        assertEquals(TestResultType.ERROR, getTestResultType(flakeList, 0));
 
         List<ReportEntryType> skippedList = new ArrayList<>();
         skippedList.add(ReportEntryType.SKIPPED);
-        assertEquals(skipped, getTestResultType(skippedList, 1));
+        assertEquals(TestResultType.SKIPPED, getTestResultType(skippedList, 1));
     }
 
     public void testLogger() {
