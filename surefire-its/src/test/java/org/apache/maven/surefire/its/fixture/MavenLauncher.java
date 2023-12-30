@@ -29,10 +29,10 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.shared.utils.io.FileUtils;
+import org.apache.maven.shared.verifier.VerificationException;
+import org.apache.maven.shared.verifier.Verifier;
+import org.apache.maven.shared.verifier.util.ResourceExtractor;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;

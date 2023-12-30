@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.maven.it.VerificationException;
+import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
