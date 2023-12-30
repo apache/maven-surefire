@@ -80,6 +80,10 @@ public final class SurefireLauncher {
         goals.add("-Dsurefire.version=" + surefireVersion);
 
         String jacocoAgent = System.getProperty("jacoco.agent", "");
+        // Remove unnecessary backslash escaping for Windows, see https://github.com/jacoco/jacoco/issues/1559
+        jacocoAgent = jacocoAgent.replace("\\\\", "\\");
+        // Remove quotes which will cause a syntax error raised by cmd.exe because of quote escaping
+        jacocoAgent = jacocoAgent.replace("\"", "");
         goals.add("-Djacoco.agent=" + jacocoAgent);
         goals.add("-nsu");
 

@@ -43,7 +43,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.version}</version>
                 <configuration>
-                    <argLine>${argLine} ${jacoco.agent}</argLine>
+                    <argLine>${argLine} "${jacoco.agent}"</argLine>
                     <parallel>methods</parallel>
                     <properties>
                         <property>
