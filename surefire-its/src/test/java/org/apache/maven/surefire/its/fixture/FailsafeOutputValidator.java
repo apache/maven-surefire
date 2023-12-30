@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.fixture;
 
-import org.apache.maven.it.VerificationException;
+import org.apache.maven.shared.verifier.VerificationException;
 
 /**
  *
