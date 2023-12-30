@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.it.VerificationException;
+import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
@@ -32,7 +32,11 @@ public class Surefire1602IT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void nonCanonicalPath() throws VerificationException {
         SurefireLauncher launcher = unpack("/surefire-1602");
+        launcher.setLogFileName("log-install.txt");
         launcher.executeInstall();
+        launcher.reset();
+
+        launcher.setLogFileName("log-test.txt");
         launcher.addGoal("--file").addGoal("./integration-tests/pom.xml").executeTest();
         launcher.getSubProjectValidator("integration-tests").assertTestSuiteResults(1, 0, 0, 0);
     }

@@ -23,16 +23,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Properties;
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.shared.utils.io.FileUtils;
+import org.apache.maven.shared.verifier.VerificationException;
+import org.apache.maven.shared.verifier.Verifier;
+import org.apache.maven.shared.verifier.util.ResourceExtractor;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;
@@ -52,7 +51,7 @@ public final class MavenLauncher {
 
     private final Map<String, String> envVars = new HashMap<>();
 
-    private final Map<String, String> props = new LinkedHashMap<>();
+    private final Properties props = new Properties();
 
     private File unpackedAt;
 
@@ -138,6 +137,8 @@ public final class MavenLauncher {
     public void reset() {
         resetGoals();
         resetCliOptions();
+        verifier = null;
+        validator = null;
     }
 
     private void resetCliOptions() {
@@ -221,7 +222,7 @@ public final class MavenLauncher {
                 String goal = it.next();
                 if (goal.equals(sysPropKey) || goal.startsWith(sysPropStarter)) {
                     System.out.printf(
-                            "[WARNING] System property already exists '%s'. Overriding to '%s'.\n", goal, newGoal);
+                            "[WARNING] System property already exists '%s'. Overriding to '%s'.%n", goal, newGoal);
                     it.set(newGoal);
                     return;
                 }
@@ -242,7 +243,7 @@ public final class MavenLauncher {
             }
         }
         if (expectFailure) {
-            throw new RuntimeException("Expecting build failure, got none!");
+            throw new RuntimeException("Expecting build failure, have got none!");
         }
         return verify;
     }
@@ -259,21 +260,14 @@ public final class MavenLauncher {
 
     public OutputValidator executeCurrentGoals() {
         try {
-            List<String> goalsAndProps = new ArrayList<>(goals);
-
-            for (Entry<String, String> e : props.entrySet()) {
-                String key = e.getKey();
-                String val = e.getValue();
-                goalsAndProps.add(val == null ? "-D" + key : "-D" + key + "=" + val);
-            }
-
-            getVerifier().setCliOptions(cliOptions);
-            getVerifier().executeGoals(goalsAndProps, envVars);
+            getVerifier().addCliArguments(cliOptions.toArray(new String[0]));
+            getVerifier().addCliArguments(goals.toArray(new String[] {}));
+            getVerifier().setSystemProperties(props);
+            getVerifier().setEnvironmentVariables(envVars);
+            getVerifier().execute();
             return getValidator();
         } catch (VerificationException e) {
             throw new SurefireVerifierException(e.getLocalizedMessage(), e);
-        } finally {
-            getVerifier().resetStreams();
         }
     }
 
@@ -399,12 +393,10 @@ public final class MavenLauncher {
 
     private static Verifier createVerifier(String basedir, String settingsFile, String[] defaultCliOptions)
             throws VerificationException {
-        Verifier verifier = defaultCliOptions == null
+
+        return defaultCliOptions == null
                 ? new Verifier(basedir, settingsFile, false)
                 : new Verifier(basedir, settingsFile, false, defaultCliOptions);
-
-        verifier.getVerifierProperties().setProperty("use.mavenRepoLocal", "true");
-        return verifier;
     }
 
     private static File settingsXmlPath() {
