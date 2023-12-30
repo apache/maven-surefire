@@ -79,7 +79,8 @@ public final class SurefireLauncher {
 
         goals.add("-Dsurefire.version=" + surefireVersion);
 
-        String jacocoAgent = System.getProperty("jacoco.agent", "").replace("\"", "").replace("\\\\", "\\");
+        String jacocoAgent =
+                System.getProperty("jacoco.agent", "").replace("\"", "").replace("\\\\", "\\");
         goals.add("-Djacoco.agent=" + jacocoAgent);
         goals.add("-nsu");
 
