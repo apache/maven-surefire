@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>3.2.4</version>
+    <version>3.2.5-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-junit47</artifactId>
@@ -32,7 +32,7 @@
   <description>SureFire JUnitCore (JUnit 4.7+) Runner</description>
 
   <scm>
-    <tag>surefire-3.2.4</tag>
+    <tag>surefire-3.0.0-M8</tag>
   </scm>
 
   <dependencies>
