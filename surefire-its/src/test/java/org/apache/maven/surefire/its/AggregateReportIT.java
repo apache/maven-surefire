@@ -42,7 +42,7 @@ public class AggregateReportIT extends SurefireJUnit4IntegrationTestCase {
     public void aggregateReport() {
         OutputValidator outputValidator =
                 unpack("/aggregate-report").addSurefireReportGoal().executeCurrentGoals();
-        TestFile surefireReportHtml = outputValidator.getSiteFile("surefire-report.html");
+        TestFile surefireReportHtml = outputValidator.getSiteFile("surefire.html");
         assertTrue("surefire report missing: " + surefireReportHtml.getAbsolutePath(), surefireReportHtml.exists());
 
         // TODO HtmlUnit tests on the surefire report

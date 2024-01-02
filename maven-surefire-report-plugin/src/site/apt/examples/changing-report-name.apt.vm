@@ -26,7 +26,7 @@
 Changing the Report Name
 
   In order to configure the file name of the generated report (which is
-  "<surefire-report>" by default), the <<outputName>> property should
+  "<<<surefire>>>" by default), the <<<outputName>>> property should
   be set to the desired name.
 
 +----+
