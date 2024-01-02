@@ -42,12 +42,12 @@ public class Surefire1490ReportTitleDescriptionIT extends SurefireJUnit4Integrat
                 .assertContainsText("Report on the integration test results of the project.");
 
         validator
-                .getSiteFile("failsafe-report.html")
+                .getSiteFile("failsafe.html")
                 .assertContainsText("Failsafe Report")
                 .assertContainsText("Surefire1490IT");
 
         validator
-                .getSiteFile("surefire-report.html")
+                .getSiteFile("surefire.html")
                 .assertContainsText("Surefire Report")
                 .assertContainsText("Surefire1490Test");
     }
@@ -65,12 +65,12 @@ public class Surefire1490ReportTitleDescriptionIT extends SurefireJUnit4Integrat
                 .assertContainsText("failsafe desc");
 
         validator
-                .getSiteFile("failsafe-report.html")
+                .getSiteFile("failsafe.html")
                 .assertContainsText("failsafe title")
                 .assertContainsText("Surefire1490IT");
 
         validator
-                .getSiteFile("surefire-report.html")
+                .getSiteFile("surefire.html")
                 .assertContainsText("surefire title")
                 .assertContainsText("Surefire1490Test");
     }
