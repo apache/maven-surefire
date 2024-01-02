@@ -159,7 +159,6 @@ import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.remov
  * Abstract base class for running tests using Surefire.
  *
  * @author Stephen Connolly
- * @version $Id: SurefirePlugin.java 945065 2010-05-17 10:26:22Z stephenc $
  */
 public abstract class AbstractSurefireMojo extends AbstractMojo implements SurefireExecutionParameters {
     private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap("version", "[1.9,)");

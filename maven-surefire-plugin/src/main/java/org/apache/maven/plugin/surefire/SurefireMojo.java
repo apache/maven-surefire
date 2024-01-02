@@ -45,7 +45,7 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
         defaultPhase = LifecyclePhase.TEST,
         threadSafe = true,
         requiresDependencyResolution = ResolutionScope.TEST)
-public class SurefirePlugin extends AbstractSurefireMojo implements SurefireReportParameters {
+public class SurefireMojo extends AbstractSurefireMojo implements SurefireReportParameters {
 
     /**
      * The directory containing generated classes of the project being tested. This will be included after the test
