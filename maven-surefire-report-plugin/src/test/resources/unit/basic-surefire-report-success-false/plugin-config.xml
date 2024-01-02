@@ -25,11 +25,11 @@
         <configuration>
           <outputDirectory>${basedir}/target/site/unit/basic-surefire-report-success-false</outputDirectory>
           <localRepository>${localRepository}</localRepository>
-          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireRepMavenProjectStub"/>
+          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireReportMavenProjectStub"/>
           <showSuccess>false</showSuccess>
           <reportsDirectory>${basedir}/src/test/resources/unit/basic-surefire-report-success-false/surefire-reports
           </reportsDirectory>
-          <outputName>surefire-report</outputName>
+          <outputName>surefire</outputName>
           <xrefLocation>${basedir}/target/site/unit/basic-surefire-report-success-false/xref-test</xrefLocation>
           <linkXRef>true</linkXRef>
         </configuration>
