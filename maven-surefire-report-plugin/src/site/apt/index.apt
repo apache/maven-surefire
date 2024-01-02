@@ -64,15 +64,15 @@ Maven Surefire Report Plugin
   reporting plugins from <<<org.apache.maven.plugins>>>.
   To make you aware of that, see the following table for the upcoming changes:
 
-*----------------------*--------------------------*-----------------------*------------------*
-|| Mojo Class Name     || New Mojo Class Name     || Output name          || New Output Name |
-*----------------------+--------------------------+-----------------------+------------------+
-| <<<FailsafeReport>>> | <<<FailsafeReportOnly>>> | <<<failsafe-report>>> | <<<failsafe>>>   |
-*----------------------+--------------------------+-----------------------+------------------+
-| <<<SurefireReport>>> | \u2013                   | <<<suresafe-report>>> | <<<surefire>>>   |
-*----------------------+--------------------------+-----------------------+------------------+
-| <<<SurefireReportOnly>>> | \u2013               | <<<suresafe-report>>> | <<<surefire>>>   |
-*----------------------+--------------------------+-----------------------+------------------+
+*------------------------------*--------------------------*-----------------------*-----------------*
+|| Mojo Class Name            || New Mojo Class Name     || Output name          || New Output Name |
+*------------------------------+--------------------------+-----------------------+-----------------+
+| <<<FailsafeReportMojo>>>     | <<<FailsafeOnlyReport>>> | <<<failsafe-report>>> | <<<failsafe>>>  |
+*------------------------------+--------------------------+-----------------------+-----------------+
+| <<<SurefireReportMojo>>>     | <<<SurefireReport>>>     | <<<suresafe-report>>> | <<<surefire>>>  |
+*------------------------------+--------------------------+-----------------------+-----------------+
+| <<<SurefireReportOnlyMojo>>> | <<<SurefireOnlyReport>>> | <<<suresafe-report>>> | <<<surefire>>>  |
+*------------------------------+--------------------------+-----------------------+-----------------+
 
   Details about this change can be found in {{{https://issues.apache.org/jira/browse/SUREFIRE-2161}SUREFIRE-2161}}.
 
@@ -83,8 +83,8 @@ Maven Surefire Report Plugin
   * {{{./report-mojo.html}surefire-report:report}} Generates the test
   results report into HTML format.
 
-  * {{{./report-only-mojo.html}surefire-report:report-only}} This goal does 
-  not run the tests, it only builds the reports. It is provided as a work 
+  * {{{./report-only-mojo.html}surefire-report:report-only}} This goal does
+  not run the tests, it only builds the report. It is provided as a work
   around for {{{https://issues.apache.org/jira/browse/SUREFIRE-257}SUREFIRE-257}}
 
   * {{{./failsafe-report-only-mojo.html}surefire-report:failsafe-report-only}} This goal does not
