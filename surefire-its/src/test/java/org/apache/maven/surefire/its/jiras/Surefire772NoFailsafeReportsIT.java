@@ -77,17 +77,17 @@ public class Surefire772NoFailsafeReportsIT extends SurefireJUnit4IntegrationTes
     }
 
     private void assertNoFailsefeReport(OutputValidator site) {
-        TestFile siteFile = site.getSiteFile("failsafe-report.html");
+        TestFile siteFile = site.getSiteFile("failsafe.html");
         assertFalse("Expecting no failsafe report file", siteFile.isFile());
     }
 
     private void assertFailsafeReport(OutputValidator site) {
-        TestFile siteFile = site.getSiteFile("failsafe-report.html");
+        TestFile siteFile = site.getSiteFile("failsafe.html");
         assertTrue("Expecting no failsafe report file", siteFile.isFile());
     }
 
     private void assertSurefireReportPresent(OutputValidator site) {
-        TestFile siteFile = site.getSiteFile("surefire-report.html");
+        TestFile siteFile = site.getSiteFile("surefire.html");
         assertTrue("Expecting surefire report file", siteFile.isFile());
     }
 

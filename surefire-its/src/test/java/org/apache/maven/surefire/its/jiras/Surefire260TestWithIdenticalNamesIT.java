@@ -50,7 +50,7 @@ public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnit4Integrati
                 .addSurefireReportGoal()
                 .executeCurrentGoals();
 
-        TestFile siteFile = validator.getSiteFile("surefire-report.html");
+        TestFile siteFile = validator.getSiteFile("surefire.html");
         final URI uri = siteFile.toURI();
 
         try (WebClient webClient = new WebClient()) {
