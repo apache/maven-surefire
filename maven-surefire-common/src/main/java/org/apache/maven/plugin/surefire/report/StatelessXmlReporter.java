@@ -432,7 +432,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             boolean trimStackTrace,
             OutputStream fw,
             String testErrorType,
-            boolean enableNestedOutErrElements)
+            boolean createNestedOutErrElements)
             throws IOException {
         ppw.startElement(testErrorType);
 
@@ -456,7 +456,11 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             }
         }
 
-        if (enableNestedOutErrElements) {
+        /* This structure is inconsistent due to bad legacy design choices for the XML schema.
+         * Ideally, all elements would be complex and strackTrace would have its own element.
+         * See SUREFIRE-2230 for details to how improve and unify the schema in the future.
+         */
+        if (createNestedOutErrElements) {
             ppw.startElement("stackTrace");
             if (stackTrace != null) {
                 extraEscapeElementValue(stackTrace, outputStreamWriter, ppw, fw);
@@ -464,6 +468,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             ppw.endElement();
 
             createOutErrElements(outputStreamWriter, ppw, report, fw);
+        } else if (stackTrace != null) {
+            extraEscapeElementValue(stackTrace, outputStreamWriter, ppw, fw);
         }
 
         ppw.endElement(); // entry type
