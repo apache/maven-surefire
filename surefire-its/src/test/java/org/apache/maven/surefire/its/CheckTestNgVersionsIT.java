@@ -25,7 +25,6 @@ import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -41,106 +40,25 @@ import static org.junit.Assert.assertTrue;
  */
 public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
 
+    // TestNG 7.6 and above needs JDK11
     @Test
-    public void test47() {
-        runTestNgTest("4.7", "jdk15");
+    public void test751() {
+        runTestNgTestWithRunOrder("7.5.1");
     }
 
     @Test
-    @Ignore("5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024")
-    public void xXXtest50() {
-        runTestNgTest("5.0", "jdk15");
+    public void test6143() {
+        runTestNgTestWithRunOrder("6.14.3");
     }
 
     @Test
-    @Ignore("5.0 and 5.0.1 jars on central are malformed SUREFIRE-375 + MAVENUPLOAD-1024")
-    public void xXXtest501() {
-        runTestNgTest("5.0.1", "jdk15");
+    public void test69136() {
+        runTestNgTestWithRunOrder("6.9.13.6");
     }
 
     @Test
-    public void test502() {
-        runTestNgTest("5.0.2", "jdk15");
-    }
-
-    @Test
-    public void test51() {
-        runTestNgTest("5.1", "jdk15");
-    }
-
-    @Test
-    public void test55() {
-        runTestNgTest("5.5", "jdk15");
-    }
-
-    @Test
-    public void test56() {
-        runTestNgTest("5.6", "jdk15");
-    }
-
-    @Test
-    public void test57() {
-        runTestNgTest("5.7", "jdk15");
-    }
-
-    @Test
-    public void test58() {
-        runTestNgTest("5.8", "jdk15");
-    }
-
-    @Test
-    public void test59() {
-        runTestNgTest("5.9", "jdk15");
-    }
-
-    @Test
-    public void test510() {
-        runTestNgTest("5.10", "jdk15");
-    }
-
-    @Test
-    public void test511() {
-        runTestNgTest("5.11", "jdk15");
-    }
-
-    @Test
-    public void test512() {
-        runTestNgTest("5.12.1");
-    }
-
-    @Test
-    public void test513() {
-        runTestNgTest("5.13");
-    }
-
-    @Test
-    public void test5131() {
-        runTestNgTest("5.13.1");
-    }
-
-    @Test
-    public void test514() {
-        runTestNgTest("5.14");
-    }
-
-    @Test
-    public void test5141() {
-        runTestNgTest("5.14.1");
-    }
-
-    @Test
-    public void test5142() {
-        runTestNgTest("5.14.2");
-    }
-
-    @Test
-    public void test60() {
-        runTestNgTest("6.0");
-    }
-
-    @Test
-    public void test685() {
-        runTestNgTestWithRunOrder("6.8.5");
+    public void test6821() {
+        runTestNgTestWithRunOrder("6.8.21");
     }
 
     private void runTestNgTestWithRunOrder(String version) {
