@@ -21,8 +21,6 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
-
 /**
  * Test TestNG setup and teardown ordering with parallelism
  *
@@ -55,21 +53,6 @@ public class Surefire1967CheckTestNgMethodParallelOrderingIT extends SurefireJUn
     public void testNgParallelOrderingWithEarlyVersion6() {
         unpack("surefire-1967-testng-method-parallel-ordering")
                 .sysProp("testNgVersion", "6.2.1")
-                .executeTest()
-                .verifyErrorFree(12);
-    }
-
-    // TestNG 5.13+ already has XmlClass.m_index field, but doesn't have XmlClass.setIndex method.
-    // Note that the problem of wrong setup methods ordering (SUREFIRE-1967) was not observed on that version.
-    // This is likely because SUREFIRE-1967 is related to a change in TestNG 6.3, where preserve-order became true by
-    // default (https://github.com/cbeust/testng/commit/8849b3406ef2184ceb6002768a2d087d7a8de8d5).
-    @Test
-    public void testNgParallelOrderingWithVersion5() {
-        // TestNG 5.13 does not work with Java 17
-        assumeJavaMaxVersion(16);
-
-        unpack("surefire-1967-testng-method-parallel-ordering")
-                .sysProp("testNgVersion", "5.13")
                 .executeTest()
                 .verifyErrorFree(12);
     }
