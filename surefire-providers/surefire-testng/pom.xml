@@ -55,7 +55,7 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-	  <version>${testngVersion}</version>
+      <version>${testngVersion}</version>
       <classifier>jdk15</classifier>
       <scope>provided</scope>
     </dependency>
