@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire-providers</artifactId>
-    <version>3.2.5-SNAPSHOT</version>
+    <version>3.2.5</version>
   </parent>
 
   <artifactId>surefire-junit-platform</artifactId>
@@ -77,7 +77,7 @@
   </contributors>
 
   <scm>
-    <tag>surefire-3.0.0-M8</tag>
+    <tag>surefire-3.2.5</tag>
   </scm>
 
   <dependencies>
