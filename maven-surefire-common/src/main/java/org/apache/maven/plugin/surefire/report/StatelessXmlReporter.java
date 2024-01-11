@@ -47,6 +47,7 @@ import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIll
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
 
 // CHECKSTYLE_OFF: LineLength
 /**
@@ -451,7 +452,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                     String type = delimiter == -1 ? stackTrace : stackTrace.substring(0, delimiter);
                     ppw.addAttribute("type", type);
                 } else {
-                    ppw.addAttribute("type", new StringTokenizer(stackTrace).nextToken());
+                    if (isNotBlank(stackTrace)) {
+                        ppw.addAttribute("type", new StringTokenizer(stackTrace).nextToken());
+                    }
                 }
             }
         }

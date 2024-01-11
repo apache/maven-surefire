@@ -522,6 +522,23 @@ public class StatelessXmlReporterTest extends TestCase {
         assertThat((boolean) getInternalState(out, "closed")).isTrue();
     }
 
+    public void testReporterHandlesATestWithoutMessageAndWithEmptyStackTrace() {
+        StackTraceWriter stackTraceWriterOne = new DeserializedStacktraceWriter(null, null, "");
+
+        WrappedReportEntry testReport = new WrappedReportEntry(
+                new SimpleReportEntry(
+                        NORMAL_RUN, 1L, getClass().getName(), null, "a test name", null, stackTraceWriterOne, 5),
+                ERROR,
+                5,
+                null,
+                null);
+
+        StatelessXmlReporter reporter = new StatelessXmlReporter(
+                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false);
+
+        reporter.testSetCompleted(testReport, stats);
+    }
+
     private boolean defaultCharsetSupportsSpecialChar() {
         // some charsets are not able to deal with \u0115 on both ways of the conversion
         return "\u0115\u00DC".equals(new String("\u0115\u00DC".getBytes()));
