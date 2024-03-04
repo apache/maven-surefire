@@ -24,7 +24,7 @@ on:
 jobs:
   build:
     name: Verify
-    uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v3
+    uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v4
     with:
       jdk-matrix: '[ "8", "11", "17", "21" ]'
       ff-jdk: '21'
