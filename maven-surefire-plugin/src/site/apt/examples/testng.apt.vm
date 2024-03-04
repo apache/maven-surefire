@@ -28,11 +28,6 @@
 
 Using TestNG
 
-* Unsupported TestNG versions
-
-  - TestNG 5.14.3: Bad formatted pom.xml.
-  - TestNG 5.14.4 and 5.14.5: TestNG is using a missing dependency (org.testng:guice:2.0). Excluding it, may break some features.
-
 * Configuring TestNG
 
   To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
@@ -50,23 +45,6 @@ Using TestNG
 </dependencies>
 +---+
 
-  If you are using an older version of TestNG (\<= 5.11), the dependency would instead look like this:
-
-+---+
-<dependencies>
-  [...]
-    <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <version>5.11</version>
-      <scope>test</scope>
-      <classifier>jdk15</classifier>
-    </dependency>
-  [...]
-</dependencies>
-+---+
-
-  <<Note:>> if you are using JDK 1.4 Javadoc annotations for your TestNG tests, replace the classifier <<<jdk15>>> with <<<jdk14>>> above.
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
   This is the only step that is required to get started - you can now create tests in your test source directory
@@ -175,9 +153,7 @@ Using TestNG
 
   This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence
   and thread safety of your tests and code.
-  
-  TestNG 5.10 and plugin version 2.19 or higher allows you to run methods in parallel test using data provider.
-  
+    
 +---+
 <plugins>
     [...]
@@ -202,7 +178,7 @@ Using TestNG
 </plugins>
 +---+
   
-  TestNG 6.9.8 (JRE 1.7) and plugin version 2.19 or higher allows you to run suites in parallel.
+  You can run suites in parallel.
   
 +---+
 <plugins>
@@ -234,12 +210,6 @@ Using TestNG
 
   TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
   By default, TestNG attaches a few basic listeners to generate HTML and XML reports.
-
-  Unsupported versions:
-    - TestNG 5.14.1 and 5.14.2: Due to an internal TestNG issue, listeners and reporters are not working with TestNG.
-           Please upgrade TestNG to version 5.14.9 or higher.
-           Note: It may be fixed in a future surefire version.
-
   You can configure multiple custom listeners like this:
 
 +---+
@@ -290,7 +260,7 @@ Using TestNG
 
 * The level of verbosity
 
-  Since the plugin version 2.19 or higher the verbosity level can be configured in provider property
+  The verbosity level can be configured in provider property
   <<<surefire.testng.verbose>>>. The verbosity level is between 0 and 10 where 10 is the most detailed.
   You can specify -1 and this will put TestNG in debug mode (no longer slicing off stack traces and all).
   The default level is 0.
@@ -347,7 +317,7 @@ Using TestNG
 
 * Customizing TestNG Test Runner Factory
 
-  Since the plugin version 2.19 and TestNG 5.9 or higher you can customize
+  You can customize the
   TestNG runner factory by implementing <<<org.testng.ITestRunnerFactory>>> and
   binding the class name to the key <<<testrunfactory>>> in provider properties:
   
@@ -431,8 +401,8 @@ Using TestNG
 
 * Running TestNG and JUnit Tests
 
-  TestNG 6.5.1 and higher provides support to run TestNG and JUnit 4.x in current Maven project. All you need
-  is to introduce TestNG and JUnit dependency in POM.
+  To run TestNG and JUnit 4.x in the current Maven project, you need
+  both TestNG and JUnit dependencies in the POM:
 
 +---+
 <dependencies>
