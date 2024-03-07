@@ -308,14 +308,6 @@
         <version>${jacocoVersion}</version>
         <classifier>runtime</classifier>
       </dependency>
-      <dependency>
-        <!-- Do not upgrade, leads to test failures, needs analysis -->
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>5.9.3</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
