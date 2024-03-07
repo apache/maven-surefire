@@ -83,7 +83,7 @@
   <properties>
     <!-- common version suffix by platform and other junit5 artifacts, compare with https://github.com/junit-team/junit5/blob/main/gradle.properties -->
     <junit5VersionSuffix>9.3</junit5VersionSuffix>
-    <junit5Version>5.${junit5VersionSuffix}</junit5Version>
+    <junit5Version>5.10.2</junit5Version>
     <junitPlatformVersion>1.${junit5VersionSuffix}</junitPlatformVersion>
   </properties>
 
