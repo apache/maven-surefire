@@ -36,6 +36,9 @@ Using Maven Toolchains with ${thisPlugin}
     guide, ${thisPlugin} will launch the test jvm using the main toolchain
     configured in Maven.
 
+    Note that options like <<<forkCount>>> prevent the toolchains from being used.
+    See {{{https://issues.apache.org/jira/browse/SUREFIRE-720}}SUREFIRE-720} for more information.
+
     In some cases, it may be desirable to compile and test using different jvms.
     While the <<<jvm>>> option can achieve this, it requires hardcoding system-specific paths.
     Configuration option <<<jdkToolchain>>> can be used to supply an alternate toolchain specification.
