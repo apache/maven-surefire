@@ -451,7 +451,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                     String type = delimiter == -1 ? stackTrace : stackTrace.substring(0, delimiter);
                     ppw.addAttribute("type", type);
                 } else {
-                    ppw.addAttribute("type", new StringTokenizer(stackTrace).nextToken());
+                    ppw.addAttribute(
+                            "type",
+                            isBlank(stackTrace) ? "UndefinedException" : new StringTokenizer(stackTrace).nextToken());
                 }
             }
         }
