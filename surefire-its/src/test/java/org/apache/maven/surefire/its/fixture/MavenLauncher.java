@@ -29,10 +29,10 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.maven.it.VerificationException;
-import org.apache.maven.it.Verifier;
-import org.apache.maven.it.util.ResourceExtractor;
 import org.apache.maven.shared.utils.io.FileUtils;
+import org.apache.maven.shared.verifier.VerificationException;
+import org.apache.maven.shared.verifier.Verifier;
+import org.apache.maven.shared.verifier.util.ResourceExtractor;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;
@@ -221,7 +221,7 @@ public final class MavenLauncher {
                 String goal = it.next();
                 if (goal.equals(sysPropKey) || goal.startsWith(sysPropStarter)) {
                     System.out.printf(
-                            "[WARNING] System property already exists '%s'. Overriding to '%s'.\n", goal, newGoal);
+                            "[WARNING] System property already exists '%s'. Overriding to '%s'.%n", goal, newGoal);
                     it.set(newGoal);
                     return;
                 }
@@ -242,7 +242,7 @@ public final class MavenLauncher {
             }
         }
         if (expectFailure) {
-            throw new RuntimeException("Expecting build failure, got none!");
+            throw new RuntimeException("Expecting build failure, have got none!");
         }
         return verify;
     }
