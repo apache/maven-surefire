@@ -16,22 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.plugins.surefire.report;
+package org.apache.maven.plugins.surefire.report.stubs;
 
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
+public class AnchorTestCasesStub extends SurefireReportMavenProjectStub {
 
-/**
- * Creates a nicely formatted Surefire Test Report in html format.
- * This goal does not run the tests, it only builds the reports.
- * This is a workaround for
- * <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">https://issues.apache.org/jira/browse/SUREFIRE-257</a>
- *
- * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
- * @since 2.3
- */
-@Mojo(name = "report-only")
-@Execute(phase = LifecyclePhase.NONE)
-@SuppressWarnings("unused")
-public class SurefireReportOnlyMojo extends SurefireReportMojo {}
+    @Override
+    protected String getProjectDirName() {
+        return "basic-surefire-report-anchor-test-cases";
+    }
+}

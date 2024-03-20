@@ -18,23 +18,20 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.apache.maven.plugins.annotations.Execute;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
 
 /**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
+ * Creates a nicely formatted Surefire Test Report in html format.
+ * This goal does not run the tests, it only builds the reports.
+ * This is a workaround for
+ * <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">https://issues.apache.org/jira/browse/SUREFIRE-257</a>
  *
- * @author Tibor Digana (tibor17)
- * @since 3.0.0-M4
+ * @author <a href="mailto:baerrach@gmail.com">Barrie Treloar</a>
+ * @since 2.3
  */
-public class JUnit4SuiteTest extends TestCase {
-    public static Test suite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JUnit4TestAdapter(Surefire597Test.class));
-        suite.addTest(new JUnit4TestAdapter(SurefireSchemaValidationTest.class));
-        suite.addTestSuite(SurefireReportTest.class);
-        return suite;
-    }
-}
+@Mojo(name = "report-only")
+@Execute(phase = LifecyclePhase.NONE)
+@SuppressWarnings("unused")
+public class SurefireOnlyReport extends SurefireReport {}
