@@ -55,7 +55,7 @@ import static org.apache.maven.plugins.surefire.report.SurefireReportParser.hasR
  *
  * @author Stephen Connolly
  */
-public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
+public abstract class AbstractSurefireReport extends AbstractMavenReport {
 
     /**
      * If set to false, only failures are shown.

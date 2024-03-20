@@ -25,8 +25,8 @@
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <configuration>
                     <project
-                            implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireRepMavenProjectStub"/>
-                    <outputName>acceptance-test-report</outputName>
+                            implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireReportMavenProjectStub"/>
+                    <outputName>acceptance-test</outputName>
                     <localRepository>${localRepository}</localRepository>
                     <customBundle>${basedir}/src/test/resources/unit/surefire-1183/src/site/custom/surefire-report.properties</customBundle>
                     <outputDirectory>${basedir}/target/site/unit/surefire-1183</outputDirectory>
