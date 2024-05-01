@@ -83,7 +83,7 @@ mvn -Dit.test=ITSquare,ITCi*le verify
 
 Running a Set of Methods in a Single Test Class
 
-  As of Surefire 2.7.3, you can also run only a subset of the tests in a test class.
+  You can also run only a subset of the tests in a test class.
   
   << NOTE : This feature is supported only for Junit 4.x and TestNG. Use syntax e.g. "foo/MyTest.java",
   "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes). >>
@@ -100,7 +100,7 @@ mvn -Dit.test=ITCircle#mytest verify
 +---+
 #{end}
 
-  You can use patterns too
+  You can use patterns too:
   
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -112,7 +112,7 @@ mvn -Dit.test=ITCircle#test* verify
 +---+
 #{end}
 
-  Since of ${thisPlugin} Plugin 2.19 you can select multiple methods (JUnit 4, JUnit 4.7+ and TestNG):
+  You can select multiple methods (JUnit 4, JUnit 4.7+ and TestNG):
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -124,11 +124,10 @@ mvn -Dit.test=ITCircle#testOne+testTwo verify
 +---+
 #{end}
 
-  Note this feature was available in JUnit 4 provider only since of ${thisPlugin} Plugin 2.12.1.
 
 Multiple Formats in One
 
-  As of ${thisPlugin} Plugin 2.19 multiple formats are supported in one pattern (JUnit 4, JUnit 4.7+, TestNG):
+  Multiple formats are supported in one pattern (JUnit 4, JUnit 4.7+, TestNG):
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
 +---+
@@ -153,14 +152,14 @@ mvn "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*
 
 * Fully qualified class name
 
-  As of ${thisPlugin} Plugin 2.19.1, the syntax with fully qualified class names or packages can be used, e.g.:
+  The syntax with fully qualified class names or packages can be used. For example:
 
 +---+
 <test>my.package.???Test#testMethod, another.package.*</test>
 +---+
 
   The character (?) replaces single character and (*) represents zero or more characters.
-  Multiple formats can be additionally combined.
+  Multiple formats can be combined.
 
 
 
