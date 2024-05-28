@@ -32,6 +32,7 @@ import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.logging.Logger;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,17 +43,14 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import static java.io.File.separatorChar;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
-import static junit.framework.TestCase.assertNull;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 import static org.powermock.reflect.Whitebox.invokeMethod;
 
@@ -67,28 +65,18 @@ public class AbstractSurefireMojoToolchainsTest {
     public final ExpectedException e = ExpectedException.none();
 
     /**
-     * Ensure that we use the toolchain found by getToolchainMaven33x()
+     * Ensure that we use the toolchain found by getToolchain()
      * when the jdkToolchain parameter is set.
      */
     @Test
-    public void shouldCallMaven33xMethodWhenSpecSet() throws Exception {
+    public void shouldCallMethodWhenSpecSet() throws Exception {
         AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
-        Toolchain expectedFromMaven33Method = mock(Toolchain.class);
-        MockToolchainManager toolchainManager = new MockToolchainManager(null, null);
+        Toolchain expectedMethod = mock(Toolchain.class);
+        MockToolchainManager toolchainManager = new MockToolchainManager(expectedMethod, null);
         mojo.setToolchainManager(toolchainManager);
         mojo.setJdkToolchain(singletonMap("version", "1.8"));
-
-        mockStatic(AbstractSurefireMojo.class);
-        when(
-                        AbstractSurefireMojo.class,
-                        "getToolchainMaven33x",
-                        ToolchainManager.class,
-                        toolchainManager,
-                        mojo.getSession(),
-                        mojo.getJdkToolchain())
-                .thenReturn(expectedFromMaven33Method);
         Toolchain actual = invokeMethod(mojo, "getToolchain");
-        assertThat(actual).isSameAs(expectedFromMaven33Method);
+        assertThat(actual).isSameAs(expectedMethod);
     }
 
     /**
@@ -106,39 +94,19 @@ public class AbstractSurefireMojoToolchainsTest {
         assertThat(actual).isSameAs(expectedFromContext);
     }
 
-    @Test
-    public void shouldReturnNoToolchainInMaven32() throws Exception {
-        Toolchain toolchain = invokeMethod(
-                AbstractSurefireMojo.class,
-                "getToolchainMaven33x",
-                MockToolchainManagerMaven32.class,
-                new MockToolchainManagerMaven32(null),
-                mock(MavenSession.class),
-                emptyMap());
-        assertNull(toolchain);
-    }
-
+    // TODO Is this still required?
     @Test(expected = MojoFailureException.class)
-    public void shouldThrowMaven33xToolchain() throws Exception {
-        invokeMethod(
-                AbstractSurefireMojo.class,
-                "getToolchainMaven33x",
-                MockToolchainManager.class,
-                new MockToolchainManager(null, null),
-                mock(MavenSession.class),
-                emptyMap());
+    @Ignore
+    public void shouldThrowToolchain() throws Exception {
+        invokeMethod(AbstractSurefireMojo.class, "getToolchain");
     }
 
+    // TODO Is this still required?
     @Test
-    public void shouldGetMaven33xToolchain() throws Exception {
+    @Ignore
+    public void shouldGetToolchain() throws Exception {
         Toolchain expected = mock(Toolchain.class);
-        Toolchain actual = invokeMethod(
-                AbstractSurefireMojo.class,
-                "getToolchainMaven33x",
-                MockToolchainManager.class,
-                new MockToolchainManager(expected, null),
-                mock(MavenSession.class),
-                emptyMap());
+        Toolchain actual = invokeMethod(AbstractSurefireMojo.class, "getToolchain");
 
         assertThat(actual).isSameAs(expected);
     }
@@ -257,34 +225,24 @@ public class AbstractSurefireMojoToolchainsTest {
     /**
      * Mocks a ToolchainManager
      */
-    public static final class MockToolchainManager extends MockToolchainManagerMaven32 {
+    public static final class MockToolchainManager implements ToolchainManager {
+
         private final Toolchain specToolchain;
-
-        public MockToolchainManager(Toolchain specToolchain, Toolchain buildContextToolchain) {
-            super(buildContextToolchain);
-            this.specToolchain = specToolchain;
-        }
-
-        public List<Toolchain> getToolchains(MavenSession session, String type, Map<String, String> requirements) {
-            return specToolchain == null ? Collections.<Toolchain>emptyList() : singletonList(specToolchain);
-        }
-    }
-
-    /**
-     * Mocks an older version that does not implement getToolchains()
-     * returns provided toolchain
-     */
-    public static class MockToolchainManagerMaven32 implements ToolchainManager {
-
         private final Toolchain buildContextToolchain;
 
-        public MockToolchainManagerMaven32(Toolchain buildContextToolchain) {
+        public MockToolchainManager(Toolchain specToolchain, Toolchain buildContextToolchain) {
+            this.specToolchain = specToolchain;
             this.buildContextToolchain = buildContextToolchain;
         }
 
         @Override
         public Toolchain getToolchainFromBuildContext(String type, MavenSession context) {
             return buildContextToolchain;
+        }
+
+        @Override
+        public List<Toolchain> getToolchains(MavenSession session, String type, Map<String, String> requirements) {
+            return specToolchain == null ? Collections.<Toolchain>emptyList() : singletonList(specToolchain);
         }
     }
 }

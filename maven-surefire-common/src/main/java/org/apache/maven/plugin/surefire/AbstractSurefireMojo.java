@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -139,8 +138,6 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
-import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
@@ -935,31 +932,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return consoleLogger;
     }
 
-    private static <T extends ToolchainManager> Toolchain getToolchainMaven33x(
-            Class<T> toolchainManagerType, T toolchainManager, MavenSession session, Map<String, String> toolchainArgs)
-            throws MojoFailureException {
-        Method getToolchainsMethod =
-                tryGetMethod(toolchainManagerType, "getToolchains", MavenSession.class, String.class, Map.class);
-        if (getToolchainsMethod != null) {
-            //noinspection unchecked
-            List<Toolchain> tcs =
-                    invokeMethodWithArray(toolchainManager, getToolchainsMethod, session, "jdk", toolchainArgs);
-            if (tcs.isEmpty()) {
-                throw new MojoFailureException(
-                        "Requested toolchain specification did not match any configured toolchain: " + toolchainArgs);
-            }
-            return tcs.get(0);
-        }
-        return null;
-    }
-
-    // TODO remove the part with ToolchainManager lookup once we depend on
-    // 3.0.9 (have it as prerequisite). Define as regular component field then.
     private Toolchain getToolchain() throws MojoFailureException {
         Toolchain tc = null;
 
         if (getJdkToolchain() != null) {
-            tc = getToolchainMaven33x(ToolchainManager.class, getToolchainManager(), getSession(), getJdkToolchain());
+            List<Toolchain> tcs = getToolchainManager().getToolchains(getSession(), "jdk", getJdkToolchain());
+            if (tcs.isEmpty()) {
+                throw new MojoFailureException(
+                        "Requested toolchain specification did not match any configured toolchain: "
+                                + getJdkToolchain());
+            }
+            tc = tcs.get(0);
         }
 
         if (tc == null) {
