@@ -68,7 +68,7 @@
   <scm>
     <connection>${maven.surefire.scm.devConnection}</connection>
     <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
-    <tag>surefire-3.0.0-M8</tag>
+    <tag>HEAD</tag>
     <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>

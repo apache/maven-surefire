@@ -31,10 +31,6 @@
   <name>SureFire JUnit4 Runner</name>
   <description>SureFire JUnit 4.0+ Runner</description>
 
-  <scm>
-    <tag>surefire-3.0.0-M8</tag>
-  </scm>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

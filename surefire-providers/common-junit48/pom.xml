@@ -31,10 +31,6 @@
   <name>Shared JUnit48 Provider Code</name>
   <description>Shared JUnit48 Provider Code</description>
 
-  <scm>
-    <tag>surefire-3.0.0-M8</tag>
-  </scm>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

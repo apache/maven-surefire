@@ -31,10 +31,6 @@
   <name>Shared Java 5 Provider Base</name>
   <description>Shared Java 5 code for all providers.</description>
 
-  <scm>
-    <tag>surefire-3.0.0-M8</tag>
-  </scm>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>

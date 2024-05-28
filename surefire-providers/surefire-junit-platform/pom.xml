@@ -76,10 +76,6 @@
     </contributor>
   </contributors>
 
-  <scm>
-    <tag>surefire-3.0.0-M8</tag>
-  </scm>
-
   <properties>
     <!-- common version suffix by platform and other junit5 artifacts, compare with https://github.com/junit-team/junit5/blob/main/gradle.properties -->
     <junit5VersionSuffix>9.3</junit5VersionSuffix>
