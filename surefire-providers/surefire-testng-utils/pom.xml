@@ -28,7 +28,7 @@
 
   <artifactId>surefire-testng-utils</artifactId>
 
-  <name>SureFire TestNG Utils</name>
+  <name>Surefire TestNG Utils</name>
   <description>TestNG Utilities</description>
 
   <dependencies>

@@ -28,8 +28,8 @@
 
   <artifactId>surefire-junit3</artifactId>
 
-  <name>SureFire JUnit Runner</name>
-  <description>SureFire JUnit3 Runner</description>
+  <name>Surefire JUnit Runner</name>
+  <description>Surefire JUnit3 Runner</description>
 
   <dependencies>
     <dependency>

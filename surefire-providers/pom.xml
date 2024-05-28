@@ -29,8 +29,8 @@
   <artifactId>surefire-providers</artifactId>
   <packaging>pom</packaging>
 
-  <name>SureFire Providers</name>
-  <description>SureFire Providers Aggregator POM</description>
+  <name>Surefire Providers</name>
+  <description>Surefire Providers Aggregator POM</description>
 
   <modules>
     <module>common-junit3</module>

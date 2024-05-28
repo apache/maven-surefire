@@ -28,8 +28,8 @@
 
   <artifactId>surefire-junit4</artifactId>
 
-  <name>SureFire JUnit4 Runner</name>
-  <description>SureFire JUnit 4.0+ Runner</description>
+  <name>Surefire JUnit4 Runner</name>
+  <description>Surefire JUnit 4.0+ Runner</description>
 
   <dependencies>
     <dependency>

@@ -28,8 +28,8 @@
 
   <artifactId>surefire-junit47</artifactId>
 
-  <name>SureFire JUnitCore Runner</name>
-  <description>SureFire JUnitCore (JUnit 4.7+) Runner</description>
+  <name>Surefire JUnitCore Runner</name>
+  <description>Surefire JUnitCore (JUnit 4.7+) Runner</description>
 
   <dependencies>
     <dependency>

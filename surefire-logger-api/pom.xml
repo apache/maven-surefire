@@ -28,8 +28,8 @@
 
   <artifactId>surefire-logger-api</artifactId>
 
-  <name>SureFire Logger API</name>
-  <description>Interfaces and Utilities related only to internal SureFire Logger API. Free of dependencies.</description>
+  <name>Surefire Logger API</name>
+  <description>Interfaces and Utilities related only to internal Surefire Logger API. Free of dependencies.</description>
 
   <developers>
     <developer>

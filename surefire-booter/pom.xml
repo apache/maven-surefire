@@ -28,7 +28,7 @@
 
   <artifactId>surefire-booter</artifactId>
 
-  <name>SureFire Booter</name>
+  <name>Surefire Booter</name>
   <description>API and Facilities used by forked tests running in JVM sub-process.</description>
 
   <dependencies>

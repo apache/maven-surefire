@@ -28,8 +28,8 @@
 
   <artifactId>surefire-testng</artifactId>
 
-  <name>SureFire TestNG Runner</name>
-  <description>SureFire TestNG Runner</description>
+  <name>Surefire TestNG Runner</name>
+  <description>Surefire TestNG Runner</description>
 
   <dependencies>
     <dependency>

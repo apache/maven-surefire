@@ -28,7 +28,7 @@
 
   <artifactId>surefire-api</artifactId>
 
-  <name>SureFire API</name>
+  <name>Surefire API</name>
   <description>API used in Surefire and Failsafe MOJO, Booter, Common and test framework providers.</description>
 
   <dependencies>
