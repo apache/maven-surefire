@@ -31,9 +31,6 @@ import org.junit.runners.Parameterized.Parameters;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_MAC_OSX;
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.DEFAULT;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_NO_REUSE;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_REUSE;
@@ -88,8 +85,6 @@ public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4Inte
 
     @Test
     public void test() throws Exception {
-        assumeTrue(IS_OS_LINUX || IS_OS_MAC_OSX || IS_OS_WINDOWS);
-
         SurefireLauncher launcher = unpack("crash-during-test", "_" + crashStyle + "_" + forkStyle.ordinal())
                 .setForkJvm();
 
@@ -110,9 +105,23 @@ public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4Inte
     }
 
     private static void checkCrash(SurefireLauncher launcher) throws Exception {
-        OutputValidator validator = launcher.maven()
-                .withFailure()
-                .executeTest()
+        OutputValidator validator = launcher.maven().withFailure().executeTest();
+
+        boolean osAndArchSupported = true;
+        for (Iterator<String> it = validator.loadLogLines().iterator(); it.hasNext(); ) {
+            String line = it.next();
+            if (line.contains("java.lang.RuntimeException: Unrecognised OS")
+                    || line.contains("java.lang.RuntimeException: Unrecognised arch")) {
+                osAndArchSupported = false;
+                break;
+            }
+        }
+
+        assumeTrue(
+                "crashjvm does not support " + System.getProperty("os.name") + "/" + System.getProperty("os.arch"),
+                osAndArchSupported);
+
+        validator
                 .verifyTextInLog("The forked VM terminated without properly saying "
                         + "goodbye. VM crash or System.exit called?")
                 .verifyTextInLog("Crashed tests:");
