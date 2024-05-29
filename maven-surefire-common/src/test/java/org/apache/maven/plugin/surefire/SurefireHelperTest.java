@@ -69,9 +69,9 @@ public class SurefireHelperTest {
     public void shouldReplaceLongForkNumberPath() {
         File root = new File(System.getProperty("user.dir", ""));
         File subDir = new File(root, "reports-${surefire.forkNumber}");
-        File pathWithPlaceholder = new File(subDir, "subfolder");
+        File pathWithPlaceholder = new File(subDir, "subdir");
         File changed = SurefireHelper.replaceForkThreadsInPath(pathWithPlaceholder, 5);
-        assertThat(changed.getPath()).isEqualTo(new File(new File(root, "reports-5"), "subfolder").getPath());
+        assertThat(changed.getPath()).isEqualTo(new File(new File(root, "reports-5"), "subdir").getPath());
     }
 
     @Test
@@ -108,11 +108,11 @@ public class SurefireHelperTest {
         String pathToJar = "target\\surefire\\surefirebooter4942721306300108667.jar";
         @SuppressWarnings("checkstyle:magicnumber")
         int projectNameLength = 247 - root.length() - pathToJar.length();
-        StringBuilder projectFolder = new StringBuilder();
+        StringBuilder projectDir = new StringBuilder();
         for (int i = 0; i < projectNameLength; i++) {
-            projectFolder.append('x');
+            projectDir.append('x');
         }
-        String path = root + projectFolder + "\\" + pathToJar;
+        String path = root + projectDir + "\\" + pathToJar;
         String escaped = escapeToPlatformPath(path);
         assertThat(escaped).isEqualTo("\\\\?\\" + path);
 

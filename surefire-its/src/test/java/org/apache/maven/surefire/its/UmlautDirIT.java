@@ -170,11 +170,11 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
         String newLocalRepo = customLocalRepoPath.toString();
         String defaultLocalRepo = new MavenLauncher(getClass(), "junit-pathWithUmlaut", null).getLocalRepository();
 
-        copyFolder(
+        copyDir(
                 Paths.get(defaultLocalRepo, "org", "apache", "maven", "surefire"),
                 Paths.get(newLocalRepo, "org", "apache", "maven", "surefire"));
 
-        copyFolder(
+        copyDir(
                 Paths.get(defaultLocalRepo, "org", "apache", "maven", "plugins", "maven-surefire-plugin"),
                 Paths.get(newLocalRepo, "org", "apache", "maven", "plugins", "maven-surefire-plugin"));
 
@@ -182,7 +182,7 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
         return unpack("junit-pathWithUmlaut");
     }
 
-    private static void copyFolder(Path src, Path dest) throws IOException {
+    private static void copyDir(Path src, Path dest) throws IOException {
         if (!exists(dest)) {
             createDirectories(dest);
         }
@@ -190,7 +190,7 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
         for (File from : requireNonNull(src.toFile().listFiles())) {
             Path to = dest.resolve(from.getName());
             if (from.isDirectory()) {
-                copyFolder(from.toPath(), to);
+                copyDir(from.toPath(), to);
             } else if (from.isFile()) {
                 copy(from.toPath(), to, REPLACE_EXISTING);
             }

@@ -70,7 +70,7 @@ public class StatelessXmlReporterTest extends TestCase {
     private static final String TEST_ONE = "aTestMethod";
     private static final String TEST_TWO = "bTestMethod";
     private static final String TEST_THREE = "cTestMethod";
-    private static final AtomicInteger FOLDER_POSTFIX = new AtomicInteger();
+    private static final AtomicInteger DIRECTORY_PREFIX = new AtomicInteger();
 
     private TestSetStats stats;
     private TestSetStats rerunStats;
@@ -85,7 +85,7 @@ public class StatelessXmlReporterTest extends TestCase {
         File basedir = new File(".");
         File target = new File(basedir.getCanonicalFile(), "target");
         target.mkdir();
-        String reportRelDir = getClass().getSimpleName() + "-" + FOLDER_POSTFIX.incrementAndGet();
+        String reportRelDir = getClass().getSimpleName() + "-" + DIRECTORY_PREFIX.incrementAndGet();
         reportDir = new File(target, reportRelDir);
         reportDir.mkdir();
     }
