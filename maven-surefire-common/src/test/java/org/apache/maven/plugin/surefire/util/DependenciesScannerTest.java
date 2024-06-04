@@ -106,7 +106,7 @@ public class DependenciesScannerTest {
         testArtifact.setFile(testJarFile);
 
         List<String> scanDependencies = new ArrayList<>();
-        scanDependencies.add("org.surefire.dependency:dependent-artifact2:*:*:tests-jdk15");
+        scanDependencies.add("org.surefire.dependency:dependent-artifact2:*:tests-jdk15:*");
 
         List<String> include = new ArrayList<>();
         include.add("**/*A.java");
