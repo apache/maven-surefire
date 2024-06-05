@@ -50,7 +50,7 @@ import static org.junit.Assume.assumeThat;
 public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
     private static final String XML_TESTSUITE_FRAGMENT =
             "<testsuite xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation="
-                    + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd\" "
+                    + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd\" "
                     + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
 
     @Parameter

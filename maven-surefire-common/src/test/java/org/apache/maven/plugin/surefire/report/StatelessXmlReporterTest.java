@@ -66,7 +66,7 @@ import static org.powermock.reflect.Whitebox.setInternalState;
 @SuppressWarnings({"ResultOfMethodCallIgnored", "checkstyle:magicnumber"})
 public class StatelessXmlReporterTest extends TestCase {
     private static final String XSD =
-            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
+            "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     private static final String TEST_ONE = "aTestMethod";
     private static final String TEST_TWO = "bTestMethod";
     private static final String TEST_THREE = "cTestMethod";

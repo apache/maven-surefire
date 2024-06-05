@@ -559,7 +559,7 @@ public class SurefirePlugin extends AbstractSurefireMojo implements SurefireRepo
 
     @Override
     protected String getReportSchemaLocation() {
-        return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
+        return "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     }
 
     public File getSystemPropertiesFile() {

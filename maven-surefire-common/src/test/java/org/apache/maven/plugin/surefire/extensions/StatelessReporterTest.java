@@ -63,7 +63,7 @@ public class StatelessReporterTest {
         File target = new File(System.getProperty("user.dir"), "target");
         File reportsDirectory = new File(target, "surefire-reports");
         String reportNameSuffix = "suffix";
-        String schema = "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
+        String schema = "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new HashMap<>();
         DefaultStatelessReportMojoConfiguration config = new DefaultStatelessReportMojoConfiguration(
                 reportsDirectory, reportNameSuffix, true, 5, schema, testClassMethodRunHistory);
@@ -138,7 +138,7 @@ public class StatelessReporterTest {
         File target = new File(System.getProperty("user.dir"), "target");
         File reportsDirectory = new File(target, "surefire-reports");
         String reportNameSuffix = "suffix";
-        String schema = "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd";
+        String schema = "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new HashMap<>();
         DefaultStatelessReportMojoConfiguration config = new DefaultStatelessReportMojoConfiguration(
                 reportsDirectory, reportNameSuffix, true, 5, schema, testClassMethodRunHistory);

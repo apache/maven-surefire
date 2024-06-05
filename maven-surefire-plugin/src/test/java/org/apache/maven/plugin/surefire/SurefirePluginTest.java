@@ -42,7 +42,7 @@ public class SurefirePluginTest extends TestCase {
 
     public void testReportSchemaLocation() {
         assertThat(new SurefirePlugin().getReportSchemaLocation())
-                .isEqualTo("https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd");
+                .isEqualTo("https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd");
     }
 
     public void testFailIfNoTests() throws Exception {
