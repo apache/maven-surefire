@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="surefire.MyTest" version="3.0" time="0" tests="1" errors="1" skipped="0" failures="0">
+<testsuite name="surefire.MyTest" version="3.0.1" time="0" tests="1" errors="1" skipped="0" failures="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
   </properties>

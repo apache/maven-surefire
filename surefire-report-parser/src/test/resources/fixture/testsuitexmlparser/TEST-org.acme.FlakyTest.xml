@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite version="3.0" name="org.acme.FlakyTest" time="1.324" tests="1" errors="0" skipped="0" failures="0">
+<testsuite version="3.0.1" name="org.acme.FlakyTest" time="1.324" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.class.version" value="55.0"/>
   </properties>
@@ -88,7 +88,7 @@
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
 ]]></stackTrace>
       <system-out><![CDATA[2023-06-23 17:27:31,351 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.493s. Listening on: http://localhost:8081
-2023-06-23 17:27:31,353 INFO  [io.quarkus] (main) Profile test activated. 
+2023-06-23 17:27:31,353 INFO  [io.quarkus] (main) Profile test activated.
 2023-06-23 17:27:31,353 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]
 ]]></system-out>
     </flakyFailure>
@@ -176,7 +176,7 @@
 ]]></stackTrace>
       <system-out><![CDATA[2023-06-23 17:27:31,695 INFO  [io.quarkus] (main) code-with-quarkus stopped in 0.022s
 2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.200s. Listening on: http://localhost:8081
-2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) Profile test activated. 
+2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) Profile test activated.
 2023-06-23 17:27:33,059 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]
 ]]></system-out>
     </flakyFailure>
@@ -264,7 +264,7 @@
 ]]></stackTrace>
       <system-out><![CDATA[2023-06-23 17:27:33,117 INFO  [io.quarkus] (main) code-with-quarkus stopped in 0.016s
 2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.180s. Listening on: http://localhost:8081
-2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) Profile test activated. 
+2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) Profile test activated.
 2023-06-23 17:27:34,404 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]
 ]]></system-out>
     </flakyFailure>
@@ -352,7 +352,7 @@
 ]]></stackTrace>
       <system-out><![CDATA[2023-06-23 17:27:34,461 INFO  [io.quarkus] (main) code-with-quarkus stopped in 0.014s
 2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) code-with-quarkus 1.0.0-SNAPSHOT on JVM (powered by Quarkus 3.1.2.Final) started in 1.159s. Listening on: http://localhost:8081
-2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) Profile test activated. 
+2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) Profile test activated.
 2023-06-23 17:27:35,705 INFO  [io.quarkus] (main) Installed features: [cdi, resteasy-reactive, smallrye-context-propagation, vertx]
 ]]></system-out>
       <system-err><![CDATA[Test system.err

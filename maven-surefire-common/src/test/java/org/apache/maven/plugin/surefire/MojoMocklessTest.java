@@ -67,7 +67,7 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfiguration2() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter(false, "3.0");
+        SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter();
         SurefireConsoleOutputReporter consoleReporter = new SurefireConsoleOutputReporter();
         SurefireStatelessTestsetInfoReporter testsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
         setInternalState(surefirePlugin, "statelessTestsetReporter", xmlReporter);

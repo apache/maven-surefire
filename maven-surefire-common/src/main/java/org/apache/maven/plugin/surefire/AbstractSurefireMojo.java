@@ -1936,7 +1936,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private StartupReportConfiguration getStartupReportConfiguration(String configChecksum, boolean isForking) {
         SurefireStatelessReporter xmlReporter = statelessTestsetReporter == null
-                ? new SurefireStatelessReporter(/*todo call def. constr.*/ isDisableXmlReport(), "3.0")
+                ? new SurefireStatelessReporter(/*todo call def. constr.*/ isDisableXmlReport(), "3.0.1")
                 : statelessTestsetReporter;
 
         xmlReporter.setDisable(isDisableXmlReport()); // todo change to Boolean in the version 3.0.0-M6

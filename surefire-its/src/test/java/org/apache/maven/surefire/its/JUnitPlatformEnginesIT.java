@@ -48,6 +48,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
+    // This must correspond to the Surefire version uses for testing
     private static final String XML_TESTSUITE_FRAGMENT =
             "<testsuite xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation="
                     + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd\" "

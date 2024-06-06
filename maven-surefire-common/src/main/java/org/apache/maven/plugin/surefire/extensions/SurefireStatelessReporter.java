@@ -41,13 +41,13 @@ public class SurefireStatelessReporter
      * Activated in the injection point of MOJO.
      */
     public SurefireStatelessReporter() {
-        this(false, "3.0");
+        this(false, "3.0.1");
     }
 
     /**
      * Activated if null injection point in MOJO.
      * @param disable             {@code true} to disable performing the report
-     * @param version             (xsd 3.0) version of the schema
+     * @param version             version of the schema
      */
     public SurefireStatelessReporter(boolean disable, String version) {
         setDisable(disable);
