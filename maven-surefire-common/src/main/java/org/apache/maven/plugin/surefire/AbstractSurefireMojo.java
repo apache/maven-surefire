@@ -329,9 +329,23 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private Map<String, String> systemPropertyVariables;
 
     /**
-     * List of properties for configuring all TestNG related configurations. This is the new preferred method of
-     * configuring TestNG.
-     *
+     * List of properties for configuring the testing provider. This is the preferred method of
+     * configuring TestNG and JUnit platform providers.<br><br>
+     * JUnit platform properties may be defined in a {@code configurationParameters} element:
+     * <pre><code>{@literal <properties>}
+     *     {@literal <configurationParameters>}
+     *         junit.jupiter.execution.parallel.enabled = true
+     *         junit.jupiter.execution.parallel.mode.default = concurrent
+     *     {@literal </configurationParameters>}
+     * {@literal </properties>}</code></pre>
+     * <br>
+     * TestNG properties may be defined as distinct element blocks:
+     * <pre><code>{@literal <properties>}
+     *     {@literal <property>}
+     *         {@literal <name>parallel</name>}
+     *         {@literal <value>methods</value>}
+     *     {@literal </property>}
+     * {@literal </properties>}</code></pre>
      * @since 2.4
      */
     @Parameter
