@@ -553,15 +553,11 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     @SuppressWarnings("unchecked")
     protected void handleSummary(RunResult summary, Exception firstForkException)
             throws MojoExecutionException, MojoFailureException {
-        File summaryFile = getSummaryFile();
-        if (!summaryFile.getParentFile().isDirectory()) {
-            //noinspection ResultOfMethodCallIgnored
-            summaryFile.getParentFile().mkdirs();
-        }
-
         try {
-            Object token = getPluginContext().get(FAILSAFE_IN_PROGRESS_CONTEXT_KEY);
-            writeSummary(summary, summaryFile, token != null);
+            if (!summary.isNoTestsRun()) {
+                Object token = getPluginContext().get(FAILSAFE_IN_PROGRESS_CONTEXT_KEY);
+                writeSummary(summary, getSummaryFile(), token != null);
+            }
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), e);
         }

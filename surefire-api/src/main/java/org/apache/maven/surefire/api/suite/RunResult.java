@@ -86,9 +86,9 @@ public class RunResult {
         this.errors = errors;
         this.failures = failures;
         this.skipped = skipped;
+        this.flakes = flakes;
         this.failure = failure;
         this.timeout = timeout;
-        this.flakes = flakes;
     }
 
     private static String getStackTrace(Exception e) {
@@ -172,6 +172,10 @@ public class RunResult {
 
     public static RunResult noTestsRun() {
         return new RunResult(0, 0, 0, 0);
+    }
+
+    public boolean isNoTestsRun() {
+        return completedCount == 0 && errors == 0 && skipped == 0 && flakes == 0 && failure == null && !timeout;
     }
 
     @Override
