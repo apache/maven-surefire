@@ -227,7 +227,7 @@ public class TestSetStats {
             if (testResult.isErrorOrFailure()) {
                 result.add(testResult.getOutput(trimStackTrace));
             } else if (plainFormat && testResult.isSkipped()) {
-                result.add(testResult.getSourceName() + " skipped");
+                result.add(testResult.getFullName() + " skipped");
             } else if (plainFormat && testResult.isSucceeded()) {
                 result.add(testResult.getElapsedTimeSummary());
             }

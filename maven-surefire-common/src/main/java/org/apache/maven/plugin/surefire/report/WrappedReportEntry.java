@@ -130,6 +130,10 @@ public class WrappedReportEntry implements TestSetReportEntry {
         return original.getSourceName() + "." + original.getName();
     }
 
+    public String getFullName() {
+        return getName() == null ? getSourceName() : getClassMethodName();
+    }
+
     @Override
     public String getGroup() {
         return original.getGroup();
@@ -186,8 +190,7 @@ public class WrappedReportEntry implements TestSetReportEntry {
     }
 
     public String getElapsedTimeSummary() {
-        String description = getName() == null ? getSourceName() : getClassMethodName();
-        return description + " -- " + getElapsedTimeVerbose();
+        return getFullName() + " -- " + getElapsedTimeVerbose();
     }
 
     public boolean isErrorOrFailure() {
