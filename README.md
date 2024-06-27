@@ -46,9 +46,9 @@ Usage of [maven-surefire-plugin], [maven-failsafe-plugin], [maven-surefire-repor
 
 # Development Information
 
-Build the Surefire project using **Maven 3.2.5+** and **JDK 1.8+**.  
+Build the Surefire project using **Maven 3.6.3+** and **JDK 8+**.
 
-* In order to run tests for a release check during the Vote, the following memory requirements are needed:   
+* In order to run tests for a release check during the Vote, the following memory requirements are needed:
 
   On Linux/Unix:
   ```
@@ -59,7 +59,7 @@ Build the Surefire project using **Maven 3.2.5+** and **JDK 1.8+**.
   set MAVEN_OPTS="-server -Xmx256m -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=384m -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true"
   ```
 
-* In order to build and run the tests:  
+* In order to build and run the tests:
   ```
   mvn install site site:stage -P reporting,run-its
   ```
