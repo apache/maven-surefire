@@ -24,16 +24,23 @@
         <artifactId>maven-surefire-report-plugin</artifactId>
         <configuration>
           <outputDirectory>${basedir}/target/site/unit/basic-surefire-report-linkxref-false</outputDirectory>
-          <localRepository>${localRepository}</localRepository>
-          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireRepMavenProjectStub"/>
+          <project implementation="org.apache.maven.plugins.surefire.report.stubs.LinkXrefFalseStub"/>
           <showSuccess>true</showSuccess>
           <reportsDirectory>${basedir}/src/test/resources/unit/basic-surefire-report-linkxref-false/surefire-reports
           </reportsDirectory>
-          <outputName>surefire-report</outputName>
-          <xrefLocation>${basedir}/target/site/unit/basic-surefire-report-linkxref-false/xref-test</xrefLocation>
+          <outputName>surefire</outputName>
+          <xrefTestLocation>${basedir}/target/site/unit/basic-surefire-report-linkxref-false/xref-test</xrefTestLocation>
           <linkXRef>false</linkXRef>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
