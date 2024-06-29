@@ -90,7 +90,8 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
     private File xrefLocation;
 
     /**
-     * Whether to link the XRef if found.
+     * Link the failed tests line numbers to the source xref. Will link
+     * automatically if Maven JXR plugin is being used.
      */
     @Parameter(defaultValue = "true", property = "linkXRef")
     private boolean linkXRef;
