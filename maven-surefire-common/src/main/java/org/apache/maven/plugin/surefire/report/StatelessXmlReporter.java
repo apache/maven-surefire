@@ -118,6 +118,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     private final boolean enableOutErrElements;
 
+    private final boolean enablePropertiesElement;
+
     public StatelessXmlReporter(
             File reportsDirectory,
             String reportNameSuffix,
@@ -130,19 +132,21 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             boolean phrasedSuiteName,
             boolean phrasedClassName,
             boolean phrasedMethodName,
-            boolean enableOutErrElements) {
+            boolean enableOutErrElements,
+            boolean enablePropertiesElement) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
-        this.enableOutErrElements = enableOutErrElements;
         this.xsdVersion = xsdVersion;
         this.phrasedFileName = phrasedFileName;
         this.phrasedSuiteName = phrasedSuiteName;
         this.phrasedClassName = phrasedClassName;
         this.phrasedMethodName = phrasedMethodName;
+        this.enableOutErrElements = enableOutErrElements;
+        this.enablePropertiesElement = enablePropertiesElement;
     }
 
     @Override
@@ -158,7 +162,27 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
             createTestSuiteElement(ppw, testSetReportEntry, testSetStats); // TestSuite
 
-            showProperties(ppw, testSetReportEntry.getSystemProperties());
+            if (enablePropertiesElement) {
+                showProperties(ppw, testSetReportEntry.getSystemProperties());
+            } else {
+                boolean hasNonSuccess = false;
+                for (Map<String, List<WrappedReportEntry>> statistics : classMethodStatistics.values()) {
+                    for (List<WrappedReportEntry> thisMethodRuns : statistics.values()) {
+                        if (thisMethodRuns.stream()
+                                .anyMatch(entry -> entry.getReportEntryType() != ReportEntryType.SUCCESS)) {
+                            hasNonSuccess = true;
+                            break;
+                        }
+                    }
+                    if (hasNonSuccess) {
+                        break;
+                    }
+                }
+
+                if (hasNonSuccess) {
+                    showProperties(ppw, testSetReportEntry.getSystemProperties());
+                }
+            }
 
             for (Entry<String, Map<String, List<WrappedReportEntry>>> statistics : classMethodStatistics.entrySet()) {
                 for (Entry<String, List<WrappedReportEntry>> thisMethodRuns :

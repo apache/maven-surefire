@@ -110,6 +110,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 false,
+                true,
                 true);
         reporter.cleanTestHistoryMap();
 
@@ -171,6 +172,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 false,
+                true,
                 true);
         reporter.testSetCompleted(testSetReportEntry, stats);
 
@@ -274,6 +276,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 false,
+                true,
                 true);
 
         reporter.testSetCompleted(testSetReportEntry, stats);
@@ -373,7 +376,7 @@ public class StatelessXmlReporterTest extends TestCase {
         rerunStats.testSucceeded(testTwoSecondError);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false, true);
+                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false, true, true);
 
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(
@@ -537,7 +540,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 null);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false, true);
+                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false, true, true);
 
         reporter.testSetCompleted(testReport, stats);
     }

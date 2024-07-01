@@ -67,6 +67,7 @@ public class TestSetMockReporterFactory extends DefaultReporterFactory {
                 null,
                 true,
                 true,
+                true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
                 new SurefireStatelessTestsetInfoReporter());

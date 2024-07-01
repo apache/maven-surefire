@@ -69,7 +69,8 @@ public class SurefireStatelessReporter
                 false,
                 false,
                 false,
-                configuration.isEnableOutErrElements());
+                configuration.isEnableOutErrElements(),
+                configuration.isEnablePropertiesElement());
     }
 
     @Override

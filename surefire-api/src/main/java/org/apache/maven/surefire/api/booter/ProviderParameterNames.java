@@ -47,4 +47,6 @@ public class ProviderParameterNames {
     public static final String PARALLEL_OPTIMIZE_PROP = "paralleloptimization";
 
     public static final String ENABLE_OUT_ERR_ELEMENTS_PROP = "enableouterrelements";
+
+    public static final String ENABLE_PROPERTIES_ELEMENT_PROP = "enablepropertieselement";
 }

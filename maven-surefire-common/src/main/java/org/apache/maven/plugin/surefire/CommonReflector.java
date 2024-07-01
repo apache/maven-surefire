@@ -87,6 +87,7 @@ public class CommonReflector {
                 String.class,
                 boolean.class,
                 boolean.class,
+                boolean.class,
                 statelessTestsetReporter,
                 consoleOutputReporter,
                 statelessTestsetInfoReporter);
@@ -105,6 +106,7 @@ public class CommonReflector {
             reporterConfiguration.getEncoding().name(),
             reporterConfiguration.isForking(),
             reporterConfiguration.isEnableOutErrElements(),
+            reporterConfiguration.isEnablePropertiesElement(),
             reporterConfiguration.getXmlReporter().clone(surefireClassLoader),
             reporterConfiguration.getConsoleOutputReporter().clone(surefireClassLoader),
             reporterConfiguration.getTestsetReporter().clone(surefireClassLoader)

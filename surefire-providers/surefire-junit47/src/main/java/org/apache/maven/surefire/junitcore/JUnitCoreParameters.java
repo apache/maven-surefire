@@ -50,6 +50,8 @@ public final class JUnitCoreParameters {
 
     public static final String ENABLE_OUT_ERR_ELEMENTS_KEY = ProviderParameterNames.ENABLE_OUT_ERR_ELEMENTS_PROP;
 
+    public static final String ENABLE_PROPERTIES_ELEMENT_KEY = ProviderParameterNames.ENABLE_PROPERTIES_ELEMENT_PROP;
+
     private final String parallel;
 
     private final boolean perCoreThreadCount;
@@ -72,6 +74,8 @@ public final class JUnitCoreParameters {
 
     private final boolean enableOutErrElements;
 
+    private final boolean enablePropertiesElement;
+
     public JUnitCoreParameters(Map<String, String> properties) {
         parallel = property(properties, PARALLEL_KEY, "none").toLowerCase();
         perCoreThreadCount = property(properties, PERCORETHREADCOUNT_KEY, true);
@@ -84,6 +88,7 @@ public final class JUnitCoreParameters {
         parallelTestsTimeoutForcedInSeconds = Math.max(property(properties, PARALLEL_TIMEOUTFORCED_KEY, 0d), 0);
         parallelOptimization = property(properties, PARALLEL_OPTIMIZE_KEY, true);
         enableOutErrElements = property(properties, ENABLE_OUT_ERR_ELEMENTS_KEY, true);
+        enablePropertiesElement = property(properties, ENABLE_PROPERTIES_ELEMENT_KEY, true);
     }
 
     private static Collection<String> lowerCase(String... elements) {
@@ -173,6 +178,10 @@ public final class JUnitCoreParameters {
         return enableOutErrElements;
     }
 
+    public boolean isEnablePropertiesElement() {
+        return enablePropertiesElement;
+    }
+
     @Override
     public String toString() {
         return "parallel='" + parallel + '\'' + ", perCoreThreadCount=" + perCoreThreadCount + ", threadCount="
@@ -180,7 +189,8 @@ public final class JUnitCoreParameters {
                 + threadCountSuites
                 + ", threadCountClasses=" + threadCountClasses + ", threadCountMethods=" + threadCountMethods
                 + ", parallelOptimization=" + parallelOptimization
-                + ", enableOutErrElements=" + enableOutErrElements;
+                + ", enableOutErrElements=" + enableOutErrElements
+                + ", enablePropertiesElement=" + enablePropertiesElement;
     }
 
     private static boolean property(Map<String, String> properties, String key, boolean fallback) {
