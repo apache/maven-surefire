@@ -54,7 +54,7 @@ public class TestNGParallelTest
         assertTrue( testCount == INVOCATION_COUNT, "Expected test to be run 3 times, but was " + testCount );
         // Note, this can be < 6000 on Windows.
         assertTrue( runtime < INVOCATION_COUNT * DELAY - 300L,
-                "Runtime was " + runtime + ". It should be a little over 3000ms but less than 6000ms." );
+                "Runtime was " + runtime + ". It should be a little over 3000 ms but less than 6000 ms." );
     }
 
     @Test( threadPoolSize = THREAD_POOL_SIZE, invocationCount = INVOCATION_COUNT )

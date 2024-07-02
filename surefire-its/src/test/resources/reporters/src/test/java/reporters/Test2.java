@@ -25,6 +25,6 @@ import junit.framework.TestCase;
 public class Test2 extends TestCase
 {
     public void test6281() {
-        System.out.println( "Test2 on" + Thread.currentThread().getName());
+        System.out.println( "Test2 on " + Thread.currentThread().getName());
     }
 }

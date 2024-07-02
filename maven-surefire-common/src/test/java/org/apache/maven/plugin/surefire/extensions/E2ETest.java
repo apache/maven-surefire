@@ -105,7 +105,7 @@ public class E2ETest {
 
                     if (counter.get() == totalCalls - 64 * 1024) {
                         readTime.set(spent);
-                        System.out.println(spent + "ms on read");
+                        System.out.println("spent " + spent + " ms on read");
                         awaitHandlerFinished.countDown();
                     }
                 } catch (Exception e) {
@@ -148,7 +148,7 @@ public class E2ETest {
                     long spent = t2 - t1;
                     // System.setOut( out );
                     // System.setErr( err );
-                    System.out.println(spent + "ms on write");
+                    System.out.println("spent " + spent + " ms on write");
                     awaitHandlerFinished.countDown();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -166,8 +166,8 @@ public class E2ETest {
 
         // 1.0 seconds while using the encoder/decoder
         assertThat(readTime.get())
-                .describedAs("The performance test should assert 1.0s of read time. "
-                        + "The limit 6s guarantees that the read time does not exceed this limit on overloaded CPU.")
+                .describedAs("The performance test should assert 1.0 s of read time. "
+                        + "The limit 6 s guarantees that the read time does not exceed this limit on overloaded CPU.")
                 .isPositive()
                 .isLessThanOrEqualTo(6_000L);
     }

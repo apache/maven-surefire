@@ -912,8 +912,8 @@ public final class ParallelComputerUtilTest {
 
     @Test
     public void shutdown() throws TestSetFailedException {
-        // The JUnitCore returns after 2.5s.
-        // The test-methods in TestClass are NOT interrupted, and return normally after 5s.
+        // The JUnitCore returns after 2.5 s.
+        // The test-methods in TestClass are NOT interrupted, and return normally after 5 s.
         Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
@@ -937,7 +937,7 @@ public final class ParallelComputerUtilTest {
 
     @Test
     public void forcedShutdown() throws TestSetFailedException {
-        // The JUnitCore returns after 2.5s, and the test-methods in TestClass are interrupted.
+        // The JUnitCore returns after 2.5 s, and the test-methods in TestClass are interrupted.
         Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
@@ -961,9 +961,9 @@ public final class ParallelComputerUtilTest {
 
     @Test
     public void timeoutAndForcedShutdown() throws TestSetFailedException {
-        // The JUnitCore returns after 3.5s and the test-methods in TestClass are timed out after 2.5s.
-        // No new test methods are scheduled for execution after 2.5s.
-        // Interruption of test methods after 3.5s.
+        // The JUnitCore returns after 3.5 s and the test-methods in TestClass are timed out after 2.5 s.
+        // No new test methods are scheduled for execution after 2.5 s.
+        // Interruption of test methods after 3.5 s.
         Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");
@@ -988,7 +988,7 @@ public final class ParallelComputerUtilTest {
 
     @Test
     public void forcedTimeoutAndShutdown() throws Exception {
-        // The JUnitCore returns after 3.5s and the test-methods in TestClass are interrupted after 3.5s.
+        // The JUnitCore returns after 3.5 s and the test-methods in TestClass are interrupted after 3.5 s.
         Map<String, String> properties = new HashMap<>();
         properties.put(PARALLEL_KEY, "methods");
         properties.put(THREADCOUNTMETHODS_KEY, "2");

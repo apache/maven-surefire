@@ -36,7 +36,7 @@ public final class SureFireFileManager {
         String subDirName = "surefire";
 
         // create directory name suffix from legal chars in the current user name
-        // or a millisecond timestamp as fallback
+        // or a timestamp with millisecond resolution as fallback
         String userSuffix = Stream.of("user.name", "USER", "USERNAME")
                 .map(System::getProperty)
                 .filter(Objects::nonNull)

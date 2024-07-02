@@ -288,7 +288,7 @@ public class ParallelComputerBuilderTest {
 
         // 6 methods altogether.
         // 2 groups with 3 threads.
-        // Each group takes 0.5s.
+        // Each group takes 0.5 s.
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
         final long t1 = systemMillis();

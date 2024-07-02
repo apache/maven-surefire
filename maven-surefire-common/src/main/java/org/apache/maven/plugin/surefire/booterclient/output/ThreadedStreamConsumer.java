@@ -38,7 +38,7 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
  * <br>
  * After applying the performance improvements with {@link QueueSynchronizer} the throughput becomes
  * 6.33 mega messages per second
- * (158 nano seconds per message, 5 million messages within 0.79 seconds - see the test ThreadedStreamConsumerTest)
+ * (158 nanoseconds per message, 5 million messages within 0.79 seconds - see the test ThreadedStreamConsumerTest)
  * on CPU i5 Dual Core 2.6 GHz and Oracle JDK 11.
  *
  * @author Kristian Rosenvold
@@ -114,7 +114,7 @@ public final class ThreadedStreamConsumer implements EventHandler<Event>, Closea
     @Override
     public void handleEvent(@Nonnull Event event) {
         // Do NOT call Thread.isAlive() - slow.
-        // It makes worse performance from 790 millis to 1250 millis for 5 million messages.
+        // It makes worse performance from 790 ms to 1250 ms for 5 million messages.
         if (!stop.get() && isAlive.get()) {
             synchronizer.pushNext(event);
         }

@@ -73,7 +73,7 @@ public class ThreadedStreamConsumerTest {
         assertThat(countDown.await(3L, SECONDS)).isTrue();
 
         long t2 = System.currentTimeMillis();
-        System.out.println((t2 - t1) + " millis in testQueueSynchronizer()");
+        System.out.println("spent " + (t2 - t1) + " ms in testQueueSynchronizer()");
     }
 
     @Test
@@ -102,7 +102,7 @@ public class ThreadedStreamConsumerTest {
         assertThat(countDown.await(3L, SECONDS)).isTrue();
 
         long t2 = System.currentTimeMillis();
-        System.out.println((t2 - t1) + " millis in testThreadedStreamConsumer()");
+        System.out.println("spent " + (t2 - t1) + " ms in testThreadedStreamConsumer()");
 
         streamConsumer.close();
     }

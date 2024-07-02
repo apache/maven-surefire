@@ -133,13 +133,13 @@ public class AsyncSocketTest {
                         long spent = t2 - t1;
 
                         if (i % 100_000 == 0) {
-                            System.out.println(spent + "ms: " + i);
+                            System.out.println("spent " + spent + " ms: " + i);
                         }
                     }
                     os.flush();
                     long spent = System.currentTimeMillis() - t1;
                     writeTime.set(spent);
-                    System.out.println(spent + "ms: " + i);
+                    System.out.println("spent " + spent + " ms: " + i);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -156,12 +156,12 @@ public class AsyncSocketTest {
         worker.close();
         server.close();
 
-        // 160 millis on write using the asynchronous sockets
-        // 320 millis on NIO blocking sockets
+        // 160 milliseconds on write using the asynchronous sockets
+        // 320 milliseconds on NIO blocking sockets
         assertThat(writeTime.get()).isLessThan(1000L);
 
-        // 160 millis on read using the asynchronous sockets
-        // 320 millis on NIO blocking sockets
+        // 160 milliseconds on read using the asynchronous sockets
+        // 320 milliseconds on NIO blocking sockets
         assertThat(readTime.get()).isLessThan(1000L);
     }
 
@@ -181,8 +181,8 @@ public class AsyncSocketTest {
         long t2 = System.currentTimeMillis();
         long spent = t2 - t1;
         readTime.set(spent);
-        System.out.println(new String(bytes.get(bytes.size() - 1)));
-        System.out.println("received within " + spent + "ms");
+        System.out.println("string read: " + new String(bytes.get(bytes.size() - 1)));
+        System.out.println("received within " + spent + " ms");
         clientSocketChannel.close();
         barrier.countDown();
     }

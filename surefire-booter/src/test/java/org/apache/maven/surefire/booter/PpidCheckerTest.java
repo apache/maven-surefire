@@ -122,7 +122,7 @@ public class PpidCheckerTest {
                         ? unixProcessInfo(expectedPid, 0L)
                         : windowsProcessInfo(expectedPid, windowsProcessStartTime(checker)));
 
-        // the etime in Unix is measured in seconds. So let's wait 1s at least.
+        // the etime in Unix is measured in seconds. So let's wait 1 s at least.
         SECONDS.sleep(1L);
 
         ProcessInfo processInfo = IS_OS_UNIX ? checker.unix() : checker.windows();

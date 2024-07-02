@@ -280,7 +280,7 @@ public final class ForkClient implements EventHandler<Event> {
      * Called in concurrent Thread.
      * Will shutdown if timeout was reached.
      *
-     * @param currentTimeMillis    current time in millis seconds
+     * @param currentTimeMillis    current time in milliseconds
      * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
      */
     public void tryToTimeout(long currentTimeMillis, int forkedProcessTimeoutInSeconds) {

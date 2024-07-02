@@ -372,7 +372,7 @@ public class AbstractStreamDecoderTest {
             ((Buffer) chars).clear();
         }
         long l2 = System.currentTimeMillis();
-        System.out.println("decoded 100 bytes within " + (l2 - l1) + " millis (10 million cycles)");
+        System.out.println("decoded 100 bytes within " + (l2 - l1) + " ms (10 million cycles)");
         assertThat(s).isEqualTo(PATTERN1);
     }
 

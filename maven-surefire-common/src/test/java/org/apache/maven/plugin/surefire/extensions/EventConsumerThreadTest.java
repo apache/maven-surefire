@@ -112,12 +112,13 @@ public class EventConsumerThreadTest {
         thread.join();
 
         long execTime = finishedAt[0] - staredAt[0];
-        System.out.println(execTime);
+        System.out.println("...executed in " + execTime + " ms");
 
         // 0.6 seconds while using the encoder/decoder for 10 million messages
         assertThat(execTime)
-                .describedAs("The performance test should assert 0.75s of read time. "
-                        + "The limit 3.65s guarantees that the read time does not exceed this limit on overloaded CPU.")
+                .describedAs(
+                        "The performance test should assert 0.75 s of read time. "
+                                + "The limit 3.65 s guarantees that the read time does not exceed this limit on overloaded CPU.")
                 .isPositive()
                 .isLessThanOrEqualTo(3_650L);
     }

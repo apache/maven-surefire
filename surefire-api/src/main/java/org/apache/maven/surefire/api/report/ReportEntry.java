@@ -71,7 +71,7 @@ public interface ReportEntry {
      * Gets the runtime for the item. Optional parameter. If the value is not set, it will be determined within
      * the reporting subsystem. Some providers like to calculate this value themselves, and it gets the
      * most accurate value.
-     * @return duration of a test in milli seconds
+     * @return duration of a test in milliseconds
      */
     Integer getElapsed();
 
