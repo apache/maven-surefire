@@ -30,7 +30,7 @@
   </parent>
 
   <groupId>org.apache.maven.plugins.surefire</groupId>
-  <artifactId>surefire-1934-disable-out-err-elements</artifactId>
+  <artifactId>surefire-1934-enable-out-err-elements</artifactId>
   <version>1.0</version>
   <url>http://maven.apache.org</url>
 

@@ -24,7 +24,7 @@ import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 /**
- * Test for SUREFURE-1934. Enabling and disabling system-out and system-err elements in plugin configuration.
+ * Test for SUREFIRE-1934. Enabling and disabling system-out and system-err elements in plugin configuration.
  *
  * @author NissMoony
  */
