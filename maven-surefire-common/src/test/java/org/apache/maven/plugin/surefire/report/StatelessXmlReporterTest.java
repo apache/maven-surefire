@@ -105,7 +105,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 0,
                 new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(),
                 XSD,
-                "3.0.1",
+                "3.0.2",
                 false,
                 false,
                 false,
@@ -167,7 +167,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 0,
                 new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(),
                 XSD,
-                "3.0.1",
+                "3.0.2",
                 false,
                 false,
                 false,
@@ -271,7 +271,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 1,
                 new HashMap<String, Deque<WrappedReportEntry>>(),
                 XSD,
-                "3.0.1",
+                "3.0.2",
                 false,
                 false,
                 false,
@@ -376,7 +376,7 @@ public class StatelessXmlReporterTest extends TestCase {
         rerunStats.testSucceeded(testTwoSecondError);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false, true, true);
+                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.2", false, false, false, false, true, true);
 
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(
@@ -540,7 +540,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 null);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.1", false, false, false, false, true, true);
+                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.2", false, false, false, false, true, true);
 
         reporter.testSetCompleted(testReport, stats);
     }

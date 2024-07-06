@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite version="3.0.1" name="org.acme.FlakyTest" time="1.324" tests="1" errors="0" skipped="0" failures="0">
+<testsuite version="3.0.2" name="org.acme.FlakyTest" time="1.324" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.class.version" value="55.0"/>
   </properties>

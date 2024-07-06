@@ -17,11 +17,11 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0.1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0.2">
     <xs:element name="testsuite">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="properties" minOccurs="0" maxOccurs="unbounded">
+                <xs:element name="properties" minOccurs="0">
                     <xs:complexType>
                         <xs:sequence>
                             <xs:element name="property" minOccurs="0" maxOccurs="unbounded">

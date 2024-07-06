@@ -40,7 +40,7 @@ public abstract class StatelessReporter<R extends TestSetReportEntry, S, C exten
     private boolean disable;
 
     /**
-     * Version of reporter. It is version <em>3.0.1</em> used by default in XML reporter.
+     * Version of reporter. It is version <em>3.0.2</em> used by default in XML reporter.
      */
     private String version;
 
@@ -62,7 +62,7 @@ public abstract class StatelessReporter<R extends TestSetReportEntry, S, C exten
     }
 
     public String getVersion() {
-        return isBlank(version) ? "3.0.1" : version;
+        return isBlank(version) ? "3.0.2" : version;
     }
 
     public void setVersion(String version) {

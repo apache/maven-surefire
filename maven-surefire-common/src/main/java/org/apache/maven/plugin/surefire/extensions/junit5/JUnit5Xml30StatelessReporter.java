@@ -26,7 +26,7 @@ import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 
 /**
- * The extension of {@link StatelessReportEventListener xml reporter} based on XSD version 3.0.1 for JUnit5.
+ * The extension of {@link StatelessReportEventListener XML reporter} based on XSD version 3.0.2 for JUnit5.
  * Selectively enables phrased classes, methods and report files upon JUnit5 annotation <em>DisplayName</em>.
  *
  * author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

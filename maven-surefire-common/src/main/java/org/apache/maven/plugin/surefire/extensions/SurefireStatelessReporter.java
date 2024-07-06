@@ -41,7 +41,7 @@ public class SurefireStatelessReporter
      * Activated in the injection point of MOJO.
      */
     public SurefireStatelessReporter() {
-        this(false, "3.0.1");
+        this(false, "3.0.2");
     }
 
     /**

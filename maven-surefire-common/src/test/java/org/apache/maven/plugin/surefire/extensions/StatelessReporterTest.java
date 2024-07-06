@@ -55,7 +55,7 @@ public class StatelessReporterTest {
     @Test
     public void shouldAssertToStringXmlReporter() {
         SurefireStatelessReporter extension = new SurefireStatelessReporter();
-        assertThat(extension.toString()).isEqualTo("SurefireStatelessReporter{version=3.0.1, disable=false}");
+        assertThat(extension.toString()).isEqualTo("SurefireStatelessReporter{version=3.0.2, disable=false}");
     }
 
     @Test
@@ -69,7 +69,7 @@ public class StatelessReporterTest {
                 reportsDirectory, reportNameSuffix, true, 5, schema, true, true, testClassMethodRunHistory);
         SurefireStatelessReporter extension = new SurefireStatelessReporter();
 
-        assertThat(extension.getVersion()).isEqualTo("3.0.1");
+        assertThat(extension.getVersion()).isEqualTo("3.0.2");
         extension.setVersion("V3");
         assertThat(extension.getVersion()).isEqualTo("V3");
 
@@ -128,7 +128,7 @@ public class StatelessReporterTest {
     public void shouldAssertToStringJUnit5ConsoleReporter() {
         JUnit5Xml30StatelessReporter extension = new JUnit5Xml30StatelessReporter();
         assertThat(extension.toString())
-                .isEqualTo("JUnit5Xml30StatelessReporter{version=3.0.1, disable=false, "
+                .isEqualTo("JUnit5Xml30StatelessReporter{version=3.0.2, disable=false, "
                         + "usePhrasedFileName=false, usePhrasedTestSuiteClassName=false, "
                         + "usePhrasedTestCaseClassName=false, usePhrasedTestCaseMethodName=false}");
     }
@@ -144,7 +144,7 @@ public class StatelessReporterTest {
                 reportsDirectory, reportNameSuffix, true, 5, schema, true, true, testClassMethodRunHistory);
         JUnit5Xml30StatelessReporter extension = new JUnit5Xml30StatelessReporter();
 
-        assertThat(extension.getVersion()).isEqualTo("3.0.1");
+        assertThat(extension.getVersion()).isEqualTo("3.0.2");
         extension.setVersion("V3");
         assertThat(extension.getVersion()).isEqualTo("V3");
 
