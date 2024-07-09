@@ -502,6 +502,11 @@ public class SurefirePlugin extends AbstractSurefireMojo implements SurefireRepo
     @Parameter(property = "surefire.enableProcessChecker")
     private String enableProcessChecker;
 
+    /**
+     * Properties file being used as system properties passed to the provider.
+     *
+     * @see AbstractSurefireMojo#systemPropertyVariables {@code systemPropertyVariables} for how the effective provider properties are calculated
+     */
     @Parameter(property = "surefire.systemPropertiesFile")
     private File systemPropertiesFile;
 

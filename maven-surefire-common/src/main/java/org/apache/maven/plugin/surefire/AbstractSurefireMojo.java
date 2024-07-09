@@ -314,7 +314,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * List of System properties to pass to a provider.
      *
-     * @deprecated Use systemPropertyVariables instead.
+     * @deprecated Use {@link #systemPropertyVariables} instead.
+     * @see #systemPropertyVariables {@code systemPropertyVariables} for how the effective provider properties are calculated
      */
     @Deprecated
     @Parameter
@@ -322,8 +323,18 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     /**
      * List of System properties to pass to a provider.
+     * The effective system properties given to a provider are contributed from several sources:
+     * <ol>
+     * <li>{@link #systemProperties}</li>
+     * <li>{@link AbstractSurefireMojo#getSystemPropertiesFile()} (set via parameter {@code systemPropertiesFile} on some goals)</li>
+     * <li>{@link #systemPropertyVariables}</li>
+     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D}</li>
+     * </ol>
+     * Later sources may overwrite same named properties from earlier sources, that means for example that one cannot overwrite user properties with either
+     * {@link #systemProperties}, {@link AbstractSurefireMojo#getSystemPropertiesFile()} or {@link #systemPropertyVariables}.
      *
      * @since 2.5
+     * @see #systemProperties
      */
     @Parameter
     private Map<String, String> systemPropertyVariables;
