@@ -84,17 +84,17 @@ public abstract class AbstractSurefireReportMojo extends AbstractMavenReport {
     private List<MavenProject> reactorProjects;
 
     /**
-     * Location of the Xrefs to link.
-     */
-    @Parameter(defaultValue = "${project.reporting.outputDirectory}/xref-test")
-    private File xrefLocation;
-
-    /**
      * Link the failed tests line numbers to the source xref. Will link
      * automatically if Maven JXR plugin is being used.
      */
     @Parameter(defaultValue = "true", property = "linkXRef")
     private boolean linkXRef;
+
+    /**
+     * Location of the Xrefs to link.
+     */
+    @Parameter(defaultValue = "${project.reporting.outputDirectory}/xref-test")
+    private File xrefLocation;
 
     /**
      * Whether to build an aggregated report at the root, or build individual reports.
