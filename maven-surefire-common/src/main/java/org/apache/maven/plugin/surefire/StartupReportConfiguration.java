@@ -97,6 +97,9 @@ public final class StartupReportConfiguration {
 
     private StatisticsReporter statisticsReporter;
 
+    /**
+     * @since 3.3.1
+     */
     @SuppressWarnings("checkstyle:parameternumber")
     public StartupReportConfiguration(
             boolean useFile,
@@ -138,6 +141,46 @@ public final class StartupReportConfiguration {
         this.xmlReporter = xmlReporter;
         this.consoleOutputReporter = consoleOutputReporter;
         this.testsetReporter = testsetReporter;
+    }
+
+    @SuppressWarnings("checkstyle:parameternumber")
+    @Deprecated
+    public StartupReportConfiguration(
+            boolean useFile,
+            boolean printSummary,
+            String reportFormat,
+            boolean redirectTestOutputToFile,
+            @Nonnull File reportsDirectory,
+            boolean trimStackTrace,
+            String reportNameSuffix,
+            File statisticsFile,
+            boolean requiresRunHistory,
+            int rerunFailingTestsCount,
+            String xsdSchemaLocation,
+            String encoding,
+            boolean isForking,
+            SurefireStatelessReporter xmlReporter,
+            SurefireConsoleOutputReporter consoleOutputReporter,
+            SurefireStatelessTestsetInfoReporter testsetReporter) {
+        this(
+                useFile,
+                printSummary,
+                reportFormat,
+                redirectTestOutputToFile,
+                reportsDirectory,
+                trimStackTrace,
+                reportNameSuffix,
+                statisticsFile,
+                requiresRunHistory,
+                rerunFailingTestsCount,
+                xsdSchemaLocation,
+                encoding,
+                isForking,
+                true,
+                true,
+                xmlReporter,
+                consoleOutputReporter,
+                testsetReporter);
     }
 
     public boolean isUseFile() {
