@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.text.ChoiceFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -319,25 +320,49 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      */
     @Deprecated
     @Parameter
-    private Properties systemProperties;
+    Properties systemProperties;
 
     /**
      * List of System properties to pass to a provider.
      * The effective system properties given to a provider are contributed from several sources:
      * <ol>
+     * <li>properties set via {@link #argLine} with {@code -D} (only for forked executions)</li>
      * <li>{@link #systemProperties}</li>
      * <li>{@link AbstractSurefireMojo#getSystemPropertiesFile()} (set via parameter {@code systemPropertiesFile} on some goals)</li>
      * <li>{@link #systemPropertyVariables}</li>
-     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D}</li>
+     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D} on the current Maven process</li>
+     * <li>{@link #userPropertyVariables}</li>
      * </ol>
      * Later sources may overwrite same named properties from earlier sources, that means for example that one cannot overwrite user properties with either
-     * {@link #systemProperties}, {@link AbstractSurefireMojo#getSystemPropertiesFile()} or {@link #systemPropertyVariables}.
+     * {@link #systemProperties}, {@link #getSystemPropertiesFile()} or {@link #systemPropertyVariables} but only with
+     * {@link #userPropertyVariables}.
+     * <p>
+     * Certain properties may only be overwritten via {@link #argLine} (applicable only for forked executions) because their values are cached and only evaluated at the start of the JRE.
+     * Those include:
+     * <ul>
+     * <li>{@code java.library.path}</li>
+     * <li>{@code file.encoding}</li>
+     * <li>{@code jdk.map.althashing.threshold}</li>
+     * <li>{@code line.separator}</li>
+     * </ul>
      *
      * @since 2.5
      * @see #systemProperties
      */
     @Parameter
-    private Map<String, String> systemPropertyVariables;
+    Map<String, String> systemPropertyVariables;
+
+    /**
+     * List of user properties to pass to a provider.
+     * Similar to {@link #systemPropertyVariables} but having a higher precedence, therefore allows to overwrite user properties from the current Maven session.
+     * This should only be used in case a user property from the parent process needs to be explicitly overwritten.
+     * Regular properties should be set via {@link #systemPropertyVariables} instead in order to allow them to be overwritten
+     * via CLI arguments ({@code -Dmyproperty=myvalue})
+     * @since 3.4
+     * @see #systemPropertyVariables
+     */
+    @Parameter
+    Map<String, String> userPropertyVariables;
 
     /**
      * List of properties for configuring the testing provider. This is the preferred method of
@@ -425,7 +450,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String jvm;
 
     /**
-     * Arbitrary JVM options to set on the command line.
+     * Arbitrary JVM options to set on the command line. Only effective for forked executions.
      * <br>
      * <br>
      * Since the Version 2.17 using an alternate syntax for {@code argLine}, <b>@{...}</b> allows late replacement
@@ -438,6 +463,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * <a href="http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html">
      *     http://maven.apache.org/surefire/maven-failsafe-plugin/faq.html</a>
      *
+     * @see #forkCount
      * @since 2.1
      */
     @Parameter(property = "argLine")
@@ -543,7 +569,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * @since 2.14
      */
     @Parameter(property = "forkCount", defaultValue = "1")
-    private String forkCount;
+    String forkCount;
 
     /**
      * Indicates if forked VMs can be reused. If set to "false", a new VM is forked for each test class to be executed.
@@ -1139,10 +1165,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 new JUnit3ProviderInfo());
     }
 
-    private SurefireProperties setupProperties() {
-        SurefireProperties sysProps = null;
+    SurefireProperties setupProperties() {
+        SurefireProperties sysPropsFromFile = null;
         try {
-            sysProps = SurefireProperties.loadProperties(getSystemPropertiesFile());
+            sysPropsFromFile = SurefireProperties.loadProperties(getSystemPropertiesFile());
         } catch (IOException e) {
             String msg = "The file '" + getSystemPropertiesFile().getAbsolutePath() + "' can't be read.";
             if (getConsoleLogger().isDebugEnabled()) {
@@ -1152,8 +1178,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             }
         }
 
-        SurefireProperties result = SurefireProperties.calculateEffectiveProperties(
-                getSystemProperties(), getSystemPropertyVariables(), getUserProperties(), sysProps);
+        SurefireProperties result = calculateEffectiveProperties(
+                getSystemProperties(),
+                getSystemPropertyVariables(),
+                getUserProperties(),
+                userPropertyVariables,
+                sysPropsFromFile);
 
         result.setProperty("basedir", getBasedir().getAbsolutePath());
         result.setProperty("localRepository", getLocalRepositoryPath());
@@ -1184,6 +1214,43 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return result;
     }
 
+    private SurefireProperties calculateEffectiveProperties(
+            Properties systemProperties,
+            Map<String, String> systemPropertyVariables,
+            Properties userProperties,
+            Map<String, String> userPropertyVariables,
+            SurefireProperties sysPropsFromFile) {
+        SurefireProperties result = new SurefireProperties();
+        result.copyPropertiesFrom(systemProperties);
+
+        Collection<String> overwrittenProperties = result.copyPropertiesFrom(sysPropsFromFile);
+        if (!overwrittenProperties.isEmpty()) {
+            getConsoleLogger().debug(getOverwrittenPropertiesLogMessage(overwrittenProperties, "sysPropsFile"));
+        }
+        overwrittenProperties = result.copyPropertiesFrom(systemPropertyVariables);
+        if (!overwrittenProperties.isEmpty()) {
+            getConsoleLogger()
+                    .debug(getOverwrittenPropertiesLogMessage(overwrittenProperties, "systemPropertyVariables"));
+        }
+        // We used to take all of our system properties and dump them in with the
+        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
+        // Not gonna do THAT any more... instead, we only propagate those system properties
+        // that have been explicitly specified by the user via -Dkey=value on the CLI
+
+        overwrittenProperties = result.copyPropertiesFrom(userProperties);
+        if (!overwrittenProperties.isEmpty()) {
+            getConsoleLogger()
+                    .warning(getOverwrittenPropertiesLogMessage(
+                            overwrittenProperties, "user properties from Maven session"));
+        }
+        overwrittenProperties = result.copyPropertiesFrom(userPropertyVariables);
+        if (!overwrittenProperties.isEmpty()) {
+            getConsoleLogger()
+                    .warning(getOverwrittenPropertiesLogMessage(overwrittenProperties, "userPropertyVariables"));
+        }
+        return result;
+    }
+
     private Set<Object> systemPropertiesMatchingArgLine(SurefireProperties result) {
         Set<Object> intersection = new HashSet<>();
         if (isNotBlank(getArgLine())) {
@@ -1197,6 +1264,20 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             intersection.removeAll(ignored);
         }
         return intersection;
+    }
+
+    private String getOverwrittenPropertiesLogMessage(
+            Collection<String> overwrittenProperties, String overwrittenBySource) {
+        if (overwrittenProperties.isEmpty()) {
+            throw new IllegalArgumentException("overwrittenProperties must not be empty");
+        }
+        // one or multiple?
+        ChoiceFormat propertyChoice = new ChoiceFormat("1#property|1>properties");
+        StringBuilder message = new StringBuilder("System ");
+        message.append(propertyChoice.format(overwrittenProperties.size())).append(" ");
+        message.append(overwrittenProperties.stream().collect(Collectors.joining("], [", "[", "]")));
+        message.append(" overwritten by ").append(overwrittenBySource);
+        return message.toString();
     }
 
     private void showToLog(SurefireProperties props, ConsoleLogger log) {
@@ -2718,7 +2799,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return existing;
     }
 
-    private Properties getUserProperties() {
+    Properties getUserProperties() {
         return getSession().getUserProperties();
     }
 

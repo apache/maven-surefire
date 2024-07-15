@@ -18,8 +18,11 @@
  */
 package org.apache.maven.plugin.surefire;
 
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -110,6 +113,17 @@ public class SurefirePropertiesTest extends TestCase {
         it = keys.iterator();
         assertEquals("a", it.next());
         assertEquals("b", it.next());
+    }
+
+    public void testCopyPropertiesFrom() {
+        SurefireProperties orderedProperties = new SurefireProperties();
+        Map<String, String> properties = new LinkedHashMap<>();
+        properties.put("property1", "value");
+        properties.put("property2", "value");
+        orderedProperties.putAll(properties);
+        orderedProperties.put("property3", "value");
+        // check return value containing all overwritten property names
+        assertEquals(Arrays.asList("property1", "property2"), orderedProperties.copyPropertiesFrom(properties));
     }
 
     private static int size(Iterator<?> iterator) {
