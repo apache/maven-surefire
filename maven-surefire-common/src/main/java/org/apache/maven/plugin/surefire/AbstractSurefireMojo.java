@@ -330,12 +330,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * <li>{@link #systemProperties}</li>
      * <li>{@link AbstractSurefireMojo#getSystemPropertiesFile()} (set via parameter {@code systemPropertiesFile} on some goals)</li>
      * <li>{@link #systemPropertyVariables}</li>
-     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D} on the current Maven process</li>
-     * <li>{@link #userPropertyVariables}</li>
+     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D} on the current Maven process (only used as source if {@link #useUserPropertiesAsSystemProperty} is {@code true})</li>
      * </ol>
      * Later sources may overwrite same named properties from earlier sources, that means for example that one cannot overwrite user properties with either
-     * {@link #systemProperties}, {@link #getSystemPropertiesFile()} or {@link #systemPropertyVariables} but only with
-     * {@link #userPropertyVariables}.
+     * {@link #systemProperties}, {@link #getSystemPropertiesFile()} or {@link #systemPropertyVariables}.
      * <p>
      * Certain properties may only be overwritten via {@link #argLine} (applicable only for forked executions) because their values are cached and only evaluated at the start of the JRE.
      * Those include:
@@ -353,16 +351,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     Map<String, String> systemPropertyVariables;
 
     /**
-     * List of user properties to pass to a provider.
-     * Similar to {@link #systemPropertyVariables} but having a higher precedence, therefore allows to overwrite user properties from the current Maven session.
-     * This should only be used in case a user property from the parent process needs to be explicitly overwritten.
-     * Regular properties should be set via {@link #systemPropertyVariables} instead in order to allow them to be overwritten
-     * via CLI arguments ({@code -Dmyproperty=myvalue})
-     * @since 3.4
+     * If set to {@code true} will also pass all user properties exposed via {@link MavenSession#getUserProperties()} as system properties to a provider.
+     * Those always take precedence over same named system properties set via any other means.
+     * @since 3.4.0
      * @see #systemPropertyVariables
      */
-    @Parameter
-    Map<String, String> userPropertyVariables;
+    @Parameter(defaultValue = "true")
+    boolean useUserPropertiesAsSystemProperty;
 
     /**
      * List of properties for configuring the testing provider. This is the preferred method of
@@ -1181,8 +1176,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         SurefireProperties result = calculateEffectiveProperties(
                 getSystemProperties(),
                 getSystemPropertyVariables(),
-                getUserProperties(),
-                userPropertyVariables,
+                useUserPropertiesAsSystemProperty ? getUserProperties() : null,
                 sysPropsFromFile);
 
         result.setProperty("basedir", getBasedir().getAbsolutePath());
@@ -1218,17 +1212,16 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             Properties systemProperties,
             Map<String, String> systemPropertyVariables,
             Properties userProperties,
-            Map<String, String> userPropertyVariables,
             SurefireProperties sysPropsFromFile) {
         SurefireProperties result = new SurefireProperties();
         result.copyPropertiesFrom(systemProperties);
 
         Collection<String> overwrittenProperties = result.copyPropertiesFrom(sysPropsFromFile);
-        if (!overwrittenProperties.isEmpty()) {
+        if (!overwrittenProperties.isEmpty() && getConsoleLogger().isDebugEnabled()) {
             getConsoleLogger().debug(getOverwrittenPropertiesLogMessage(overwrittenProperties, "sysPropsFile"));
         }
         overwrittenProperties = result.copyPropertiesFrom(systemPropertyVariables);
-        if (!overwrittenProperties.isEmpty()) {
+        if (!overwrittenProperties.isEmpty() && getConsoleLogger().isDebugEnabled()) {
             getConsoleLogger()
                     .debug(getOverwrittenPropertiesLogMessage(overwrittenProperties, "systemPropertyVariables"));
         }
@@ -1236,17 +1229,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
-
-        overwrittenProperties = result.copyPropertiesFrom(userProperties);
-        if (!overwrittenProperties.isEmpty()) {
-            getConsoleLogger()
-                    .warning(getOverwrittenPropertiesLogMessage(
-                            overwrittenProperties, "user properties from Maven session"));
-        }
-        overwrittenProperties = result.copyPropertiesFrom(userPropertyVariables);
-        if (!overwrittenProperties.isEmpty()) {
-            getConsoleLogger()
-                    .warning(getOverwrittenPropertiesLogMessage(overwrittenProperties, "userPropertyVariables"));
+        // and only if useUserPropertiesAsSystemProperty is set to true
+        if (userProperties != null) {
+            overwrittenProperties = result.copyPropertiesFrom(userProperties);
+            if (!overwrittenProperties.isEmpty()) {
+                getConsoleLogger()
+                        .warning(getOverwrittenPropertiesLogMessage(
+                                overwrittenProperties, "user properties from Maven session"));
+            }
         }
         return result;
     }

@@ -2472,7 +2472,6 @@ public class AbstractSurefireMojoTest {
             Properties getUserProperties() {
                 Properties properties = new Properties();
                 properties.put("userProperties1", "source4");
-                properties.put("userProperties2", "source4");
                 return properties;
             }
 
@@ -2491,6 +2490,7 @@ public class AbstractSurefireMojoTest {
                 Properties systemProperties = new Properties();
                 systemProperties.put("systemProperties2", "source2");
                 systemProperties.put("systemProperties3", "source2");
+                systemProperties.put("userProperties1", "source2");
                 try {
                     File propertiesFile = tempFolder.newFile();
                     try (OutputStream outputStream = new FileOutputStream(propertiesFile)) {
@@ -2502,26 +2502,26 @@ public class AbstractSurefireMojoTest {
                 }
             }
         };
+
+        plugin.setLogger(mock(Logger.class));
         /* expected order of precedence:
          * 1. systemProperties
          * 2. getSystemPropertiesFile()
          * 3. systemPropertyVariables
          * 4. getUserProperties()
-         * 5. userPropertyVariables
          */
         plugin.forkCount = "1";
+        plugin.useUserPropertiesAsSystemProperty = true;
         Properties systemProperties = new Properties();
         systemProperties.put("systemProperties1", "source1");
         systemProperties.put("systemProperties2", "source1");
         systemProperties.put("systemProperties3", "source1");
+        systemProperties.put("userProperties1", "source1");
         plugin.systemProperties = systemProperties;
         Map<String, String> systemPropertyVariables = new HashMap<>();
         systemPropertyVariables.put("systemProperties3", "source3");
+        systemPropertyVariables.put("userProperties1", "source3");
         plugin.systemPropertyVariables = systemPropertyVariables;
-        Map<String, String> userPropertyVariables = new HashMap<>();
-        userPropertyVariables.put("userProperties2", "source5");
-        plugin.userPropertyVariables = userPropertyVariables;
-        plugin.setLogger(mock(Logger.class));
         SurefireProperties properties = plugin.setupProperties();
         assertThat(properties)
                 .containsOnly(
@@ -2529,7 +2529,18 @@ public class AbstractSurefireMojoTest {
                         Assertions.entry("systemProperties2", "source2"),
                         Assertions.entry("systemProperties3", "source3"),
                         Assertions.entry("userProperties1", "source4"),
-                        Assertions.entry("userProperties2", "source5"),
+                        Assertions.entry("localRepository", "local/repository/path"),
+                        Assertions.entry("basedir", new File("target").getAbsolutePath()));
+
+        // and without user properties
+        plugin.useUserPropertiesAsSystemProperty = false;
+        properties = plugin.setupProperties();
+        assertThat(properties)
+                .containsOnly(
+                        Assertions.entry("systemProperties1", "source1"),
+                        Assertions.entry("systemProperties2", "source2"),
+                        Assertions.entry("systemProperties3", "source3"),
+                        Assertions.entry("userProperties1", "source3"),
                         Assertions.entry("localRepository", "local/repository/path"),
                         Assertions.entry("basedir", new File("target").getAbsolutePath()));
     }
