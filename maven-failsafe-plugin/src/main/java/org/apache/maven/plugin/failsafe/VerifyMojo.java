@@ -43,7 +43,7 @@ import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
 import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
 
 /**
- * Verify integration tests ran using Surefire.
+ * Verify integration tests ran using Failsafe.
  *
  * @author Stephen Connolly
  * @author Jason van Zyl
