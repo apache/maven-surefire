@@ -3,6 +3,7 @@
   ------
   Allan Ramirez
   Dan Tran
+  Konrad Windszus
   ------
   2010-01-09
   ------
@@ -29,12 +30,15 @@
 
 Using System Properties
 
-  There are two ways to add a list of system properties to ${thisPlugin}:
+%{toc|section=0|fromDepth=2}
+
+
+  There are different parameters which affect the system properties passed to ${thisPlugin} providers:
 
 * systemPropertyVariables
 
-  This configuration is the replacement of the deprecated <<<systemProperties>>>.  It can accept any value
-  from Maven's properties that can be converted <<to a String value>>.
+  This configuration is the replacement of the deprecated <<<systemProperties>>>. It can accept any {{{https://maven.apache.org/ref/3-LATEST/maven-model-builder/#model-interpolation}expression value}}
+  referencing Maven's properties that can be converted <<to a String value>> or arbitrary literals.
 
 +---+
 <project>
@@ -59,8 +63,11 @@ Using System Properties
 </project>
 +---+
 
+* systemPropertiesFile
 
-* systemProperties ( Deprecated )
+  This configuration allows to add system properties through an external properties file whose path is given via this plugin parameter.
+
+* systemProperties (Deprecated)
 
 +---+
 <project>
@@ -130,7 +137,24 @@ Using System Properties
    </systemProperties>
 +---+
 
-Special VM Properties
+* Effective System Properties
+
+  The effective system properties are merged from the following sources:
+
+  [[1]] <<<systemProperties>>>
+
+  [[2]] <<<systemPropertiesFile>>>
+
+  [[3]] <<<systemPropertyVariables>>>
+
+  [[4]] {{{https://maven.apache.org/ref/3-LATEST/maven-core/apidocs/org/apache/maven/execution/MavenSession.html#getUserProperties()}User properties from the current Maven session}} (if <<<promoteUserPropertiesToSystemProperties>>> is not set to <<<false>>>)
+
+  []
+
+  where latter items may overwrite properties with the same name of former items.
+
+
+* Special VM Properties
 
   Some system properties must be set on the command line of the forked VM, and cannot be set after the
   VM has been started. These properties must be added to the <<<argLine>>> parameter of the Surefire plugin. E.g.,
