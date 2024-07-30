@@ -330,7 +330,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * <li>{@link #systemProperties}</li>
      * <li>{@link AbstractSurefireMojo#getSystemPropertiesFile()} (set via parameter {@code systemPropertiesFile} on some goals)</li>
      * <li>{@link #systemPropertyVariables}</li>
-     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D} on the current Maven process (only used as source if {@link #useUserPropertiesAsSystemProperty} is {@code true})</li>
+     * <li>User properties from {@link MavenSession#getUserProperties()}, usually set via CLI options given with {@code -D} on the current Maven process (only used as source if {@link #promoteUserPropertiesToSystemProperties} is {@code true})</li>
      * </ol>
      * Later sources may overwrite same named properties from earlier sources, that means for example that one cannot overwrite user properties with either
      * {@link #systemProperties}, {@link #getSystemPropertiesFile()} or {@link #systemPropertyVariables}.
@@ -357,7 +357,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * @see #systemPropertyVariables
      */
     @Parameter(defaultValue = "true")
-    boolean useUserPropertiesAsSystemProperty;
+    boolean promoteUserPropertiesToSystemProperties;
 
     /**
      * List of properties for configuring the testing provider. This is the preferred method of
@@ -1176,7 +1176,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         SurefireProperties result = calculateEffectiveProperties(
                 getSystemProperties(),
                 getSystemPropertyVariables(),
-                useUserPropertiesAsSystemProperty ? getUserProperties() : null,
+                promoteUserPropertiesToSystemProperties ? getUserProperties() : new Properties(),
                 sysPropsFromFile);
 
         result.setProperty("basedir", getBasedir().getAbsolutePath());
@@ -1218,7 +1218,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         Collection<String> overwrittenProperties = result.copyPropertiesFrom(sysPropsFromFile);
         if (!overwrittenProperties.isEmpty() && getConsoleLogger().isDebugEnabled()) {
-            getConsoleLogger().debug(getOverwrittenPropertiesLogMessage(overwrittenProperties, "sysPropsFile"));
+            getConsoleLogger().debug(getOverwrittenPropertiesLogMessage(overwrittenProperties, "systemPropertiesFile"));
         }
         overwrittenProperties = result.copyPropertiesFrom(systemPropertyVariables);
         if (!overwrittenProperties.isEmpty() && getConsoleLogger().isDebugEnabled()) {
@@ -1229,8 +1229,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
         // Not gonna do THAT any more... instead, we only propagate those system properties
         // that have been explicitly specified by the user via -Dkey=value on the CLI
-        // and only if useUserPropertiesAsSystemProperty is set to true
-        if (userProperties != null) {
+        if (!userProperties.isEmpty()) {
             overwrittenProperties = result.copyPropertiesFrom(userProperties);
             if (!overwrittenProperties.isEmpty()) {
                 getConsoleLogger()

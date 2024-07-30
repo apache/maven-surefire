@@ -2511,7 +2511,7 @@ public class AbstractSurefireMojoTest {
          * 4. getUserProperties()
          */
         plugin.forkCount = "1";
-        plugin.useUserPropertiesAsSystemProperty = true;
+        plugin.promoteUserPropertiesToSystemProperties = true;
         Properties systemProperties = new Properties();
         systemProperties.put("systemProperties1", "source1");
         systemProperties.put("systemProperties2", "source1");
@@ -2533,7 +2533,7 @@ public class AbstractSurefireMojoTest {
                         Assertions.entry("basedir", new File("target").getAbsolutePath()));
 
         // and without user properties
-        plugin.useUserPropertiesAsSystemProperty = false;
+        plugin.promoteUserPropertiesToSystemProperties = false;
         properties = plugin.setupProperties();
         assertThat(properties)
                 .containsOnly(
