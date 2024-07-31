@@ -353,6 +353,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * If set to {@code true} will also pass all user properties exposed via {@link MavenSession#getUserProperties()} as system properties to a provider.
      * Those always take precedence over same named system properties set via any other means.
+     *
      * @since 3.4.0
      * @see #systemPropertyVariables
      */
