@@ -19,7 +19,10 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -60,6 +63,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.apache.maven.toolchain.Toolchain;
+import org.assertj.core.api.Assertions;
 import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
@@ -2458,6 +2462,87 @@ public class AbstractSurefireMojoTest {
 
         DefaultScanResult result = plugin.scanDependencies();
         assertThat(result.getClasses()).isEmpty();
+    }
+
+    @Test
+    public void testSetupProperties() {
+        Mojo plugin = new Mojo() {
+
+            @Override
+            Properties getUserProperties() {
+                Properties properties = new Properties();
+                properties.put("userProperties1", "source4");
+                return properties;
+            }
+
+            @Override
+            public File getBasedir() {
+                return new File("target");
+            }
+
+            @Override
+            public String getLocalRepositoryPath() {
+                return "local/repository/path";
+            }
+
+            @Override
+            public File getSystemPropertiesFile() {
+                Properties systemProperties = new Properties();
+                systemProperties.put("systemProperties2", "source2");
+                systemProperties.put("systemProperties3", "source2");
+                systemProperties.put("userProperties1", "source2");
+                try {
+                    File propertiesFile = tempFolder.newFile();
+                    try (OutputStream outputStream = new FileOutputStream(propertiesFile)) {
+                        systemProperties.store(outputStream, "comments");
+                    }
+                    return propertiesFile;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
+        };
+
+        plugin.setLogger(mock(Logger.class));
+        /* expected order of precedence:
+         * 1. systemProperties
+         * 2. getSystemPropertiesFile()
+         * 3. systemPropertyVariables
+         * 4. getUserProperties()
+         */
+        plugin.forkCount = "1";
+        plugin.promoteUserPropertiesToSystemProperties = true;
+        Properties systemProperties = new Properties();
+        systemProperties.put("systemProperties1", "source1");
+        systemProperties.put("systemProperties2", "source1");
+        systemProperties.put("systemProperties3", "source1");
+        systemProperties.put("userProperties1", "source1");
+        plugin.systemProperties = systemProperties;
+        Map<String, String> systemPropertyVariables = new HashMap<>();
+        systemPropertyVariables.put("systemProperties3", "source3");
+        systemPropertyVariables.put("userProperties1", "source3");
+        plugin.systemPropertyVariables = systemPropertyVariables;
+        SurefireProperties properties = plugin.setupProperties();
+        assertThat(properties)
+                .containsOnly(
+                        Assertions.entry("systemProperties1", "source1"),
+                        Assertions.entry("systemProperties2", "source2"),
+                        Assertions.entry("systemProperties3", "source3"),
+                        Assertions.entry("userProperties1", "source4"),
+                        Assertions.entry("localRepository", "local/repository/path"),
+                        Assertions.entry("basedir", new File("target").getAbsolutePath()));
+
+        // and without user properties
+        plugin.promoteUserPropertiesToSystemProperties = false;
+        properties = plugin.setupProperties();
+        assertThat(properties)
+                .containsOnly(
+                        Assertions.entry("systemProperties1", "source1"),
+                        Assertions.entry("systemProperties2", "source2"),
+                        Assertions.entry("systemProperties3", "source3"),
+                        Assertions.entry("userProperties1", "source3"),
+                        Assertions.entry("localRepository", "local/repository/path"),
+                        Assertions.entry("basedir", new File("target").getAbsolutePath()));
     }
 
     private static File mockFile(String absolutePath) {

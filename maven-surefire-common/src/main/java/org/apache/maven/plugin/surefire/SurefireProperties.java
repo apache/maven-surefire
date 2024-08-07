@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +41,7 @@ import static java.util.Arrays.asList;
 import static java.util.Map.Entry;
 
 /**
- * A properties implementation that preserves insertion order.
+ * A {@link Properties} implementation that preserves insertion order.
  */
 public class SurefireProperties extends Properties implements KeyValueSource {
     private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
@@ -64,9 +65,17 @@ public class SurefireProperties extends Properties implements KeyValueSource {
 
     @Override
     public synchronized void putAll(Map<?, ?> t) {
-        for (Entry<?, ?> entry : t.entrySet()) {
-            put(entry.getKey(), entry.getValue());
+        putAllInternal(t);
+    }
+
+    private Collection<String> putAllInternal(Map<?, ?> source) {
+        Collection<String> overwrittenProperties = new LinkedList<>();
+        for (Entry<?, ?> entry : source.entrySet()) {
+            if (put(entry.getKey(), entry.getValue()) != null) {
+                overwrittenProperties.add(entry.getKey().toString());
+            }
         }
+        return overwrittenProperties;
     }
 
     @Override
@@ -92,10 +101,26 @@ public class SurefireProperties extends Properties implements KeyValueSource {
         return Collections.enumeration(items);
     }
 
-    public void copyPropertiesFrom(Properties source) {
+    /**
+     * Copies all keys and values from source to these properties, overwriting existing properties with same name
+     * @param source
+     * @return all overwritten property names (may be empty if there was no property name clash)
+     */
+    public Collection<String> copyPropertiesFrom(Properties source) {
         if (source != null) {
-            putAll(source);
+            return putAllInternal(source);
+        } else {
+            return Collections.emptyList();
         }
+    }
+
+    /**
+     * Copies all keys and values from source to these properties, overwriting existing properties with same name
+     * @param source
+     * @return all overwritten property names (may be empty if there was no property name clash)
+     */
+    public Collection<String> copyPropertiesFrom(Map<String, String> source) {
+        return copyProperties(this, source);
     }
 
     public Iterable<Object> getStringKeySet() {
@@ -121,34 +146,17 @@ public class SurefireProperties extends Properties implements KeyValueSource {
         }
     }
 
-    static SurefireProperties calculateEffectiveProperties(
-            Properties systemProperties,
-            Map<String, String> systemPropertyVariables,
-            Properties userProperties,
-            SurefireProperties props) {
-        SurefireProperties result = new SurefireProperties();
-        result.copyPropertiesFrom(systemProperties);
-
-        result.copyPropertiesFrom(props);
-
-        copyProperties(result, systemPropertyVariables);
-
-        // We used to take all of our system properties and dump them in with the
-        // user specified properties for SUREFIRE-121, causing SUREFIRE-491.
-        // Not gonna do THAT any more... instead, we only propagate those system properties
-        // that have been explicitly specified by the user via -Dkey=value on the CLI
-
-        result.copyPropertiesFrom(userProperties);
-        return result;
-    }
-
-    private static void copyProperties(Properties target, Map<String, String> source) {
+    private static Collection<String> copyProperties(Properties target, Map<String, String> source) {
+        Collection<String> overwrittenProperties = new LinkedList<>();
         if (source != null) {
             for (String key : source.keySet()) {
                 String value = source.get(key);
-                target.setProperty(key, value == null ? "" : value);
+                if (target.setProperty(key, value == null ? "" : value) != null) {
+                    overwrittenProperties.add(key);
+                }
             }
         }
+        return overwrittenProperties;
     }
 
     @Override
