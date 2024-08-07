@@ -24,13 +24,12 @@
         <artifactId>maven-surefire-report-plugin</artifactId>
         <configuration>
           <outputDirectory>${basedir}/target/site/unit/basic-surefire-report-anchor-test-cases</outputDirectory>
-          <localRepository>${localRepository}</localRepository>
-          <project implementation="org.apache.maven.plugins.surefire.report.stubs.SurefireRepMavenProjectStub"/>
+          <project implementation="org.apache.maven.plugins.surefire.report.stubs.AnchorTestCasesStub"/>
           <showSuccess>true</showSuccess>
           <reportsDirectory>${basedir}/src/test/resources/unit/basic-surefire-report-anchor-test-cases/surefire-reports
           </reportsDirectory>
-          <outputName>surefire-report</outputName>
-          <xrefLocation>${basedir}/target/site/unit/basic-surefire-report-anchor-test-cases/xref-test</xrefLocation>
+          <outputName>surefire</outputName>
+          <xrefTestLocation>${basedir}/target/site/unit/basic-surefire-report-anchor-test-cases/xref-test</xrefTestLocation>
         </configuration>
       </plugin>
     </plugins>

@@ -16,25 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.plugins.surefire.report;
+package org.apache.maven.plugins.surefire.report.stubs;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+public class SuccessFalseStub extends SurefireReportMavenProjectStub {
 
-/**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
- *
- * @author Tibor Digana (tibor17)
- * @since 3.0.0-M4
- */
-public class JUnit4SuiteTest extends TestCase {
-    public static Test suite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JUnit4TestAdapter(Surefire597Test.class));
-        suite.addTest(new JUnit4TestAdapter(SurefireSchemaValidationTest.class));
-        suite.addTestSuite(SurefireReportTest.class);
-        return suite;
+    @Override
+    protected String getProjectDirName() {
+        return "basic-surefire-report-success-false";
     }
 }

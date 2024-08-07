@@ -35,12 +35,12 @@ import org.apache.maven.project.MavenProject;
  */
 @Mojo(name = "failsafe-report-only")
 @SuppressWarnings("unused")
-public class FailsafeReportMojo extends AbstractSurefireReportMojo {
+public class FailsafeOnlyReport extends AbstractSurefireReport {
 
     /**
      * The filename to use for the report.
      */
-    @Parameter(defaultValue = "failsafe-report", property = "outputName", required = true)
+    @Parameter(defaultValue = "failsafe", property = "outputName", required = true)
     private String outputName;
 
     /**
@@ -61,7 +61,7 @@ public class FailsafeReportMojo extends AbstractSurefireReportMojo {
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {
         String buildDir = subProject.getBuild().getDirectory();
-        return new File(buildDir + "/failsafe-reports");
+        return new File(buildDir, "failsafe-reports");
     }
 
     @Override

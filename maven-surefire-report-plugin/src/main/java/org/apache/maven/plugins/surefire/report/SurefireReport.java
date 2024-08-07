@@ -34,12 +34,12 @@ import org.apache.maven.project.MavenProject;
 @Mojo(name = "report", inheritByDefault = false)
 @Execute(lifecycle = "surefire", phase = LifecyclePhase.TEST)
 @SuppressWarnings("unused")
-public class SurefireReportMojo extends AbstractSurefireReportMojo {
+public class SurefireReport extends AbstractSurefireReport {
 
     /**
      * The filename to use for the report.
      */
-    @Parameter(defaultValue = "surefire-report", property = "outputName", required = true)
+    @Parameter(defaultValue = "surefire", property = "outputName", required = true)
     private String outputName;
 
     /**
