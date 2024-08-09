@@ -91,7 +91,7 @@
     <mavenVersion>3.6.3</mavenVersion>
     <resolverVersion>1.4.1</resolverVersion>
     <commonsLang3Version>3.14.0</commonsLang3Version>
-    <commonsCompress>1.26.2</commonsCompress>
+    <commonsCompress>1.27.0</commonsCompress>
     <commonsIoVersion>2.16.1</commonsIoVersion>
     <plexus-java-version>1.2.0</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
