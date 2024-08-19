@@ -30,6 +30,7 @@ Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 [![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge&color=green)](https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
 
 [![Verify](https://github.com/apache/maven-surefire/actions/workflows/maven-verify.yml/badge.svg)](https://github.com/apache/maven-surefire/actions/workflows/maven-verify.yml)
+[![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/org/apache/maven/surefire/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/org/apache/maven/surefire/README.md)
 
 # The Maven Community
 
