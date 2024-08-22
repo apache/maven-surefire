@@ -23,8 +23,7 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -45,22 +44,17 @@ public class JUnit47RedirectOutputIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     private void checkReports(OutputValidator validator) {
-        String report = trimToNull(validator
+        String report = validator
                 .getSurefireReportsFile("junit47ConsoleOutput.Test1-output.txt")
-                .readFileToString());
-        assertNotNull(report);
-        String report2 = trimToNull(validator
+                .readFileToString();
+        assertTrue(report.isEmpty());
+        String report2 = validator
                 .getSurefireReportsFile("junit47ConsoleOutput.Test2-output.txt")
-                .readFileToString());
-        assertNotNull(report2);
+                .readFileToString();
+        assertTrue(report2.isEmpty());
         assertFalse(validator
                 .getSurefireReportsFile("junit47ConsoleOutput.Test3-output.txt")
                 .exists());
-    }
-
-    private String trimToNull(String string) {
-        String str = string.trim();
-        return str.isEmpty() ? null : str;
     }
 
     private SurefireLauncher unpack() {
