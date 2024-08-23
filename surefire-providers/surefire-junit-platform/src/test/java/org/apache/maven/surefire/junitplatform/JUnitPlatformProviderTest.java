@@ -199,14 +199,22 @@ public class JUnitPlatformProviderTest {
         TestsToRun testsToRun = newTestsToRun(TestClass1.class, TestClass2.class);
         invokeProvider(provider, testsToRun);
 
-        assertThat(executionListener.summaries).hasSize(1);
+        assertThat(executionListener.summaries).hasSize(2);
         TestExecutionSummary summary = executionListener.summaries.get(0);
-        assertEquals(TestClass1.TESTS_FOUND + TestClass2.TESTS_FOUND, summary.getTestsFoundCount());
-        assertEquals(TestClass1.TESTS_STARTED + TestClass2.TESTS_STARTED, summary.getTestsStartedCount());
-        assertEquals(TestClass1.TESTS_SKIPPED + TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount());
-        assertEquals(TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
-        assertEquals(TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount());
-        assertEquals(TestClass1.TESTS_FAILED + TestClass2.TESTS_FAILED, summary.getTestsFailedCount());
+        assertEquals(TestClass1.TESTS_FOUND, summary.getTestsFoundCount());
+        assertEquals(TestClass1.TESTS_STARTED, summary.getTestsStartedCount());
+        assertEquals(TestClass1.TESTS_SKIPPED, summary.getTestsSkippedCount());
+        assertEquals(TestClass1.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
+        assertEquals(TestClass1.TESTS_ABORTED, summary.getTestsAbortedCount());
+        assertEquals(TestClass1.TESTS_FAILED, summary.getTestsFailedCount());
+
+        summary = executionListener.summaries.get(1);
+        assertEquals(TestClass2.TESTS_FOUND, summary.getTestsFoundCount());
+        assertEquals(TestClass2.TESTS_STARTED, summary.getTestsStartedCount());
+        assertEquals(TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount());
+        assertEquals(TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
+        assertEquals(TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount());
+        assertEquals(TestClass2.TESTS_FAILED, summary.getTestsFailedCount());
     }
 
     @Test
@@ -247,6 +255,34 @@ public class JUnitPlatformProviderTest {
         assertEquals(TestClass1.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
         assertEquals(TestClass1.TESTS_ABORTED, summary.getTestsAbortedCount());
         assertEquals(TestClass1.TESTS_FAILED, summary.getTestsFailedCount());
+    }
+
+    @Test
+    public void multipleTestClassesAreInvokedLazily() throws Exception {
+        Launcher launcher = LauncherFactory.create();
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        launcher.registerTestExecutionListeners(executionListener);
+
+        invokeProvider(provider, newTestsToRunLazily(TestClass1.class, TestClass2.class));
+
+        assertThat(executionListener.summaries).hasSize(2);
+        TestExecutionSummary summary = executionListener.summaries.get(0);
+        assertEquals(TestClass1.TESTS_FOUND, summary.getTestsFoundCount());
+        assertEquals(TestClass1.TESTS_STARTED, summary.getTestsStartedCount());
+        assertEquals(TestClass1.TESTS_SKIPPED, summary.getTestsSkippedCount());
+        assertEquals(TestClass1.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
+        assertEquals(TestClass1.TESTS_ABORTED, summary.getTestsAbortedCount());
+        assertEquals(TestClass1.TESTS_FAILED, summary.getTestsFailedCount());
+
+        summary = executionListener.summaries.get(1);
+        assertEquals(TestClass2.TESTS_FOUND, summary.getTestsFoundCount());
+        assertEquals(TestClass2.TESTS_STARTED, summary.getTestsStartedCount());
+        assertEquals(TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount());
+        assertEquals(TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
+        assertEquals(TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount());
+        assertEquals(TestClass2.TESTS_FAILED, summary.getTestsFailedCount());
     }
 
     @Test
@@ -682,14 +718,22 @@ public class JUnitPlatformProviderTest {
         assertThat(report.getValue().getSourceName()).isEqualTo(TestClass2.class.getName());
         assertThat(report.getValue().getName()).isNull();
 
-        assertThat(executionListener.summaries).hasSize(1);
+        assertThat(executionListener.summaries).hasSize(2);
         TestExecutionSummary summary = executionListener.summaries.get(0);
-        assertEquals(TestClass1.TESTS_FOUND + TestClass2.TESTS_FOUND, summary.getTestsFoundCount());
-        assertEquals(TestClass1.TESTS_STARTED + TestClass2.TESTS_STARTED, summary.getTestsStartedCount());
-        assertEquals(TestClass1.TESTS_SKIPPED + TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount());
-        assertEquals(TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
-        assertEquals(TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount());
-        assertEquals(TestClass1.TESTS_FAILED + TestClass2.TESTS_FAILED, summary.getTestsFailedCount());
+        assertEquals(TestClass1.TESTS_FOUND, summary.getTestsFoundCount());
+        assertEquals(TestClass1.TESTS_STARTED, summary.getTestsStartedCount());
+        assertEquals(TestClass1.TESTS_SKIPPED, summary.getTestsSkippedCount());
+        assertEquals(TestClass1.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
+        assertEquals(TestClass1.TESTS_ABORTED, summary.getTestsAbortedCount());
+        assertEquals(TestClass1.TESTS_FAILED, summary.getTestsFailedCount());
+
+        summary = executionListener.summaries.get(1);
+        assertEquals(TestClass2.TESTS_FOUND, summary.getTestsFoundCount());
+        assertEquals(TestClass2.TESTS_STARTED, summary.getTestsStartedCount());
+        assertEquals(TestClass2.TESTS_SKIPPED, summary.getTestsSkippedCount());
+        assertEquals(TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
+        assertEquals(TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount());
+        assertEquals(TestClass2.TESTS_FAILED, summary.getTestsFailedCount());
     }
 
     @Test

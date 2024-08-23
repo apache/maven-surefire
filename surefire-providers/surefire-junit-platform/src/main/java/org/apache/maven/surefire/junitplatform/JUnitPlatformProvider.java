@@ -40,7 +40,6 @@ import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.SurefireReflectionException;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
@@ -172,25 +171,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void execute(TestsToRun testsToRun, RunListenerAdapter adapter) {
-        if (testsToRun.allowEagerReading()) {
-            List<DiscoverySelector> selectors = new ArrayList<>();
-            testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
-
+        testsToRun.iterator().forEachRemaining(c -> {
             LauncherDiscoveryRequestBuilder builder = request()
                     .filters(filters)
                     .configurationParameters(configurationParameters)
-                    .selectors(selectors);
-
+                    .selectors(selectClass(c.getName()));
             launcher.execute(builder.build(), adapter);
-        } else {
-            testsToRun.iterator().forEachRemaining(c -> {
-                LauncherDiscoveryRequestBuilder builder = request()
-                        .filters(filters)
-                        .configurationParameters(configurationParameters)
-                        .selectors(selectClass(c.getName()));
-                launcher.execute(builder.build(), adapter);
-            });
-        }
+        });
     }
 
     private void closeLauncher() {
