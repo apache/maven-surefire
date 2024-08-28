@@ -131,6 +131,8 @@ public final class ReportTestSuite {
         this.fullClassName = fullClassName;
         int lastDotPosition = fullClassName.lastIndexOf(".");
         name = fullClassName.substring(lastDotPosition + 1, fullClassName.length());
+        // For the default package we will set an empty string instead of null because otherwise
+        // the package name cannot be used as a map key.
         packageName = lastDotPosition == -1 ? "" : fullClassName.substring(0, lastDotPosition);
         return this;
     }

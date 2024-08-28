@@ -190,14 +190,14 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         });
 
         for (Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet()) {
-            String packageName = entry.getKey();
+            String packageName = !entry.getKey().isEmpty() ? entry.getKey() : "(default package)";
 
             List<ReportTestSuite> testSuiteList = entry.getValue();
 
             Map<String, Object> packageSummary = parser.getSummary(testSuiteList);
 
             tableRow(new String[] {
-                createLinkPatternedText(packageName, '#' + packageName),
+                createLinkPatternedText(packageName, '#' + DoxiaUtils.encodeId(packageName)),
                 String.valueOf(packageSummary.get("totalTests")),
                 String.valueOf(packageSummary.get("totalErrors")),
                 String.valueOf(packageSummary.get("totalFailures")),
@@ -213,7 +213,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         paragraph(getI18nString("surefire", "text.note2"));
 
         for (Map.Entry<String, List<ReportTestSuite>> entry : suitePackages.entrySet()) {
-            String packageName = entry.getKey();
+            String packageName = !entry.getKey().isEmpty() ? entry.getKey() : "(default package)";
 
             List<ReportTestSuite> testSuiteList = entry.getValue();
 
@@ -265,7 +265,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         sink.tableCell();
 
-        sink.link("#" + suite.getPackageName() + '.' + suite.getName());
+        sink.link("#" + suite.getFullClassName());
 
         if (suite.getNumberOfErrors() > 0) {
             sinkIcon("error");
@@ -281,7 +281,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         sink.tableCell_();
 
-        tableCell(createLinkPatternedText(suite.getName(), '#' + suite.getPackageName() + '.' + suite.getName()));
+        tableCell(createLinkPatternedText(suite.getName(), '#' + suite.getFullClassName()));
 
         tableCell(Integer.toString(suite.getNumberOfTests()));
 
@@ -314,7 +314,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
             List<ReportTestCase> testCases = suite.getTestCases();
 
             if (!testCases.isEmpty()) {
-                startSection(suite.getName(), suite.getPackageName() + '.' + suite.getName());
+                startSection(suite.getName(), suite.getFullClassName());
 
                 boolean showTable = false;
 
