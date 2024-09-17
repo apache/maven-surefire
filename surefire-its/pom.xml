@@ -39,13 +39,13 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-report-parser</artifactId>
-      <version>3.2.5</version>
+      <version>3.5.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-logger-api</artifactId>
-      <version>3.2.5</version>
+      <version>3.5.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -139,7 +139,7 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>3.2.5</version>
+            <version>3.5.0</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           </dependency>
         </dependencies>
@@ -187,7 +187,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.2.5</version>
+            <version>3.5.0</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
             <configuration>
               <skipTests>${skipTests}</skipTests>
@@ -216,7 +216,7 @@
               <dependency>
                 <groupId>org.apache.maven.surefire</groupId>
                 <artifactId>surefire-junit47</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.0</version>
                 <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
               </dependency>
             </dependencies>
