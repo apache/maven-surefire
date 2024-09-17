@@ -23,14 +23,14 @@ import javax.xml.xpath.XPathFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
 import org.apache.maven.surefire.api.suite.RunResult;
-import org.apache.maven.surefire.shared.io.IOUtils;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 
@@ -102,16 +102,19 @@ public final class FailsafeSummaryXmlUtils {
                 Locale.ROOT,
                 FAILSAFE_SUMMARY_XML_TEMPLATE,
                 fromRunResult.getFailsafeCode(),
-                String.valueOf(fromRunResult.isTimeout()),
+                fromRunResult.isTimeout(),
                 fromRunResult.getCompletedCount(),
                 fromRunResult.getErrors(),
                 fromRunResult.getFailures(),
                 fromRunResult.getSkipped(),
                 msg);
 
-        try (FileOutputStream os = new FileOutputStream(toFailsafeSummaryXml)) {
-            IOUtils.write(xml, os, UTF_8);
-        }
+        Files.write(
+                toFailsafeSummaryXml.toPath(),
+                xml.getBytes(UTF_8),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE);
     }
 
     public static void writeSummary(RunResult mergedSummary, File mergedSummaryFile, boolean inProgress)

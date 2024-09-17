@@ -49,7 +49,6 @@ import static org.apache.maven.surefire.booter.ProcessInfo.ERR_PROCESS_INFO;
 import static org.apache.maven.surefire.booter.ProcessInfo.INVALID_PROCESS_INFO;
 import static org.apache.maven.surefire.booter.ProcessInfo.unixProcessInfo;
 import static org.apache.maven.surefire.booter.ProcessInfo.windowsProcessInfo;
-import static org.apache.maven.surefire.shared.io.IOUtils.closeQuietly;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_HP_UX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
@@ -409,6 +408,16 @@ final class PpidChecker {
                     } catch (IOException e) {
                         // cannot do anything about it, the dump file writes would fail as well
                     }
+                }
+            }
+        }
+
+        private void closeQuietly(AutoCloseable autoCloseable) {
+            if (autoCloseable != null) {
+                try {
+                    autoCloseable.close();
+                } catch (Exception e) {
+                    // ignore
                 }
             }
         }
