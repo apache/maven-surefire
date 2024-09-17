@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -43,7 +44,6 @@ import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.apache.maven.surefire.shared.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

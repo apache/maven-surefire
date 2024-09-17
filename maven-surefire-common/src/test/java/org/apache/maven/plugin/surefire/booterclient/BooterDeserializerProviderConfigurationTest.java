@@ -29,6 +29,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
@@ -46,7 +47,6 @@ import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.TypeEncodedValue;
-import org.apache.maven.surefire.shared.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 

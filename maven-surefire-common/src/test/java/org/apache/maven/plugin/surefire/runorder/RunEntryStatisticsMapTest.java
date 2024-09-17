@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.runorder;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -39,7 +38,6 @@ import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
-import static org.apache.maven.surefire.shared.io.IOUtils.readLines;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
@@ -82,13 +80,10 @@ public class RunEntryStatisticsMapTest extends TestCase {
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 0L, "abc", null, null, null, 42);
         newResults.add(newResults.createNextGeneration(reportEntry));
         newResults.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
 
-            assertThat(lines).hasSize(1);
-
-            assertThat(lines).containsSequence("1,42,abc,");
-        }
+        List<String> lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(1);
+        assertThat(lines).containsSequence("1,42,abc,");
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
@@ -122,13 +117,9 @@ public class RunEntryStatisticsMapTest extends TestCase {
         newResults.add(existingEntries.createNextGeneration(reportEntry3));
 
         newResults.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
-
-            assertThat(lines).hasSize(3);
-
-            assertThat(lines).containsSequence("1,17,abc,willFail", "1,42,abc,method1", "1,100,abc,method3");
-        }
+        List<String> lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(3);
+        assertThat(lines).containsSequence("1,17,abc,willFail", "1,42,abc,method1", "1,100,abc,method3");
 
         RunEntryStatisticsMap nextRun = RunEntryStatisticsMap.fromFile(data);
         newResults = new RunEntryStatisticsMap();
@@ -142,13 +133,9 @@ public class RunEntryStatisticsMapTest extends TestCase {
         newResults.add(nextRun.createNextGeneration(newRunReportEntry3));
 
         newResults.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
-
-            assertThat(lines).hasSize(3);
-
-            assertThat(lines).containsSequence("0,27,abc,willFail", "2,52,abc,method1", "2,110,abc,method3");
-        }
+        lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(3);
+        assertThat(lines).containsSequence("0,27,abc,willFail", "2,52,abc,method1", "2,110,abc,method3");
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
@@ -160,24 +147,17 @@ public class RunEntryStatisticsMapTest extends TestCase {
         reportEntries.add(reportEntries.createNextGeneration(reportEntry));
 
         reportEntries.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
-
-            assertThat(lines).hasSize(3);
-
-            assertThat(lines).containsSequence("1,42,abc,line1", " line2", "  line3");
-        }
+        List<String> lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(3);
+        assertThat(lines).containsSequence("1,42,abc,line1", " line2", "  line3");
 
         RunEntryStatisticsMap nextRun = RunEntryStatisticsMap.fromFile(data);
         assertThat(data.delete()).isTrue();
         nextRun.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
 
-            assertThat(lines).hasSize(3);
-
-            assertThat(lines).containsSequence("1,42,abc,line1", " line2", "  line3");
-        }
+        lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(3);
+        assertThat(lines).containsSequence("1,42,abc,line1", " line2", "  line3");
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
@@ -190,24 +170,16 @@ public class RunEntryStatisticsMapTest extends TestCase {
                 new SimpleReportEntry(NORMAL_RUN, 0L, "abc", null, "test", null, 10)));
 
         reportEntries.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
-
-            assertThat(lines).hasSize(3);
-
-            assertThat(lines).containsSequence("1,10,abc,test", "1,42,abc,line1", " line2");
-        }
+        List<String> lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(3);
+        assertThat(lines).containsSequence("1,10,abc,test", "1,42,abc,line1", " line2");
 
         RunEntryStatisticsMap nextRun = RunEntryStatisticsMap.fromFile(data);
         assertThat(data.delete()).isTrue();
         nextRun.serialize(data);
-        try (InputStream io = new FileInputStream(data)) {
-            List<String> lines = readLines(io, UTF_8);
-
-            assertThat(lines).hasSize(3);
-
-            assertThat(lines).containsSequence("1,10,abc,test", "1,42,abc,line1", " line2");
-        }
+        lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(3);
+        assertThat(lines).containsSequence("1,10,abc,test", "1,42,abc,line1", " line2");
     }
 
     class A {}

@@ -32,8 +32,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
-import org.apache.maven.surefire.shared.io.FileUtils;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
