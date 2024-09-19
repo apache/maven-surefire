@@ -168,9 +168,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private final ClasspathCache classpathCache = new ClasspathCache();
 
-    /**
-     * Note: use the legacy system property <em>disableXmlReport</em> set to {@code true} to disable the report.
-     */
     @Parameter
     private SurefireStatelessReporter statelessTestsetReporter;
 
@@ -706,12 +703,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Flag to disable the generation of report files in xml format.
      * Deprecated since 3.0.0-M4.
-     * Instead use <em>disable</em> within {@code statelessTestsetReporter} since of 3.0.0-M6.
+     * @deprecated Instead use <em>disable</em> within {@code statelessTestsetReporter} since of 3.0.0-M6.
      * @since 2.2
      */
     @Deprecated // todo make readonly to handle system property
     @Parameter(property = "disableXmlReport", defaultValue = "false")
-    private boolean disableXmlReport;
+    private Boolean disableXmlReport;
 
     /**
      * By default, Surefire enables JVM assertions for the execution of your test cases. To disable the assertions, set
@@ -2058,11 +2055,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private StartupReportConfiguration getStartupReportConfiguration(String configChecksum, boolean isForking) {
-        SurefireStatelessReporter xmlReporter = statelessTestsetReporter == null
-                ? new SurefireStatelessReporter(/*todo call def. constr.*/ isDisableXmlReport(), "3.0.2")
-                : statelessTestsetReporter;
+        SurefireStatelessReporter xmlReporter =
+                statelessTestsetReporter == null ? new SurefireStatelessReporter() : statelessTestsetReporter;
 
-        xmlReporter.setDisable(isDisableXmlReport()); // todo change to Boolean in the version 3.0.0-M6
+        if (isDisableXmlReport() != null) {
+            xmlReporter.setDisable(isDisableXmlReport());
+        }
 
         SurefireConsoleOutputReporter outReporter =
                 consoleOutputReporter == null ? new SurefireConsoleOutputReporter() : consoleOutputReporter;
@@ -3557,12 +3555,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         this.trimStackTrace = trimStackTrace;
     }
 
-    public boolean isDisableXmlReport() {
+    public Boolean isDisableXmlReport() {
         return disableXmlReport;
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public void setDisableXmlReport(boolean disableXmlReport) {
+    public void setDisableXmlReport(Boolean disableXmlReport) {
         this.disableXmlReport = disableXmlReport;
     }
 
