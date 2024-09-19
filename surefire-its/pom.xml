@@ -193,6 +193,8 @@
               <skipTests>${skipTests}</skipTests>
               <runOrder>alphabetical</runOrder>
               <threadCount>1</threadCount>
+              <forkCount>1C</forkCount>
+              <rerunFailingTestsCount>1</rerunFailingTestsCount>
               <perCoreThreadCount>false</perCoreThreadCount>
               <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
               <includes>
