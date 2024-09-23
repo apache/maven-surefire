@@ -44,7 +44,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>surefire-junit3</artifactId>
+      <artifactId>surefire-junit-platform</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
@@ -81,8 +81,7 @@
                   <include>org.apache.maven.surefire:surefire-extensions-spi</include>
                   <include>org.apache.maven.surefire:surefire-booter</include>
                   <include>org.apache.maven.surefire:common-java5</include>
-                  <include>org.apache.maven.surefire:common-junit3</include>
-                  <include>org.apache.maven.surefire:surefire-junit3</include>
+                  <include>org.apache.maven.surefire:surefire-junit-platform</include>
                 </includes>
                 <excludes>
                   <!-- with rebuild old shaded artifact is used -->

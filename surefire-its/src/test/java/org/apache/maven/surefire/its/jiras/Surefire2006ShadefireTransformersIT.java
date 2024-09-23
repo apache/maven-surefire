@@ -18,8 +18,12 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
+import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.StringContains.containsString;
 
 /**
  * Test for shadefire usage
@@ -28,11 +32,17 @@ import org.junit.Test;
  */
 public class Surefire2006ShadefireTransformersIT extends SurefireJUnit4IntegrationTestCase {
     @Test
-    public void shadefireShouldBeUsed() {
+    public void shadefireShouldBeUsed() throws VerificationException {
         unpack("surefire-2006-shadefire-transformers")
+                .debugLogging()
                 .executeTest()
-                .assertTestSuiteResults(1, 0, 0, 0)
-                .verifyTextInLog(
-                        "[INFO] Using configured provider org.apache.maven.shadefire.surefire.junit.JUnit3Provider");
+                .assertTestSuiteResults(2, 0, 0, 0)
+                .assertThatLogLine(
+                        containsString(
+                                "[INFO] Using configured provider org.apache.maven.shadefire.surefire.junitplatform.JUnitPlatformProvider"),
+                        is(1))
+                .assertThatLogLine(containsString("[INFO] Running PojoTest"), is(0))
+                .assertThatLogLine(containsString("[INFO] Running JUnit4Test"), is(1))
+                .assertThatLogLine(containsString("[INFO] Running JUnit5Test"), is(1));
     }
 }
