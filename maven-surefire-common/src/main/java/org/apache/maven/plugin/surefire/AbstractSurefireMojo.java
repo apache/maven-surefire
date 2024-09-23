@@ -1154,7 +1154,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 new TestNgProviderInfo(getTestNgArtifact()),
                 new JUnitCoreProviderInfo(getJunitArtifact(), junitDepArtifact),
                 new JUnit4ProviderInfo(getJunitArtifact(), junitDepArtifact),
-                new JUnit3ProviderInfo());
+                new JUnit3ProviderInfo(),
+                new JUnitPlatformProviderShadefireInfo(
+                        getJUnitPlatformRunnerArtifact(), getJUnit5Artifact(), testClasspath));
     }
 
     SurefireProperties setupProperties() {
@@ -3034,7 +3036,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
     }
 
-    final class JUnitPlatformProviderInfo implements ProviderInfo {
+    class JUnitPlatformProviderInfo implements ProviderInfo {
         private static final String PROVIDER_DEP_GID = "org.junit.platform";
         private static final String PROVIDER_DEP_AID = "junit-platform-launcher";
 
@@ -3055,6 +3057,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         public String getProviderName() {
             return "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
+        }
+
+        protected String getProviderArtifactName() {
+            return "surefire-junit-platform";
         }
 
         @Override
@@ -3082,7 +3088,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             Map<String, Artifact> providerArtifacts = surefireDependencyResolver.getProviderClasspathAsMap(
                     session.getRepositorySession(),
                     project.getRemotePluginRepositories(),
-                    "surefire-junit-platform",
+                    getProviderArtifactName(),
                     surefireVersion);
             Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
 
@@ -3162,7 +3168,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerArtifacts.keySet().removeAll(testDependencies.keySet());
         }
 
-        private void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+        protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
             String version = junitPlatformArtifact.getBaseVersion();
             for (Artifact launcherArtifact : resolve(PROVIDER_DEP_GID, PROVIDER_DEP_AID, version, null, "jar")) {
                 String key = launcherArtifact.getGroupId() + ":" + launcherArtifact.getArtifactId();
@@ -3194,6 +3200,41 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             }
 
             return false;
+        }
+    }
+
+    final class JUnitPlatformProviderShadefireInfo extends JUnitPlatformProviderInfo {
+
+        JUnitPlatformProviderShadefireInfo(
+                Artifact junitPlatformRunnerArtifact,
+                Artifact junitPlatformArtifact,
+                @Nonnull TestClassPath testClasspath) {
+            super(junitPlatformRunnerArtifact, junitPlatformArtifact, testClasspath);
+        }
+
+        @Override
+        public boolean isApplicable() {
+            // newer discover this provider automatically
+            return false;
+        }
+
+        @Override
+        @Nonnull
+        public String getProviderName() {
+            return "org.apache.maven.shadefire.surefire.junitplatform.JUnitPlatformProvider";
+        }
+
+        @Override
+        protected String getProviderArtifactName() {
+            return "surefire-shadefire";
+        }
+
+        @Override
+        protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+            // shadefire is used as booter we can not provide additional dependencies,
+            // so we need add a launcher here
+            providerArtifacts.put("org.junit.platform:junit-platform-launcher", null);
+            super.alignProviderVersions(providerArtifacts);
         }
     }
 

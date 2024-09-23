@@ -33,7 +33,21 @@
     <maven.compiler.target>${java.specification.version}</maven.compiler.target>
   </properties>
 
-  <!-- NOTE: This has no dependencies on JUnit or TestNG, just nothing -->
+  <!-- shadefire will support JUnit5 an JUnit4 by vintage engine -->
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 
   <build>
     <plugins>

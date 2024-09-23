@@ -17,13 +17,10 @@
  * under the License.
  */
 
-/**
- * This test will be not executed ...
- */
-public class PojoTest
-{
-    public void testSuccess()
-    {
-        assert true;
-    }
+import org.junit.Test;
+
+public class JUnit4Test {
+
+    @Test
+    public void success() {}
 }
