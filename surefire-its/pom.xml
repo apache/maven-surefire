@@ -114,6 +114,7 @@
         </includes>
       </resource>
     </resources>
+
     <plugins>
       <plugin>
         <artifactId>maven-help-plugin</artifactId>
@@ -240,6 +241,19 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>github</id>
+      <activation>
+        <property>
+          <name>env.GITHUB_ACTIONS</name>
+        </property>
+      </activation>
+      <properties>
+        <!-- workaround for SUREFIRE-2269 -->
+        <maven.clean.failOnError>false</maven.clean.failOnError>
+        <maven.clean.verbose>true</maven.clean.verbose>
+      </properties>
     </profile>
   </profiles>
 </project>
