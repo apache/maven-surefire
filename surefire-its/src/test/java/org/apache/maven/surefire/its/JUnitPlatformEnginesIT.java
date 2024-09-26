@@ -297,6 +297,45 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
+    public void testJupiterEngineWithTestTemplateNotClassifiedAsFlake() {
+        unpack("junit5-testtemplate-bug", "-" + jupiter)
+                .setTestToRun("FieldSettingTest")
+                .sysProp("junit5.version", jupiter)
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog("AssertionFailedError")
+                .assertTestSuiteResults(2, 0, 1, 0, 0);
+
+        unpack("junit5-testtemplate-bug", "-" + jupiter)
+                .debugLogging()
+                .setTestToRun("FieldSettingTest")
+                .sysProp("junit5.version", jupiter)
+                // The tests are failing deterministically, so rerunning them should not change the result
+                .sysProp("surefire.rerunFailingTestsCount", "1")
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog("AssertionFailedError")
+                .assertTestSuiteResults(2, 0, 1, 0, 0);
+    }
+
+    @Test
+    public void testJupiterEngineWithParameterizedTestsNotClassifiedAsFlake() {
+        unpack("junit5-testtemplate-bug", "-" + jupiter)
+                .debugLogging()
+                .setTestToRun("ParamsContextTest")
+                .sysProp("junit5.version", jupiter)
+                // The tests are failing deterministically, so rerunning them should not change the result
+                .sysProp("surefire.rerunFailingTestsCount", "1")
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog("AssertionFailedError")
+                .assertTestSuiteResults(2, 0, 1, 0, 0);
+    }
+
+    @Test
     public void testJupiterEngineWithAssertionsFailNoParameters() {
         // `Assertions.fail()` not supported until 5.2.0
         assumeThat(jupiter, is(not("5.0.3")));
