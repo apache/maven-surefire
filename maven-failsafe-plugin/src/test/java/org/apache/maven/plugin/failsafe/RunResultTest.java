@@ -19,12 +19,17 @@
 package org.apache.maven.plugin.failsafe;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Locale;
 
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.junit.Test;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -62,6 +67,49 @@ public class RunResultTest {
     @Test
     public void testSkipped() throws Exception {
         writeReadCheck(new RunResult(3, 2, 1, 0, null, true));
+    }
+
+    @Test
+    public void testFlakes() throws Exception {
+        writeReadCheck(new RunResult(3, 2, 1, 0, 2, null, true));
+    }
+
+    @Test
+    public void testLegacyDeserialization() throws Exception {
+        File legacySummary = SureFireFileManager.createTempFile("failsafe", "test");
+        String legacyFailsafeSummaryXmlTemplate = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<failsafe-summary xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+                + " xsi:noNamespaceSchemaLocation=\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/failsafe-summary.xsd\""
+                + " result=\"%s\" timeout=\"%s\">\n"
+                + "    <completed>%d</completed>\n"
+                + "    <errors>%d</errors>\n"
+                + "    <failures>%d</failures>\n"
+                + "    <skipped>%d</skipped>\n"
+                + "    %s\n"
+                + "</failsafe-summary>";
+        String xml = format(Locale.ROOT, legacyFailsafeSummaryXmlTemplate, 0, false, 3, 2, 1, 0, "msg");
+        Files.write(
+                legacySummary.toPath(),
+                xml.getBytes(StandardCharsets.UTF_8),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE);
+
+        // When the failsafe-summary.xml does not contain the <flakes> element, it should be considered as 0.
+        RunResult expected = new RunResult(3, 2, 1, 0, 0, null, false);
+        RunResult actual = FailsafeSummaryXmlUtils.toRunResult(legacySummary);
+
+        assertThat(actual.getCompletedCount()).isEqualTo(expected.getCompletedCount());
+
+        assertThat(actual.getErrors()).isEqualTo(expected.getErrors());
+
+        assertThat(actual.getFailures()).isEqualTo(expected.getFailures());
+
+        assertThat(actual.getSkipped()).isEqualTo(expected.getSkipped());
+
+        assertThat(actual.getFlakes()).isEqualTo(expected.getFlakes());
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
