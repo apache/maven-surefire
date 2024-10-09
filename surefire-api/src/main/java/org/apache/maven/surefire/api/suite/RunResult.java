@@ -202,6 +202,9 @@ public class RunResult {
         if (skipped != runResult.skipped) {
             return false;
         }
+        if (flakes != runResult.flakes) {
+            return false;
+        }
         if (timeout != runResult.timeout) {
             return false;
         }
