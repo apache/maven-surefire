@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -44,7 +45,7 @@ class FieldSettingContextProvider implements TestTemplateInvocationContextProvid
         return new TestTemplateInvocationContext() {
             @Override
             public String getDisplayName(int invocationIndex) {
-                return "[%d] %s".formatted(invocationIndex, parameter);
+                return String.format("[%d] %s", invocationIndex, parameter);
             }
 
             @Override
@@ -55,8 +56,8 @@ class FieldSettingContextProvider implements TestTemplateInvocationContextProvid
     }
 
     private List<Extension> getBeforeEachCallbacks(int value) {
-        return List.of(((BeforeEachCallback) ctx ->
+        return Arrays.asList((BeforeEachCallback) ctx ->
                 ((FieldSettingTest) ctx.getRequiredTestInstance()).setTestValue(value)
-        ));
+        );
     }
 }

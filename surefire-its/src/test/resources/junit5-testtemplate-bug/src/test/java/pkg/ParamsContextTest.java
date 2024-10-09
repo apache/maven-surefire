@@ -19,7 +19,7 @@ public class ParamsContextTest {
 
     @TestTemplate
     @ExtendWith(ParamsContextProvider.class)
-    void testTemplatePartiallyFails(Integer value) {
+    void testTemplatePartiallyFails(int value) {
         assertEquals(42, value);
     }
 }
@@ -40,7 +40,7 @@ class ParamsContextProvider implements TestTemplateInvocationContextProvider {
         return new TestTemplateInvocationContext() {
             @Override
             public String getDisplayName(int invocationIndex) {
-                return "[%d] %s".formatted(invocationIndex, parameter);
+                return String.format("[%d] %s", invocationIndex, parameter);
             }
 
             @Override
@@ -48,7 +48,7 @@ class ParamsContextProvider implements TestTemplateInvocationContextProvider {
                 return Collections.singletonList(new ParameterResolver() {
                     @Override
                     public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
-                        return parameterContext.getParameter().getType().equals(Integer.class);
+                        return true;
                     }
 
                     @Override
