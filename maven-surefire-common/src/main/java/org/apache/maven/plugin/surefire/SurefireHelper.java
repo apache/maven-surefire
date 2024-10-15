@@ -270,11 +270,11 @@ public final class SurefireHelper {
                         .append(reportParameters.getFailOnFlakeCount())
                         .append(".");
             }
-            msg.append("\n\nPlease refer to ")
+            msg.append("\n\nSee ")
                     .append(reportParameters.getReportsDirectory())
                     .append(" for the individual test results.")
                     .append('\n')
-                    .append("Please refer to dump files (if any exist) ")
+                    .append("See dump files (if any exist) ")
                     .append(DUMP_FILES_PRINT[0])
                     .append(", ")
                     .append(DUMP_FILES_PRINT[1])
