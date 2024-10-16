@@ -81,7 +81,7 @@ public class RunOrder {
         RunOrder[] runOrders = values();
         StringBuilder message = new StringBuilder("There's no RunOrder with the name ");
         message.append(name);
-        message.append(". Please use one of the following RunOrders: ");
+        message.append(". Use one of the following RunOrders: ");
         for (int i = 0; i < runOrders.length; i++) {
             if (i != 0) {
                 message.append(", ");

@@ -37,7 +37,7 @@ import org.junit.runners.model.RunnerScheduler;
 
 /**
  * Since SUREFIRE 2.18 this class is deprecated.
- * Please use {@link org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder} instead.
+ * Use {@link org.apache.maven.surefire.junitcore.pc.ParallelComputerBuilder} instead.
  *
  * @author Kristian Rosenvold
  */
