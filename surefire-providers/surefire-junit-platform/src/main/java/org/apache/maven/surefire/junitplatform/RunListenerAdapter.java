@@ -317,12 +317,14 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             boolean needsSpaceSeparator = isNotBlank(parentDisplay) && !display.startsWith("[");
             String methodDisplay = parentDisplay + (needsSpaceSeparator ? " " : "") + display;
 
+            boolean isParameterized = isNotBlank(methodSource.getMethodParameterTypes());
             boolean hasParameterizedParent = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> !identifier.getSource().isPresent())
                     .map(TestIdentifier::getLegacyReportingName)
                     .anyMatch(legacyReportingName -> legacyReportingName.matches("^\\[.+]$"));
+            boolean isTestTemplate = testIdentifier.getLegacyReportingName().matches("^.*\\[\\d+]$");
 
-            boolean parameterized = isNotBlank(methodSource.getMethodParameterTypes()) || hasParameterizedParent;
+            boolean parameterized = isParameterized || hasParameterizedParent || isTestTemplate;
             String methodName = methodSource.getMethodName();
             String description = testIdentifier.getLegacyReportingName();
             boolean equalDescriptions = methodDisplay.equals(description);
