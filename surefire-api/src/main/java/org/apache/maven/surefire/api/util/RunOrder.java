@@ -47,8 +47,8 @@ public class RunOrder {
     /**
      * Returns the specified RunOrder
      *
-     * @param values The runorder string value
-     * @return An array of RunOrder objects, never null
+     * @param values the runorder string value
+     * @return an array of RunOrder objects, never null
      */
     public static RunOrder[] valueOfMulti(String values) {
         List<RunOrder> result = new ArrayList<>();
@@ -78,14 +78,13 @@ public class RunOrder {
     }
 
     private static String createMessageForMissingRunOrder(String name) {
-        RunOrder[] runOrders = values();
+        RunOrder[] runOrders = values(); // guaranteed non-empty
         StringBuilder message = new StringBuilder("There's no RunOrder with the name ");
         message.append(name);
         message.append(". Use one of the following RunOrders: ");
-        for (int i = 0; i < runOrders.length; i++) {
-            if (i != 0) {
-                message.append(", ");
-            }
+        message.append(runOrders[0]);
+        for (int i = 1; i < runOrders.length; i++) {
+            message.append(", ");
             message.append(runOrders[i]);
         }
         message.append('.');
@@ -98,12 +97,11 @@ public class RunOrder {
 
     public static String asString(RunOrder[] runOrder) {
         StringBuilder stringBuffer = new StringBuilder();
-        for (int i = 0; i < runOrder.length; i++) {
+        for (int i = 0; i < runOrder.length - 1; i++) {
             stringBuffer.append(runOrder[i].name);
-            if (i < (runOrder.length - 1)) {
-                stringBuffer.append(",");
-            }
+            stringBuffer.append(",");
         }
+        stringBuffer.append(runOrder[runOrder.length - 1].name);
         return stringBuffer.toString();
     }
 
