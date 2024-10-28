@@ -52,7 +52,7 @@ public class LegacyPojoStackTraceWriter implements StackTraceWriter {
             if (isMultiLineExceptionMessage(t)) {
                 // SUREFIRE-986
                 String exc = t.getClass().getName() + ": ";
-                if (builder.toString().startsWith(exc)) {
+                if (builder.indexOf(exc) == 0) {
                     builder.insert(exc.length(), '\n');
                 }
             }
