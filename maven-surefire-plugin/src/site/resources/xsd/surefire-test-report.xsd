@@ -18,115 +18,116 @@
   ~ under the License.
   -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="3.0.2">
-    <xs:element name="testsuite">
-        <xs:complexType>
+  <xs:element name="testsuite">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="properties" minOccurs="0">
+          <xs:complexType>
             <xs:sequence>
-                <xs:element name="properties" minOccurs="0">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:attribute name="name" type="xs:string" use="required"/>
-                                    <xs:attribute name="value" type="xs:string" use="required"/>
-                                </xs:complexType>
-                            </xs:element>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-                <xs:element name="testcase" minOccurs="0" maxOccurs="unbounded">
-                    <xs:complexType>
-                        <xs:sequence>
-                            <xs:element name="failure" nillable="true" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute name="message" type="xs:string"/>
-                                            <xs:attribute name="type" type="xs:string"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="rerunFailure" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="stackTrace" type="xs:string"/>
-                                        <xs:element name="system-out" type="xs:string" minOccurs="0"/>
-                                        <xs:element name="system-err" type="xs:string" minOccurs="0"/>
-                                    </xs:sequence>
-                                    <xs:attribute name="message" type="xs:string"/>
-                                    <xs:attribute name="type" type="xs:string"/>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="flakyFailure" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="stackTrace" type="xs:string"/>
-                                        <xs:element name="system-out" type="xs:string" minOccurs="0"/>
-                                        <xs:element name="system-err" type="xs:string" minOccurs="0"/>
-                                    </xs:sequence>
-                                    <xs:attribute name="message" type="xs:string"/>
-                                    <xs:attribute name="type" type="xs:string"/>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="skipped" nillable="true" minOccurs="0" maxOccurs="1">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute name="message" type="xs:string"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="error" nillable="true" minOccurs="0" maxOccurs="1">
-                                <xs:complexType>
-                                    <xs:simpleContent>
-                                        <xs:extension base="xs:string">
-                                            <xs:attribute name="message" type="xs:string"/>
-                                            <xs:attribute name="type" type="xs:string"/>
-                                        </xs:extension>
-                                    </xs:simpleContent>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="rerunError" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="stackTrace" type="xs:string"/>
-                                        <xs:element name="system-out" type="xs:string" minOccurs="0"/>
-                                        <xs:element name="system-err" type="xs:string" minOccurs="0"/>
-                                    </xs:sequence>
-                                    <xs:attribute name="message" type="xs:string"/>
-                                    <xs:attribute name="type" type="xs:string"/>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="flakyError" minOccurs="0" maxOccurs="unbounded">
-                                <xs:complexType>
-                                    <xs:sequence>
-                                        <xs:element name="stackTrace" type="xs:string"/>
-                                        <xs:element name="system-out" type="xs:string" minOccurs="0"/>
-                                        <xs:element name="system-err" type="xs:string" minOccurs="0"/>
-                                    </xs:sequence>
-                                    <xs:attribute name="message" type="xs:string"/>
-                                    <xs:attribute name="type" type="xs:string"/>
-                                </xs:complexType>
-                            </xs:element>
-                            <xs:element name="system-out" type="xs:string" minOccurs="0"/>
-                            <xs:element name="system-err" type="xs:string" minOccurs="0"/>
-                        </xs:sequence>
-                        <xs:attribute name="name" type="xs:string" use="required"/>
-                        <xs:attribute name="classname" type="xs:string"/>
-                        <xs:attribute name="group" type="xs:string"/>
-                        <xs:attribute name="time" type="xs:float" use="required"/>
-                    </xs:complexType>
-                </xs:element>
+              <xs:element name="property" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" use="required"/>
+                  <xs:attribute name="value" type="xs:string" use="required"/>
+                </xs:complexType>
+              </xs:element>
             </xs:sequence>
-            <xs:attribute name="version" type="xs:string"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="testcase" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="failure" nillable="true" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string"/>
+                      <xs:attribute name="type" type="xs:string"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="rerunFailure" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="stackTrace" type="xs:string"/>
+                    <xs:element name="system-out" type="xs:string" minOccurs="0"/>
+                    <xs:element name="system-err" type="xs:string" minOccurs="0"/>
+                  </xs:sequence>
+                  <xs:attribute name="message" type="xs:string"/>
+                  <xs:attribute name="type" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="flakyFailure" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="stackTrace" type="xs:string"/>
+                    <xs:element name="system-out" type="xs:string" minOccurs="0"/>
+                    <xs:element name="system-err" type="xs:string" minOccurs="0"/>
+                  </xs:sequence>
+                  <xs:attribute name="message" type="xs:string"/>
+                  <xs:attribute name="type" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="skipped" nillable="true" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="error" nillable="true" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="message" type="xs:string"/>
+                      <xs:attribute name="type" type="xs:string"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="rerunError" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="stackTrace" type="xs:string"/>
+                    <xs:element name="system-out" type="xs:string" minOccurs="0"/>
+                    <xs:element name="system-err" type="xs:string" minOccurs="0"/>
+                  </xs:sequence>
+                  <xs:attribute name="message" type="xs:string"/>
+                  <xs:attribute name="type" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="flakyError" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="stackTrace" type="xs:string"/>
+                    <xs:element name="system-out" type="xs:string" minOccurs="0"/>
+                    <xs:element name="system-err" type="xs:string" minOccurs="0"/>
+                  </xs:sequence>
+                  <xs:attribute name="message" type="xs:string"/>
+                  <xs:attribute name="type" type="xs:string"/>
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="system-out" type="xs:string" minOccurs="0"/>
+              <xs:element name="system-err" type="xs:string" minOccurs="0"/>
+            </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="time" type="xs:float"/>
-            <xs:attribute name="tests" type="xs:string" use="required"/>
-            <xs:attribute name="errors" type="xs:string" use="required"/>
-            <xs:attribute name="skipped" type="xs:string" use="required"/>
-            <xs:attribute name="failures" type="xs:string" use="required"/>
+            <xs:attribute name="classname" type="xs:string"/>
             <xs:attribute name="group" type="xs:string"/>
-        </xs:complexType>
-    </xs:element>
+            <xs:attribute name="time" type="xs:float" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string"/>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+      <xs:attribute name="time" type="xs:float"/>
+      <xs:attribute name="tests" type="xs:string" use="required"/>
+      <xs:attribute name="errors" type="xs:string" use="required"/>
+      <xs:attribute name="skipped" type="xs:string" use="required"/>
+      <xs:attribute name="failures" type="xs:string" use="required"/>
+      <xs:attribute name="group" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
 </xs:schema>
+
