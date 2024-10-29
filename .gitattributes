@@ -2,6 +2,7 @@
 *        text=auto
 
 *.xml    text diff=xml
+*.xsd    text diff=xml
 *.java   text diff=java
 *.html   text diff=html
 *.vm     text
