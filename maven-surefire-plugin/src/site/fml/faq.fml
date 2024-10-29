@@ -29,11 +29,11 @@ under the License.
       <question>What is the difference between maven-failsafe-plugin and maven-surefire-plugin?</question>
       <answer>
         <p>
-          <a href="http://maven.apache.org/plugins/maven-surefire-plugin">maven-surefire-plugin</a>
+          <a href="http://maven.apache.org/plugins/maven-surefire-plugin/">maven-surefire-plugin</a>
           is designed for running unit tests and if any of the tests fail then it will fail the build immediately.
         </p>
         <p>
-          <a href="http://maven.apache.org/plugins/maven-failsafe-plugin">maven-failsafe-plugin</a>
+          <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/">maven-failsafe-plugin</a>
           is designed for running integration tests, and decouples failing the build if there
           are test failures from actually running the tests.
         </p>
