@@ -25,7 +25,7 @@
         <xsd:element name="errors" type="xsd:int"/>
         <xsd:element name="failures" type="xsd:int"/>
         <xsd:element name="skipped" type="xsd:int"/>
-        <xsd:element name="flakes" type="xsd:int" nillable="true"/>
+        <xsd:element name="flakes" type="xsd:int" minOccurs="0"/>
         <xsd:element name="failureMessage" type="xsd:string" nillable="true"/>
       </xsd:sequence>
       <xsd:attribute name="result" type="errorType" use="optional"/>
@@ -39,3 +39,4 @@
     </xsd:restriction>
   </xsd:simpleType>
 </xsd:schema>
+

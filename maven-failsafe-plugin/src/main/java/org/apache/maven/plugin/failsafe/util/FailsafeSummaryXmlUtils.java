@@ -92,6 +92,7 @@ public final class FailsafeSummaryXmlUtils {
                     parseInt(errors),
                     parseInt(failures),
                     parseInt(skipped),
+                    // Backwards compatability - to be replaced with parseInt in a future release
                     isBlank(flakes) ? 0 : parseInt(flakes),
                     isBlank(failureMessage) ? null : unescapeXml(failureMessage),
                     parseBoolean(timeout));
