@@ -53,7 +53,6 @@ public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnit4Integrati
         final URI uri = reportsFile.toURI();
 
         try (WebClient webClient = new WebClient()) {
-            webClient.getOptions().setJavaScriptEnabled(false);
             HtmlPage page = webClient.getPage(uri.toURL());
             HtmlAnchor a = (HtmlAnchor)
                     page.getByXPath("//a[@href = \"javascript:toggleDisplay('surefire260.TestB.testDup');\"]")
@@ -61,7 +60,6 @@ public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnit4Integrati
             HtmlTableRow content = (HtmlTableRow) page.getElementById("surefire260.TestB.testDup-failure");
             assertNotNull(content);
             assertTrue(content.getAttribute("style").contains("none"));
-            webClient.getOptions().setJavaScriptEnabled(true);
             a.click();
             assertFalse(content.getAttribute("style").contains("none"));
         }
