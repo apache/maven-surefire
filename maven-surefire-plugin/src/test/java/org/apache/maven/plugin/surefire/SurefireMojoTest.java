@@ -67,14 +67,14 @@ public class SurefireMojoTest extends TestCase {
             mojo.handleSummary(runResult, null);
         } catch (MojoFailureException e) {
             assertThat(e.getLocalizedMessage())
-                    .isEqualTo("There are test failures.\n\nPlease refer to null "
-                            + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                    .isEqualTo("There are test failures.\n\nSee null "
+                            + "for the individual test results.\nSee dump files (if any exist) "
                             + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
             return;
         }
         fail("Expected MojoFailureException with message "
-                + "'There are test failures.\n\nPlease refer to null "
-                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                + "'There are test failures.\n\nSee null "
+                + "for the individual test results.\nSee dump files (if any exist) "
                 + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
     }
 

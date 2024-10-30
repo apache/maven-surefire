@@ -28,7 +28,7 @@
 
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
-  <version>3.5.1-SNAPSHOT</version>
+  <version>3.5.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
@@ -68,7 +68,7 @@
   <scm>
     <connection>${maven.surefire.scm.devConnection}</connection>
     <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
-    <tag>HEAD</tag>
+    <tag>surefire-3.5.1</tag>
     <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
@@ -93,7 +93,7 @@
     <commonsLang3Version>3.17.0</commonsLang3Version>
     <commonsCompress>1.27.1</commonsCompress>
     <commonsIoVersion>2.17.0</commonsIoVersion>
-    <plexus-java-version>1.2.0</plexus-java-version>
+    <plexus-java-version>1.3.0</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
@@ -106,7 +106,7 @@
     <maven.compiler.testTarget>1.${javaVersion}</maven.compiler.testTarget>
     <jvm9ArgsTests />
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
-    <project.build.outputTimestamp>2024-08-22T17:34:45Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-10-01T15:39:56Z</project.build.outputTimestamp>
   </properties>
 
   <dependencyManagement>
@@ -205,12 +205,6 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>2.28.2</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <!-- PowerMock@Java9 and Java11
       org.powermock for java9, see https://github.com/powermock/powermock/issues/783
@@ -255,8 +249,13 @@
       </dependency>
       <dependency>
         <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest-library</artifactId>
-        <version>1.3</version>
+        <artifactId>hamcrest</artifactId>
+        <version>3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>3.0</version>
       </dependency>
       <dependency>
         <groupId>org.assertj</groupId>
@@ -280,17 +279,6 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.hamcrest</groupId>
-          <artifactId>hamcrest-core</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

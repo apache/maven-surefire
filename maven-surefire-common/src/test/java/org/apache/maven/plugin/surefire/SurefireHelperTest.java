@@ -163,8 +163,8 @@ public class SurefireHelperTest {
     public void shouldHandleTestFailure() throws Exception {
         RunResult summary = new RunResult(1, 0, 1, 0);
         e.expect(MojoFailureException.class);
-        e.expectMessage("There are test failures.\n\nPlease refer to null "
-                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+        e.expectMessage("There are test failures.\n\nSee null "
+                + "for the individual test results.\nSee dump files (if any exist) "
                 + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
         reportExecution(new Mojo(), summary, null, null);
     }
@@ -175,8 +175,8 @@ public class SurefireHelperTest {
         Mojo reportParameters = new Mojo();
         reportParameters.setFailOnFlakeCount(1);
         e.expect(MojoFailureException.class);
-        e.expectMessage("There is 1 flake and failOnFlakeCount is set to 1.\n\nPlease refer to null "
-                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+        e.expectMessage("There is 1 flake and failOnFlakeCount is set to 1.\n\nSee null "
+                + "for the individual test results.\nSee dump files (if any exist) "
                 + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
         reportExecution(reportParameters, summary, null, null);
     }
@@ -188,8 +188,8 @@ public class SurefireHelperTest {
         reportParameters.setFailOnFlakeCount(1);
         e.expect(MojoFailureException.class);
         e.expectMessage("There are test failures.\nThere are 2 flakes and failOnFlakeCount is set to 1."
-                + "\n\nPlease refer to null "
-                + "for the individual test results.\nPlease refer to dump files (if any exist) "
+                + "\n\nSee null "
+                + "for the individual test results.\nSee dump files (if any exist) "
                 + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
         reportExecution(reportParameters, summary, null, null);
     }

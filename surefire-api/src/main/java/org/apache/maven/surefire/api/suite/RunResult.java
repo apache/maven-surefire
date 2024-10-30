@@ -202,6 +202,9 @@ public class RunResult {
         if (skipped != runResult.skipped) {
             return false;
         }
+        if (flakes != runResult.flakes) {
+            return false;
+        }
         if (timeout != runResult.timeout) {
             return false;
         }
@@ -218,6 +221,7 @@ public class RunResult {
         result = 31 * result + errors;
         result = 31 * result + failures;
         result = 31 * result + skipped;
+        result = 31 * result + flakes;
         result = 31 * result + (failure != null ? failure.hashCode() : 0);
         result = 31 * result + (timeout ? 1 : 0);
         return result;

@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>3.5.1-SNAPSHOT</version>
+    <version>3.5.2-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.plugins</groupId>
@@ -46,7 +46,7 @@
   </prerequisites>
 
   <properties>
-    <doxiaVersion>2.0.0-M12</doxiaVersion>
+    <doxiaVersion>2.0.0</doxiaVersion>
   </properties>
 
   <dependencies>
@@ -114,7 +114,7 @@
     <dependency>
       <groupId>org.apache.maven.reporting</groupId>
       <artifactId>maven-reporting-impl</artifactId>
-      <version>4.0.0-M15</version>
+      <version>4.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>

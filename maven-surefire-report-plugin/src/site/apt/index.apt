@@ -29,53 +29,6 @@ Maven Surefire Report Plugin
   <<<$\{basedir\}/target/surefire-reports>>> and renders them using DOXIA,
   which creates the web interface version of the test results.
 
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-||Roadmap                                     ||Release Targets                                                                                                                                                              \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                             | Maven API 3.0 and Java 1.7                                                                                                                                                   \ |
-|                                             |                                                                                                                                                                              \ |
-| 3.0.0-M1                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1493}Maven Plugin API 3.0}}                                                                                                \ |
-|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1474}Java 1.7 as minimum}}                                                                                                 \ |
-|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12342871}See the Release Notes for the version 3.0.0-M1}}                                                       \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-|                                             | Fixed JDK9 and Windows Class-Path issues, 3.0 and Legacy Report XSD, 3.0.0-M2 shadefire                                                                                      \ |
-|                                             |                                                                                                                                                                              \ |
-| 3.0.0-M2                                    | {{{https://issues.apache.org/jira/browse/SUREFIRE-1590}3.0 and Legacy Report XSD}}                                                                                           \ |
-|                                             | {{{https://issues.apache.org/jira/browse/SUREFIRE-1600}3.0.0-M2 shadefire}}                                                                                                  \ |
-|                                             | {{{https://issues.apache.org/jira/projects/SUREFIRE/versions/12344396}See the Release Notes for the version 3.0.0-M2}}                                                       \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3.0.0-M3                                    | New interprocess communication and TCP/IP which fixes current blocker and critical bugs. Support of Java 11.                                                                 \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3.0.0-M4                                    |                                                                                                                                                                              \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3.0.0-M5                                    | Breaking backwards compatibility with system properties in configuration parameters, removing deprecated configuration parameters and removing deprecated code, etc.         \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3.0.0-M6                                    | The plugin supports Java 1.8 and Maven Plugin API 3.2.5. Many bug fixes.                                                                                                     \ |
-|                                             | {{{https://issues.apache.org/jira/issues/?jql=project%20%3D%20SUREFIRE%20AND%20fixVersion%20%3D%203.0.0-M6%20ORDER%20BY%20priority%20DESC%2C%20key}ASF Release versions}}    \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3.0.0-M7                                    | {{{https://issues.apache.org/jira/issues/?jql=project%20%3D%20SUREFIRE%20AND%20fixVersion%20%3D%203.0.0-M7%20ORDER%20BY%20priority%20DESC%2C%20key}ASF Release versions}}    \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| 3.0.0                                       | {{{https://issues.apache.org/jira/issues/?jql=project%20%3D%20SUREFIRE%20AND%20fixVersion%20%3D%203.0%20ORDER%20BY%20priority%20DESC%2C%20key}ASF Release versions}}         \ |
-*---------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-* Upcoming Incompatibility Notice
-
-  With a future minor version several mojos and output filenames will change for alignment with other
-  reporting plugins from <<<org.apache.maven.plugins>>>.
-  To make you aware of that, see the following table for the upcoming changes:
-
-*------------------------------*--------------------------*-----------------------*-----------------*
-|| Mojo Class Name            || New Mojo Class Name     || Output name          || New Output Name |
-*------------------------------+--------------------------+-----------------------+-----------------+
-| <<<FailsafeReportMojo>>>     | <<<FailsafeOnlyReport>>> | <<<failsafe-report>>> | <<<failsafe>>>  |
-*------------------------------+--------------------------+-----------------------+-----------------+
-| <<<SurefireReportMojo>>>     | <<<SurefireReport>>>     | <<<suresafe-report>>> | <<<surefire>>>  |
-*------------------------------+--------------------------+-----------------------+-----------------+
-| <<<SurefireReportOnlyMojo>>> | <<<SurefireOnlyReport>>> | <<<suresafe-report>>> | <<<surefire>>>  |
-*------------------------------+--------------------------+-----------------------+-----------------+
-
-  Details about this change can be found in {{{https://issues.apache.org/jira/browse/SUREFIRE-2161}SUREFIRE-2161}}.
-
 * Goals Overview
 
   The Surefire Report Plugin has three goals:

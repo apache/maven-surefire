@@ -64,6 +64,7 @@ public final class FailsafeSummaryXmlUtils {
             + "    <errors>%d</errors>\n"
             + "    <failures>%d</failures>\n"
             + "    <skipped>%d</skipped>\n"
+            + "    <flakes>%d</flakes>\n"
             + "    %s\n"
             + "</failsafe-summary>";
 
@@ -84,12 +85,16 @@ public final class FailsafeSummaryXmlUtils {
             String skipped = xpath.evaluate("/failsafe-summary/skipped", root);
             String failureMessage = xpath.evaluate("/failsafe-summary/failureMessage", root);
             String timeout = xpath.evaluate("/failsafe-summary/@timeout", root);
+            String flakes = xpath.evaluate("/failsafe-summary/flakes", root);
 
             return new RunResult(
                     parseInt(completed),
                     parseInt(errors),
                     parseInt(failures),
                     parseInt(skipped),
+                    // FIXME Backwards compatability: to be replaced with parseInt in a future release
+                    // synchronize with maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd
+                    isBlank(flakes) ? 0 : parseInt(flakes),
                     isBlank(failureMessage) ? null : unescapeXml(failureMessage),
                     parseBoolean(timeout));
         }
@@ -107,6 +112,7 @@ public final class FailsafeSummaryXmlUtils {
                 fromRunResult.getErrors(),
                 fromRunResult.getFailures(),
                 fromRunResult.getSkipped(),
+                fromRunResult.getFlakes(),
                 msg);
 
         Files.write(
