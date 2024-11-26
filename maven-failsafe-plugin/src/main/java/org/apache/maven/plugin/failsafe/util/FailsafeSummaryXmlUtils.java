@@ -19,10 +19,12 @@
 package org.apache.maven.plugin.failsafe.util;
 
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -72,7 +74,8 @@ public final class FailsafeSummaryXmlUtils {
         throw new IllegalStateException("No instantiable constructor.");
     }
 
-    public static RunResult toRunResult(File failsafeSummaryXml) throws Exception {
+    public static RunResult toRunResult(File failsafeSummaryXml) throws IOException
+    {
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
@@ -92,11 +95,15 @@ public final class FailsafeSummaryXmlUtils {
                     parseInt(errors),
                     parseInt(failures),
                     parseInt(skipped),
-                    // FIXME Backwards compatability: to be replaced with parseInt in a future release
+                    // FIXME Backwards compatibility: to be replaced with parseInt in a future release
                     // synchronize with maven-surefire-plugin/src/site/resources/xsd/failsafe-summary.xsd
                     isBlank(flakes) ? 0 : parseInt(flakes),
                     isBlank(failureMessage) ? null : unescapeXml(failureMessage),
                     parseBoolean(timeout));
+        }
+        catch ( XPathExpressionException | NumberFormatException e )
+        {
+            throw new IOException( "Could not parse " + failsafeSummaryXml.getPath(), e );
         }
     }
 
