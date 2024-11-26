@@ -214,8 +214,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
         return consoleLogger;
     }
 
-    private RunResult readSummary(File summaryFile) throws IOException
-    {
+    private RunResult readSummary(File summaryFile) throws IOException {
         return FailsafeSummaryXmlUtils.toRunResult(summaryFile);
     }
 

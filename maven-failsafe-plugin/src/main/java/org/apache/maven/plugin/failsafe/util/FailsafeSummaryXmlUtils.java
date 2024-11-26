@@ -73,8 +73,7 @@ public final class FailsafeSummaryXmlUtils {
         throw new IllegalStateException("No instantiable constructor.");
     }
 
-    public static RunResult toRunResult(File failsafeSummaryXml) throws IOException
-    {
+    public static RunResult toRunResult(File failsafeSummaryXml) throws IOException {
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
@@ -99,10 +98,8 @@ public final class FailsafeSummaryXmlUtils {
                     isBlank(flakes) ? 0 : parseInt(flakes),
                     isBlank(failureMessage) ? null : unescapeXml(failureMessage),
                     parseBoolean(timeout));
-        }
-        catch ( XPathExpressionException | NumberFormatException e )
-        {
-            throw new IOException( "Could not parse " + failsafeSummaryXml.getPath(), e );
+        } catch (XPathExpressionException | NumberFormatException e) {
+            throw new IOException("Could not parse " + failsafeSummaryXml.getPath(), e);
         }
     }
 
