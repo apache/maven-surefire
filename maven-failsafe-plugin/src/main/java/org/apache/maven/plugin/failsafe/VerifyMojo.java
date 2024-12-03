@@ -29,7 +29,6 @@ import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -37,6 +36,8 @@ import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.logging.Logger;
+
+import javax.inject.Inject;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
@@ -160,12 +161,16 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    @Component
-    private Logger logger;
+    private final Logger logger;
 
     private Collection<CommandLineOption> cli;
 
     private volatile PluginConsoleLogger consoleLogger;
+
+    @Inject
+    public VerifyMojo(Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
