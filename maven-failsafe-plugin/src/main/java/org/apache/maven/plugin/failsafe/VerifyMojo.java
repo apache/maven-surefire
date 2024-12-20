@@ -162,7 +162,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    private final Logger logger;
+    private Logger logger;
 
     private Collection<CommandLineOption> cli;
 
