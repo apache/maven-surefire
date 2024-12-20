@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugin.failsafe;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -30,7 +32,6 @@ import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.plugin.surefire.SurefireHelper;
 import org.apache.maven.plugin.surefire.SurefireReportParameters;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -152,6 +153,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
      *
      * @deprecated since of 2.20.1
      */
+    @Deprecated
     @Parameter(property = "encoding", defaultValue = "${project.reporting.outputEncoding}")
     private String encoding;
 
@@ -161,12 +163,16 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    @Component
-    private Logger logger;
+    private final Logger logger;
 
     private Collection<CommandLineOption> cli;
 
     private volatile PluginConsoleLogger consoleLogger;
+
+    @Inject
+    public VerifyMojo(Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -197,10 +203,6 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
                     summary.getFailure().substring(firstForkExceptionFailureMessage.length()));
         }
         return null;
-    }
-
-    void setLogger(Logger logger) {
-        this.logger = logger;
     }
 
     private PluginConsoleLogger getConsoleLogger() {

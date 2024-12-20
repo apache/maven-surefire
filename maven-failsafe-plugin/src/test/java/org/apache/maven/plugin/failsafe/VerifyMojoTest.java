@@ -36,28 +36,26 @@ import org.junit.rules.TemporaryFolder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- */
 public class VerifyMojoTest {
     private VerifyMojo mojo;
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
+    private Logger logger = mock(Logger.class);
+
     @Before
     public void init() throws UnsupportedEncodingException {
-        mojo = new VerifyMojo();
+        mojo = new VerifyMojo(logger);
         mojo.setTestClassesDirectory(tempFolder.getRoot());
         mojo.setReportsDirectory(getTestBaseDir());
     }
 
     private void setupExecuteMocks() {
-        Logger logger = mock(Logger.class);
         when(logger.isErrorEnabled()).thenReturn(true);
         when(logger.isWarnEnabled()).thenReturn(true);
         when(logger.isInfoEnabled()).thenReturn(true);
         when(logger.isDebugEnabled()).thenReturn(false);
-        mojo.setLogger(logger);
 
         MavenSession session = mock(MavenSession.class);
         MavenExecutionRequest request = mock(MavenExecutionRequest.class);
