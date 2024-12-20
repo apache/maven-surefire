@@ -153,6 +153,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
      *
      * @deprecated since of 2.20.1
      */
+    @Deprecated
     @Parameter(property = "encoding", defaultValue = "${project.reporting.outputEncoding}")
     private String encoding;
 
@@ -162,7 +163,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     @Parameter(defaultValue = "${session}", readonly = true)
     private MavenSession session;
 
-    private Logger logger;
+    private final Logger logger;
 
     private Collection<CommandLineOption> cli;
 
@@ -202,10 +203,6 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
                     summary.getFailure().substring(firstForkExceptionFailureMessage.length()));
         }
         return null;
-    }
-
-    void setLogger(Logger logger) {
-        this.logger = logger;
     }
 
     private PluginConsoleLogger getConsoleLogger() {
