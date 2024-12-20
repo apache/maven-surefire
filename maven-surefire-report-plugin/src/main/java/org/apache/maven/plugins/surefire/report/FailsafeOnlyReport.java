@@ -20,13 +20,16 @@ package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.i18n.I18N;
 
 /**
  * Creates a nicely formatted Failsafe Test Report in html format.
- * This goal does not run the tests, it only builds the reports.
+ * This goal does not run the tests; it only builds the reports.
  * See <a href="https://issues.apache.org/jira/browse/SUREFIRE-257">
  *     https://issues.apache.org/jira/browse/SUREFIRE-257</a>
  *
@@ -57,6 +60,11 @@ public class FailsafeOnlyReport extends AbstractSurefireReport {
      */
     @Parameter(defaultValue = "false", property = "skipFailsafeReport")
     private boolean skipFailsafeReport;
+
+    @Inject
+    public FailsafeOnlyReport(I18N i18n) {
+        super(i18n);
+    }
 
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {

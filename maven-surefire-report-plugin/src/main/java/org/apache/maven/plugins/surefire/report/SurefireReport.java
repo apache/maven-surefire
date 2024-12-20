@@ -20,11 +20,14 @@ package org.apache.maven.plugins.surefire.report;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.i18n.I18N;
 
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
@@ -56,6 +59,11 @@ public class SurefireReport extends AbstractSurefireReport {
      */
     @Parameter(defaultValue = "false", property = "skipSurefireReport")
     private boolean skipSurefireReport;
+
+    @Inject
+    public SurefireReport(I18N i18n) {
+        super(i18n);
+    }
 
     @Override
     protected File getSurefireReportsDirectory(MavenProject subProject) {
