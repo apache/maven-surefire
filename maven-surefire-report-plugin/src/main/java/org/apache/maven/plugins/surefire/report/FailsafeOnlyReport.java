@@ -18,9 +18,9 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
-import java.io.File;
-
 import javax.inject.Inject;
+
+import java.io.File;
 
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
