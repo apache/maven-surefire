@@ -18,6 +18,8 @@
  */
 package org.apache.maven.plugin.failsafe;
 
+import javax.inject.Inject;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -37,8 +39,6 @@ import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.codehaus.plexus.logging.Logger;
-
-import javax.inject.Inject;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
