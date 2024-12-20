@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.failsafe;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 import org.apache.maven.execution.MavenSession;
@@ -179,20 +180,18 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
             logDebugOrCliShowErrors(
                     capitalizeFirstLetter(getPluginName()) + " report directory: " + getReportsDirectory());
 
-            RunResult summary;
             try {
-                summary = existsSummaryFile() ? readSummary(summaryFile) : noTestsRun();
+                RunResult summary = existsSummaryFile() ? readSummary(summaryFile) : noTestsRun();
 
                 if (existsSummaryFiles()) {
                     for (final File summaryFile : summaryFiles) {
                         summary = summary.aggregate(readSummary(summaryFile));
                     }
                 }
-            } catch (Exception e) {
+                reportExecution(this, summary, getConsoleLogger(), getBooterForkException(summary));
+            } catch (IOException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
-
-            reportExecution(this, summary, getConsoleLogger(), getBooterForkException(summary));
         }
     }
 
@@ -220,7 +219,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
         return consoleLogger;
     }
 
-    private RunResult readSummary(File summaryFile) throws Exception {
+    private RunResult readSummary(File summaryFile) throws IOException {
         return FailsafeSummaryXmlUtils.toRunResult(summaryFile);
     }
 
