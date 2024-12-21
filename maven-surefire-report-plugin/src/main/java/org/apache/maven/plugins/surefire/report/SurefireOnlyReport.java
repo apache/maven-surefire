@@ -18,12 +18,12 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.codehaus.plexus.i18n.I18N;
-
-import javax.inject.Inject;
 
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
@@ -40,8 +40,7 @@ import javax.inject.Inject;
 public class SurefireOnlyReport extends SurefireReport {
 
     @Inject
-    public SurefireOnlyReport( I18N i18n) {
+    public SurefireOnlyReport(I18N i18n) {
         super(i18n);
     }
-
 }
