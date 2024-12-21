@@ -255,16 +255,16 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     }
 
     /**
-     * @param locale The locale
-     * @param key The key to search for
-     * @return The text appropriate for the locale.
+     * @param locale the locale
+     * @param key the key to search fo
+     * @return the text appropriate for the locale.
      */
     protected String getI18nString(Locale locale, String key) {
         return getI18N(locale).getString("surefire-report", locale, "report." + getI18Nsection() + '.' + key);
     }
 
     /**
-     * @param locale ]ehe locale
+     * @param locale the locale
      * @return I18N for the locale
      */
     protected I18N getI18N(Locale locale) {
