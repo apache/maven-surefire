@@ -283,7 +283,7 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     }
 
     /**
-     * @return The according string for the section.
+     * @return the according string for the section
      */
     protected abstract String getI18Nsection();
 
