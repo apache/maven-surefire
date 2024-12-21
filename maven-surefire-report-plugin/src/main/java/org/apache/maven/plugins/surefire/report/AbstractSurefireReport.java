@@ -114,7 +114,7 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     /**
      * Internationalization component
      */
-    private final I18N i18n;
+    private I18N i18n;
 
     protected AbstractSurefireReport(I18N i18n) {
         this.i18n = i18n;
@@ -262,8 +262,9 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     protected String getI18nString(Locale locale, String key) {
         return getI18N(locale).getString("surefire-report", locale, "report." + getI18Nsection() + '.' + key);
     }
+
     /**
-     * @param locale The local.
+     * @param locale ]ehe locale
      * @return I18N for the locale
      */
     protected I18N getI18N(Locale locale) {
@@ -280,6 +281,7 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
 
         return i18n;
     }
+
     /**
      * @return The according string for the section.
      */
