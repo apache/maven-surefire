@@ -34,7 +34,7 @@ import org.codehaus.plexus.i18n.I18N;
  *
  * @author <a href="mailto:jruiz@exist.com">Johnny R. Ruiz III</a>
  */
-@Mojo(name = "report", inheritByDefault = false)
+@Mojo(name = "report")
 @Execute(lifecycle = "surefire", phase = LifecyclePhase.TEST)
 @SuppressWarnings("unused")
 public class SurefireReport extends AbstractSurefireReport {
@@ -46,7 +46,7 @@ public class SurefireReport extends AbstractSurefireReport {
     private String outputName;
 
     /**
-     * If set to true the surefire report will be generated even when there are no surefire result files.
+     * If set to true, the surefire report will be generated even when there are no surefire result files.
      * Defaults to {@code true} to preserve legacy behaviour pre 2.10.
      * @since 2.11
      */
@@ -54,7 +54,7 @@ public class SurefireReport extends AbstractSurefireReport {
     private boolean alwaysGenerateSurefireReport;
 
     /**
-     * If set to true the surefire report generation will be skipped.
+     * If set to true, the surefire report generation will be skipped.
      * @since 2.11
      */
     @Parameter(defaultValue = "false", property = "skipSurefireReport")
