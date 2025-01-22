@@ -182,7 +182,7 @@
       <dependency>
         <groupId>org.htmlunit</groupId>
         <artifactId>htmlunit</artifactId>
-        <version>4.4.0</version>
+        <version>4.9.0</version>
       </dependency>
       <dependency>
         <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
