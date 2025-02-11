@@ -26,7 +26,7 @@
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
-      <item name="Goals" href="plugin-info.html"/>
+      <item name="Plugin Documentation" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <item name="Feature Matrix" href="featurematrix.html"/>
       <item name="API" href="api.html"/>
