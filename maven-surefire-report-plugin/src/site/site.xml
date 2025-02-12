@@ -24,7 +24,7 @@
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
-      <item name="Goals" href="plugin-info.html"/>
+      <item name="Plugin Documentation" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <!-- According to https://issues.apache.org/jira/browse/MNGSITE-152 -->
       <item name="License" href="http://www.apache.org/licenses/"/>
