@@ -95,7 +95,7 @@
     <commonsIoVersion>2.17.0</commonsIoVersion>
     <plexus-java-version>1.3.0</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
-    <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
+    <mavenSharedUtilsVersion>3.4.2</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
     <jacocoVersion>0.8.12</jacocoVersion>
     <testngVersion>5.11</testngVersion>
