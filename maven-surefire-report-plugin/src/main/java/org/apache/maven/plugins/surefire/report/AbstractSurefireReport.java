@@ -32,7 +32,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.reporting.AbstractMavenReport;
@@ -110,13 +109,16 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     @Parameter(defaultValue = "${basedir}/src/site/custom/surefire-report.properties")
     private String customBundle;
 
+    private List<File> resolvedReportsDirectories;
+
     /**
      * Internationalization component
      */
-    @Component
     private I18N i18n;
 
-    private List<File> resolvedReportsDirectories;
+    protected AbstractSurefireReport(I18N i18n) {
+        this.i18n = i18n;
+    }
 
     /**
      * Whether the report should be generated or not.
@@ -253,15 +255,16 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     }
 
     /**
-     * @param locale The locale
-     * @param key The key to search for
-     * @return The text appropriate for the locale.
+     * @param locale the locale
+     * @param key the key to search fo
+     * @return the text appropriate for the locale.
      */
     protected String getI18nString(Locale locale, String key) {
         return getI18N(locale).getString("surefire-report", locale, "report." + getI18Nsection() + '.' + key);
     }
+
     /**
-     * @param locale The local.
+     * @param locale the locale
      * @return I18N for the locale
      */
     protected I18N getI18N(Locale locale) {
@@ -278,17 +281,20 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
 
         return i18n;
     }
+
     /**
-     * @return The according string for the section.
+     * @return the according string for the section
      */
     protected abstract String getI18Nsection();
 
     /** {@inheritDoc} */
+    @Override
     public String getName(Locale locale) {
         return getI18nString(locale, "name");
     }
 
     /** {@inheritDoc} */
+    @Override
     public String getDescription(Locale locale) {
         return getI18nString(locale, "description");
     }
@@ -353,61 +359,73 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getDefaultLanguage() {
             return locale.getLanguage();
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getDefaultCountry() {
             return locale.getCountry();
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getDefaultBundleName() {
             return bundleName;
         }
 
         /** {@inheritDoc} */
+        @Override
         public String[] getBundleNames() {
             return new String[] {bundleName};
         }
 
         /** {@inheritDoc} */
+        @Override
         public ResourceBundle getBundle() {
             return bundle;
         }
 
         /** {@inheritDoc} */
+        @Override
         public ResourceBundle getBundle(String bundleName) {
             return bundle;
         }
 
         /** {@inheritDoc} */
+        @Override
         public ResourceBundle getBundle(String bundleName, String languageHeader) {
             return bundle;
         }
 
         /** {@inheritDoc} */
+        @Override
         public ResourceBundle getBundle(String bundleName, Locale locale) {
             return bundle;
         }
 
         /** {@inheritDoc} */
+        @Override
         public Locale getLocale(String languageHeader) {
             return new Locale(languageHeader);
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getString(String key) {
             return getString(bundleName, locale, key);
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getString(String key, Locale locale) {
             return getString(bundleName, locale, key);
         }
 
         /** {@inheritDoc} */
+        @Override
         public String getString(String bundleName, Locale locale, String key) {
             String value;
 
@@ -450,26 +468,31 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
         }
 
         /** {@inheritDoc} */
+        @Override
         public String format(String key, Object arg1) {
             return format(bundleName, locale, key, new Object[] {arg1});
         }
 
         /** {@inheritDoc} */
+        @Override
         public String format(String key, Object arg1, Object arg2) {
             return format(bundleName, locale, key, new Object[] {arg1, arg2});
         }
 
         /** {@inheritDoc} */
+        @Override
         public String format(String bundleName, Locale locale, String key, Object arg1) {
             return format(bundleName, locale, key, new Object[] {arg1});
         }
 
         /** {@inheritDoc} */
+        @Override
         public String format(String bundleName, Locale locale, String key, Object arg1, Object arg2) {
             return format(bundleName, locale, key, new Object[] {arg1, arg2});
         }
 
         /** {@inheritDoc} */
+        @Override
         public String format(String bundleName, Locale locale, String key, Object[] args) {
             if (locale == null) {
                 locale = getLocale(null);

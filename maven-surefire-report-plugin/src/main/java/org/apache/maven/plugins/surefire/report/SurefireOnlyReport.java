@@ -18,9 +18,12 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
+import javax.inject.Inject;
+
 import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.codehaus.plexus.i18n.I18N;
 
 /**
  * Creates a nicely formatted Surefire Test Report in html format.
@@ -34,4 +37,10 @@ import org.apache.maven.plugins.annotations.Mojo;
 @Mojo(name = "report-only")
 @Execute(phase = LifecyclePhase.NONE)
 @SuppressWarnings("unused")
-public class SurefireOnlyReport extends SurefireReport {}
+public class SurefireOnlyReport extends SurefireReport {
+
+    @Inject
+    public SurefireOnlyReport(I18N i18n) {
+        super(i18n);
+    }
+}
