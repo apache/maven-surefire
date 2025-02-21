@@ -29,11 +29,11 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.codehaus.plexus.logging.Logger;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.slf4j.Logger;
 
 import static java.util.Collections.addAll;
 import static java.util.Collections.singleton;

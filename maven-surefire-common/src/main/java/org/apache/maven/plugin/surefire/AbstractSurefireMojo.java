@@ -121,7 +121,8 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
-import org.codehaus.plexus.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
@@ -743,8 +744,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @Parameter(defaultValue = "${session}", required = true, readonly = true)
     private MavenSession session;
 
-    @Component
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * (TestNG only) Define the factory class used to create all test instances.

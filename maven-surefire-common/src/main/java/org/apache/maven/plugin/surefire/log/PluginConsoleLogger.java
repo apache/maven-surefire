@@ -19,7 +19,7 @@
 package org.apache.maven.plugin.surefire.log;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.codehaus.plexus.logging.Logger;
+import org.slf4j.Logger;
 
 /**
  * Wrapper logger of miscellaneous implementations of {@link Logger}.
@@ -33,67 +33,67 @@ import org.codehaus.plexus.logging.Logger;
  * @see ConsoleLogger
  */
 public final class PluginConsoleLogger implements ConsoleLogger {
-    private final Logger plexusLogger;
+    private final Logger logger;
 
-    public PluginConsoleLogger(Logger plexusLogger) {
-        this.plexusLogger = plexusLogger;
+    public PluginConsoleLogger(Logger logger) {
+        this.logger = logger;
     }
 
     @Override
     public boolean isDebugEnabled() {
-        return plexusLogger.isDebugEnabled();
+        return logger.isDebugEnabled();
     }
 
     @Override
     public synchronized void debug(String message) {
-        plexusLogger.debug(message);
+        logger.debug(message);
     }
 
     public synchronized void debug(CharSequence content, Throwable error) {
-        plexusLogger.debug(content == null ? "" : content.toString(), error);
+        logger.debug(content == null ? "" : content.toString(), error);
     }
 
     @Override
     public boolean isInfoEnabled() {
-        return plexusLogger.isInfoEnabled();
+        return logger.isInfoEnabled();
     }
 
     @Override
     public synchronized void info(String message) {
-        plexusLogger.info(message);
+        logger.info(message);
     }
 
     @Override
     public boolean isWarnEnabled() {
-        return plexusLogger.isWarnEnabled();
+        return logger.isWarnEnabled();
     }
 
     @Override
     public synchronized void warning(String message) {
-        plexusLogger.warn(message);
+        logger.warn(message);
     }
 
     public synchronized void warning(CharSequence content, Throwable error) {
-        plexusLogger.warn(content == null ? "" : content.toString(), error);
+        logger.warn(content == null ? "" : content.toString(), error);
     }
 
     @Override
     public boolean isErrorEnabled() {
-        return plexusLogger.isErrorEnabled() || plexusLogger.isFatalErrorEnabled();
+        return logger.isErrorEnabled();
     }
 
     @Override
     public synchronized void error(String message) {
-        plexusLogger.error(message);
+        logger.error(message);
     }
 
     @Override
     public synchronized void error(String message, Throwable t) {
-        plexusLogger.error(message, t);
+        logger.error(message, t);
     }
 
     @Override
     public synchronized void error(Throwable t) {
-        plexusLogger.error("", t);
+        logger.error("", t);
     }
 }

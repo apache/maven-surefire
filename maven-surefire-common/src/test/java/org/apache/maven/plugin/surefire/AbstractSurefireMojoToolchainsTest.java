@@ -31,7 +31,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
-import org.codehaus.plexus.logging.Logger;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.slf4j.Logger;
 
 import static java.io.File.separatorChar;
 import static java.util.Collections.singletonList;

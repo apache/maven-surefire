@@ -29,7 +29,8 @@ import java.util.Set;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.component.annotations.Requirement;
-import org.codehaus.plexus.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.lang.Thread.currentThread;
 import static java.util.Arrays.stream;
@@ -41,8 +42,7 @@ import static java.util.stream.Collectors.toList;
  */
 @Component(role = ProviderDetector.class)
 public final class ProviderDetector {
-    @Requirement
-    private Logger logger;
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Requirement
     private ServiceLoader serviceLoader;
