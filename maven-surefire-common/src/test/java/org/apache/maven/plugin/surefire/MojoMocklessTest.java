@@ -37,8 +37,8 @@ import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;

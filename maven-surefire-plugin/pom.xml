@@ -44,6 +44,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-api</artifactId>
       <version>${project.version}</version>

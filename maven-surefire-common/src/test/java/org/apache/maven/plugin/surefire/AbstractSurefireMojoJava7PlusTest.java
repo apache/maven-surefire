@@ -45,7 +45,6 @@ import org.codehaus.plexus.languages.java.jpms.ModuleNameSource;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
-import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -53,6 +52,7 @@ import org.mockito.Mock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;

@@ -24,12 +24,12 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.maven.surefire.api.provider.SurefireProvider;
-import org.codehaus.plexus.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;

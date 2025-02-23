@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugin.failsafe;
 
-import javax.inject.Inject;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -38,7 +36,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.codehaus.plexus.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
@@ -168,7 +167,10 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
 
     private volatile PluginConsoleLogger consoleLogger;
 
-    @Inject
+    public VerifyMojo() {
+        this.logger = LoggerFactory.getLogger(getClass());
+    }
+
     public VerifyMojo(Logger logger) {
         this.logger = logger;
     }
