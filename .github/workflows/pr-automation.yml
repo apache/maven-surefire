@@ -15,5 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-_extends: maven-gh-actions-shared
-tag-template: maven-surefire-$RESOLVED_VERSION
+name: PR Automation
+on:
+  pull_request_target:
+    types:
+      - closed
+
+jobs:
+  pr-automation:
+    name: PR Automation
+    uses: apache/maven-gh-actions-shared/.github/workflows/pr-automation.yml@v4
