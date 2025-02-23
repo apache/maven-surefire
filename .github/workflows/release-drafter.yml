@@ -20,6 +20,8 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+
 jobs:
    update_release_draft:
       uses: apache/maven-gh-actions-shared/.github/workflows/release-drafter.yml@v4

@@ -15,5 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-_extends: maven-gh-actions-shared
-tag-template: maven-surefire-$RESOLVED_VERSION
+name: Stale
+
+on:
+  schedule:
+    - cron: '54 3 * * *'
+  issue_comment:
+    types: [ 'created' ]
+
+jobs:
+  stale:
+    uses: 'apache/maven-gh-actions-shared/.github/workflows/stale.yml@v4'
