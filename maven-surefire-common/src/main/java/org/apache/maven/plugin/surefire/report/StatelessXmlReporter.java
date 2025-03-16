@@ -140,7 +140,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
-        this.xsdVersion = xsdVersion;SUREFIRE-1643
+        this.xsdVersion = xsdVersion;
         this.phrasedFileName = phrasedFileName;
         this.phrasedSuiteName = phrasedSuiteName;
         this.phrasedClassName = phrasedClassName;
