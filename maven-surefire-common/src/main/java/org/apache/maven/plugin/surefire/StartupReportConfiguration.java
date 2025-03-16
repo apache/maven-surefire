@@ -220,7 +220,7 @@ public final class StartupReportConfiguration {
         // In the in-plugin execution of parallel JUnit4.7 with rerun the map must be shared because reports and
         // listeners are in ThreadLocal, see Surefire1122ParallelAndFlakyTestsIT.
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory =
-                isForking ? new ConcurrentHashMap<String, Deque<WrappedReportEntry>>() : this.testClassMethodRunHistory;
+                isForking ? new ConcurrentHashMap<>() : this.testClassMethodRunHistory;
 
         DefaultStatelessReportMojoConfiguration xmlReporterConfig = new DefaultStatelessReportMojoConfiguration(
                 resolveReportsDirectory(forkNumber),

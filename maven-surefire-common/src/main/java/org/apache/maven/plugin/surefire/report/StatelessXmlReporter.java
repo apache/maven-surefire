@@ -20,12 +20,12 @@ package org.apache.maven.plugin.surefire.report;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
@@ -140,7 +140,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         this.rerunFailingTestsCount = rerunFailingTestsCount;
         this.testClassMethodRunHistoryMap = testClassMethodRunHistoryMap;
         this.xsdSchemaLocation = xsdSchemaLocation;
-        this.xsdVersion = xsdVersion;
+        this.xsdVersion = xsdVersion;SUREFIRE-1643
         this.phrasedFileName = phrasedFileName;
         this.phrasedSuiteName = phrasedSuiteName;
         this.phrasedClassName = phrasedClassName;
@@ -392,7 +392,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         reportFile.delete();
         //noinspection ResultOfMethodCallIgnored
         reportDir.mkdirs();
-        return new BufferedOutputStream(new FileOutputStream(reportFile), 64 * 1024);
+        return new BufferedOutputStream(Files.newOutputStream(reportFile.toPath()), 64 * 1024);
     }
 
     private static OutputStreamWriter getWriter(OutputStream fos) {

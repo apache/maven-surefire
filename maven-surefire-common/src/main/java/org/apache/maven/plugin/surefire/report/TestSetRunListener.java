@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
 import org.apache.maven.surefire.api.report.ReportEntry;
@@ -48,7 +50,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class TestSetRunListener implements TestReportListener<TestOutputReportEntry> {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
-    private final TestSetStats detailsForThis;
+    private final ConcurrentMap<String, TestSetStats> detailsForThis = new ConcurrentHashMap<>();
 
     private final ConsoleOutputReportEventListener testOutputReceiver;
 
@@ -63,6 +65,10 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     private final StatisticsReporter statisticsReporter;
 
     private final Object lock;
+
+    private final boolean trimStackTrace;
+
+    private final boolean isPlainFormat;
 
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred("stdout");
 
@@ -85,7 +91,9 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         this.simpleXMLReporter = simpleXMLReporter;
         this.testOutputReceiver = testOutputReceiver;
         this.briefOrPlainFormat = briefOrPlainFormat;
-        detailsForThis = new TestSetStats(trimStackTrace, isPlainFormat);
+        this.trimStackTrace = trimStackTrace;
+        this.isPlainFormat = isPlainFormat;
+        // detailsForThis = new TestSetStats(trimStackTrace, isPlainFormat);
         this.lock = lock;
     }
 
@@ -166,7 +174,9 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     @Override
     public void testSetStarting(TestSetReportEntry report) {
-        detailsForThis.testSetStart();
+        detailsForThis
+                .computeIfAbsent(report.getSourceName(), s -> new TestSetStats(trimStackTrace, isPlainFormat))
+                .testSetStart();
         consoleReporter.testSetStarting(report);
         testOutputReceiver.testSetStarting(report);
     }
@@ -187,20 +197,20 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testSetCompleted(TestSetReportEntry report) {
         final WrappedReportEntry wrap = wrapTestSet(report);
-        final List<String> testResults =
-                briefOrPlainFormat ? detailsForThis.getTestResults() : Collections.<String>emptyList();
-        fileReporter.testSetCompleted(wrap, detailsForThis, testResults);
-        simpleXMLReporter.testSetCompleted(wrap, detailsForThis);
+        TestSetStats testSetStats = detailsForThis.get(report.getSourceName());
+        final List<String> testResults = briefOrPlainFormat ? testSetStats.getTestResults() : Collections.emptyList();
+        fileReporter.testSetCompleted(wrap, testSetStats, testResults);
+        simpleXMLReporter.testSetCompleted(wrap, testSetStats);
         statisticsReporter.testSetCompleted();
-        consoleReporter.testSetCompleted(wrap, detailsForThis, testResults);
+        consoleReporter.testSetCompleted(wrap, testSetStats, testResults);
         testOutputReceiver.testSetCompleted(wrap);
         consoleReporter.reset();
 
         wrap.getStdout().free();
         wrap.getStdErr().free();
 
-        addTestMethodStats();
-        detailsForThis.reset();
+        addTestMethodStats(report);
+        testSetStats.reset();
         clearCapture();
     }
 
@@ -210,13 +220,15 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     @Override
     public void testStarting(ReportEntry report) {
-        detailsForThis.testStart();
+        detailsForThis
+                .computeIfAbsent(report.getSourceName(), s -> new TestSetStats(trimStackTrace, isPlainFormat))
+                .testSetStart();
     }
 
     @Override
     public void testSucceeded(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, SUCCESS);
-        detailsForThis.testSucceeded(wrapped);
+        detailsForThis.get(reportEntry.getSourceName()).testSucceeded(wrapped);
         statisticsReporter.testSucceeded(reportEntry);
         clearCapture();
     }
@@ -224,7 +236,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testError(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, ERROR);
-        detailsForThis.testError(wrapped);
+        detailsForThis.get(reportEntry.getSourceName()).testError(wrapped);
         statisticsReporter.testError(reportEntry);
         clearCapture();
     }
@@ -232,7 +244,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testFailed(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, FAILURE);
-        detailsForThis.testFailure(wrapped);
+        detailsForThis.get(reportEntry.getSourceName()).testFailure(wrapped);
         statisticsReporter.testFailed(reportEntry);
         clearCapture();
     }
@@ -244,7 +256,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testSkipped(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, SKIPPED);
-        detailsForThis.testSkipped(wrapped);
+        detailsForThis.get(reportEntry.getSourceName()).testSkipped(wrapped);
         statisticsReporter.testSkipped(reportEntry);
         clearCapture();
     }
@@ -263,7 +275,8 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         int estimatedElapsed = 0;
         if (reportEntryType != SKIPPED) {
             Integer etime = other.getElapsed();
-            estimatedElapsed = etime == null ? detailsForThis.getElapsedSinceLastStart() : etime;
+            estimatedElapsed =
+                    etime == null ? detailsForThis.get(other.getSourceName()).getElapsedSinceLastStart() : etime;
         }
 
         return new WrappedReportEntry(other, reportEntryType, estimatedElapsed, testStdOut, testStdErr);
@@ -273,7 +286,9 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         return new WrappedReportEntry(
                 other,
                 null,
-                other.getElapsed() != null ? other.getElapsed() : detailsForThis.getElapsedSinceTestSetStart(),
+                other.getElapsed() != null
+                        ? other.getElapsed()
+                        : detailsForThis.get(other.getSourceName()).getElapsedSinceTestSetStart(),
                 testStdOut,
                 testStdErr,
                 other.getSystemProperties());
@@ -283,8 +298,9 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         testOutputReceiver.close();
     }
 
-    private void addTestMethodStats() {
-        for (WrappedReportEntry reportEntry : detailsForThis.getReportEntries()) {
+    private void addTestMethodStats(TestSetReportEntry report) {
+        for (WrappedReportEntry reportEntry :
+                detailsForThis.get(report.getSourceName()).getReportEntries()) {
             TestMethodStats methodStats = new TestMethodStats(
                     reportEntry.getClassMethodName(),
                     reportEntry.getReportEntryType(),

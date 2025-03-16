@@ -18,7 +18,9 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -46,8 +48,10 @@ import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
+import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
@@ -172,6 +176,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void execute(TestsToRun testsToRun, RunListenerAdapter adapter) {
+
+        TestExecutionListener[] testExecutionListeners = new TestExecutionListener[] {
+            adapter,
+            new LegacyXmlReportGeneratingListener(
+                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
+        };
+
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
@@ -180,15 +191,14 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .filters(filters)
                     .configurationParameters(configurationParameters)
                     .selectors(selectors);
-
-            launcher.execute(builder.build(), adapter);
+            launcher.execute(builder.build(), testExecutionListeners);
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
                 LauncherDiscoveryRequestBuilder builder = request()
                         .filters(filters)
                         .configurationParameters(configurationParameters)
                         .selectors(selectClass(c.getName()));
-                launcher.execute(builder.build(), adapter);
+                launcher.execute(builder.build(), testExecutionListeners);
             });
         }
     }
@@ -237,7 +247,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .map(EngineFilter::excludeEngines)
                 .ifPresent(filters::add);
 
-        return filters.toArray(new Filter<?>[filters.size()]);
+        return filters.toArray(new Filter<?>[0]);
     }
 
     Filter<?>[] getFilters() {
