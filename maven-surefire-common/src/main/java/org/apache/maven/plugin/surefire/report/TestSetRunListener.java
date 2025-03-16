@@ -50,7 +50,7 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class TestSetRunListener implements TestReportListener<TestOutputReportEntry> {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
-    private final ConcurrentMap<String, TestSetStats> detailsForThis = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, TestSetStats> detailsPerSource = new ConcurrentHashMap<>();
 
     private final ConsoleOutputReportEventListener testOutputReceiver;
 
@@ -93,7 +93,6 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         this.briefOrPlainFormat = briefOrPlainFormat;
         this.trimStackTrace = trimStackTrace;
         this.isPlainFormat = isPlainFormat;
-        // detailsForThis = new TestSetStats(trimStackTrace, isPlainFormat);
         this.lock = lock;
     }
 
@@ -172,11 +171,14 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         }
     }
 
+    private TestSetStats getTestSetStats(ReportEntry report) {
+        String sourceName = report.getSourceName() == null ? "" : report.getSourceName();
+        return detailsPerSource.computeIfAbsent(sourceName, s -> new TestSetStats(trimStackTrace, isPlainFormat));
+    }
+
     @Override
     public void testSetStarting(TestSetReportEntry report) {
-        detailsForThis
-                .computeIfAbsent(report.getSourceName(), s -> new TestSetStats(trimStackTrace, isPlainFormat))
-                .testSetStart();
+        getTestSetStats(report).testSetStart();
         consoleReporter.testSetStarting(report);
         testOutputReceiver.testSetStarting(report);
     }
@@ -197,7 +199,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testSetCompleted(TestSetReportEntry report) {
         final WrappedReportEntry wrap = wrapTestSet(report);
-        TestSetStats testSetStats = detailsForThis.get(report.getSourceName());
+        TestSetStats testSetStats = getTestSetStats(report);
         final List<String> testResults = briefOrPlainFormat ? testSetStats.getTestResults() : Collections.emptyList();
         fileReporter.testSetCompleted(wrap, testSetStats, testResults);
         simpleXMLReporter.testSetCompleted(wrap, testSetStats);
@@ -220,15 +222,13 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     @Override
     public void testStarting(ReportEntry report) {
-        detailsForThis
-                .computeIfAbsent(report.getSourceName(), s -> new TestSetStats(trimStackTrace, isPlainFormat))
-                .testSetStart();
+        getTestSetStats(report).testSetStart();
     }
 
     @Override
     public void testSucceeded(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, SUCCESS);
-        detailsForThis.get(reportEntry.getSourceName()).testSucceeded(wrapped);
+        getTestSetStats(reportEntry).testSucceeded(wrapped);
         statisticsReporter.testSucceeded(reportEntry);
         clearCapture();
     }
@@ -236,7 +236,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testError(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, ERROR);
-        detailsForThis.get(reportEntry.getSourceName()).testError(wrapped);
+        getTestSetStats(reportEntry).testError(wrapped);
         statisticsReporter.testError(reportEntry);
         clearCapture();
     }
@@ -244,7 +244,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testFailed(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, FAILURE);
-        detailsForThis.get(reportEntry.getSourceName()).testFailure(wrapped);
+        getTestSetStats(reportEntry).testFailure(wrapped);
         statisticsReporter.testFailed(reportEntry);
         clearCapture();
     }
@@ -256,7 +256,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     @Override
     public void testSkipped(ReportEntry reportEntry) {
         WrappedReportEntry wrapped = wrap(reportEntry, SKIPPED);
-        detailsForThis.get(reportEntry.getSourceName()).testSkipped(wrapped);
+        getTestSetStats(reportEntry).testSkipped(wrapped);
         statisticsReporter.testSkipped(reportEntry);
         clearCapture();
     }
@@ -275,8 +275,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         int estimatedElapsed = 0;
         if (reportEntryType != SKIPPED) {
             Integer etime = other.getElapsed();
-            estimatedElapsed =
-                    etime == null ? detailsForThis.get(other.getSourceName()).getElapsedSinceLastStart() : etime;
+            estimatedElapsed = etime == null ? getTestSetStats(other).getElapsedSinceLastStart() : etime;
         }
 
         return new WrappedReportEntry(other, reportEntryType, estimatedElapsed, testStdOut, testStdErr);
@@ -288,7 +287,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
                 null,
                 other.getElapsed() != null
                         ? other.getElapsed()
-                        : detailsForThis.get(other.getSourceName()).getElapsedSinceTestSetStart(),
+                        : getTestSetStats(other).getElapsedSinceTestSetStart(),
                 testStdOut,
                 testStdErr,
                 other.getSystemProperties());
@@ -299,8 +298,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     }
 
     private void addTestMethodStats(TestSetReportEntry report) {
-        for (WrappedReportEntry reportEntry :
-                detailsForThis.get(report.getSourceName()).getReportEntries()) {
+        for (WrappedReportEntry reportEntry : getTestSetStats(report).getReportEntries()) {
             TestMethodStats methodStats = new TestMethodStats(
                     reportEntry.getClassMethodName(),
                     reportEntry.getReportEntryType(),
