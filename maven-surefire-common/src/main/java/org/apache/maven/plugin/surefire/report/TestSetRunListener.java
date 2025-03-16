@@ -172,7 +172,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     }
 
     private TestSetStats getTestSetStats(ReportEntry report) {
-        String sourceName = report.getSourceName() == null ? "" : report.getSourceName();
+        String sourceName = report.getSourceName() == null ? report.getName() : report.getSourceName();
         return detailsPerSource.computeIfAbsent(sourceName, s -> new TestSetStats(trimStackTrace, isPlainFormat));
     }
 
