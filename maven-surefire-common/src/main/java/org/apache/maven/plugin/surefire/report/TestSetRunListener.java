@@ -50,7 +50,12 @@ import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 public class TestSetRunListener implements TestReportListener<TestOutputReportEntry> {
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
+    /**
+     * will be used only if report entru have a sourceName other than that #currentTestSetStats will be usre
+     */
     private final ConcurrentMap<String, TestSetStats> detailsPerSource = new ConcurrentHashMap<>();
+
+    private final TestSetStats currentTestSetStats;
 
     private final ConsoleOutputReportEventListener testOutputReceiver;
 
@@ -93,6 +98,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         this.briefOrPlainFormat = briefOrPlainFormat;
         this.trimStackTrace = trimStackTrace;
         this.isPlainFormat = isPlainFormat;
+        this.currentTestSetStats = new TestSetStats(trimStackTrace, isPlainFormat);
         this.lock = lock;
     }
 
@@ -172,7 +178,10 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     }
 
     private TestSetStats getTestSetStats(ReportEntry report) {
-        String sourceName = report.getSourceName() == null ? report.getName() : report.getSourceName();
+        String sourceName = report.getSourceName();
+        if (sourceName == null) {
+            return currentTestSetStats;
+        }
         return detailsPerSource.computeIfAbsent(sourceName, s -> new TestSetStats(trimStackTrace, isPlainFormat));
     }
 
