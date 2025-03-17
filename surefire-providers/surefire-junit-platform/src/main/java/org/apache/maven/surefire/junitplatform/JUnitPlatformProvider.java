@@ -18,9 +18,7 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
@@ -51,7 +49,6 @@ import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.platform.reporting.legacy.xml.LegacyXmlReportGeneratingListener;
 
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyMap;
@@ -176,12 +173,14 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void execute(TestsToRun testsToRun, RunListenerAdapter adapter) {
+        // parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS)
+        // add this LegacyXmlReportGeneratingListener ?
+        //            adapter,
+        //            new LegacyXmlReportGeneratingListener(
+        //                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
+        //        };
 
-        TestExecutionListener[] testExecutionListeners = new TestExecutionListener[] {
-            adapter,
-            new LegacyXmlReportGeneratingListener(
-                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
-        };
+        TestExecutionListener[] testExecutionListeners = new TestExecutionListener[] {adapter};
 
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
