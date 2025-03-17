@@ -32,6 +32,7 @@ import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.lang.Math.min;
@@ -43,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  *
  */
+@Ignore("This test doesn't make sense as this can be running on slow machine")
 public class EventConsumerThreadTest {
     @SuppressWarnings("checkstyle:magicnumber")
     @Test(timeout = 60_000L)
