@@ -51,7 +51,9 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
     /**
-     * will be used only if report entru have a sourceName other than that #currentTestSetStats will be usre
+     * will be used only if report entry have a sourceName other than that #currentTestSetStats will be used
+     * it looks some provider doesn't provide enough informations so we assume to use previous technique
+     * class field (this is definitely hackish)
      */
     private final ConcurrentMap<String, TestSetStats> detailsPerSource = new ConcurrentHashMap<>();
 
