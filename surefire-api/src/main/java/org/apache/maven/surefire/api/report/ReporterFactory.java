@@ -31,7 +31,11 @@ public interface ReporterFactory {
      *
      * @return new reporter listener instance
      */
-    TestReportListener<TestOutputReportEntry> createTestReportListener();
+    default TestReportListener<TestOutputReportEntry> createTestReportListener() {
+        return createTestReportListener(new ReporterFactoryOptions(false));
+    }
+
+    TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options);
 
     /**
      * Closes the factory, freeing resources allocated in the factory.
@@ -39,4 +43,24 @@ public interface ReporterFactory {
      * @return The run result
      */
     RunResult close();
+
+    /**
+     * To pass more options to create the {@link TestReportListener} instance
+     */
+    class ReporterFactoryOptions {
+
+        /**
+         * provider such Junit5 may be running tests in parallel so report will stored depending on
+         * {@link ReportEntry#getSourceName()}
+         */
+        private final boolean statPerSourceName;
+
+        public ReporterFactoryOptions(boolean statPerSourceName) {
+            this.statPerSourceName = statPerSourceName;
+        }
+
+        public boolean isStatPerSourceName() {
+            return statPerSourceName;
+        }
+    }
 }

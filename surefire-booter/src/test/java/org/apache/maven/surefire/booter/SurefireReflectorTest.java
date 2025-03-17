@@ -30,6 +30,7 @@ import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
@@ -50,7 +51,12 @@ public class SurefireReflectorTest extends TestCase {
     public void testShouldCreateFactoryWithoutException() {
         ReporterFactory factory = new ReporterFactory() {
             @Override
-            public TestReportListener createTestReportListener() {
+            public TestReportListener<TestOutputReportEntry> createTestReportListener() {
+                return null;
+            }
+
+            @Override
+            public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
                 return null;
             }
 
@@ -226,7 +232,12 @@ public class SurefireReflectorTest extends TestCase {
 
         ReporterFactory reporterFactory = new ReporterFactory() {
             @Override
-            public TestReportListener createTestReportListener() {
+            public TestReportListener<TestOutputReportEntry> createTestReportListener() {
+                return null;
+            }
+
+            @Override
+            public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
                 return null;
             }
 
@@ -246,7 +257,12 @@ public class SurefireReflectorTest extends TestCase {
 
         ReporterFactory reporterFactory = new ReporterFactory() {
             @Override
-            public TestReportListener createTestReportListener() {
+            public TestReportListener<TestOutputReportEntry> createTestReportListener() {
+                return null;
+            }
+
+            @Override
+            public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
                 return null;
             }
 

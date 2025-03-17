@@ -193,7 +193,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.0</version>
+            <version>3.5.2</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
             <configuration>
               <skipTests>${skipTests}</skipTests>

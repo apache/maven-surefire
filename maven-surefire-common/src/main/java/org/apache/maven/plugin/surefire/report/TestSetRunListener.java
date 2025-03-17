@@ -77,6 +77,8 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     private final boolean isPlainFormat;
 
+    private final boolean statPerSourceName;
+
     private Utf8RecodingDeferredFileOutputStream testStdOut = initDeferred("stdout");
 
     private Utf8RecodingDeferredFileOutputStream testStdErr = initDeferred("stderr");
@@ -91,7 +93,8 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
             boolean trimStackTrace,
             boolean isPlainFormat,
             boolean briefOrPlainFormat,
-            Object lock) {
+            Object lock,
+            boolean statPerSourceName) {
         this.consoleReporter = consoleReporter;
         this.fileReporter = fileReporter;
         this.statisticsReporter = statisticsReporter;
@@ -102,6 +105,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         this.isPlainFormat = isPlainFormat;
         this.currentTestSetStats = new TestSetStats(trimStackTrace, isPlainFormat);
         this.lock = lock;
+        this.statPerSourceName = statPerSourceName;
     }
 
     @Override
@@ -180,11 +184,11 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     }
 
     private TestSetStats getTestSetStats(ReportEntry report) {
-        String sourceName = report.getSourceName();
-        if (sourceName == null) {
-            return currentTestSetStats;
+        if (statPerSourceName) {
+            return detailsPerSource.computeIfAbsent(
+                    report.getSourceName(), s -> new TestSetStats(trimStackTrace, isPlainFormat));
         }
-        return detailsPerSource.computeIfAbsent(sourceName, s -> new TestSetStats(trimStackTrace, isPlainFormat));
+        return currentTestSetStats;
     }
 
     @Override

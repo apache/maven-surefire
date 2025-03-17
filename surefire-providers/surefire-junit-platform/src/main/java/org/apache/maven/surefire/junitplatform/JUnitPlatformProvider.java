@@ -111,7 +111,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
         try {
-            RunListenerAdapter adapter = new RunListenerAdapter(reporterFactory.createTestReportListener());
+            RunListenerAdapter adapter = new RunListenerAdapter(
+                    reporterFactory.createTestReportListener(new ReporterFactory.ReporterFactoryOptions(true)));
             adapter.setRunMode(NORMAL_RUN);
             startCapture(adapter);
             setupJunitLogger();
