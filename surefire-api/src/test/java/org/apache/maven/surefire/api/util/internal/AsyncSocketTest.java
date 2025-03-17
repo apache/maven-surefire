@@ -41,6 +41,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static java.net.StandardSocketOptions.SO_KEEPALIVE;
@@ -54,6 +55,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Low level Java benchmark test.
  */
 @SuppressWarnings("checkstyle:magicnumber")
+@Ignore("Can be flaky on slow machine")
 public class AsyncSocketTest {
     private static final String LONG_STRING =
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
