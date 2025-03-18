@@ -29,7 +29,7 @@ properties(
     ]
 )
 // final def oses = ['linux':'ubuntu && maven', 'windows':'windows-he']
-final def oses = ['linux':'ubuntu && maven']
+final def oses = ['linux':'ubuntu']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.x.x', '3.8.8'] : ['3.x.x']
 // all non-EOL versions and the first EA
 final def jdks = [21, 17, 11, 8]
