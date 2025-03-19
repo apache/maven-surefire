@@ -93,8 +93,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
     }
 
     @Override
-    public TestReportListener<TestOutputReportEntry> createTestReportListener(
-            ReporterFactoryOptions reporterFactoryOptions) {
+    public TestReportListener<TestOutputReportEntry> createTestReportListener() {
         TestSetRunListener testSetRunListener = new TestSetRunListener(
                 createConsoleReporter(),
                 createFileReporter(),
@@ -105,7 +104,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
                 PLAIN.equals(reportConfiguration.getReportFormat()),
                 reportConfiguration.isBriefOrPlainFormat(),
                 consoleLogger,
-                reporterFactoryOptions.isStatPerSourceName());
+                reportConfiguration.getReporterFactoryOptions().isStatPerSourceName());
         addListener(testSetRunListener);
         return testSetRunListener;
     }

@@ -37,6 +37,7 @@ import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
+import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.junit.Test;
 import org.slf4j.Logger;
 
@@ -55,7 +56,8 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfiguration() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        StartupReportConfiguration config = invokeMethod(surefirePlugin, "getStartupReportConfiguration", "", false);
+        StartupReportConfiguration config =
+                invokeMethod(surefirePlugin, "getStartupReportConfiguration", "", false, mock(ProviderInfo.class));
 
         assertThat(config.getXmlReporter()).isNotNull().isInstanceOf(SurefireStatelessReporter.class);
 
@@ -74,7 +76,8 @@ public class MojoMocklessTest {
         setInternalState(surefirePlugin, "consoleOutputReporter", consoleReporter);
         setInternalState(surefirePlugin, "statelessTestsetInfoReporter", testsetInfoReporter);
 
-        StartupReportConfiguration config = invokeMethod(surefirePlugin, "getStartupReportConfiguration", "", false);
+        StartupReportConfiguration config =
+                invokeMethod(surefirePlugin, "getStartupReportConfiguration", "", false, mock(ProviderInfo.class));
 
         assertThat(config.getXmlReporter()).isNotNull().isSameAs(xmlReporter);
 

@@ -45,11 +45,6 @@ public class ForkingReporterFactory implements ReporterFactory {
     }
 
     @Override
-    public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
-        return createTestReportListener();
-    }
-
-    @Override
     public RunResult close() {
         return new RunResult(17, 17, 17, 17);
     }

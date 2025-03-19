@@ -56,11 +56,6 @@ public class SurefireReflectorTest extends TestCase {
             }
 
             @Override
-            public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
-                return null;
-            }
-
-            @Override
             public RunResult close() {
                 return null;
             }
@@ -237,11 +232,6 @@ public class SurefireReflectorTest extends TestCase {
             }
 
             @Override
-            public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
-                return null;
-            }
-
-            @Override
             public RunResult close() {
                 return null;
             }
@@ -258,11 +248,6 @@ public class SurefireReflectorTest extends TestCase {
         ReporterFactory reporterFactory = new ReporterFactory() {
             @Override
             public TestReportListener<TestOutputReportEntry> createTestReportListener() {
-                return null;
-            }
-
-            @Override
-            public TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options) {
                 return null;
             }
 

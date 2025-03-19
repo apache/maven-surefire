@@ -1054,8 +1054,7 @@ public class JUnitPlatformProviderTest {
         when(runOrderCalculator.orderTestClasses(any())).thenReturn(testsToRun);
 
         ReporterFactory reporterFactory = mock(ReporterFactory.class);
-        when(reporterFactory.createTestReportListener(any(ReporterFactory.ReporterFactoryOptions.class)))
-                .thenReturn(runListener);
+        when(reporterFactory.createTestReportListener()).thenReturn(runListener);
 
         TestRequest testRequest = mock(TestRequest.class);
         when(testRequest.getTestListResolver()).thenReturn(testListResolver);
@@ -1204,9 +1203,7 @@ public class JUnitPlatformProviderTest {
         TestsToRun testsToRun = newTestsToRun(Sub1Tests.class, Sub2Tests.class);
 
         invokeProvider(jUnitPlatformProvider, testsToRun);
-        RunListener reporter = providerParameters
-                .getReporterFactory()
-                .createTestReportListener(new ReporterFactory.ReporterFactoryOptions(true));
+        RunListener reporter = providerParameters.getReporterFactory().createTestReportListener();
 
         ArgumentCaptor<ReportEntry> reportEntryArgumentCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         verify(reporter, times(2)).testSucceeded(reportEntryArgumentCaptor.capture());

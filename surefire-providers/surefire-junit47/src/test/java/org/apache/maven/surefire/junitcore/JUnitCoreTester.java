@@ -30,6 +30,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.runner.Computer;
 import org.junit.runner.JUnitCore;
@@ -113,6 +114,7 @@ public class JUnitCoreTester {
                 true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
-                new SurefireStatelessTestsetInfoReporter());
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
     }
 }

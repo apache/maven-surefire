@@ -45,6 +45,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
@@ -166,7 +167,8 @@ public class ForkStarterTest {
                 true,
                 xmlReporter,
                 outputReporter,
-                statelessTestsetInfoReporter);
+                statelessTestsetInfoReporter,
+                new ReporterFactoryOptions());
 
         ConsoleLogger logger = mock(ConsoleLogger.class);
 
@@ -253,7 +255,8 @@ public class ForkStarterTest {
                 true,
                 xmlReporter,
                 outputReporter,
-                statelessTestsetInfoReporter);
+                statelessTestsetInfoReporter,
+                new ReporterFactoryOptions());
 
         ConsoleLogger logger = mock(ConsoleLogger.class);
 

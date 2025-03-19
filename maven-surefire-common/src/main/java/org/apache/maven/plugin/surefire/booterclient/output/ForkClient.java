@@ -35,6 +35,7 @@ import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
@@ -80,6 +81,8 @@ public final class ForkClient implements EventHandler<Event> {
 
     private volatile TestReportListener<TestOutputReportEntry> testSetReporter;
 
+    private final ReporterFactoryOptions options;
+
     /**
      * Written by one Thread and read by another: Main Thread and ForkStarter's Thread.
      */
@@ -87,11 +90,21 @@ public final class ForkClient implements EventHandler<Event> {
 
     private volatile StackTraceWriter errorInFork;
 
+    @Deprecated
     public ForkClient(
             DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream, int forkNumber) {
+        this(defaultReporterFactory, notifiableTestStream, forkNumber, new ReporterFactoryOptions(false));
+    }
+
+    public ForkClient(
+            DefaultReporterFactory defaultReporterFactory,
+            NotifiableTestStream notifiableTestStream,
+            int forkNumber,
+            ReporterFactoryOptions options) {
         this.defaultReporterFactory = defaultReporterFactory;
         this.notifiableTestStream = notifiableTestStream;
         this.forkNumber = forkNumber;
+        this.options = options;
         notifier.setTestSetStartingListener(new TestSetStartingListener());
         notifier.setTestSetCompletedListener(new TestSetCompletedListener());
         notifier.setTestStartingListener(new TestStartingListener());

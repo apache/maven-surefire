@@ -31,6 +31,8 @@ public class Surefire1643IT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void shouldNotMixResults() {
         OutputValidator outputValidator = unpack("surefire-1643-parallel-junit5")
+                .maven()
+                .withFailure()
                 .executeTest()
                 .verifyTextInLog("BUILD FAILURE")
                 .assertTestSuiteResults(15, 0, 4, 0);
