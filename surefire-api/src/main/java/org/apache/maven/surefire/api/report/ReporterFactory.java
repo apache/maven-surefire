@@ -33,12 +33,6 @@ public interface ReporterFactory {
      */
     TestReportListener<TestOutputReportEntry> createTestReportListener();
 
-    //    default TestReportListener<TestOutputReportEntry> createTestReportListener(); {
-    //        return createTestReportListener(new ReporterFactoryOptions(false));
-    //    }
-
-    //    TestReportListener<TestOutputReportEntry> createTestReportListener(ReporterFactoryOptions options);
-
     /**
      * Closes the factory, freeing resources allocated in the factory.
      *
