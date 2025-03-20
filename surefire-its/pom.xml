@@ -243,7 +243,7 @@
       </build>
     </profile>
     <profile>
-      <id>ci</id>
+      <id>apache.ci</id>
       <properties>
         <its.forkCount>0.4C</its.forkCount>
         <its.threadCount>1</its.threadCount>
