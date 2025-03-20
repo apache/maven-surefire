@@ -237,7 +237,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     @Override
     public void testStarting(ReportEntry report) {
-        getTestSetStats(report).testSetStart();
+        getTestSetStats(report).testStart();
     }
 
     @Override
