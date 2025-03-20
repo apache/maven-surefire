@@ -133,7 +133,7 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
         println "Maven Local Repository = ${mvnLocalRepoDir}."
         assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
-        def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
+        def properties = ["-Pci -Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
         def cmd = ['mvn'] + goals + options + properties
 
         stage("build ${stageKey}") {
