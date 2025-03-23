@@ -31,6 +31,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <junit.vintage.version>5.9.1</junit.vintage.version>
+        <junit.platform.version>1.9.3</junit.platform.version>
     </properties>
 
     <dependencies>
@@ -53,6 +54,12 @@
                         <groupId>org.junit.vintage</groupId>
                         <artifactId>junit-vintage-engine</artifactId>
                         <version>${junit.vintage.version}</version>
+                    </dependency>
+                    <dependency>
+                        <!-- for old engine version we need to provide version for platform-engine -->
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-engine</artifactId>
+                        <version>${junit.platform.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

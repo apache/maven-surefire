@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.junitplatform;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.Test;
@@ -28,6 +29,7 @@ import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.FilterResult;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.reporting.OutputDirectoryProvider;
 
 import static org.apache.maven.surefire.api.testset.TestListResolver.toClassFileName;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,6 +43,9 @@ import static org.mockito.Mockito.when;
  * @since 2.22.0
  */
 public class TestMethodFilterTest {
+
+    private static final OutputDirectoryProvider OUTPUT_DIRECTORY = mock(OutputDirectoryProvider.class);
+
     private static final ConfigurationParameters CONFIG_PARAMS = mock(ConfigurationParameters.class);
 
     private final TestListResolver resolver = mock(TestListResolver.class);
@@ -80,12 +85,17 @@ public class TestMethodFilterTest {
         Class<TestClass> testClass = TestClass.class;
         Method testMethod = testClass.getMethod("testMethod");
         return new TestMethodTestDescriptor(
-                uniqueId, testClass, testMethod, new DefaultJupiterConfiguration(CONFIG_PARAMS));
+                uniqueId,
+                testClass,
+                testMethod,
+                Collections::emptyList,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
     }
 
     private static ClassTestDescriptor newClassTestDescriptor() {
         UniqueId uniqueId = UniqueId.forEngine("class");
-        return new ClassTestDescriptor(uniqueId, TestClass.class, new DefaultJupiterConfiguration(CONFIG_PARAMS));
+        return new ClassTestDescriptor(
+                uniqueId, TestClass.class, new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
     }
 
     /**
