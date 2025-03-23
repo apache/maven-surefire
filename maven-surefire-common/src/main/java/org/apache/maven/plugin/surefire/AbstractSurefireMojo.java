@@ -709,7 +709,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * @since 2.2
      */
     @Deprecated // todo make readonly to handle system property
-    @Parameter(property = "disableXmlReport", defaultValue = "false")
+    @Parameter(property = "disableXmlReport")
     private Boolean disableXmlReport;
 
     /**
@@ -2062,8 +2062,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         SurefireStatelessReporter xmlReporter =
                 statelessTestsetReporter == null ? new SurefireStatelessReporter() : statelessTestsetReporter;
 
-        if (isDisableXmlReport() != null) {
-            xmlReporter.setDisable(isDisableXmlReport());
+        if (disableXmlReport != null) {
+            xmlReporter.setDisable(disableXmlReport);
         }
 
         SurefireConsoleOutputReporter outReporter =
@@ -2624,7 +2624,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         checksum.add(getParallel());
         checksum.add(isParallelOptimized());
         checksum.add(isTrimStackTrace());
-        checksum.add(isDisableXmlReport());
+        checksum.add(disableXmlReport);
         checksum.add(isUseSystemClassLoader());
         checksum.add(isUseManifestOnlyJar());
         checksum.add(getEncoding());
@@ -3605,15 +3605,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @SuppressWarnings("UnusedDeclaration")
     public void setTrimStackTrace(boolean trimStackTrace) {
         this.trimStackTrace = trimStackTrace;
-    }
-
-    public Boolean isDisableXmlReport() {
-        return disableXmlReport;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public void setDisableXmlReport(Boolean disableXmlReport) {
-        this.disableXmlReport = disableXmlReport;
     }
 
     public boolean isEnableAssertions() {
