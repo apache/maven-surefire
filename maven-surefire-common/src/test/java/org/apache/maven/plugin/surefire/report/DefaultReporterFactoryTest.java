@@ -32,6 +32,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
@@ -89,7 +90,8 @@ public class DefaultReporterFactoryTest extends TestCase {
                 true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
-                new SurefireStatelessTestsetInfoReporter());
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
 
         DummyTestReporter reporter = new DummyTestReporter();
 
@@ -294,7 +296,8 @@ public class DefaultReporterFactoryTest extends TestCase {
                 true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
-                new SurefireStatelessTestsetInfoReporter());
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
 
         DummyTestReporter reporter = new DummyTestReporter();
 
@@ -360,7 +363,8 @@ public class DefaultReporterFactoryTest extends TestCase {
                 true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
-                new SurefireStatelessTestsetInfoReporter());
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
 
         assertTrue(reportConfig.isUseFile());
         assertTrue(reportConfig.isPrintSummary());

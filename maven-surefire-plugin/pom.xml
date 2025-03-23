@@ -137,30 +137,6 @@
 
   <profiles>
     <profile>
-      <id>ci</id>
-      <activation>
-        <property>
-          <name>enableCiProfile</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-docck-plugin</artifactId>
-            <version>1.2</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>reporting</id>
       <reporting>
         <plugins>

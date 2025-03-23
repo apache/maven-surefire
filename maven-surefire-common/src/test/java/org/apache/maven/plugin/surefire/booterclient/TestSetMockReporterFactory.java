@@ -26,6 +26,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 
@@ -70,6 +71,7 @@ public class TestSetMockReporterFactory extends DefaultReporterFactory {
                 true,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
-                new SurefireStatelessTestsetInfoReporter());
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
     }
 }

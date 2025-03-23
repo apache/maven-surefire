@@ -103,7 +103,8 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
                 reportConfiguration.isTrimStackTrace(),
                 PLAIN.equals(reportConfiguration.getReportFormat()),
                 reportConfiguration.isBriefOrPlainFormat(),
-                consoleLogger);
+                consoleLogger,
+                reportConfiguration.getReporterFactoryOptions().isStatPerSourceName());
         addListener(testSetRunListener);
         return testSetRunListener;
     }

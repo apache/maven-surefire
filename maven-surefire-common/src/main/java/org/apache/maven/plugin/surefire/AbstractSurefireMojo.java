@@ -85,6 +85,7 @@ import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
@@ -2056,7 +2057,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return getPluginArtifactMap().get("org.apache.maven.surefire:surefire-shadefire");
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration(String configChecksum, boolean isForking) {
+    private StartupReportConfiguration getStartupReportConfiguration(
+            String configChecksum, boolean isForking, ProviderInfo providerInfo) {
         SurefireStatelessReporter xmlReporter =
                 statelessTestsetReporter == null ? new SurefireStatelessReporter() : statelessTestsetReporter;
 
@@ -2071,6 +2073,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 ? new SurefireStatelessTestsetInfoReporter()
                 : statelessTestsetInfoReporter;
 
+        // SUREFIRE-1643 we can force this here as junit5 will need this for multi thread test
+        ReporterFactoryOptions reporterFactoryOptions = new ReporterFactoryOptions();
+        if ("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider".equals(providerInfo.getProviderName())) {
+            reporterFactoryOptions.setStatPerSourceName(true);
+        }
         return new StartupReportConfiguration(
                 isUseFile(),
                 isPrintSummary(),
@@ -2089,7 +2096,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 isEnablePropertiesElement(),
                 xmlReporter,
                 outReporter,
-                testsetReporter);
+                testsetReporter,
+                reporterFactoryOptions);
     }
 
     private boolean isSpecificTestSpecified() {
@@ -2317,7 +2325,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 platform,
                 resolvedJavaModularityResult);
         String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(configChecksum, true);
+        StartupReportConfiguration startupReportConfiguration =
+                getStartupReportConfiguration(configChecksum, true, provider);
+
         ProviderConfiguration providerConfiguration = createProviderConfiguration(runOrderParameters);
         return new ForkStarter(
                 providerConfiguration,
@@ -2345,7 +2355,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 platform,
                 new ResolvePathResultWrapper(null, true));
         String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(configChecksum, false);
+        StartupReportConfiguration startupReportConfiguration =
+                getStartupReportConfiguration(configChecksum, false, provider);
         ProviderConfiguration providerConfiguration = createProviderConfiguration(runOrderParameters);
         return new InPluginVMSurefireStarter(
                 startupConfiguration, providerConfiguration, startupReportConfiguration, getConsoleLogger(), platform);

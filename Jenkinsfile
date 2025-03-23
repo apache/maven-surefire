@@ -21,19 +21,18 @@
 
 properties(
     [
-        buildDiscarder(logRotator(artifactDaysToKeepStr: env.BRANCH_NAME == 'master' ? '14' : '7',
-                                  artifactNumToKeepStr: '50',
+        buildDiscarder(logRotator(artifactNumToKeepStr: env.BRANCH_NAME == 'master' ? '15' : '5',
                                   daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '14',
                                   numToKeepStr: env.BRANCH_NAME == 'master' ? '20' : '10')
-        ),
-        disableConcurrentBuilds()
+        )//,
+        //disableConcurrentBuilds()
     ]
 )
 // final def oses = ['linux':'ubuntu && maven', 'windows':'windows-he']
-final def oses = ['linux':'ubuntu && maven']
+final def oses = ['linux':'ubuntu']
 final def mavens = env.BRANCH_NAME == 'master' ? ['3.x.x', '3.6.3'] : ['3.x.x']
 // all non-EOL versions and the first EA
-final def jdks = [20, 17, 11, 8]
+final def jdks = [21, 17, 11, 8]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -134,7 +133,7 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
         println "Maven Local Repository = ${mvnLocalRepoDir}."
         assert mvnLocalRepoDir != null : 'Local Maven Repository is undefined.'
 
-        def properties = ["-Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
+        def properties = ["-Papache.ci -Djacoco.skip=${!makeReports}", "\"-Dmaven.repo.local=${mvnLocalRepoDir}\""]
         def cmd = ['mvn'] + goals + options + properties
 
         stage("build ${stageKey}") {

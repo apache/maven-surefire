@@ -27,6 +27,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,7 +87,8 @@ public class CommonReflectorTest {
                 true,
                 xmlReporter,
                 consoleOutputReporter,
-                infoReporter);
+                infoReporter,
+                new ReporterFactoryOptions());
 
         consoleLogger = mock(ConsoleLogger.class);
     }

@@ -29,6 +29,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.api.util.SurefireReflectionException;
 
 import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
@@ -44,6 +45,7 @@ public class CommonReflector {
     private final Class<?> statelessTestsetReporter;
     private final Class<?> consoleOutputReporter;
     private final Class<?> statelessTestsetInfoReporter;
+    private final Class<?> reporterFactoryOptions;
     private final ClassLoader surefireClassLoader;
 
     public CommonReflector(@Nonnull ClassLoader surefireClassLoader) {
@@ -56,6 +58,7 @@ public class CommonReflector {
             consoleOutputReporter = surefireClassLoader.loadClass(SurefireConsoleOutputReporter.class.getName());
             statelessTestsetInfoReporter =
                     surefireClassLoader.loadClass(SurefireStatelessTestsetInfoReporter.class.getName());
+            reporterFactoryOptions = surefireClassLoader.loadClass(ReporterFactoryOptions.class.getName());
         } catch (ClassNotFoundException e) {
             throw new SurefireReflectionException(e);
         }
@@ -90,7 +93,8 @@ public class CommonReflector {
                 boolean.class,
                 statelessTestsetReporter,
                 consoleOutputReporter,
-                statelessTestsetInfoReporter);
+                statelessTestsetInfoReporter,
+                reporterFactoryOptions);
         Object[] params = {
             reporterConfiguration.isUseFile(),
             reporterConfiguration.isPrintSummary(),
@@ -109,7 +113,8 @@ public class CommonReflector {
             reporterConfiguration.isEnablePropertiesElement(),
             reporterConfiguration.getXmlReporter().clone(surefireClassLoader),
             reporterConfiguration.getConsoleOutputReporter().clone(surefireClassLoader),
-            reporterConfiguration.getTestsetReporter().clone(surefireClassLoader)
+            reporterConfiguration.getTestsetReporter().clone(surefireClassLoader),
+            reporterConfiguration.getReporterFactoryOptions().clone(surefireClassLoader)
         };
         return newInstance(constructor, params);
     }

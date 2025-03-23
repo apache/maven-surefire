@@ -81,7 +81,7 @@ public class WrappedReportEntry implements TestSetReportEntry {
             Integer estimatedElapsed,
             Utf8RecodingDeferredFileOutputStream stdout,
             Utf8RecodingDeferredFileOutputStream stdErr) {
-        this(original, reportEntryType, estimatedElapsed, stdout, stdErr, Collections.<String, String>emptyMap());
+        this(original, reportEntryType, estimatedElapsed, stdout, stdErr, Collections.emptyMap());
     }
 
     @Override

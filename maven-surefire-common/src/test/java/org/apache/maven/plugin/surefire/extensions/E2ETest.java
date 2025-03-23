@@ -167,9 +167,9 @@ public class E2ETest {
         // 1.0 seconds while using the encoder/decoder
         assertThat(readTime.get())
                 .describedAs("The performance test should assert 1.0 s of read time. "
-                        + "The limit 6 s guarantees that the read time does not exceed this limit on overloaded CPU.")
+                        + "The limit 10 s guarantees that the read time does not exceed this limit on overloaded CPU.")
                 .isPositive()
-                .isLessThanOrEqualTo(6_000L);
+                .isLessThanOrEqualTo(10_000L);
     }
 
     @Test(timeout = 10_000L)

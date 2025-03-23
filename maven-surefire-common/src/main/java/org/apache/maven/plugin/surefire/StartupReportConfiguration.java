@@ -35,6 +35,7 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.plugin.surefire.runorder.StatisticsReporter;
+import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
@@ -97,6 +98,8 @@ public final class StartupReportConfiguration {
 
     private StatisticsReporter statisticsReporter;
 
+    private final ReporterFactoryOptions reporterFactoryOptions;
+
     /**
      * @since 3.3.1
      */
@@ -119,7 +122,8 @@ public final class StartupReportConfiguration {
             boolean enablePropertiesElement,
             SurefireStatelessReporter xmlReporter,
             SurefireConsoleOutputReporter consoleOutputReporter,
-            SurefireStatelessTestsetInfoReporter testsetReporter) {
+            SurefireStatelessTestsetInfoReporter testsetReporter,
+            ReporterFactoryOptions reporterFactoryOptions) {
         this.useFile = useFile;
         this.printSummary = printSummary;
         this.reportFormat = reportFormat;
@@ -141,6 +145,7 @@ public final class StartupReportConfiguration {
         this.xmlReporter = xmlReporter;
         this.consoleOutputReporter = consoleOutputReporter;
         this.testsetReporter = testsetReporter;
+        this.reporterFactoryOptions = reporterFactoryOptions;
     }
 
     @SuppressWarnings("checkstyle:parameternumber")
@@ -180,7 +185,8 @@ public final class StartupReportConfiguration {
                 true,
                 xmlReporter,
                 consoleOutputReporter,
-                testsetReporter);
+                testsetReporter,
+                new ReporterFactoryOptions(false));
     }
 
     public boolean isUseFile() {
@@ -220,7 +226,7 @@ public final class StartupReportConfiguration {
         // In the in-plugin execution of parallel JUnit4.7 with rerun the map must be shared because reports and
         // listeners are in ThreadLocal, see Surefire1122ParallelAndFlakyTestsIT.
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory =
-                isForking ? new ConcurrentHashMap<String, Deque<WrappedReportEntry>>() : this.testClassMethodRunHistory;
+                isForking ? new ConcurrentHashMap<>() : this.testClassMethodRunHistory;
 
         DefaultStatelessReportMojoConfiguration xmlReporterConfig = new DefaultStatelessReportMojoConfiguration(
                 resolveReportsDirectory(forkNumber),
@@ -318,5 +324,9 @@ public final class StartupReportConfiguration {
 
     private boolean shouldReportToConsole() {
         return isUseFile() ? isPrintSummary() : isRedirectTestOutputToFile() || isBriefOrPlainFormat();
+    }
+
+    public ReporterFactoryOptions getReporterFactoryOptions() {
+        return reporterFactoryOptions;
     }
 }

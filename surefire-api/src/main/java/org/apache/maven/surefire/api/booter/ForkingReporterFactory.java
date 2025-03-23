@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.api.booter;
 
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 
@@ -39,7 +40,7 @@ public class ForkingReporterFactory implements ReporterFactory {
     }
 
     @Override
-    public TestReportListener createTestReportListener() {
+    public TestReportListener<TestOutputReportEntry> createTestReportListener() {
         return new ForkingRunListener(eventChannel, trimstackTrace);
     }
 
