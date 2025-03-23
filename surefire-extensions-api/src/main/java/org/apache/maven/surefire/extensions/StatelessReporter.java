@@ -36,7 +36,6 @@ public abstract class StatelessReporter<R extends TestSetReportEntry, S, C exten
     /**
      * {@code false} by default
      */
-    // todo remove isDisableXmlReport() in AbstractSurefireMojo and use this param instead
     private boolean disable;
 
     /**
