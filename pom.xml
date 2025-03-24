@@ -291,6 +291,11 @@
         <version>${jacocoVersion}</version>
         <classifier>runtime</classifier>
       </dependency>
+      <dependency>
+        <groupId>org.apache.maven.surefire</groupId>
+        <artifactId>surefire-shared-utils</artifactId>
+        <version>${surefire-shared-utils.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
