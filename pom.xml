@@ -108,7 +108,6 @@
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
     <project.build.outputTimestamp>2024-10-30T12:06:05Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
-    <version.maven-release-plugin>3.1.0</version.maven-release-plugin>
   </properties>
 
   <dependencyManagement>
