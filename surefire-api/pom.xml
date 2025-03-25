@@ -40,7 +40,6 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-shared-utils</artifactId>
-      <version>${surefire-shared-utils.version}</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
