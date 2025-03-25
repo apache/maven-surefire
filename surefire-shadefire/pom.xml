@@ -28,8 +28,8 @@
 
   <artifactId>surefire-shadefire</artifactId>
 
-  <name>ShadeFire JUnit3 Provider</name>
-  <description>A super-shaded junit3 provider that is used by surefire to build itself,
+  <name>ShadeFire JUnit5 Provider</name>
+  <description>A super-shaded JUnit 5 provider that is used by surefire to build itself,
     that basically has ALL classes relocated to facilitate no API-conflict whatsoever with ourself.
     The only remaining point of conflict is around the booter properties file format.</description>
 

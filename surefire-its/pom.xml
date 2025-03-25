@@ -101,6 +101,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
@@ -147,7 +152,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <includes>
-            <include>org/apache/maven/surefire/its/fixture/JUnit4SuiteTest.java</include>
+            <include>**/*Test.java</include>
           </includes>
           <systemPropertyVariables>
             <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
@@ -157,8 +162,8 @@
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>3.5.0</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+            <version>3.5.2</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -215,9 +220,6 @@
               <rerunFailingTestsCount>1</rerunFailingTestsCount>
               <perCoreThreadCount>false</perCoreThreadCount>
               <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
-              <includes>
-                <include>org/apache/**/*IT*.java</include>
-              </includes>
               <!-- Pass current surefire version to the main suite so that it -->
               <!-- can forward to all integration test projects. SUREFIRE-513 -->
               <systemPropertyVariables>
@@ -232,14 +234,6 @@
               <redirectTestOutputToFile>true</redirectTestOutputToFile>
               <shutdown>kill</shutdown>
             </configuration>
-            <dependencies>
-              <dependency>
-                <groupId>org.apache.maven.surefire</groupId>
-                <artifactId>surefire-junit47</artifactId>
-                <version>3.5.0</version>
-                <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <goals>

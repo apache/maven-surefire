@@ -62,6 +62,11 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <scope>test</scope>
@@ -127,16 +132,13 @@
           <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
           <useFile>true</useFile>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <includes>
-            <include>**/JUnit4SuiteTest.java</include>
-          </includes>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>3.5.0</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+            <version>3.5.2</version>
           </dependency>
         </dependencies>
       </plugin>

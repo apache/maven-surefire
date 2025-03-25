@@ -109,8 +109,8 @@
     </dependency>
 
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -151,16 +151,13 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
-          <includes>
-            <include>**/JUnit4SuiteTest.java</include>
-          </includes>
         </configuration>
         <dependencies>
           <dependency>
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
-            <version>3.5.0</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+            <version>3.5.2</version>
           </dependency>
         </dependencies>
       </plugin>
