@@ -31,6 +31,14 @@
   <name>Maven Surefire Test-Grouping Support</name>
   <description>Maven Surefire Test-Grouping Support</description>
 
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
