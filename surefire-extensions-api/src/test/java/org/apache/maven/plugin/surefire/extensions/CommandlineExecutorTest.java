@@ -27,9 +27,9 @@ import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.extensions.util.LineConsumerThread;
 import org.apache.maven.surefire.shared.utils.cli.Commandline;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,14 +41,14 @@ import static org.mockito.Mockito.verify;
 /**
  *
  */
-public class CommandlineExecutorTest {
+class CommandlineExecutorTest {
     private CommandlineExecutor exec;
     private CommandlineStreams streams;
     private String baseDir;
     private LineConsumerThread out;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    void setUp() throws Exception {
         baseDir = System.getProperty("user.dir");
 
         delete(Paths.get(baseDir, "target", "CommandlineExecutorTest").toFile());
@@ -65,8 +65,8 @@ public class CommandlineExecutorTest {
         assertThat(createdFile).isTrue();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    void tearDown() throws Exception {
         if (out != null) {
             out.close();
         }
@@ -76,7 +76,7 @@ public class CommandlineExecutorTest {
     }
 
     @Test
-    public void shouldExecuteNativeCommand() throws Exception {
+    void shouldExecuteNativeCommand() throws Exception {
         Closeable closer = mock(Closeable.class);
         Commandline cli = new Commandline(IS_OS_WINDOWS ? "dir" : "ls -la");
         cli.setWorkingDirectory(

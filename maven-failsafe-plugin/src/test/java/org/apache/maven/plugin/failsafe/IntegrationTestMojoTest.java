@@ -25,8 +25,8 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.project.MavenProject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,11 +36,11 @@ import static org.mockito.Mockito.when;
 /**
  * @since 2.20
  */
-public class IntegrationTestMojoTest {
+class IntegrationTestMojoTest {
     private IntegrationTestMojo mojo;
 
-    @Before
-    public void init() throws InvalidVersionSpecificationException, IOException {
+    @BeforeEach
+    void init() throws InvalidVersionSpecificationException, IOException {
         Artifact artifact = new DefaultArtifact("g", "a", createFromVersionSpec("1.0"), "compile", "jar", "", null);
         artifact.setFile(new File("./target/tmp/a-1.0.jar"));
         new File("./target/tmp").mkdir();
@@ -52,14 +52,14 @@ public class IntegrationTestMojoTest {
     }
 
     @Test
-    public void shouldBeJar() {
+    void shouldBeJar() {
         mojo.setDefaultClassesDirectory(new File("./target/classes"));
         File binaries = mojo.getMainBuildPath();
         assertThat(binaries.getName()).isEqualTo("a-1.0.jar");
     }
 
     @Test
-    public void shouldBeAnotherJar() {
+    void shouldBeAnotherJar() {
         mojo.setMainBuildPath(new File("./target/another-1.0.jar"));
         mojo.setDefaultClassesDirectory(new File("./target/classes"));
         File binaries = mojo.getMainBuildPath();
@@ -67,7 +67,7 @@ public class IntegrationTestMojoTest {
     }
 
     @Test
-    public void shouldBeClasses() {
+    void shouldBeClasses() {
         mojo.setMainBuildPath(new File("./target/classes"));
         mojo.setDefaultClassesDirectory(new File("./target/classes"));
         File binaries = mojo.getMainBuildPath();
@@ -75,24 +75,24 @@ public class IntegrationTestMojoTest {
     }
 
     @Test
-    public void shouldGetNullEnv() {
+    void shouldGetNullEnv() {
         assertThat(mojo.getExcludedEnvironmentVariables()).hasSize(0);
     }
 
     @Test
-    public void shouldGetEnv() {
+    void shouldGetEnv() {
         mojo.setExcludedEnvironmentVariables(new String[] {"ABC", "KLM"});
         assertThat(mojo.getExcludedEnvironmentVariables()).hasSize(2).contains("ABC", "KLM");
     }
 
     @Test
-    public void testShouldGetPropertyFile() {
+    void testShouldGetPropertyFile() {
         mojo.setSystemPropertiesFile(new File("testShouldGetPropertyFile"));
         assertThat(mojo.getSystemPropertiesFile()).isEqualTo(new File("testShouldGetPropertyFile"));
     }
 
     @Test
-    public void shouldHaveJUnit5EnginesFilter() {
+    void shouldHaveJUnit5EnginesFilter() {
         mojo.setIncludeJUnit5Engines(new String[] {"e1", "e2"});
         assertThat(mojo.getIncludeJUnit5Engines()).isEqualTo(new String[] {"e1", "e2"});
 

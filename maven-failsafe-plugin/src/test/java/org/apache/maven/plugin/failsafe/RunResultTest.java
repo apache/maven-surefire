@@ -27,7 +27,7 @@ import java.util.Locale;
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,10 +37,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 2.20
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class RunResultTest {
+class RunResultTest {
 
     @Test
-    public void testAggregatedValues() {
+    void testAggregatedValues() {
         RunResult simple = getSimpleAggregate();
 
         assertThat(simple.getCompletedCount()).isEqualTo(20);
@@ -55,27 +55,27 @@ public class RunResultTest {
     }
 
     @Test
-    public void testSerialization() throws Exception {
+    void testSerialization() throws Exception {
         writeReadCheck(getSimpleAggregate());
     }
 
     @Test
-    public void testFailures() throws Exception {
+    void testFailures() throws Exception {
         writeReadCheck(new RunResult(0, 1, 2, 3, "stacktraceHere", false));
     }
 
     @Test
-    public void testSkipped() throws Exception {
+    void testSkipped() throws Exception {
         writeReadCheck(new RunResult(3, 2, 1, 0, null, true));
     }
 
     @Test
-    public void testFlakes() throws Exception {
+    void testFlakes() throws Exception {
         writeReadCheck(new RunResult(3, 2, 1, 0, 2, null, true));
     }
 
     @Test
-    public void testLegacyDeserialization() throws Exception {
+    void testLegacyDeserialization() throws Exception {
         File legacySummary = SureFireFileManager.createTempFile("failsafe", "test");
         String legacyFailsafeSummaryXmlTemplate = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                 + "<failsafe-summary xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
@@ -113,7 +113,7 @@ public class RunResultTest {
     }
 
     @Test
-    public void testAppendSerialization() throws Exception {
+    void testAppendSerialization() throws Exception {
         RunResult simpleAggregate = getSimpleAggregate();
         RunResult additional = new RunResult(2, 1, 2, 2, "msg " + ((char) 0x0E01), true);
 

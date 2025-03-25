@@ -27,27 +27,27 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class VerifyMojoTest {
+class VerifyMojoTest {
     private VerifyMojo mojo;
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    private File tempFolder;
 
     private Logger logger = mock(Logger.class);
 
-    @Before
-    public void init() throws UnsupportedEncodingException {
+    @BeforeEach
+    void init() throws UnsupportedEncodingException {
         mojo = new VerifyMojo(logger);
-        mojo.setTestClassesDirectory(tempFolder.getRoot());
+        mojo.setTestClassesDirectory(tempFolder);
         mojo.setReportsDirectory(getTestBaseDir());
     }
 
@@ -71,26 +71,25 @@ public class VerifyMojoTest {
         return new File(URLDecoder.decode(resource.getPath(), "UTF-8")).getAbsoluteFile();
     }
 
-    @Test(expected = MojoExecutionException.class)
-    public void executeForForkError()
-            throws MojoExecutionException, MojoFailureException, UnsupportedEncodingException {
+    @Test
+    void executeForForkError() throws UnsupportedEncodingException {
         setupExecuteMocks();
         mojo.setSummaryFile(new File(getTestBaseDir(), "failsafe-summary-booter-fork-error.xml"));
-        mojo.execute();
-    }
 
-    @Test(expected = MojoExecutionException.class)
-    public void executeForForkErrorTestFailureIgnore()
-            throws MojoExecutionException, MojoFailureException, UnsupportedEncodingException {
-        setupExecuteMocks();
-        mojo.setSummaryFile(new File(getTestBaseDir(), "failsafe-summary-booter-fork-error.xml"));
-        mojo.setTestFailureIgnore(true);
-        mojo.execute();
+        assertThatCode(mojo::execute).isExactlyInstanceOf(MojoExecutionException.class);
     }
 
     @Test
-    public void executeForPassingTests()
-            throws MojoExecutionException, MojoFailureException, UnsupportedEncodingException {
+    void executeForForkErrorTestFailureIgnore() throws UnsupportedEncodingException {
+        setupExecuteMocks();
+        mojo.setSummaryFile(new File(getTestBaseDir(), "failsafe-summary-booter-fork-error.xml"));
+        mojo.setTestFailureIgnore(true);
+
+        assertThatCode(mojo::execute).isExactlyInstanceOf(MojoExecutionException.class);
+    }
+
+    @Test
+    void executeForPassingTests() throws MojoExecutionException, MojoFailureException, UnsupportedEncodingException {
         setupExecuteMocks();
         mojo.setSummaryFile(new File(getTestBaseDir(), "failsafe-summary-success.xml"));
         mojo.execute();

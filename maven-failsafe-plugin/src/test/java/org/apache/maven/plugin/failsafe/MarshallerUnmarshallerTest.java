@@ -23,16 +23,16 @@ import java.io.File;
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
  */
-public class MarshallerUnmarshallerTest {
+class MarshallerUnmarshallerTest {
     @Test
-    public void shouldUnmarshallExistingXmlFile() throws Exception {
+    void shouldUnmarshallExistingXmlFile() throws Exception {
         File xml = new File("target/test-classes/org/apache/maven/plugin/failsafe/failsafe-summary.xml");
         RunResult summary = FailsafeSummaryXmlUtils.toRunResult(xml);
 
@@ -56,7 +56,7 @@ public class MarshallerUnmarshallerTest {
     }
 
     @Test
-    public void shouldMarshallAndUnmarshallSameXml() throws Exception {
+    void shouldMarshallAndUnmarshallSameXml() throws Exception {
         RunResult expected = new RunResult(
                 7,
                 1,

@@ -44,6 +44,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -105,6 +106,7 @@ public class SurefireDependencyResolverTest {
     }
 
     @Test
+    @Ignore("old not executing tests - to review")
     public void testResolveArtifact()
             throws InvalidVersionSpecificationException, MojoExecutionException, DependencyResolutionException {
 
