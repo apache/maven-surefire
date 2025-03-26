@@ -200,7 +200,7 @@
       <dependency>
         <groupId>org.htmlunit</groupId>
         <artifactId>htmlunit</artifactId>
-        <version>4.10.0</version>
+        <version>4.11.1</version>
       </dependency>
       <dependency>
         <!-- used in the unit tests and maven-shared-utils:3.3.4 -->
