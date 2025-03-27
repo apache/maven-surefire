@@ -28,7 +28,7 @@
 
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
-  <version>3.5.3-SNAPSHOT</version>
+  <version>3.5.3</version>
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
@@ -68,7 +68,7 @@
   <scm>
     <connection>${maven.surefire.scm.devConnection}</connection>
     <developerConnection>${maven.surefire.scm.devConnection}</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v3.5.3</tag>
     <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
@@ -105,7 +105,7 @@
     <maven.compiler.testTarget>${javaVersion}</maven.compiler.testTarget>
     <jvm9ArgsTests />
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
-    <project.build.outputTimestamp>2024-10-30T12:06:05Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-03-27T10:07:40Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
   </properties>
 
