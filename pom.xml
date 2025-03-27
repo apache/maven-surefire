@@ -335,6 +335,7 @@
           <configuration>
             <preparationGoals>clean install</preparationGoals>
             <commitByProject>false</commitByProject>
+            <tagNameFormat>surefire-@{project.version}</tagNameFormat>
           </configuration>
         </plugin>
         <plugin>
