@@ -97,7 +97,7 @@
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
-    <jacocoVersion>0.8.12</jacocoVersion>
+    <jacocoVersion>0.8.13</jacocoVersion>
     <testngVersion>5.11</testngVersion>
     <maven.surefire.scm.devConnection>scm:git:https://github.com/apache/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
