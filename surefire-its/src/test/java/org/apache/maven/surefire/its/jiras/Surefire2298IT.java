@@ -61,12 +61,12 @@ public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
         ite = new JAXPXPathEngine()
                 .selectNodes(
-                        "//testcase[@classname='FirstNestedTest']",
+                        "//testcase[@classname='io.olamy.FirstNestedTest']",
                         Input.fromFile(xmlReportFile.getFile()).build());
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
         ite = new JAXPXPathEngine()
                 .selectNodes(
-                        "//testcase[@classname='BaseNestedTest$Inner']",
+                        "//testcase[@classname='io.olamy.BaseNestedTest$Inner']",
                         Input.fromFile(xmlReportFile.getFile()).build());
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
@@ -77,5 +77,19 @@ public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
          * <testcase name="innerTest" classname="BaseNestedTest$Inner" time="0.0"/>
          * </testsuite>
          */
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        assertThat(ite, IsIterableWithSize.iterableWithSize(2));
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@classname='io.olamy.SecondNestedTest']",
+                        Input.fromFile(xmlReportFile.getFile()).build());
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@classname='io.olamy.BaseNestedTest$Inner']",
+                        Input.fromFile(xmlReportFile.getFile()).build());
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }
