@@ -41,6 +41,7 @@ import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -220,11 +221,25 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String reason,
             Integer elapsedTime) {
         String[] classMethodName = toClassMethodName(testIdentifier);
-        String className = classMethodName[0];
+
+        Optional<UniqueId.Segment> classSegment = testIdentifier.getUniqueIdObject().getSegments().stream()
+                .filter(segment -> "class".equals(segment.getType()))
+                .findFirst();
+
+        String className;
+        if (classSegment.isPresent()) {
+            className = classSegment.get().getValue();
+        } else {
+            className = classMethodName[0];
+        }
+
         String classText = classMethodName[1];
         if (Objects.equals(className, classText)) {
             classText = null;
         }
+
+        classText = classMethodName[0]; // testIdentifier.getLegacyReportingName();
+
         boolean failed = testExecutionResult == null || testExecutionResult.getStatus() == FAILED;
         String methodName = failed || testIdentifier.isTest() ? classMethodName[2] : null;
         String methodText = failed || testIdentifier.isTest() ? classMethodName[3] : null;
