@@ -72,8 +72,8 @@
     <url>https://github.com/apache/maven-surefire/tree/${project.scm.tag}</url>
   </scm>
   <issueManagement>
-    <system>jira</system>
-    <url>https://issues.apache.org/jira/browse/SUREFIRE</url>
+    <system>GitHub issues</system>
+    <url>https://github.com/apache/maven-surefire/issues</url>
   </issueManagement>
   <ciManagement>
     <system>Jenkins</system>
