@@ -1,0 +1,35 @@
+{
+  "common": {
+    "inputIgnoredProperties": [
+      "java.version",
+      "os.arch",
+      "os.name",
+      "env.CI",
+      "env.GITHUB_BASE_REF",
+      "env.GITHUB_REF",
+      "env.GITHUB_RUN_ID",
+      "env.GITHUB_JOB",
+      "env.GITHUB_SHA"
+    ]
+  },
+  "surefire": {
+    "artifacts": {
+      "surefire-reports": {
+        "includes": ["surefire-reports/TEST-*.xml"]
+      },
+      "jacoco": {
+        "includes": ["jacoco.exec"]
+      }
+    }
+  },
+  "failsafe": {
+    "artifacts": {
+      "failsafe-reports": {
+        "includes": ["failsafe-reports/TEST-*.xml"]
+      },
+      "jacoco": {
+        "includes": ["jacoco.exec"]
+      }
+    }
+  }
+}

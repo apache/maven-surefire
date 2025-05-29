@@ -1,0 +1,18 @@
+<extensions>
+  <extension>
+    <!--
+    https://github.com/seregamorph/maven-surefire-cached
+    Disable caching: "-DskipCache=true"
+    -->
+    <groupId>com.github.seregamorph</groupId>
+    <artifactId>surefire-cached-extension</artifactId>
+    <version>0.13</version>
+  </extension>
+
+  <extension>
+    <!-- https://github.com/seregamorph/maven-turbo-reactor -->
+    <groupId>com.github.seregamorph</groupId>
+    <artifactId>maven-turbo-builder</artifactId>
+    <version>0.3</version>
+  </extension>
+</extensions>
