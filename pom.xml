@@ -494,25 +494,5 @@
         <jvm9ArgsTests>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.util.stream=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.base/java.util.regex=ALL-UNNAMED --add-opens java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.base/sun.nio.fs=ALL-UNNAMED --add-opens java.base/sun.nio.cs=ALL-UNNAMED --add-opens java.base/java.nio.file=ALL-UNNAMED --add-opens java.base/java.nio.charset=ALL-UNNAMED</jvm9ArgsTests>
       </properties>
     </profile>
-    <profile>
-      <id>reporting</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-changes-plugin</artifactId>
-            <configuration>
-              <!-- For JIRA-report -->
-              <columnNames>Type,Priority,Key,Summary,Resolution</columnNames>
-              <onlyCurrentVersion>true</onlyCurrentVersion>
-              <resolutionIds>Fixed</resolutionIds>
-              <sortColumnNames>type DESC,Priority DESC,Key</sortColumnNames>
-              <maxEntries>1000</maxEntries>
-              <skip>true</skip>
-            </configuration>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
   </profiles>
 </project>
