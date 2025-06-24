@@ -150,27 +150,4 @@
     </plugins>
   </reporting>
 
-  <profiles>
-    <profile>
-      <id>reporting</id>
-      <reporting>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-changes-plugin</artifactId>
-            <configuration>
-              <skip>false</skip>
-            </configuration>
-            <reportSets>
-              <reportSet>
-                <reports>
-                  <report>jira-report</report>
-                </reports>
-              </reportSet>
-            </reportSets>
-          </plugin>
-        </plugins>
-      </reporting>
-    </profile>
-  </profiles>
 </project>
