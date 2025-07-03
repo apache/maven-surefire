@@ -19,65 +19,25 @@
 package org.apache.maven.surefire.junitplatform;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
-import org.apache.maven.surefire.api.util.SurefireReflectionException;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.core.LauncherFactory;
 
 interface LauncherSessionFactory {
 
-    LauncherSessionFactory DEFAULT = () -> {
+    LauncherSessionFactory DEFAULT = cancellationToken -> {
         try {
             Class<?> sessionClass = Class.forName("org.junit.platform.launcher.LauncherSession");
             AutoCloseable launcherSession = ReflectionUtils.invokeGetter(LauncherFactory.class, null, "openSession");
-            return new SupportedLauncherSessionAdapter(sessionClass, launcherSession);
+            Launcher launcher = ReflectionUtils.invokeGetter(sessionClass, launcherSession, "getLauncher");
+            return new LauncherSessionAdapter(launcherSession, launcher, cancellationToken);
         } catch (ClassNotFoundException e) {
-            return new LegacyLauncherSessionAdapter(LauncherFactory.create());
+            return new LauncherSessionAdapter(null, LauncherFactory.create(), cancellationToken);
         }
     };
 
-    LauncherSessionAdapter openSession();
-
-    class SupportedLauncherSessionAdapter implements LauncherSessionAdapter {
-
-        private final Class<?> sessionClass;
-        private final AutoCloseable launcherSession;
-
-        SupportedLauncherSessionAdapter(Class<?> sessionClass, AutoCloseable launcherSession) {
-            this.sessionClass = sessionClass;
-            this.launcherSession = launcherSession;
-        }
-
-        @Override
-        public Launcher getLauncher() {
-            return ReflectionUtils.invokeGetter(sessionClass, launcherSession, "getLauncher");
-        }
-
-        @Override
-        public void close() {
-            try {
-                launcherSession.close();
-            } catch (Exception e) {
-                throw new SurefireReflectionException(e);
-            }
-        }
+    default LauncherSessionAdapter openSession() {
+        return openSession(null);
     }
 
-    class LegacyLauncherSessionAdapter implements LauncherSessionAdapter {
-
-        private final Launcher launcher;
-
-        LegacyLauncherSessionAdapter(Launcher launcher) {
-            this.launcher = launcher;
-        }
-
-        @Override
-        public Launcher getLauncher() {
-            return launcher;
-        }
-
-        @Override
-        public void close() {
-            // do nothing
-        }
-    }
+    LauncherSessionAdapter openSession(CancellationTokenAdapter cancellationToken);
 }

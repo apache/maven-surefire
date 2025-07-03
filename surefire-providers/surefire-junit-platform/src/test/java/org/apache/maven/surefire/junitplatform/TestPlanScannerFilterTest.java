@@ -75,7 +75,7 @@ public class TestPlanScannerFilterTest {
     }
 
     private static TestPlanScannerFilter newFilter() {
-        return new TestPlanScannerFilter(LauncherFactory.create(), new Filter<?>[0]);
+        return new TestPlanScannerFilter(new LauncherAdapter(LauncherFactory.create(), null), new Filter<?>[0]);
     }
 
     static class EmptyClass {}

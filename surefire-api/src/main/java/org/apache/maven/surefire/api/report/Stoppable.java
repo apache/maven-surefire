@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.testng.utils;
-
-import org.apache.maven.surefire.api.report.RunListener;
+package org.apache.maven.surefire.api.report;
 
 /**
  * Covers configuration parameter {@code skipAfterFailureCount}.
@@ -26,7 +24,16 @@ import org.apache.maven.surefire.api.report.RunListener;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
+@FunctionalInterface
 public interface Stoppable {
+
+    /**
+     * Null object for use when fail-fast behavior is disabled.
+     */
+    Stoppable NOOP = () -> {
+        // do nothing
+    };
+
     /**
      * Delegates this call to {@link RunListener#testExecutionSkippedByUser()}.
      */
