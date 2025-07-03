@@ -41,8 +41,8 @@ Skipping Tests After the Nth Failure or Error
  
 Prerequisite
  
- Use ${project.artifactId} 2.19 or higher, JUnit 4.0 or higher, or 
- TestNG 5.10 or higher.
+ Use ${project.artifactId} 2.19 or higher, JUnit 4.0 or higher, TestNG 5.10 or
+ higher, or JUnit Platform 6.0 or higher.
  
  If version of TestNG is lower than 5.10 while the parameter 
  <<<skipAfterFailureCount>>> is set, the plugin fails with error:
