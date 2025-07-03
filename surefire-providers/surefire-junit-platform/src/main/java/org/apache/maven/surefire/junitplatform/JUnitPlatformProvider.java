@@ -37,7 +37,6 @@ import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
-import org.apache.maven.surefire.api.util.SurefireReflectionException;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
@@ -80,29 +79,27 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private final ProviderParameters parameters;
 
-    private final Launcher launcher;
+    private final LauncherSessionFactory launcherSessionFactory;
 
     private final Filter<?>[] filters;
 
     private final Map<String, String> configurationParameters;
 
     public JUnitPlatformProvider(ProviderParameters parameters) {
-        this(parameters, new LazyLauncher());
+        this(parameters, LauncherSessionFactory.DEFAULT);
     }
 
-    JUnitPlatformProvider(ProviderParameters parameters, Launcher launcher) {
+    JUnitPlatformProvider(ProviderParameters parameters, LauncherSessionFactory launcherSessionFactory) {
         this.parameters = parameters;
-        this.launcher = launcher;
+        this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
         configurationParameters = newConfigurationParameters();
     }
 
     @Override
     public Iterable<Class<?>> getSuites() {
-        try {
-            return scanClasspath();
-        } finally {
-            closeLauncher();
+        try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession()) {
+            return scanClasspath(launcherSession.getLauncher());
         }
     }
 
@@ -110,18 +107,19 @@ public class JUnitPlatformProvider extends AbstractProvider {
     public RunResult invoke(Object forkTestSet) throws TestSetFailedException, ReporterException {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
-        try {
+        try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession()) {
             RunListenerAdapter adapter = new RunListenerAdapter(reporterFactory.createTestReportListener());
             adapter.setRunMode(NORMAL_RUN);
 
             startCapture(adapter);
             setupJunitLogger();
+            Launcher launcher = launcherSession.getLauncher();
             if (forkTestSet instanceof TestsToRun) {
-                invokeAllTests((TestsToRun) forkTestSet, adapter);
+                invokeAllTests(launcher, (TestsToRun) forkTestSet, adapter);
             } else if (forkTestSet instanceof Class) {
-                invokeAllTests(fromClass((Class<?>) forkTestSet), adapter);
+                invokeAllTests(launcher, fromClass((Class<?>) forkTestSet), adapter);
             } else if (forkTestSet == null) {
-                invokeAllTests(scanClasspath(), adapter);
+                invokeAllTests(launcher, scanClasspath(launcher), adapter);
             } else {
                 throw new IllegalArgumentException("Unexpected value of forkTestSet: " + forkTestSet);
             }
@@ -138,42 +136,36 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private TestsToRun scanClasspath() {
+    private TestsToRun scanClasspath(Launcher launcher) {
         TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, filters);
         ScanResult scanResult = parameters.getScanResult();
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
     }
 
-    private void invokeAllTests(TestsToRun testsToRun, RunListenerAdapter adapter) {
-        try {
-            execute(testsToRun, adapter);
-        } finally {
-            closeLauncher();
-        }
+    private void invokeAllTests(Launcher launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
+
+        execute(launcher, testsToRun, adapter);
+
         // Rerun failing tests if requested
         int count = parameters.getTestRequest().getRerunFailingTestsCount();
         if (count > 0 && adapter.hasFailingTests()) {
             adapter.setRunMode(RERUN_TEST_AFTER_FAILURE);
             for (int i = 0; i < count; i++) {
-                try {
-                    // Replace the "discoveryRequest" so that it only specifies the failing tests
-                    LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures(adapter);
-                    // Reset adapter's recorded failures and invoke the failed tests again
-                    adapter.reset();
-                    launcher.execute(discoveryRequest, adapter);
-                    // If no tests fail in the rerun, we're done
-                    if (!adapter.hasFailingTests()) {
-                        break;
-                    }
-                } finally {
-                    closeLauncher();
+                // Replace the "discoveryRequest" so that it only specifies the failing tests
+                LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures(adapter);
+                // Reset adapter's recorded failures and invoke the failed tests again
+                adapter.reset();
+                launcher.execute(discoveryRequest, adapter);
+                // If no tests fail in the rerun, we're done
+                if (!adapter.hasFailingTests()) {
+                    break;
                 }
             }
         }
     }
 
-    private void execute(TestsToRun testsToRun, RunListenerAdapter adapter) {
+    private void execute(Launcher launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
         // parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS)
         // add this LegacyXmlReportGeneratingListener ?
         //            adapter,
@@ -200,16 +192,6 @@ public class JUnitPlatformProvider extends AbstractProvider {
                         .selectors(selectClass(c.getName()));
                 launcher.execute(builder.build(), testExecutionListeners);
             });
-        }
-    }
-
-    private void closeLauncher() {
-        if (launcher instanceof AutoCloseable) {
-            try {
-                ((AutoCloseable) launcher).close();
-            } catch (Exception e) {
-                throw new SurefireReflectionException(e);
-            }
         }
     }
 

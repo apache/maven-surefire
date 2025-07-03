@@ -49,9 +49,11 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.platform.launcher.EngineFilter;
-import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherSession;
+import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
+import org.junit.platform.launcher.core.LauncherConfig;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
@@ -67,6 +69,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.junitplatform.ConcreteLauncherSessionAdapter.createLauncherSessionWithListeners;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -80,6 +83,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -94,16 +98,16 @@ import static org.powermock.reflect.Whitebox.getInternalState;
 public class JUnitPlatformProviderTest {
     @Test
     public void shouldFailClassOnBeforeAll() throws Exception {
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
-
-        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass(TestSetReportEntry.class);
 
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
-        launcher.registerTestExecutionListeners(adapter);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(providerParametersMock(), createLauncherSessionWithListeners(adapter));
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass(TestSetReportEntry.class);
 
         TestsToRun testsToRun = newTestsToRun(FailingBeforeAllJupiterTest.class);
         invokeProvider(provider, testsToRun);
@@ -134,16 +138,16 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void shouldErrorClassOnBeforeAll() throws Exception {
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
-
-        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass(TestSetReportEntry.class);
 
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
-        launcher.registerTestExecutionListeners(adapter);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(providerParametersMock(), createLauncherSessionWithListeners(adapter));
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass(TestSetReportEntry.class);
 
         TestsToRun testsToRun = newTestsToRun(FailingWithErrorBeforeAllJupiterTest.class);
         invokeProvider(provider, testsToRun);
@@ -176,8 +180,14 @@ public class JUnitPlatformProviderTest {
     @Test
     public void getSuitesReturnsScannedClasses() {
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class, TestClass2.class);
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+        List<LauncherSession> createdSessions = new ArrayList<>();
+        LauncherSessionFactory launcherSessionFactory = spyingLauncherSessionFactory(createdSessions);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters, launcherSessionFactory);
+
         assertThat(provider.getSuites()).containsOnly(TestClass1.class, TestClass2.class);
+        assertThat(createdSessions).hasSize(1);
+        verify(createdSessions.get(0)).close();
     }
 
     @Test
@@ -190,11 +200,10 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void allGivenTestsToRunAreInvoked() throws Exception {
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
-
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(
+                providerParametersMock(), createLauncherSessionWithListeners(executionListener));
 
         TestsToRun testsToRun = newTestsToRun(TestClass1.class, TestClass2.class);
         invokeProvider(provider, testsToRun);
@@ -211,11 +220,10 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void singleTestClassIsInvoked() throws Exception {
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
-
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(
+                providerParametersMock(), createLauncherSessionWithListeners(executionListener));
 
         invokeProvider(provider, TestClass1.class);
 
@@ -231,11 +239,10 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void singleTestClassIsInvokedLazily() throws Exception {
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(), launcher);
-
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(
+                providerParametersMock(), createLauncherSessionWithListeners(executionListener));
 
         invokeProvider(provider, newTestsToRunLazily(TestClass1.class));
 
@@ -251,15 +258,14 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void failingTestCaseAfterRerun() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
         // Mock the rerun variable
         when(parameters.getTestRequest().getRerunFailingTestsCount()).thenReturn(1);
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
-
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
 
         invokeProvider(provider, TestClass2.class);
 
@@ -285,14 +291,14 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void rerunStillFailing() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
         // Mock the rerun variable
         when(parameters.getTestRequest().getRerunFailingTestsCount()).thenReturn(2);
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
 
         // 3 unit tests:
         // - fail always
@@ -353,7 +359,6 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void rerunWithSuccess() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
         // Mock the rerun variable
         when(parameters.getTestRequest().getRerunFailingTestsCount()).thenReturn(2);
@@ -361,9 +366,10 @@ public class JUnitPlatformProviderTest {
                 .thenReturn(singletonMap(
                         JUnitPlatformProvider.CONFIGURATION_PARAMETERS, "forkCount = 1\nreuseForks = true"));
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
 
         invokeProvider(provider, TestClass5.class);
 
@@ -389,16 +395,15 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void runDisplayNameTest() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
 
-        launcher.registerTestExecutionListeners(adapter);
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(adapter));
 
         invokeProvider(provider, DisplayNameTest.class);
 
@@ -415,16 +420,15 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void runNestingTest() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
 
-        launcher.registerTestExecutionListeners(adapter);
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(adapter));
 
         invokeProvider(provider, NestingTest.class);
 
@@ -450,10 +454,7 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void detectSkippedParameterized() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
-
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
@@ -462,7 +463,8 @@ public class JUnitPlatformProviderTest {
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
 
-        launcher.registerTestExecutionListeners(executionListener, adapter);
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener, adapter));
 
         invokeProvider(provider, DisabledParameterizedTest.class);
 
@@ -493,10 +495,7 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void detectErroredParameterized() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
-
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
@@ -505,7 +504,8 @@ public class JUnitPlatformProviderTest {
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
 
-        launcher.registerTestExecutionListeners(executionListener, adapter);
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener, adapter));
 
         invokeProvider(provider, TestClass8.class);
 
@@ -530,10 +530,7 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void detectFailedParameterized() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
-
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
@@ -542,7 +539,8 @@ public class JUnitPlatformProviderTest {
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
 
-        launcher.registerTestExecutionListeners(executionListener, adapter);
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener, adapter));
 
         invokeProvider(provider, TestClass9.class);
 
@@ -567,15 +565,12 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void rerunParameterized() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         ProviderParameters parameters = providerParametersMock();
         // Mock the rerun variable
         when(parameters.getTestRequest().getRerunFailingTestsCount()).thenReturn(2);
         when(parameters.getProviderProperties())
                 .thenReturn(singletonMap(
                         JUnitPlatformProvider.CONFIGURATION_PARAMETERS, "forkCount = 1\nreuseForks = true"));
-
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters, launcher);
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
 
@@ -584,7 +579,8 @@ public class JUnitPlatformProviderTest {
         RunListenerAdapter adapter = new RunListenerAdapter(listener);
         adapter.setRunMode(NORMAL_RUN);
 
-        launcher.registerTestExecutionListeners(executionListener, adapter);
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener, adapter));
 
         invokeProvider(provider, TestClass7.class);
 
@@ -652,11 +648,11 @@ public class JUnitPlatformProviderTest {
     public void allDiscoveredTestsAreInvokedForNullArgument() throws Exception {
         TestReportListener<TestOutputReportEntry> runListener = runListenerMock();
         ProviderParameters providerParameters = providerParametersMock(runListener, TestClass1.class, TestClass2.class);
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters, launcher);
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(providerParameters, createLauncherSessionWithListeners(executionListener));
 
         invokeProvider(provider, null);
 
@@ -694,9 +690,9 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void outputIsCaptured() throws Exception {
-        Launcher launcher = LauncherFactory.create();
         TestReportListener<TestOutputReportEntry> runListener = runListenerMock();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(runListener), launcher);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(runListener));
 
         invokeProvider(provider, VerboseTestClass.class);
 
@@ -1008,11 +1004,14 @@ public class JUnitPlatformProviderTest {
             Class<?> testClass, String pattern, String... expectedTestNames) throws Exception {
         TestListResolver testListResolver = new TestListResolver(pattern);
         ProviderParameters providerParameters = providerParametersMock(testListResolver, testClass);
-        Launcher launcher = LauncherFactory.create();
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters, launcher);
 
         TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
-        launcher.registerTestExecutionListeners(executionListener);
+
+        List<LauncherSession> createdSessions = new ArrayList<>();
+        LauncherSessionFactory launcherSessionFactory =
+                spyingLauncherSessionFactory(createdSessions, executionListener);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters, launcherSessionFactory);
 
         invokeProvider(provider, null);
 
@@ -1024,6 +1023,9 @@ public class JUnitPlatformProviderTest {
         assertEquals(expectedCount, summary.getFailures().size());
 
         assertThat(failedTestDisplayNames(summary)).contains(expectedTestNames);
+
+        assertThat(createdSessions).hasSize(1);
+        verify(createdSessions.get(0)).close();
     }
 
     private static ProviderParameters providerParametersMock(Class<?>... testClasses) {
@@ -1126,6 +1128,17 @@ public class JUnitPlatformProviderTest {
             System.setOut(systemOut);
             System.setErr(systemErr);
         }
+    }
+
+    private static LauncherSessionFactory spyingLauncherSessionFactory(
+            List<LauncherSession> createdSessions, TestExecutionListener... listeners) {
+        LauncherConfig launcherConfig =
+                LauncherConfig.builder().addTestExecutionListeners(listeners).build();
+        return () -> {
+            LauncherSession session = spy(LauncherFactory.openSession(launcherConfig));
+            createdSessions.add(session);
+            return new ConcreteLauncherSessionAdapter(session);
+        };
     }
 
     static class TestClass1 {
