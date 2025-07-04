@@ -36,5 +36,5 @@ github:
     issues: true
 notifications:
   commits: commits@maven.apache.org
-  #issues: issues@maven.apache.org
-  #pullrequests: issues@maven.apache.org
+  issues: issues@maven.apache.org
+  pullrequests: issues@maven.apache.org
