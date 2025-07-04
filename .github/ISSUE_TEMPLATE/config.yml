@@ -25,6 +25,3 @@ contact_links:
     url: https://maven.apache.org/mailing-lists.html
     about: Please ask a question or discuss here
 
-  - name: Old JIRA Issues
-    url: https://issues.apache.org/jira/projects/SUREFIRE
-    about: Please search old JIRA issues
