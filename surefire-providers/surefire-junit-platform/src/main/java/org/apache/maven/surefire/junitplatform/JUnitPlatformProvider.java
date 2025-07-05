@@ -287,7 +287,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
         if (skipAfterFailureCount > 0) {
 
             AtomicBoolean loggedFailedAttempt = new AtomicBoolean(false);
-            Runnable cancellation = () -> cancelExecution(launcher, runListener, loggedFailedAttempt);
+            Runnable cancellation =
+                    () -> cancelExecution(launcher, runListener, loggedFailedAttempt, skipAfterFailureCount);
 
             if (commandsReader != null) {
                 // Register for signals from other forks
@@ -304,14 +305,18 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private static void cancelExecution(
-            LauncherAdapter launcher, ConsoleLogger consoleLogger, AtomicBoolean loggedFailedAttempt) {
+            LauncherAdapter launcher,
+            ConsoleLogger consoleLogger,
+            AtomicBoolean loggedFailedAttempt,
+            int skipAfterFailureCount) {
 
         boolean cancelled = launcher.cancel();
         if (!cancelled && loggedFailedAttempt.compareAndSet(false, true)) {
-            consoleLogger.warning(
-                    "An attempt was made to cancel the current test run due to the configured fail-fast behavior. "
-                            + "However, the version of JUnit Platform on the runtime classpath does not support cancellation. "
-                            + "Please update to 6.0.0 or later!");
+            consoleLogger.warning(String.format(
+                            "An attempt was made to cancel the current test run due to the configured skipAfterFailureCount of %d. ",
+                            skipAfterFailureCount)
+                    + "However, the version of JUnit Platform on the runtime classpath does not support cancellation. "
+                    + "Please update to 6.0.0 or later!");
         }
     }
 }

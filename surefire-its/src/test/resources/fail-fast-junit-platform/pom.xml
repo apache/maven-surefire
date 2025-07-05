@@ -30,13 +30,14 @@
   <properties>
     <maven.compiler.release>${java.specification.version}</maven.compiler.release>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <junit.version>6.0.0-SNAPSHOT</junit.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>6.0.0-SNAPSHOT</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
