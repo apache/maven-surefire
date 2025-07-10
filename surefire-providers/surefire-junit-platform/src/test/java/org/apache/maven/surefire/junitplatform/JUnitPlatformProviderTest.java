@@ -50,6 +50,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherSession;
+import org.junit.platform.launcher.LauncherSessionListener;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -692,14 +693,21 @@ public class JUnitPlatformProviderTest {
     public void outputIsCaptured() throws Exception {
         TestReportListener<TestOutputReportEntry> runListener = runListenerMock();
 
-        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock(runListener));
+        LauncherSessionFactory launcherSessionFactory =
+                launcherSessionFactoryWithLauncherSessionListener(new VerboseLauncherSessionListener());
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(providerParametersMock(runListener), launcherSessionFactory);
 
         invokeProvider(provider, VerboseTestClass.class);
 
         ArgumentCaptor<TestOutputReportEntry> captor = ArgumentCaptor.forClass(TestOutputReportEntry.class);
-        verify(runListener, times(2)).writeTestOutput(captor.capture());
-        assertThat(captor.getAllValues().get(0).getLog()).isEqualTo("stdout");
-        assertThat(captor.getAllValues().get(1).getLog()).isEqualTo("stderr");
+        verify(runListener, times(6)).writeTestOutput(captor.capture());
+        assertThat(captor.getAllValues().get(0).getLog()).isEqualTo("stdout from launcherSessionOpened");
+        assertThat(captor.getAllValues().get(1).getLog()).isEqualTo("stderr from launcherSessionOpened");
+        assertThat(captor.getAllValues().get(2).getLog()).isEqualTo("stdout");
+        assertThat(captor.getAllValues().get(3).getLog()).isEqualTo("stderr");
+        assertThat(captor.getAllValues().get(4).getLog()).isEqualTo("stdout from launcherSessionClosed");
+        assertThat(captor.getAllValues().get(5).getLog()).isEqualTo("stderr from launcherSessionClosed");
     }
 
     @Test
@@ -1141,6 +1149,18 @@ public class JUnitPlatformProviderTest {
         };
     }
 
+    private static LauncherSessionFactory launcherSessionFactoryWithLauncherSessionListener(
+            LauncherSessionListener launcherSessionListener) {
+        LauncherConfig launcherConfig = LauncherConfig.builder()
+                .addLauncherSessionListeners(launcherSessionListener)
+                .build();
+
+        return () -> {
+            LauncherSession session = LauncherFactory.openSession(launcherConfig);
+            return new ConcreteLauncherSessionAdapter(session);
+        };
+    }
+
     static class TestClass1 {
 
         static final int TESTS_FOUND = 4;
@@ -1204,6 +1224,21 @@ public class JUnitPlatformProviderTest {
         void test() {
             System.out.println("stdout");
             System.err.println("stderr");
+        }
+    }
+
+    static class VerboseLauncherSessionListener implements LauncherSessionListener {
+
+        @Override
+        public void launcherSessionOpened(LauncherSession session) {
+            System.out.println("stdout from launcherSessionOpened");
+            System.err.println("stderr from launcherSessionOpened");
+        }
+
+        @Override
+        public void launcherSessionClosed(LauncherSession session) {
+            System.out.println("stdout from launcherSessionClosed");
+            System.out.println("stderr from launcherSessionClosed");
         }
     }
 
