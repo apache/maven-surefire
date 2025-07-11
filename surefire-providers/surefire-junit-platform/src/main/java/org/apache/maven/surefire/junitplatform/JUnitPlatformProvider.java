@@ -107,11 +107,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
     public RunResult invoke(Object forkTestSet) throws TestSetFailedException, ReporterException {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
-        try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession()) {
-            RunListenerAdapter adapter = new RunListenerAdapter(reporterFactory.createTestReportListener());
-            adapter.setRunMode(NORMAL_RUN);
+        RunListenerAdapter adapter = new RunListenerAdapter(reporterFactory.createTestReportListener());
+        adapter.setRunMode(NORMAL_RUN);
+        startCapture(adapter);
 
-            startCapture(adapter);
+        try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession()) {
             setupJunitLogger();
             Launcher launcher = launcherSession.getLauncher();
             if (forkTestSet instanceof TestsToRun) {
