@@ -90,7 +90,7 @@
     <javaVersion>8</javaVersion>
     <mavenVersion>3.6.3</mavenVersion>
     <resolverVersion>1.4.1</resolverVersion>
-    <commonsLang3Version>3.17.0</commonsLang3Version>
+    <commonsLang3Version>3.18.0</commonsLang3Version>
     <commonsCompress>1.27.1</commonsCompress>
     <commonsIoVersion>2.19.0</commonsIoVersion>
     <plexus-java-version>1.5.0</plexus-java-version>
