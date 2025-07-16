@@ -702,12 +702,15 @@ public class JUnitPlatformProviderTest {
 
         ArgumentCaptor<TestOutputReportEntry> captor = ArgumentCaptor.forClass(TestOutputReportEntry.class);
         verify(runListener, times(6)).writeTestOutput(captor.capture());
-        assertThat(captor.getAllValues().get(0).getLog()).isEqualTo("stdout from launcherSessionOpened");
-        assertThat(captor.getAllValues().get(1).getLog()).isEqualTo("stderr from launcherSessionOpened");
-        assertThat(captor.getAllValues().get(2).getLog()).isEqualTo("stdout");
-        assertThat(captor.getAllValues().get(3).getLog()).isEqualTo("stderr");
-        assertThat(captor.getAllValues().get(4).getLog()).isEqualTo("stdout from launcherSessionClosed");
-        assertThat(captor.getAllValues().get(5).getLog()).isEqualTo("stderr from launcherSessionClosed");
+        assertThat(captor.getAllValues())
+                .extracting(TestOutputReportEntry::getLog)
+                .containsExactly(
+                        "stdout from launcherSessionOpened",
+                        "stderr from launcherSessionOpened",
+                        "stdout",
+                        "stderr",
+                        "stdout from launcherSessionClosed",
+                        "stderr from launcherSessionClosed");
     }
 
     @Test
