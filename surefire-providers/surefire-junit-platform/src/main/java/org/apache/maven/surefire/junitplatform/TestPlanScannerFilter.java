@@ -20,7 +20,6 @@ package org.apache.maven.surefire.junitplatform;
 
 import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.junit.platform.engine.Filter;
-import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestPlan;
 
@@ -32,11 +31,11 @@ import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.r
  */
 final class TestPlanScannerFilter implements ScannerFilter {
 
-    private final Launcher launcher;
+    private final LauncherAdapter launcher;
 
     private final Filter<?>[] includeAndExcludeFilters;
 
-    TestPlanScannerFilter(Launcher launcher, Filter<?>[] includeAndExcludeFilters) {
+    TestPlanScannerFilter(LauncherAdapter launcher, Filter<?>[] includeAndExcludeFilters) {
         this.launcher = launcher;
         this.includeAndExcludeFilters = includeAndExcludeFilters;
     }
