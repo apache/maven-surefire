@@ -30,6 +30,7 @@
   <properties>
     <maven.compiler.release>${java.specification.version}</maven.compiler.release>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- TODO Update to 6.0.0-M2 once it's released -->
     <junit.version>6.0.0-SNAPSHOT</junit.version>
   </properties>
 
@@ -53,4 +54,19 @@
       </plugin>
     </plugins>
   </build>
+
+  <!-- TODO Remove when updating to 6.0.0-M2 above -->
+  <repositories>
+    <repository>
+      <id>maven-central-snapshots</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
 </project>
