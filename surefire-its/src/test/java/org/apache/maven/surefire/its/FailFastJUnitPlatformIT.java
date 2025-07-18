@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
 import static java.lang.Integer.parseInt;
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -60,6 +62,16 @@ public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
     @Override
     protected String withProvider() {
         return "junit-platform";
+    }
+
+    @Override
+    @Test
+    public void test() throws Exception {
+        if (!"unsupported-version".equals(description)) {
+            // JUnit 6.0.0 requires Java 17+
+            assumeJavaVersion(17);
+        }
+        super.test();
     }
 
     @Override
