@@ -32,6 +32,7 @@ import org.apache.maven.surefire.api.report.RunMode;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
@@ -62,11 +63,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
     private final TestReportListener<TestOutputReportEntry> runListener;
+    private final Stoppable stoppable;
     private volatile TestPlan testPlan;
     private volatile RunMode runMode;
 
-    RunListenerAdapter(TestReportListener<TestOutputReportEntry> runListener) {
+    RunListenerAdapter(TestReportListener<TestOutputReportEntry> runListener, Stoppable stoppable) {
         this.runListener = runListener;
+        this.stoppable = stoppable;
     }
 
     @Override
@@ -149,6 +152,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
                     failures.put(testIdentifier, testExecutionResult);
+                    fireStopEvent();
                     break;
                 default:
                     if (isTest) {
@@ -394,5 +398,11 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     public void writeTestOutput(OutputReportEntry reportEntry) {
         Long testRunId = classMethodIndexer.getLocalIndex();
         runListener.writeTestOutput(new TestOutputReportEntry(reportEntry, runMode, testRunId));
+    }
+
+    private void fireStopEvent() {
+        if (runMode == RunMode.NORMAL_RUN) {
+            stoppable.fireStopEvent();
+        }
     }
 }

@@ -27,12 +27,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.report.RunListener;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
@@ -70,7 +72,6 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.apache.maven.surefire.junitplatform.ConcreteLauncherSessionAdapter.createLauncherSessionWithListeners;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -101,7 +102,7 @@ public class JUnitPlatformProviderTest {
     public void shouldFailClassOnBeforeAll() throws Exception {
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
 
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -141,7 +142,7 @@ public class JUnitPlatformProviderTest {
     public void shouldErrorClassOnBeforeAll() throws Exception {
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
 
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -400,7 +401,7 @@ public class JUnitPlatformProviderTest {
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -425,7 +426,7 @@ public class JUnitPlatformProviderTest {
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -461,7 +462,7 @@ public class JUnitPlatformProviderTest {
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -502,7 +503,7 @@ public class JUnitPlatformProviderTest {
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -537,7 +538,7 @@ public class JUnitPlatformProviderTest {
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -577,7 +578,7 @@ public class JUnitPlatformProviderTest {
 
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
-        RunListenerAdapter adapter = new RunListenerAdapter(listener);
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.setRunMode(NORMAL_RUN);
 
         JUnitPlatformProvider provider =
@@ -693,8 +694,8 @@ public class JUnitPlatformProviderTest {
     public void outputIsCaptured() throws Exception {
         TestReportListener<TestOutputReportEntry> runListener = runListenerMock();
 
-        LauncherSessionFactory launcherSessionFactory =
-                launcherSessionFactoryWithLauncherSessionListener(new VerboseLauncherSessionListener());
+        LauncherSessionFactory launcherSessionFactory = launcherSessionConfig(
+                config -> config.addLauncherSessionListeners(new VerboseLauncherSessionListener()));
         JUnitPlatformProvider provider =
                 new JUnitPlatformProvider(providerParametersMock(runListener), launcherSessionFactory);
 
@@ -1145,23 +1146,27 @@ public class JUnitPlatformProviderTest {
             List<LauncherSession> createdSessions, TestExecutionListener... listeners) {
         LauncherConfig launcherConfig =
                 LauncherConfig.builder().addTestExecutionListeners(listeners).build();
-        return () -> {
+        return cancellationToken -> {
             LauncherSession session = spy(LauncherFactory.openSession(launcherConfig));
             createdSessions.add(session);
-            return new ConcreteLauncherSessionAdapter(session);
+            return createLauncherSessionAdapter(session, cancellationToken);
         };
     }
 
-    private static LauncherSessionFactory launcherSessionFactoryWithLauncherSessionListener(
-            LauncherSessionListener launcherSessionListener) {
-        LauncherConfig launcherConfig = LauncherConfig.builder()
-                .addLauncherSessionListeners(launcherSessionListener)
-                .build();
+    private static LauncherSessionFactory createLauncherSessionWithListeners(TestExecutionListener... listeners) {
+        return launcherSessionConfig(config -> config.addTestExecutionListeners(listeners));
+    }
 
-        return () -> {
-            LauncherSession session = LauncherFactory.openSession(launcherConfig);
-            return new ConcreteLauncherSessionAdapter(session);
-        };
+    private static LauncherSessionFactory launcherSessionConfig(UnaryOperator<LauncherConfig.Builder> configurer) {
+        LauncherConfig launcherConfig =
+                configurer.apply(LauncherConfig.builder()).build();
+        return cancellationToken ->
+                createLauncherSessionAdapter(LauncherFactory.openSession(launcherConfig), cancellationToken);
+    }
+
+    private static LauncherSessionAdapter createLauncherSessionAdapter(
+            LauncherSession session, CancellationTokenAdapter cancellationToken) {
+        return new LauncherSessionAdapter(session, session.getLauncher(), cancellationToken);
     }
 
     static class TestClass1 {
