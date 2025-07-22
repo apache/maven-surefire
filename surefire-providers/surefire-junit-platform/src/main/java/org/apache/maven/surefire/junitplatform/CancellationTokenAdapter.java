@@ -48,6 +48,7 @@ class CancellationTokenAdapter {
     }
 
     void cancel() {
-        ReflectionUtils.invokeGetter(delegate, "cancel");
+        Method cancelMethod = ReflectionUtils.getMethod(CANCELLATION_TOKEN_CLASS, "cancel");
+        ReflectionUtils.invokeMethodWithArray(delegate, cancelMethod);
     }
 }
