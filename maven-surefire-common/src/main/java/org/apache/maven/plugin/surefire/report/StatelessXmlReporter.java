@@ -38,7 +38,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.apache.maven.surefire.shared.utils.xml.PrettyPrintXMLWriter;
 import org.apache.maven.surefire.shared.utils.xml.XMLWriter;
 
@@ -415,14 +414,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             ppw.addAttribute("group", report.getGroup());
         }
 
-        String className;
-        if (StringUtils.isBlank(report.getSourceText())) {
-            className = phrasedClassName
-                    ? report.getReportSourceName(reportNameSuffix)
-                    : report.getSourceName(reportNameSuffix);
-        } else {
-            className = report.getSourceText();
-        }
+        String className = phrasedClassName
+                ? report.getReportSourceName(reportNameSuffix)
+                : report.getSourceName(reportNameSuffix);
         if (className != null) {
             ppw.addAttribute("classname", extraEscapeAttribute(className));
         }
