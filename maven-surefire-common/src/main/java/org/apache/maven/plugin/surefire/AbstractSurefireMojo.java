@@ -2077,7 +2077,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         // SUREFIRE-1643 we can force this here as junit5 will need this for multi thread test
         ReporterFactoryOptions reporterFactoryOptions = new ReporterFactoryOptions();
         if ("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider".equals(providerInfo.getProviderName())) {
-            reporterFactoryOptions.setStatPerSourceName(isJunitPlatoformParallelExecutionEnabled());
+            reporterFactoryOptions.setStatPerSourceName(isJunitPlatformParallelExecutionEnabled());
         }
         return new StartupReportConfiguration(
                 isUseFile(),
@@ -2101,7 +2101,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 reporterFactoryOptions);
     }
 
-    private boolean isJunitPlatoformParallelExecutionEnabled() {
+    private boolean isJunitPlatformParallelExecutionEnabled() {
         Properties properties = getProperties();
         if (properties != null) {
             String configurationParameters = (String) properties.get("configurationParameters");
