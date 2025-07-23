@@ -33,7 +33,7 @@
 
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <its.forkCount>1C</its.forkCount>
+    <its.forkCount>0.6C</its.forkCount>
     <its.threadCount>1</its.threadCount>
   </properties>
 
