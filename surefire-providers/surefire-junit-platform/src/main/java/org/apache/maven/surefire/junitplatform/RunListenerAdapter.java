@@ -284,17 +284,14 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         return new PojoStackTraceWriter(realClassName, realMethodName, throwable);
     }
 
-
     private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
-        if(!testIdentifier.getParentIdObject().isPresent()) {
+        if (!testIdentifier.getParentIdObject().isPresent()) {
             return testIdentifier;
         }
-        TestIdentifier parent = testPlan.getTestIdentifier(testIdentifier.getParentIdObject().get());
-        return !parent.getParentIdObject().isPresent()
-                ? testIdentifier
-                : findTopParent(parent);
+        TestIdentifier parent =
+                testPlan.getTestIdentifier(testIdentifier.getParentIdObject().get());
+        return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
     }
-
 
     /**
      * <ul>
@@ -313,8 +310,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         // without parent and with ClassSource
         Optional<String> classLevelName = Optional.empty();
         TestIdentifier parent = findTopParent(testIdentifier);
-        if(parent != null && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
-            ClassSource classSource = (ClassSource)parent.getSource().get();
+        if (parent != null
+                && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
+            ClassSource classSource = (ClassSource) parent.getSource().get();
             classLevelName = Optional.of(classSource.getClassName());
         }
 
