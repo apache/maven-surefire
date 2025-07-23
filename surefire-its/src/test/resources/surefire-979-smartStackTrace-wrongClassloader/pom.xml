@@ -18,11 +18,13 @@
     </properties>
 
     <build>
+      <pluginManagement>
         <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
-            </plugin>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${surefire.version}</version>
+          </plugin>
         </plugins>
+      </pluginManagement>
     </build>
 </project>
