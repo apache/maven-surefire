@@ -288,6 +288,18 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         return new PojoStackTraceWriter(realClassName, realMethodName, throwable);
     }
 
+
+    private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
+        if(!testIdentifier.getParentIdObject().isPresent()) {
+            return testIdentifier;
+        }
+        TestIdentifier parent = testPlan.getTestIdentifier(testIdentifier.getParentIdObject().get());
+        return !parent.getParentIdObject().isPresent()
+                ? testIdentifier
+                : findTopParent(parent);
+    }
+
+
     /**
      * <ul>
      *     <li>[0] class name - used in stacktrace parser</li>
@@ -300,6 +312,16 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
      * @return 4 elements string array
      */
     private String[] toClassMethodName(TestIdentifier testIdentifier) {
+
+        // find the first class or method source in the hierarchy just below the root level
+        // without parent and with ClassSource
+        Optional<String> classLevelName = Optional.empty();
+        TestIdentifier parent = findTopParent(testIdentifier);
+        if(parent != null && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
+            ClassSource classSource = (ClassSource)parent.getSource().get();
+            classLevelName = Optional.of(classSource.getClassName());
+        }
+
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
 
@@ -356,7 +378,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             //     param     ||  m()[1]  | [1] <param>
             //  param+displ  ||  m()[1]  |   displ
 
-            return new String[] {source[0], source[1], methodDesc, methodDisp};
+            return new String[] {classLevelName.orElseGet(() -> source[0]), source[1], methodDesc, methodDisp};
         } else if (testSource.filter(ClassSource.class::isInstance).isPresent()) {
             List<String> parentClassDisplays = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> identifier
@@ -374,12 +396,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String className = classSource.getClassName();
             String simpleClassName = className.substring(1 + className.lastIndexOf('.'));
             String source = classDisplay.replace(' ', '$').equals(simpleClassName) ? className : classDisplay;
-            return new String[] {className, source, null, null};
+            return new String[] {classLevelName.orElse(className), source, null, null};
         } else {
             String source = testPlan.getParent(testIdentifier)
                     .map(TestIdentifier::getDisplayName)
                     .orElse(display);
-            return new String[] {source, source, display, display};
+            return new String[] {classLevelName.orElse(source), source, display, display};
         }
     }
 
