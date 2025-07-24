@@ -289,7 +289,10 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             return testIdentifier;
         }
         TestIdentifier parent =
-                testPlan.getTestIdentifier(testIdentifier.getParentIdObject().get());
+                // Get the parent test identifier using the parent ID object is from 1.10
+                // use deprecated method
+                testPlan.getTestIdentifier(
+                        testIdentifier.getParentIdObject().get().toString());
         return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
     }
 
