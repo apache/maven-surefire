@@ -9,7 +9,7 @@
     <groupId>surefire-979</groupId>
     <artifactId>module2</artifactId>
     <version>1.0</version>
-    <name>surefire-979</name>
+    <name>surefire-979-test</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
