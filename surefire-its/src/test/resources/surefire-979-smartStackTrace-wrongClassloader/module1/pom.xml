@@ -1,20 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-      <groupId>test</groupId>
-      <artifactId>surefire-979</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-    </parent>
     <groupId>surefire-979</groupId>
     <artifactId>module1</artifactId>
     <version>1.0</version>
     <name>surefire-979-base</name>
-
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -29,5 +19,14 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <build>
+      <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+        </plugin>
+      </plugins>
+    </build>
 
 </project>
