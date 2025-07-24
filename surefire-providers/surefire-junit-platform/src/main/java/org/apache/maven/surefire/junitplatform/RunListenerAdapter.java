@@ -379,7 +379,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             //     param     ||  m()[1]  | [1] <param>
             //  param+displ  ||  m()[1]  |   displ
 
-            return new String[] {classLevelName.orElseGet(() -> source[0]), source[1], methodDesc, methodDisp};
+            return new String[] {classLevelName.orElse(source[0]), source[1], methodDesc, methodDisp};
         } else if (testSource.filter(ClassSource.class::isInstance).isPresent()) {
             List<String> parentClassDisplays = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> identifier
