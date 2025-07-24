@@ -18,6 +18,7 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -35,11 +36,13 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -285,7 +288,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
-        if (!testIdentifier.getParentIdObject().isPresent()) {
+        if (!hasParentId(testIdentifier)) {
             return testIdentifier;
         }
         TestIdentifier parent =
@@ -294,6 +297,26 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 testPlan.getTestIdentifier(
                         testIdentifier.getParentIdObject().get().toString());
         return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
+    }
+
+    /**
+     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8
+     *
+     * @param testIdentifier the test identifier to check
+     * @return true if the test identifier has a parent ID, false otherwise
+     */
+    private boolean hasParentId(TestIdentifier testIdentifier) {
+        Method getParentIdObjectMethod = ReflectionUtils.tryGetMethod(testIdentifier.getClass(), "getParentIdObject");
+        if (getParentIdObjectMethod == null) {
+            return false;
+        }
+        try {
+            Optional<UniqueId> uniqueIdOptional = (Optional<UniqueId>) getParentIdObjectMethod.invoke(testIdentifier);
+            return uniqueIdOptional.isPresent();
+        } catch (Throwable ignore) {
+            // ignore this
+        }
+        return false;
     }
 
     /**
