@@ -136,10 +136,10 @@ public class ParallelComputerBuilderTest {
 
         ParallelComputerBuilder.PC computer = (ParallelComputerBuilder.PC) parallelComputerBuilder.buildComputer();
         final JUnitCore core = new JUnitCore();
-        final long t1 = systemMillis();
+        //        final long t1 = systemMillis();
         final Result result = core.run(computer, TestSuite.class);
-        final long t2 = systemMillis();
-        final long timeSpent = t2 - t1;
+        //        final long t2 = systemMillis();
+        //        final long timeSpent = t2 - t1;
 
         assertThat(computer.getSuites().size(), is(1));
         assertThat(computer.getClasses().size(), is(0));
