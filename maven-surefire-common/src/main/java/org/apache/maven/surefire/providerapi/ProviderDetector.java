@@ -19,6 +19,9 @@
 package org.apache.maven.surefire.providerapi;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -27,8 +30,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.provider.SurefireProvider;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +41,12 @@ import static java.util.stream.Collectors.toList;
 /**
  * @author Kristian Rosenvold
  */
-@Component(role = ProviderDetector.class)
+@Singleton
+@Named
 public final class ProviderDetector {
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Requirement
+    @Inject
     private ServiceLoader serviceLoader;
 
     @Nonnull
