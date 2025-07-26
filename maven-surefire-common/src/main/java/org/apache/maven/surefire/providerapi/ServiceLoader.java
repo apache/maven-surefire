@@ -19,6 +19,8 @@
 package org.apache.maven.surefire.providerapi;
 
 import javax.annotation.Nonnull;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,8 +30,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.codehaus.plexus.component.annotations.Component;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isJavaIdentifierStart;
@@ -44,7 +44,8 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.getConstructor;
  *
  * @since 2.20
  */
-@Component(role = ServiceLoader.class)
+@Singleton
+@Named
 public class ServiceLoader {
 
     @Nonnull
