@@ -110,8 +110,14 @@ public abstract class AbstractFailFastIT extends SurefireJUnit4IntegrationTestCa
     @Test
     public void test() throws Exception {
         String cls = useProcessPipes ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        prepare(description, profile, properties)
+        OutputValidator validator = prepare(description, profile, properties);
+        validator
                 .assertTestSuiteResults(total, errors, failures, skipped)
                 .assertThatLogLine(containsString("Found implementation of fork node factory: " + cls), equalTo(1));
+        performExtraChecks(validator);
+    }
+
+    protected void performExtraChecks(OutputValidator validator) throws Exception {
+        // may be overriden in subclasses
     }
 }

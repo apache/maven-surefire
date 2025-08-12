@@ -28,12 +28,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
+import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
+import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.ReporterFactory;
+import org.apache.maven.surefire.api.report.Stoppable;
+import org.apache.maven.surefire.api.report.TestOutputReportEntry;
+import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
@@ -42,7 +49,6 @@ import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.EngineFilter;
-import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -64,6 +70,7 @@ import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyWildcardFilter;
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
+import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
@@ -85,6 +92,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private final Map<String, String> configurationParameters;
 
+    private final CommandChainReader commandsReader;
+
     public JUnitPlatformProvider(ProviderParameters parameters) {
         this(parameters, LauncherSessionFactory.DEFAULT);
     }
@@ -94,6 +103,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
         configurationParameters = newConfigurationParameters();
+        // don't start a thread in CommandReader while we are in in-plugin process
+        commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
     }
 
     @Override
@@ -107,13 +118,16 @@ public class JUnitPlatformProvider extends AbstractProvider {
     public RunResult invoke(Object forkTestSet) throws TestSetFailedException, ReporterException {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
-        RunListenerAdapter adapter = new RunListenerAdapter(reporterFactory.createTestReportListener());
+        TestReportListener<TestOutputReportEntry> runListener = reporterFactory.createTestReportListener();
+        CancellationTokenAdapter cancellationToken = CancellationTokenAdapter.tryCreate();
+        Stoppable stoppable = prepareFailFastSupport(cancellationToken, runListener);
+        RunListenerAdapter adapter = new RunListenerAdapter(runListener, stoppable);
         adapter.setRunMode(NORMAL_RUN);
         startCapture(adapter);
+        setupJunitLogger();
 
-        try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession()) {
-            setupJunitLogger();
-            Launcher launcher = launcherSession.getLauncher();
+        try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession(cancellationToken)) {
+            LauncherAdapter launcher = launcherSession.getLauncher();
             if (forkTestSet instanceof TestsToRun) {
                 invokeAllTests(launcher, (TestsToRun) forkTestSet, adapter);
             } else if (forkTestSet instanceof Class) {
@@ -136,14 +150,20 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private TestsToRun scanClasspath(Launcher launcher) {
+    private TestsToRun scanClasspath(LauncherAdapter launcher) {
         TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, filters);
         ScanResult scanResult = parameters.getScanResult();
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
     }
 
-    private void invokeAllTests(Launcher launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
+    private void invokeAllTests(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter)
+            throws TestSetFailedException {
+
+        if (commandsReader != null) {
+            commandsReader.addShutdownListener(__ -> testsToRun.markTestSetFinished());
+            commandsReader.awaitStarted();
+        }
 
         execute(launcher, testsToRun, adapter);
 
@@ -156,7 +176,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 LauncherDiscoveryRequest discoveryRequest = buildLauncherDiscoveryRequestForRerunFailures(adapter);
                 // Reset adapter's recorded failures and invoke the failed tests again
                 adapter.reset();
-                launcher.execute(discoveryRequest, adapter);
+                launcher.executeWithoutCancellationToken(discoveryRequest, adapter);
                 // If no tests fail in the rerun, we're done
                 if (!adapter.hasFailingTests()) {
                     break;
@@ -165,7 +185,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private void execute(Launcher launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
+    private void execute(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
         // parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS)
         // add this LegacyXmlReportGeneratingListener ?
         //            adapter,
@@ -179,31 +199,28 @@ public class JUnitPlatformProvider extends AbstractProvider {
             List<DiscoverySelector> selectors = new ArrayList<>();
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
 
-            LauncherDiscoveryRequestBuilder builder = request()
-                    .filters(filters)
-                    .configurationParameters(configurationParameters)
-                    .selectors(selectors);
+            LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectors);
             launcher.execute(builder.build(), testExecutionListeners);
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
-                LauncherDiscoveryRequestBuilder builder = request()
-                        .filters(filters)
-                        .configurationParameters(configurationParameters)
-                        .selectors(selectClass(c.getName()));
+                LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectClass(c.getName()));
                 launcher.execute(builder.build(), testExecutionListeners);
             });
         }
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
-        LauncherDiscoveryRequestBuilder builder =
-                request().filters(filters).configurationParameters(configurationParameters);
+        LauncherDiscoveryRequestBuilder builder = newRequest();
         // Iterate over recorded failures
         for (TestIdentifier identifier :
                 new LinkedHashSet<>(adapter.getFailures().keySet())) {
             builder.selectors(selectUniqueId(identifier.getUniqueId()));
         }
         return builder.build();
+    }
+
+    private LauncherDiscoveryRequestBuilder newRequest() {
+        return request().filters(filters).configurationParameters(configurationParameters);
     }
 
     private Filter<?>[] newFilters() {
@@ -264,5 +281,45 @@ public class JUnitPlatformProvider extends AbstractProvider {
                         .filter(StringUtils::isNotBlank)
                         .map(String::trim)
                         .collect(toList()));
+    }
+
+    private Stoppable prepareFailFastSupport(
+            CancellationTokenAdapter cancellationToken, TestReportListener<?> runListener) {
+        int skipAfterFailureCount = parameters.getSkipAfterFailureCount();
+        if (skipAfterFailureCount > 0) {
+
+            AtomicBoolean loggedFailedAttempt = new AtomicBoolean(false);
+            Runnable cancellation =
+                    () -> cancelExecution(cancellationToken, runListener, loggedFailedAttempt, skipAfterFailureCount);
+
+            if (commandsReader != null) {
+                // Register for signals from other forks
+                commandsReader.addSkipNextTestsListener(__ -> cancellation.run());
+            }
+
+            AtomicInteger remainingFailures = new AtomicInteger(skipAfterFailureCount);
+            return () -> {
+                runIfZeroCountDown(cancellation, remainingFailures);
+                runListener.testExecutionSkippedByUser();
+            };
+        }
+        return Stoppable.NOOP;
+    }
+
+    private static void cancelExecution(
+            CancellationTokenAdapter cancellationToken,
+            ConsoleLogger consoleLogger,
+            AtomicBoolean loggedFailedAttempt,
+            int skipAfterFailureCount) {
+
+        if (cancellationToken != null) {
+            cancellationToken.cancel();
+        } else if (loggedFailedAttempt.compareAndSet(false, true)) {
+            consoleLogger.warning(String.format(
+                            "An attempt was made to cancel the current test run due to the configured skipAfterFailureCount of %d. ",
+                            skipAfterFailureCount)
+                    + "However, the version of JUnit Platform on the runtime classpath does not support cancellation. "
+                    + "Please update to 6.0.0 or later!");
+        }
     }
 }

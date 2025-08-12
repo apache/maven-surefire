@@ -18,16 +18,36 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import org.apache.maven.surefire.api.util.SurefireReflectionException;
 import org.junit.platform.launcher.Launcher;
 
 /**
  * Launcher proxy which delays the most possible the initialization of the real JUnit
  * Launcher in order to avoid stream/stdout corruption due to early logging.
  */
-interface LauncherSessionAdapter extends AutoCloseable {
+class LauncherSessionAdapter implements AutoCloseable {
 
-    Launcher getLauncher();
+    private final AutoCloseable launcherSession;
+    private final LauncherAdapter launcher;
+
+    LauncherSessionAdapter(
+            AutoCloseable launcherSession, Launcher launcher, CancellationTokenAdapter cancellationToken) {
+        this.launcherSession = launcherSession;
+        this.launcher = new LauncherAdapter(launcher, cancellationToken);
+    }
+
+    LauncherAdapter getLauncher() {
+        return launcher;
+    }
 
     @Override
-    void close();
+    public void close() {
+        if (launcherSession != null) {
+            try {
+                launcherSession.close();
+            } catch (Exception e) {
+                throw new SurefireReflectionException(e);
+            }
+        }
+    }
 }

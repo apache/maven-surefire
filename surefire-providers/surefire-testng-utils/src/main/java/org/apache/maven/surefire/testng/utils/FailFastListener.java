@@ -18,6 +18,7 @@
  */
 package org.apache.maven.surefire.testng.utils;
 
+import org.apache.maven.surefire.api.report.Stoppable;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;

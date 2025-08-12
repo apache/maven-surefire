@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
+import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
@@ -95,7 +96,7 @@ public class RunListenerAdapterTest {
     @Before
     public void setUp() {
         listener = mock(TestReportListener.class);
-        adapter = new RunListenerAdapter(listener);
+        adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
         adapter.testPlanExecutionStarted(TestPlan.from(emptyList(), CONFIG_PARAMS, OUTPUT_DIRECTORY));
         adapter.setRunMode(NORMAL_RUN);
     }
