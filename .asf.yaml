@@ -31,7 +31,11 @@ github:
     squash:  true
     merge:   false
     rebase:  true
-  del_branch_on_merge: true
+  protected_branches:
+    master: { }
+    surefire-3.4.x: { }
+  pull_requests:
+    del_branch_on_merge: true
   features:
     issues: true
 notifications:
