@@ -944,7 +944,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         // Stuff that should have been final
         setupStuff();
         Platform platform = PLATFORM.withJdkExecAttributesForTests(getEffectiveJvm());
-        Thread shutdownThread = new Thread(platform::setShutdownState);
+        Thread shutdownThread = new Thread(platform::setShutdownState, "Surefire Shutdown Hook");
         addShutDownHook(shutdownThread);
         try {
             if (verifyParameters() && !hasExecutedBefore()) {
