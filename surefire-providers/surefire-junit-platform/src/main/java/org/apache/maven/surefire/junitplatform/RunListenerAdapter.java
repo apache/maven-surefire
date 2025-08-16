@@ -18,6 +18,7 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +37,13 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -220,11 +223,16 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String reason,
             Integer elapsedTime) {
         String[] classMethodName = toClassMethodName(testIdentifier);
+
         String className = classMethodName[0];
+
         String classText = classMethodName[1];
         if (Objects.equals(className, classText)) {
             classText = null;
         }
+
+        // classText = classMethodName[0]; // testIdentifier.getLegacyReportingName();
+
         boolean failed = testExecutionResult == null || testExecutionResult.getStatus() == FAILED;
         String methodName = failed || testIdentifier.isTest() ? classMethodName[2] : null;
         String methodText = failed || testIdentifier.isTest() ? classMethodName[3] : null;
@@ -283,6 +291,38 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         return new PojoStackTraceWriter(realClassName, realMethodName, throwable);
     }
 
+    private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
+        if (!hasParentId(testIdentifier)) {
+            return testIdentifier;
+        }
+        TestIdentifier parent =
+                // Get the parent test identifier using the parent ID object is from 1.10
+                // use deprecated method
+                testPlan.getTestIdentifier(
+                        testIdentifier.getParentIdObject().get().toString());
+        return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
+    }
+
+    /**
+     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8
+     *
+     * @param testIdentifier the test identifier to check
+     * @return true if the test identifier has a parent ID, false otherwise
+     */
+    private boolean hasParentId(TestIdentifier testIdentifier) {
+        Method getParentIdObjectMethod = ReflectionUtils.tryGetMethod(testIdentifier.getClass(), "getParentIdObject");
+        if (getParentIdObjectMethod == null) {
+            return false;
+        }
+        try {
+            Optional<UniqueId> uniqueIdOptional = (Optional<UniqueId>) getParentIdObjectMethod.invoke(testIdentifier);
+            return uniqueIdOptional.isPresent();
+        } catch (Throwable ignore) {
+            // ignore this
+        }
+        return false;
+    }
+
     /**
      * <ul>
      *     <li>[0] class name - used in stacktrace parser</li>
@@ -295,6 +335,17 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
      * @return 4 elements string array
      */
     private String[] toClassMethodName(TestIdentifier testIdentifier) {
+
+        // find the first class or method source in the hierarchy just below the root level
+        // without parent and with ClassSource
+        Optional<String> classLevelName = Optional.empty();
+        TestIdentifier parent = findTopParent(testIdentifier);
+        if (parent != null
+                && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
+            ClassSource classSource = (ClassSource) parent.getSource().get();
+            classLevelName = Optional.of(classSource.getClassName());
+        }
+
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
 
@@ -351,7 +402,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             //     param     ||  m()[1]  | [1] <param>
             //  param+displ  ||  m()[1]  |   displ
 
-            return new String[] {source[0], source[1], methodDesc, methodDisp};
+            return new String[] {classLevelName.orElse(source[0]), source[1], methodDesc, methodDisp};
         } else if (testSource.filter(ClassSource.class::isInstance).isPresent()) {
             List<String> parentClassDisplays = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> identifier
@@ -369,12 +420,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String className = classSource.getClassName();
             String simpleClassName = className.substring(1 + className.lastIndexOf('.'));
             String source = classDisplay.replace(' ', '$').equals(simpleClassName) ? className : classDisplay;
-            return new String[] {className, source, null, null};
+            return new String[] {classLevelName.orElse(className), source, null, null};
         } else {
             String source = testPlan.getParent(testIdentifier)
                     .map(TestIdentifier::getDisplayName)
                     .orElse(display);
-            return new String[] {source, source, display, display};
+            return new String[] {classLevelName.orElse(source), source, display, display};
         }
     }
 
