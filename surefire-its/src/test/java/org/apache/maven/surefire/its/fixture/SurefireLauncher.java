@@ -86,7 +86,7 @@ public final class SurefireLauncher {
         jacocoAgent = jacocoAgent.replace("\"", "");
         goals.add("-Djacoco.agent=" + jacocoAgent);
         goals.add("-nsu");
-
+        goals.add("-Dmaven.build.cache.enabled=false");
         return goals;
     }
 
