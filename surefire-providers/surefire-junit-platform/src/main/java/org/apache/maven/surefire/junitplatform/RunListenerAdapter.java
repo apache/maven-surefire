@@ -222,20 +222,23 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             Map<String, String> systemProperties,
             String reason,
             Integer elapsedTime) {
-        String[] classMethodName = toClassMethodName(testIdentifier);
+        ResultDisplay classMethodName = toClassMethodName(testIdentifier);
 
-        String className = classMethodName[0];
+        String className = classMethodName.getClassName();
 
-        String classText = classMethodName[1];
+        String classText = classMethodName.getDisplayName();
         if (Objects.equals(className, classText)) {
             classText = null;
+        }
+        if (classMethodName.getClassDisplayName() != null) {
+            classText = classMethodName.getClassDisplayName();
         }
 
         // classText = classMethodName[0]; // testIdentifier.getLegacyReportingName();
 
         boolean failed = testExecutionResult == null || testExecutionResult.getStatus() == FAILED;
-        String methodName = failed || testIdentifier.isTest() ? classMethodName[2] : null;
-        String methodText = failed || testIdentifier.isTest() ? classMethodName[3] : null;
+        String methodName = failed || testIdentifier.isTest() ? classMethodName.getMethodSignature() : null;
+        String methodText = failed || testIdentifier.isTest() ? classMethodName.getMethodDisplayName() : null;
         if (Objects.equals(methodName, methodText)) {
             methodText = null;
         }
@@ -334,7 +337,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
      * @param testIdentifier a class or method
      * @return 4 elements string array
      */
-    private String[] toClassMethodName(TestIdentifier testIdentifier) {
+    private ResultDisplay toClassMethodName(TestIdentifier testIdentifier) {
 
         // find the first class or method source in the hierarchy just below the root level
         // without parent and with ClassSource
@@ -346,6 +349,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             classLevelName = Optional.of(classSource.getClassName());
         }
 
+        String classDisplayName = testIdentifier
+                .getSource()
+                .filter(MethodSource.class::isInstance)
+                .map(s -> ((MethodSource) s).getClassName())
+                .orElse(null);
+
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
 
@@ -353,13 +362,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             MethodSource methodSource = testSource.map(MethodSource.class::cast).get();
             String realClassName = methodSource.getClassName();
 
-            String[] source = collectAllTestIdentifiersInHierarchy(testIdentifier)
+            ResultDisplay source = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(i ->
                             i.getSource().map(ClassSource.class::isInstance).orElse(false))
                     .findFirst()
                     .map(this::toClassMethodName)
-                    .map(s -> new String[] {s[0], s[1]})
-                    .orElse(new String[] {realClassName, realClassName});
+                    .map(s -> new ResultDisplay(s.getClassName(), s.getDisplayName(), null, null, classDisplayName))
+                    .orElse(new ResultDisplay(realClassName, realClassName, null, null, classDisplayName));
 
             String parentDisplay = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> identifier
@@ -402,7 +411,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             //     param     ||  m()[1]  | [1] <param>
             //  param+displ  ||  m()[1]  |   displ
 
-            return new String[] {classLevelName.orElse(source[0]), source[1], methodDesc, methodDisp};
+            return new ResultDisplay(
+                    classLevelName.orElse(source.getClassName()),
+                    source.getDisplayName(),
+                    methodDesc,
+                    methodDisp,
+                    classDisplayName);
         } else if (testSource.filter(ClassSource.class::isInstance).isPresent()) {
             List<String> parentClassDisplays = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> identifier
@@ -420,12 +434,49 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String className = classSource.getClassName();
             String simpleClassName = className.substring(1 + className.lastIndexOf('.'));
             String source = classDisplay.replace(' ', '$').equals(simpleClassName) ? className : classDisplay;
-            return new String[] {classLevelName.orElse(className), source, null, null};
+            return new ResultDisplay(classLevelName.orElse(className), source, null, null, classDisplayName);
         } else {
             String source = testPlan.getParent(testIdentifier)
                     .map(TestIdentifier::getDisplayName)
                     .orElse(display);
-            return new String[] {classLevelName.orElse(source), source, display, display};
+            return new ResultDisplay(classLevelName.orElse(source), source, display, display, classDisplayName);
+        }
+    }
+
+    private static class ResultDisplay {
+        private String className, displayName, methodSignature, methodDisplayName, classDisplayName;
+
+        ResultDisplay(
+                String className,
+                String displayName,
+                String methodSignature,
+                String methodDisplayName,
+                String classDisplayName) {
+            this.className = className;
+            this.displayName = displayName;
+            this.methodSignature = methodSignature;
+            this.methodDisplayName = methodDisplayName;
+            this.classDisplayName = classDisplayName;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getMethodSignature() {
+            return methodSignature;
+        }
+
+        public String getMethodDisplayName() {
+            return methodDisplayName;
+        }
+
+        public String getClassDisplayName() {
+            return classDisplayName;
         }
     }
 

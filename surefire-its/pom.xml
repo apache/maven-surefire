@@ -33,10 +33,12 @@
 
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <its.forkCount>0.6C</its.forkCount>
+    <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
+    <its.forkCount>0.5C</its.forkCount>
     <its.threadCount>1</its.threadCount>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
+    <maven.javadoc.skip>true</maven.javadoc.skip>
   </properties>
 
   <dependencies>
@@ -212,7 +214,6 @@
               <runOrder>alphabetical</runOrder>
               <forkCount>${its.forkCount}</forkCount>
               <threadCount>${its.threadCount}</threadCount>
-              <rerunFailingTestsCount>1</rerunFailingTestsCount>
               <perCoreThreadCount>false</perCoreThreadCount>
               <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
               <!-- Pass current surefire version to the main suite so that it -->
@@ -246,6 +247,7 @@
       <properties>
         <its.forkCount>0.4C</its.forkCount>
         <its.threadCount>1</its.threadCount>
+        <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
       </properties>
     </profile>
     <profile>
