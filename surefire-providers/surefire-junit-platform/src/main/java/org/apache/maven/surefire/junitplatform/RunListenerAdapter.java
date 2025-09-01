@@ -349,11 +349,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             classLevelName = Optional.of(classSource.getClassName());
         }
 
-        String classDisplayName = testIdentifier
-                .getSource()
-                .filter(MethodSource.class::isInstance)
-                .map(s -> ((MethodSource) s).getClassName())
-                .orElse(null);
+        String classDisplayName = testIdentifier.getDisplayName() != null
+                ? testIdentifier.getDisplayName()
+                : testIdentifier
+                        .getSource()
+                        .filter(MethodSource.class::isInstance)
+                        .map(s -> ((MethodSource) s).getClassName())
+                        .orElse(null);
 
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
