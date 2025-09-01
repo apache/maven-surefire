@@ -41,6 +41,7 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -349,8 +350,15 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             classLevelName = Optional.of(classSource.getClassName());
         }
 
-        String classDisplayName = testIdentifier.getDisplayName() != null
-                ? testIdentifier.getDisplayName()
+        Optional<DisplayName> displayNameAnn = testIdentifier
+                .getSource()
+                .filter(ClassSource.class::isInstance)
+                .map(s -> ((ClassSource) s).getJavaClass())
+                .filter(m -> m.isAnnotationPresent(org.junit.jupiter.api.DisplayName.class))
+                .map(method -> method.getAnnotation(org.junit.jupiter.api.DisplayName.class));
+
+        String classDisplayName = displayNameAnn.isPresent()
+                ? displayNameAnn.get().value()
                 : testIdentifier
                         .getSource()
                         .filter(MethodSource.class::isInstance)
