@@ -18,6 +18,7 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -41,7 +42,6 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
@@ -350,20 +350,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             classLevelName = Optional.of(classSource.getClassName());
         }
 
-        Optional<DisplayName> displayNameAnn = testIdentifier
-                .getSource()
-                .filter(ClassSource.class::isInstance)
-                .map(s -> ((ClassSource) s).getJavaClass())
-                .filter(m -> m.isAnnotationPresent(org.junit.jupiter.api.DisplayName.class))
-                .map(method -> method.getAnnotation(org.junit.jupiter.api.DisplayName.class));
+        Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
 
-        String classDisplayName = displayNameAnn.isPresent()
-                ? displayNameAnn.get().value()
-                : testIdentifier
-                        .getSource()
-                        .filter(MethodSource.class::isInstance)
-                        .map(s -> ((MethodSource) s).getClassName())
-                        .orElse(null);
+        String classDisplayName = displayNameTagValue.orElseGet(() -> testIdentifier
+                .getSource()
+                .filter(MethodSource.class::isInstance)
+                .map(s -> ((MethodSource) s).getClassName())
+                .orElse(null));
 
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
@@ -450,6 +443,31 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     .map(TestIdentifier::getDisplayName)
                     .orElse(display);
             return new ResultDisplay(classLevelName.orElse(source), source, display, display, classDisplayName);
+        }
+    }
+
+    private Optional<String> findDisplayNameTagValue(TestIdentifier testIdentifier) {
+        try {
+            Class<? extends Annotation> displayNameClazz = (Class<? extends Annotation>)
+                    Thread.currentThread().getContextClassLoader().loadClass("org.junit.jupiter.api.DisplayName");
+            Optional<?> displayNameAnn = testIdentifier
+                    .getSource()
+                    .filter(ClassSource.class::isInstance)
+                    .map(s -> ((ClassSource) s).getJavaClass())
+                    .filter(m -> m.isAnnotationPresent(displayNameClazz))
+                    .map(method -> method.getAnnotation(displayNameClazz));
+
+            Method valueMethod = displayNameClazz.getMethod("value");
+            return displayNameAnn.map(a -> {
+                try {
+                    return (String) valueMethod.invoke(a);
+                } catch (Throwable e) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            // very old version of JUnit 5, may not have DisplayName annotation
+            return Optional.empty();
         }
     }
 
