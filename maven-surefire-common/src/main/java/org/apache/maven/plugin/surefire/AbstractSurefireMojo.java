@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
@@ -2077,8 +2076,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         // SUREFIRE-1643 we can force this here as junit5 will need this for multi thread test
         ReporterFactoryOptions reporterFactoryOptions = new ReporterFactoryOptions();
         if ("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider".equals(providerInfo.getProviderName())) {
-            reporterFactoryOptions.setStatPerSourceName(
-                    isJunitPlatformParallelExecutionEnabled()); // isJunitPlatformParallelExecutionEnabled());
+            reporterFactoryOptions.setStatPerSourceName(true);
         }
         return new StartupReportConfiguration(
                 isUseFile(),
@@ -2100,26 +2098,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 outReporter,
                 testsetReporter,
                 reporterFactoryOptions);
-    }
-
-    private boolean isJunitPlatformParallelExecutionEnabled() {
-        Properties properties = getProperties();
-        if (properties != null) {
-            String configurationParameters = (String) properties.get("configurationParameters");
-            if (configurationParameters != null) {
-                Properties junitProps = new Properties();
-                try (StringReader reader = new StringReader(configurationParameters)) {
-                    try {
-                        junitProps.load(reader);
-                    } catch (IOException e) {
-                        // this should not happen
-                        throw new RuntimeException(e);
-                    }
-                }
-                return Boolean.parseBoolean((String) junitProps.get("junit.jupiter.execution.parallel.enabled"));
-            }
-        }
-        return false;
     }
 
     private boolean isSpecificTestSpecified() {

@@ -18,9 +18,18 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import javax.xml.transform.Source;
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
+import org.hamcrest.collection.IsIterableWithSize;
+import org.junit.Test;
+import org.w3c.dom.Node;
+import org.xmlunit.builder.Input;
+import org.xmlunit.xpath.JAXPXPathEngine;
+
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -134,7 +143,7 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void junit5Suite() throws Exception {
-        unpack("junit5-suite")
+        OutputValidator outputValidator = unpack("junit5-suite")
                 .executeTest()
                 .verifyErrorFree(1)
                 .verifyTextInLog(
@@ -142,5 +151,15 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
                 .verifyTextInLog("Running pkg.JUnit5Test")
                 .verifyTextInLog("Running pkg.domain.AxTest")
                 .assertThatLogLine(containsString("Running pkg.domain.BxTest"), equalTo(0));
+
+        TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-pkg.JUnit5Tests.xml");
+        xmlReportFile.assertFileExists();
+
+        Source source = Input.fromFile(xmlReportFile.getFile()).build();
+        Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='pkg.domain.AxTest' and @name='test']", source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }
