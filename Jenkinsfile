@@ -25,7 +25,7 @@ properties(
                                   daysToKeepStr: env.BRANCH_NAME == 'master' ? '30' : '14',
                                   numToKeepStr: env.BRANCH_NAME == 'master' ? '20' : '10')
         ),
-        disableConcurrentBuilds()
+        disableConcurrentBuilds(abortPrevious: true)
     ]
 )
 // final def oses = ['linux':'ubuntu && maven', 'windows':'windows-he']
