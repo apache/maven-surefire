@@ -327,6 +327,23 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         return false;
     }
 
+    private TestIdentifier findFirstParentContainerAndSourceClass(TestIdentifier testIdentifier) {
+        if (!hasParentId(testIdentifier)
+                || (testIdentifier.isContainer()
+                        && testIdentifier
+                                .getSource()
+                                .filter(ClassSource.class::isInstance)
+                                .isPresent())) {
+            return testIdentifier;
+        }
+        TestIdentifier parent =
+                // Get the parent test identifier using the parent ID object is from 1.10
+                // use deprecated method
+                testPlan.getTestIdentifier(
+                        testIdentifier.getParentIdObject().get().toString());
+        return findFirstParentContainerAndSourceClass(parent);
+    }
+
     /**
      * <ul>
      *     <li>[0] class name - used in stacktrace parser</li>
@@ -344,36 +361,44 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         // without parent and with ClassSource
         Optional<String> classLevelName = Optional.empty();
         TestIdentifier parent = findTopParent(testIdentifier);
-        Optional<String> classLevelDisplayName = Optional.empty();
+        //        Optional<String> classLevelDisplayName = Optional.empty();
         if (parent != null
                 && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
             ClassSource classSource = (ClassSource) parent.getSource().get();
             classLevelName = Optional.of(classSource.getClassName());
-            classLevelDisplayName =
-                    Optional.ofNullable(findDisplayNameTagValue(parent).orElse(parent.getLegacyReportingName()));
+            //            classLevelDisplayName = findDisplayNameTagValue(parent);
+            // Optional.ofNullable(findDisplayNameTagValue(parent)).orElse(parent.getLegacyReportingName()));
         }
 
-        Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
-        Optional<String> classLevelDisplayNameF = classLevelDisplayName;
-        String classDisplayName = displayNameTagValue.orElseGet(() -> classLevelDisplayNameF.orElse(testIdentifier
-                .getSource()
-                .filter(MethodSource.class::isInstance)
-                .map(s -> ((MethodSource) s).getClassName())
-                .orElse(null)));
+        //        Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
+        //        Optional<String> classLevelDisplayNameF = classLevelDisplayName;
+        //        String classDisplayName = displayNameTagValue.orElseGet(() ->
+        // classLevelDisplayNameF.orElse(testIdentifier
+        //                .getSource()
+        //                .filter(MethodSource.class::isInstance)
+        //                .map(s -> ((MethodSource) s).getClassName())
+        //                .orElse(null)));
 
+        String classDisplayName = null;
+
+        if (testIdentifier.isTest()) {
+            TestIdentifier parentContainer = findFirstParentContainerAndSourceClass(testIdentifier);
+            Optional<String> parentDisplayNameTagValue = findDisplayNameTagValue(parentContainer);
+            classDisplayName = parentDisplayNameTagValue.orElse(parentContainer.getLegacyReportingName());
+        }
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
 
         if (testSource.filter(MethodSource.class::isInstance).isPresent()) {
             MethodSource methodSource = testSource.map(MethodSource.class::cast).get();
             String realClassName = methodSource.getClassName();
-
             ResultDisplay source = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(i ->
                             i.getSource().map(ClassSource.class::isInstance).orElse(false))
                     .findFirst()
                     .map(this::toClassMethodName)
-                    .map(s -> new ResultDisplay(s.getClassName(), s.getDisplayName(), null, null, classDisplayName))
+                    .map(s -> new ResultDisplay(
+                            s.getClassName(), s.getDisplayName(), null, null, s.getClassDisplayName()))
                     .orElse(new ResultDisplay(realClassName, realClassName, null, null, classDisplayName));
 
             String parentDisplay = collectAllTestIdentifiersInHierarchy(testIdentifier)

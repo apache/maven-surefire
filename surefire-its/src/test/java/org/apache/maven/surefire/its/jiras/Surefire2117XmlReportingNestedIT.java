@@ -53,11 +53,11 @@ public class Surefire2117XmlReportingNestedIT extends SurefireJUnit4IntegrationT
                 .verifyErrorFree(9);
 
         validator
-                .getSurefireReportsFile("TEST-jira2117.NestedJupiterTest$A.xml", UTF_8)
+                .getSurefireReportsFile("TEST-jira2117.NestedJupiterTest.xml", UTF_8)
                 .assertContainsText("<testcase name=\"level1_test\" " + "classname=\"jira2117.NestedJupiterTest$A\"");
 
         validator
-                .getSurefireReportsFile("TEST-jira2117.NestedJupiterTest$B$C.xml", UTF_8)
+                .getSurefireReportsFile("TEST-jira2117.NestedJupiterTest.xml", UTF_8)
                 .assertContainsText("<testcase name=\"level2_test_nonparameterized\" "
                         + "classname=\"jira2117.NestedJupiterTest$B$C\"")
                 .assertContainsText("<testcase name=\"level2_test_parameterized(String)[1] paramValue1\" "
@@ -65,24 +65,19 @@ public class Surefire2117XmlReportingNestedIT extends SurefireJUnit4IntegrationT
                 .assertContainsText("<testcase name=\"level2_test_parameterized(String)[2] paramValue2\" "
                         + "classname=\"jira2117.NestedJupiterTest$B$C\"");
 
-        String expectedDisplayNameForNestedClassA =
-                String.join(" ", "Display name of the main test class", "Display name of level 1 nested class A");
+        String expectedDisplayNameForNestedClassA = "Display name of level 1 nested class A";
 
         validator
-                .getSurefireReportsFile("TEST-jira2117.NestedDisplayNameTest$A.xml", UTF_8)
+                .getSurefireReportsFile("TEST-jira2117.NestedDisplayNameTest.xml", UTF_8)
                 .assertContainsText("<testcase name=\"level1_test_without_display_name\" " + "classname=\""
                         + expectedDisplayNameForNestedClassA + "\"")
                 .assertContainsText("<testcase name=\"Display name of level 1 test method\" " + "classname=\""
                         + expectedDisplayNameForNestedClassA + "\"");
 
-        String expectedDisplayNameForNestedClassC = String.join(
-                " ",
-                "Display name of the main test class",
-                "Display name of level 1 nested class B",
-                "Display name of level 2 nested class C");
+        String expectedDisplayNameForNestedClassC = "Display name of level 2 nested class C";
 
         validator
-                .getSurefireReportsFile("TEST-jira2117.NestedDisplayNameTest$B$C.xml", UTF_8)
+                .getSurefireReportsFile("TEST-jira2117.NestedDisplayNameTest.xml", UTF_8)
                 .assertContainsText("<testcase name=\"Display name of non-parameterized level 2 test method\" "
                         + "classname=\"" + expectedDisplayNameForNestedClassC + "\"")
                 .assertContainsText(
