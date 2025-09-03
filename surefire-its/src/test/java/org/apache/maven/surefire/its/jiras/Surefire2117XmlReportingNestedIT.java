@@ -42,7 +42,7 @@ public class Surefire2117XmlReportingNestedIT extends SurefireJUnit4IntegrationT
 
     @Parameters(name = "{0}")
     public static Iterable<?> junitJupiterVersions() {
-        return Arrays.asList("5.2.0", "5.8.2", "5.9.1");
+        return Arrays.asList("5.8.2", "5.9.1", "5.13.4");
     }
 
     @Test

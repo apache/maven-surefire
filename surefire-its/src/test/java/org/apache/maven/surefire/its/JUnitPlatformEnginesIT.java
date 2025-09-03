@@ -73,15 +73,10 @@ public class JUnitPlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
     @Parameters(name = "{0}")
     public static Iterable<Object[]> artifactVersions() {
         List<Object[]> args = new ArrayList<>();
-        args.add(new Object[] {"1.2.0", "5.2.0", "1.1.0", "1.0.0"});
-        args.add(new Object[] {"1.3.2", "5.3.2", "1.1.1", "1.0.0"});
-        args.add(new Object[] {"1.4.2", "5.4.2", "1.1.1", "1.0.0"});
-        args.add(new Object[] {"1.5.2", "5.5.2", "1.2.0", "1.1.0"});
-        args.add(new Object[] {"1.6.3", "5.6.3", "1.2.0", "1.1.0"});
-        args.add(new Object[] {"1.7.2", "5.7.2", "1.2.0", "1.1.0"});
         args.add(new Object[] {"1.8.2", "5.8.2", "1.2.0", "1.1.2"});
         args.add(new Object[] {"1.9.1", "5.9.1", "1.2.0", "1.1.2"});
         args.add(new Object[] {"1.10.2", "5.10.2", "1.3.0", "1.1.2"});
+        args.add(new Object[] {"1.13.4", "5.13.4", "1.3.0", "1.1.2"});
         return args;
     }
 

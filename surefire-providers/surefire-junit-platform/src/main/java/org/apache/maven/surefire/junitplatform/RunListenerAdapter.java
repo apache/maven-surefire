@@ -344,19 +344,22 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         // without parent and with ClassSource
         Optional<String> classLevelName = Optional.empty();
         TestIdentifier parent = findTopParent(testIdentifier);
+        Optional<String> classLevelDisplayName = Optional.empty();
         if (parent != null
                 && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
             ClassSource classSource = (ClassSource) parent.getSource().get();
             classLevelName = Optional.of(classSource.getClassName());
+            classLevelDisplayName =
+                    Optional.ofNullable(findDisplayNameTagValue(parent).orElse(parent.getLegacyReportingName()));
         }
 
         Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
-
-        String classDisplayName = displayNameTagValue.orElseGet(() -> testIdentifier
+        Optional<String> classLevelDisplayNameF = classLevelDisplayName;
+        String classDisplayName = displayNameTagValue.orElseGet(() -> classLevelDisplayNameF.orElse(testIdentifier
                 .getSource()
                 .filter(MethodSource.class::isInstance)
                 .map(s -> ((MethodSource) s).getClassName())
-                .orElse(null));
+                .orElse(null)));
 
         Optional<TestSource> testSource = testIdentifier.getSource();
         String display = testIdentifier.getDisplayName();
