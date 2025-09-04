@@ -18,15 +18,19 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import java.util.Arrays;
-import java.util.List;
+import javax.xml.transform.Source;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.TestFile;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.Test;
+import org.w3c.dom.Node;
+import org.xmlunit.builder.Input;
+import org.xmlunit.xpath.JAXPXPathEngine;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Integration Test for SUREFIRE-2032
@@ -38,33 +42,48 @@ public class Surefire2032NestedSkippedIT extends SurefireJUnit4IntegrationTestCa
         OutputValidator validator =
                 unpack("surefire-2032-nested-test-class-skipped").executeTest().assertTestSuiteResults(4, 0, 0, 2);
 
-        String redXmlReport = validator
-                .getSurefireReportsFile("TEST-jira2032.DisabledNestedTest$RedTaggedEnabledTest.xml", UTF_8)
-                .readFileToString();
+        TestFile xmlReportFile = validator.getSurefireReportsXmlFile("TEST-jira2032.DisabledNestedTest.xml");
+        xmlReportFile.assertFileExists();
 
-        // Enabled nested subclass
-        List<String> redTestCaseResults = Arrays.asList(redXmlReport
-                .substring(redXmlReport.indexOf("<testcase "), redXmlReport.indexOf("</testsuite>"))
-                .split(".(?=<testcase )"));
+        Source source = Input.fromFile(xmlReportFile.getFile()).build();
 
-        assertThat(redTestCaseResults)
-                .hasSize(2)
-                .filteredOn(testCaseResult -> testCaseResult.contains("<skipped"))
-                .isEmpty();
+        Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
+        MatcherAssert.assertThat(ite, IsIterableWithSize.iterableWithSize(4));
 
-        // Disabled nested subclass
-        String orangeXmlReport = validator
-                .getSurefireReportsFile("TEST-jira2032.DisabledNestedTest$OrangeTaggedDisabledTest.xml", UTF_8)
-                .readFileToString();
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']",
+                        source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
-        List<String> orangeTestCaseResults = Arrays.asList(orangeXmlReport
-                .substring(orangeXmlReport.indexOf("<testcase "), orangeXmlReport.indexOf("</testsuite>"))
-                .split(".(?=<testcase )"));
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']",
+                        source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
-        assertThat(orangeTestCaseResults)
-                .hasSize(2)
-                .filteredOn(testCaseResult -> testCaseResult.contains("<skipped"))
-                .map(testCaseResult -> testCaseResult.substring(0, testCaseResult.indexOf("classname")))
-                .containsExactlyInAnyOrder("<testcase name=\"test1\" ", "<testcase name=\"test2\" ");
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
+                        source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
+                        source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$RedTaggedEnabledTest']",
+                        source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$RedTaggedEnabledTest']",
+                        source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }

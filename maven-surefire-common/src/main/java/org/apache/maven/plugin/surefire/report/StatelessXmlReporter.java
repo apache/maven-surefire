@@ -120,6 +120,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     private final boolean enablePropertiesElement;
 
+    @Deprecated
     public StatelessXmlReporter(
             File reportsDirectory,
             String reportNameSuffix,
@@ -205,17 +206,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics = new LinkedHashMap<>();
         for (WrappedReportEntry methodEntry : aggregateCacheFromMultipleReruns(testSetReportEntry, testSetStats)) {
             String testClassName = methodEntry.getSourceName();
-            Map<String, List<WrappedReportEntry>> stats = classMethodStatistics.get(testClassName);
-            if (stats == null) {
-                stats = new LinkedHashMap<>();
-                classMethodStatistics.put(testClassName, stats);
-            }
+            Map<String, List<WrappedReportEntry>> stats =
+                    classMethodStatistics.computeIfAbsent(testClassName, k -> new LinkedHashMap<>());
             String methodName = methodEntry.getName();
-            List<WrappedReportEntry> methodRuns = stats.get(methodName);
-            if (methodRuns == null) {
-                methodRuns = new ArrayList<>();
-                stats.put(methodName, methodRuns);
-            }
+            List<WrappedReportEntry> methodRuns = stats.computeIfAbsent(methodName, k -> new ArrayList<>());
             methodRuns.add(methodEntry);
         }
         return classMethodStatistics;
@@ -416,7 +410,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
         String className = phrasedClassName
                 ? report.getReportSourceName(reportNameSuffix)
-                : report.getSourceName(reportNameSuffix);
+                : report.getSourceText() != null ? report.getSourceText() : report.getSourceName(reportNameSuffix);
         if (className != null) {
             ppw.addAttribute("classname", extraEscapeAttribute(className));
         }

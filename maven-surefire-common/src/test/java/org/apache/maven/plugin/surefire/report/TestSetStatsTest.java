@@ -44,8 +44,10 @@ public class TestSetStatsTest {
 
     @Test
     public void shouldConcatenateWithTestGroup() {
+        when(reportEntry.getSourceText()).thenReturn(null);
         when(reportEntry.getNameWithGroup()).thenReturn("pkg.MyTest (my group)");
         String actual = TestSetStats.concatenateWithTestGroup(buffer(), reportEntry, false);
+        verify(reportEntry, times(1)).getSourceText();
         verify(reportEntry, times(1)).getNameWithGroup();
         verifyNoMoreInteractions(reportEntry);
         String expected = buffer().a("pkg.").strong("MyTest (my group)").toString();
@@ -54,6 +56,7 @@ public class TestSetStatsTest {
 
     @Test
     public void shouldConcatenateWithJUnit5TestGroup() {
+        when(reportEntry.getSourceText()).thenReturn(null);
         when(reportEntry.getReportNameWithGroup()).thenReturn("pkg.MyTest (my group)");
         String actual = TestSetStats.concatenateWithTestGroup(buffer(), reportEntry, true);
         verify(reportEntry, atLeastOnce()).getReportNameWithGroup();
@@ -64,11 +67,13 @@ public class TestSetStatsTest {
 
     @Test
     public void shouldFallBackToTestGroupIfJUnit5TestGroupIsNull() {
+        when(reportEntry.getSourceText()).thenReturn(null);
         when(reportEntry.getReportNameWithGroup()).thenReturn(null);
         when(reportEntry.getNameWithGroup()).thenReturn("pkg.MyTest (my group)");
         String actual = TestSetStats.concatenateWithTestGroup(buffer(), reportEntry, true);
         verify(reportEntry, atLeastOnce()).getReportNameWithGroup();
         verify(reportEntry, atLeastOnce()).getNameWithGroup();
+        verify(reportEntry, atLeastOnce()).getSourceText();
         verifyNoMoreInteractions(reportEntry);
         String expected = buffer().a("pkg.").strong("MyTest (my group)").toString();
         assertThat(actual).isEqualTo(expected);

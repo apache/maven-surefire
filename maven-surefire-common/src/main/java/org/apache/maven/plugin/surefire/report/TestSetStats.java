@@ -252,7 +252,7 @@ public class TestSetStats {
         if (phrasedClassName && report.getReportNameWithGroup() != null) {
             return builder.strong(report.getReportNameWithGroup()).toString();
         } else {
-            String testClass = report.getNameWithGroup();
+            String testClass = report.getSourceText() != null ? report.getSourceText() : report.getNameWithGroup();
             int indexOfGroup = testClass.indexOf(GROUP_PREFIX);
             int delimiter = testClass.lastIndexOf('.', indexOfGroup == -1 ? testClass.length() : indexOfGroup);
             String pkg = testClass.substring(0, 1 + delimiter);
