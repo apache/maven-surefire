@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.its;
 
+import javax.xml.transform.Source;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -47,40 +49,28 @@ public class CucumberIT extends SurefireJUnit4IntegrationTestCase {
         TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-cz.fafejta.SimpleTest.xml");
         xmlReportFile.assertFileExists();
 
-        Iterable<Node> ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        Source source = Input.fromFile(xmlReportFile.getFile()).build();
+
+        Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='cz.fafejta.SimpleTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='cz.fafejta.SimpleTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-cz.fafejta.RunCucumberTest.xml");
         xmlReportFile.assertFileExists();
 
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        source = Input.fromFile(xmlReportFile.getFile()).build();
+
+        ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
 
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='RunCucumberTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='RunCucumberTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
 
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@name='Sum test - Valid test']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@name='Sum test - Valid test']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@name='Sum test - Invalid test']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@name='Sum test - Invalid test']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }

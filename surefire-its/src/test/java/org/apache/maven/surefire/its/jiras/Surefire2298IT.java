@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
+import javax.xml.transform.Source;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -55,19 +57,12 @@ public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
          * <testcase name="innerTest" classname="BaseNestedTest$Inner" time="0.001"/>
          * </testsuite>
          **/
-        Iterable<Node> ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        Source source = Input.fromFile(xmlReportFile.getFile()).build();
+        Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='io.olamy.FirstNestedTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.FirstNestedTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='io.olamy.BaseNestedTest$Inner']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.BaseNestedTest$Inner']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-io.olamy.SecondNestedTest.xml");
@@ -77,19 +72,13 @@ public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
          * <testcase name="innerTest" classname="BaseNestedTest$Inner" time="0.0"/>
          * </testsuite>
          */
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        source = Input.fromFile(xmlReportFile.getFile()).build();
+
+        ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='io.olamy.SecondNestedTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.SecondNestedTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='io.olamy.BaseNestedTest$Inner']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.BaseNestedTest$Inner']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }

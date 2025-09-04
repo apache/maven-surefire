@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
+import javax.xml.transform.Source;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -43,45 +45,45 @@ public class Surefire2032NestedSkippedIT extends SurefireJUnit4IntegrationTestCa
         TestFile xmlReportFile = validator.getSurefireReportsXmlFile("TEST-jira2032.DisabledNestedTest.xml");
         xmlReportFile.assertFileExists();
 
-        Iterable<Node> ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        Source source = Input.fromFile(xmlReportFile.getFile()).build();
+
+        Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         MatcherAssert.assertThat(ite, IsIterableWithSize.iterableWithSize(4));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
                         "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+                        source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
                         "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+                        source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
                         "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+                        source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
                         "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+                        source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
                         "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$RedTaggedEnabledTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+                        source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
                         "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$RedTaggedEnabledTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+                        source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }

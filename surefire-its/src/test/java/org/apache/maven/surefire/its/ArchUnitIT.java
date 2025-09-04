@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.its;
 
+import javax.xml.transform.Source;
+
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
@@ -47,20 +49,14 @@ public class ArchUnitIT extends SurefireJUnit4IntegrationTestCase {
         TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-custom.ArchUnitTest.xml");
         xmlReportFile.assertFileExists();
 
-        Iterable<Node> ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase", Input.fromFile(xmlReportFile.getFile()).build());
+        Source source = Input.fromFile(xmlReportFile.getFile()).build();
+
+        Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@classname='ArchUnitTest']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='ArchUnitTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@name='DTO_IN_PACKAGE_DTO']",
-                        Input.fromFile(xmlReportFile.getFile()).build());
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@name='DTO_IN_PACKAGE_DTO']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }
