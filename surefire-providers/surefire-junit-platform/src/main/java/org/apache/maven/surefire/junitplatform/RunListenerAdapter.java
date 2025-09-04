@@ -361,23 +361,11 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         // without parent and with ClassSource
         Optional<String> classLevelName = Optional.empty();
         TestIdentifier parent = findTopParent(testIdentifier);
-        //        Optional<String> classLevelDisplayName = Optional.empty();
         if (parent != null
                 && parent.getSource().filter(ClassSource.class::isInstance).isPresent()) {
             ClassSource classSource = (ClassSource) parent.getSource().get();
             classLevelName = Optional.of(classSource.getClassName());
-            //            classLevelDisplayName = findDisplayNameTagValue(parent);
-            // Optional.ofNullable(findDisplayNameTagValue(parent)).orElse(parent.getLegacyReportingName()));
         }
-
-        //        Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
-        //        Optional<String> classLevelDisplayNameF = classLevelDisplayName;
-        //        String classDisplayName = displayNameTagValue.orElseGet(() ->
-        // classLevelDisplayNameF.orElse(testIdentifier
-        //                .getSource()
-        //                .filter(MethodSource.class::isInstance)
-        //                .map(s -> ((MethodSource) s).getClassName())
-        //                .orElse(null)));
 
         String classDisplayName = null;
 
@@ -465,7 +453,15 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String className = classSource.getClassName();
             String simpleClassName = className.substring(1 + className.lastIndexOf('.'));
             String source = classDisplay.replace(' ', '$').equals(simpleClassName) ? className : classDisplay;
-            return new ResultDisplay(classLevelName.orElse(className), source, null, null, classDisplayName);
+
+            Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
+
+            return new ResultDisplay(
+                    classLevelName.orElse(className),
+                    displayNameTagValue.orElse(className),
+                    null,
+                    null,
+                    classDisplayName); // != null ? classDisplayName : className);
         } else {
             String source = testPlan.getParent(testIdentifier)
                     .map(TestIdentifier::getDisplayName)
