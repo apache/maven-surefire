@@ -20,8 +20,6 @@ package org.apache.maven.surefire.junitplatform;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,7 +51,6 @@ import org.junit.platform.launcher.TestPlan;
 
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
@@ -437,25 +434,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     methodDisp,
                     classDisplayName);
         } else if (testSource.filter(ClassSource.class::isInstance).isPresent()) {
-            List<String> parentClassDisplays = collectAllTestIdentifiersInHierarchy(testIdentifier)
-                    .filter(identifier -> identifier
-                            .getSource()
-                            .filter(ClassSource.class::isInstance)
-                            .isPresent())
-                    .map(TestIdentifier::getDisplayName)
-                    .collect(toList());
-
-            Collections.reverse(parentClassDisplays);
-            String classDisplay = Stream.concat(parentClassDisplays.stream(), Stream.of(display))
-                    .collect(joining(" "));
-
             ClassSource classSource = testSource.map(ClassSource.class::cast).get();
             String className = classSource.getClassName();
-            String simpleClassName = className.substring(1 + className.lastIndexOf('.'));
-            String source = classDisplay.replace(' ', '$').equals(simpleClassName) ? className : classDisplay;
-
             Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
-
             return new ResultDisplay(
                     classLevelName.orElse(className),
                     displayNameTagValue.orElse(className),
