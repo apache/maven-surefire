@@ -24,11 +24,13 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.collection.IsIterableWithSize;
+import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmlunit.builder.Input;
 import org.xmlunit.xpath.JAXPXPathEngine;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -36,6 +38,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 @SuppressWarnings("checkstyle:magicnumber")
 public class ArchUnitIT extends SurefireJUnit4IntegrationTestCase {
+
+    @Before
+    public void setUp() {
+        assumeJavaVersion(17);
+    }
+
     @Test
     public void simpleCucumberUsage() throws Exception {
         OutputValidator outputValidator = unpack("archunit")
