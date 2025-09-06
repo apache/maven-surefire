@@ -37,3 +37,4 @@ jobs:
         surefire-its/target/**/surefire-reports/*
         surefire-its/target/**/failsafe-reports/*
       timeout-minutes: 600
+      os-matrix: '[ "ubuntu-latest", "windows-2022", "macos-latest" ]'
