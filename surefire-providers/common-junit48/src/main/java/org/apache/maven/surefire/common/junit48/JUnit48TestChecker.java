@@ -24,7 +24,8 @@ import org.apache.maven.surefire.common.junit4.JUnit4TestChecker;
 import org.junit.experimental.runners.Enclosed;
 
 /**
- * Looks for additional junit48-like features
+ * Looks for additional junit48-like features.
+ *
  * @author Geoff Denning
  * @author Kristian Rosenvold
  */

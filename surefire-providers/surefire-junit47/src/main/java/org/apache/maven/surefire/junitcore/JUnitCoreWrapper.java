@@ -45,7 +45,7 @@ import static org.junit.runner.Computer.serial;
 import static org.junit.runner.Request.classes;
 
 /**
- * Encapsulates access to JUnitCore
+ * Encapsulates access to JUnitCore.
  *
  * @author Kristian Rosenvold
  */

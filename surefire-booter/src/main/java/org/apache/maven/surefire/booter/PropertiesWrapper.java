@@ -88,10 +88,10 @@ public class PropertiesWrapper implements KeyValueSource {
     }
 
     /**
-     * Retrieves as single object that is persisted with type encoding
+     * Retrieves as single object that is persisted with type encoding.
      *
-     * @param key The key for the propery
-     * @return The object, of a supported type
+     * @param key the key for the propery
+     * @return the object, of a supported type
      */
     public TypeEncodedValue getTypeEncodedValue(String key) {
         String typeEncoded = getProperty(key);
