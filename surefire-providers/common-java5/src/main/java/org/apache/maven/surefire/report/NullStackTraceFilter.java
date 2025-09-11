@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.report;
 
 /**
- * always returns true
+ * Always returns true.
  */
 final class NullStackTraceFilter implements StackTraceFilter {
     @Override

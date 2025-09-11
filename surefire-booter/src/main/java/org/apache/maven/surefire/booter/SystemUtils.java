@@ -78,7 +78,7 @@ public final class SystemUtils {
      * Null is returned if {@code jvmExecutable} is incorrect.
      *
      * @param jvmExecutable    /jdk/bin/java* or /jdk/jre/bin/java*
-     * @return path to jdk directory; or <code>null</code> if wrong path or directory layout of JDK installation.
+     * @return path to jdk directory; or <code>null</code> if wrong path or directory layout of JDK installation
      */
     public static File toJdkHomeFromJvmExec(String jvmExecutable) {
         File bin = new File(jvmExecutable).getAbsoluteFile().getParentFile();
@@ -222,7 +222,7 @@ public final class SystemUtils {
      * <br>
      * $ echo $CPU_ID | gawk '{print $1}'
      * <br>
-     * 48982
+     * 48982.
      *
      * @return self PID
      * @throws Exception i/o and number format exc
@@ -261,7 +261,7 @@ public final class SystemUtils {
      * Fields are:
      * <br>
      * comm pid ppid pgid sid maj, min ctty, sldr start user/system time wmsg euid ruid rgid,egid,
-     * groups[1 .. NGROUPS] hostname
+     * groups[1 .. NGROUPS] hostname.
      *
      * @return current PID
      * @throws Exception if could not read /proc/curproc/status

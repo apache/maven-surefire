@@ -33,11 +33,9 @@ import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUti
 import static org.junit.runner.Description.TEST_MECHANISM;
 
 /**
- *
- * Utility method used among all JUnit4 providers
+ * Utility method used among all JUnit4 providers.
  *
  * @author Qingzhou Luo
- *
  */
 public final class JUnit4ProviderUtil {
     private JUnit4ProviderUtil() {
@@ -45,7 +43,7 @@ public final class JUnit4ProviderUtil {
     }
 
     /**
-     * Get all descriptions from a list of Failures
+     * Get all descriptions from a list of Failures.
      *
      * @param allFailures the list of failures for a given test class
      * @return the list of descriptions
@@ -68,6 +66,7 @@ public final class JUnit4ProviderUtil {
 
     /**
      * Java Patterns of regex is slower than cutting a substring.
+     *
      * @param description method(class) or method[#](class) or method[#whatever-literals](class)
      * @return method JUnit test method
      */

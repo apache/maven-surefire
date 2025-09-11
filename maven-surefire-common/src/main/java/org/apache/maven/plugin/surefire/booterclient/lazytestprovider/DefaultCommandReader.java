@@ -26,12 +26,13 @@ import org.apache.maven.surefire.api.booter.Command;
  * Reader stream sends commands to forked jvm std-{@link java.io.InputStream input-stream}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
  * @see Command
+ * @since 2.19
  */
 public abstract class DefaultCommandReader extends AbstractCommandReader {
     /**
      * Opposite to {@link #isClosed()}.
+     *
      * @return {@code true} if not closed
      */
     protected boolean canContinue() {

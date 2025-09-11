@@ -22,7 +22,7 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 public class ReporterFactoryOptions {
     /**
-     * provider such Junit5 may be running tests in parallel so report will stored depending on
+     * Provider such Junit5 may be running tests in parallel so report will stored depending on
      * {@link ReportEntry#getSourceName()}
      */
     private boolean statPerSourceName;

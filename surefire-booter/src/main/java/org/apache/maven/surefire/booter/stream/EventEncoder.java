@@ -31,9 +31,6 @@ import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCO
 import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCODING_BYTES;
 import static org.apache.maven.surefire.api.booter.Constants.MAGIC_NUMBER_FOR_EVENTS_BYTES;
 
-/**
- *
- */
 public class EventEncoder extends AbstractStreamEncoder<ForkedProcessEventType> {
     public EventEncoder(WritableBufferedByteChannel out) {
         super(out);

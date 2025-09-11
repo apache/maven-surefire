@@ -29,9 +29,9 @@ import org.apache.maven.surefire.api.booter.Shutdown;
  * throw {@link UnsupportedOperationException}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
  * @see TestProvidingInputStream
  * @see TestLessInputStream
+ * @since 2.19
  */
 public interface NotifiableTestStream {
     /**

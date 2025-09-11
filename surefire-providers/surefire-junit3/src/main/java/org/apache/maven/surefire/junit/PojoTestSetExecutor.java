@@ -35,8 +35,7 @@ import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.SimpleReportEntry.withException;
 
 /**
- * Executes a JUnit3 test class
- *
+ * Executes a JUnit3 test class.
  */
 public class PojoTestSetExecutor implements SurefireTestSetExecutor {
     private static final String TEST_METHOD_PREFIX = "test";

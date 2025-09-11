@@ -156,9 +156,6 @@ public final class ThreadedStreamConsumer implements EventHandler<Event>, Closea
         return item == END_ITEM;
     }
 
-    /**
-     *
-     */
     private static class FinalEvent extends Event {
         FinalEvent() {
             super(null);

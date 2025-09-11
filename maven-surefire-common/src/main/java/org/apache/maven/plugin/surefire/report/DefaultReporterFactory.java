@@ -201,7 +201,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
 
     /**
      * Get the result of a test based on all its runs. If it has success and failures/errors, then it is a flake;
-     * if it only has errors or failures, then count its result based on its first run
+     * if it only has errors or failures, then count its result based on its first run.
      *
      * @param reportEntries the list of test run report type for a given test
      * @param rerunFailingTestsCount configured rerun count for failing tests
@@ -309,7 +309,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
 
     /**
      * Print failed tests and flaked tests. A test is considered as a failed test if it failed/got an error with
-     * all the runs. If a test passes in ever of the reruns, it will be count as a flaked test
+     * all the runs. If a test passes in ever of the reruns, it will be count as a flaked test.
      *
      * @param type   the type of results to be printed, could be error, failure or flake
      * @return {@code true} if printed some lines

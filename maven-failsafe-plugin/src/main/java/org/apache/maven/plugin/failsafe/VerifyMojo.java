@@ -75,7 +75,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
      * This old parameter is just like skipTests, but bound to the old property maven.test.skip.exec.
      *
      * @since 2.3
-     * @deprecated Use -DskipTests instead.
+     * @deprecated use -DskipTests instead
      */
     @Deprecated
     @Parameter(property = "maven.test.skip.exec")
@@ -124,6 +124,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
 
     /**
      * Additional summary files to read integration test results from.
+     *
      * @since 2.6
      */
     @Parameter

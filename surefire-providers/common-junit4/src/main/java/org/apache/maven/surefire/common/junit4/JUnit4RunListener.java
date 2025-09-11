@@ -44,8 +44,7 @@ import static org.apache.maven.surefire.common.junit4.JUnit4ProviderUtil.toClass
 import static org.apache.maven.surefire.common.junit4.JUnit4Reflector.getAnnotatedIgnoreValue;
 
 /**
- * RunListener for JUnit4, delegates to our own RunListener
- *
+ * RunListener for JUnit4, delegates to our own RunListener.
  */
 public class JUnit4RunListener extends RunListener implements TestOutputReceiver<OutputReportEntry>, RunModeSetter {
     protected final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();

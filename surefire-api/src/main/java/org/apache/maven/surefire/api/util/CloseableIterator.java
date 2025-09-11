@@ -28,9 +28,8 @@ import java.util.NoSuchElementException;
  * method {@link #next()} throws {@link java.util.NoSuchElementException}.
  * The method {@link #remove()} throws {@link IllegalStateException} if the iterator has been closed.
  *
- * @param <T> the type of elements returned by this iterator
- *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ * @param <T> the type of elements returned by this iterator
  * @since 2.19.1
  */
 public abstract class CloseableIterator<T> implements Iterator<T> {

@@ -28,7 +28,7 @@ public class TestSetFailedException extends Exception {
     /**
      * Creates {@code TestSetFailedException} with a detail message.
      *
-     * @param message A detail message for this {@code TestSetFailedException}, or
+     * @param message a detail message for this {@code TestSetFailedException}, or
      *                {@code null}. If {@code null} is passed, the {@link #getMessage}
      *                method will return an empty {@link String string}.
      */
@@ -44,7 +44,7 @@ public class TestSetFailedException extends Exception {
      * <b>NOT</b> automatically incorporated in this throwable's detail
      * message.
      *
-     * @param message A detail message for this {@code TestSetFailedException}, or {@code null}.
+     * @param message a detail message for this {@code TestSetFailedException}, or {@code null}
      * @param cause   the cause, which is saved for later retrieval by the {@link #getCause} method.
      *                (A null value is permitted, and indicates that the cause is nonexistent or unknown.)
      */
@@ -56,7 +56,7 @@ public class TestSetFailedException extends Exception {
      * Creates {@code TestSetFailedException} with the specified cause. The mthod {@link #getMessage} method of this
      * exception object will return {@code cause == null ? "" : cause.toString()}.
      *
-     * @param cause The cause
+     * @param cause the cause
      */
     public TestSetFailedException(Throwable cause) {
         super(cause == null ? "" : cause.toString(), cause);

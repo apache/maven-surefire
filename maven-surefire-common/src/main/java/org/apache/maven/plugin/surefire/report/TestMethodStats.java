@@ -21,11 +21,9 @@ package org.apache.maven.plugin.surefire.report;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 
 /**
- *
  * Maintains per-thread test result state for a single test method.
  *
  * @author Qingzhou Luo
- *
  */
 public class TestMethodStats {
     private final String testClassMethodName;

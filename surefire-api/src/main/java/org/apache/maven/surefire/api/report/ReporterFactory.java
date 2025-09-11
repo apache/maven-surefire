@@ -36,7 +36,7 @@ public interface ReporterFactory {
     /**
      * Closes the factory, freeing resources allocated in the factory.
      *
-     * @return The run result
+     * @return the run result
      */
     RunResult close();
 }

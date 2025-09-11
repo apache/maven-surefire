@@ -61,14 +61,14 @@ public abstract class AbstractPathConfiguration {
     /**
      * Must be exclusive with {@link #isClassPathConfig()}.
      *
-     * @return {@code true} if <code>this</code> is {@link ModularClasspathConfiguration}.
+     * @return {@code true} if <code>this</code> is {@link ModularClasspathConfiguration}
      */
     public abstract boolean isModularPathConfig();
 
     /**
      * Must be exclusive with {@link #isModularPathConfig()}.
      *
-     * @return {@code true} if <code>this</code> is {@link ClasspathConfiguration}.
+     * @return {@code true} if <code>this</code> is {@link ClasspathConfiguration}
      */
     public abstract boolean isClassPathConfig();
 

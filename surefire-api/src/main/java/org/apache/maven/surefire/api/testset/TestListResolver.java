@@ -127,10 +127,9 @@ public class TestListResolver implements GenericTestPattern<ResolvedTest, String
     }
 
     /**
-     *
      * @param resolver    filter possibly having method patterns
      * @return {@code resolver} if {@link TestListResolver#hasMethodPatterns() resolver.hasMethodPatterns()}
-     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned.
+     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned
      */
     public static TestListResolver optionallyWildcardFilter(TestListResolver resolver) {
         return resolver.hasMethodPatterns() ? resolver : WILDCARD;

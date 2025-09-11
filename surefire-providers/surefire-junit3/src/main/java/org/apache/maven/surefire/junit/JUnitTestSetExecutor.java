@@ -26,8 +26,7 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.common.junit3.JUnit3Reflector;
 
 /**
- * JUnit3 test set
- *
+ * JUnit3 test set.
  */
 public final class JUnitTestSetExecutor implements SurefireTestSetExecutor {
     private final JUnit3Reflector reflector;

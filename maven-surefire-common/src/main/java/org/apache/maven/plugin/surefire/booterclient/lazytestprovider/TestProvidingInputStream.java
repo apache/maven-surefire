@@ -55,7 +55,7 @@ public final class TestProvidingInputStream extends DefaultCommandReader {
     private final Queue<String> testClassNames;
 
     /**
-     * C'tor
+     * C'tor.
      *
      * @param testClassNames source of the tests to be read from this stream
      */

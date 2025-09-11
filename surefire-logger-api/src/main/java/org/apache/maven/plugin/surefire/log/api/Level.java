@@ -27,22 +27,22 @@ package org.apache.maven.plugin.surefire.log.api;
  */
 public enum Level {
     /**
-     * direct println
+     * Direct println.
      */
     NO_COLOR,
 
     /**
-     * defaults to bold, green
+     * Defaults to bold, green.
      */
     FAILURE,
 
     /**
-     * defaults to bold, yellow
+     * Defaults to bold, yellow.
      */
     UNSTABLE,
 
     /**
-     * defaults to bold, red
+     * Defaults to bold, red.
      */
     SUCCESS;
 

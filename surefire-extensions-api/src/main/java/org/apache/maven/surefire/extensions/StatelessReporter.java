@@ -27,14 +27,14 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
  * Signatures can be changed between major, minor versions or milestones.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 3.0.0-M4
  * @param <R> report entry type, see <em>WrappedReportEntry</em> from module the <em>maven-surefire-common</em>
  * @param <S> test-set statistics, see <em>TestSetStats</em> from module the <em>maven-surefire-common</em>
  * @param <C> mojo config, see <em>DefaultStatelessReportMojoConfiguration</em> from <em>maven-surefire-common</em>
+ * @since 3.0.0-M4
  */
 public abstract class StatelessReporter<R extends TestSetReportEntry, S, C extends StatelessReportMojoConfiguration> {
     /**
-     * {@code false} by default
+     * {@code false} by default.
      */
     private boolean disable;
 

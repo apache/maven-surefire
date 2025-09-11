@@ -18,9 +18,6 @@
  */
 package org.apache.maven.surefire.api.stream;
 
-/**
- *
- */
 public enum SegmentType {
     RUN_MODE,
     TEST_RUN_ID,

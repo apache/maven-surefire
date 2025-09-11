@@ -82,6 +82,7 @@ public final class TempFileManager {
 
     /**
      * Creates an instance using a subdirectory of the system's temporary directory.
+     *
      * @param subDirName name of subdirectory
      * @return instance
      */

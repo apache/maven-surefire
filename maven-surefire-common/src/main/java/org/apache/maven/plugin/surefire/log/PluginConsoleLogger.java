@@ -29,8 +29,8 @@ import org.slf4j.Logger;
  * {@link org.apache.maven.plugin.surefire.report.TestSetRunListener}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.20
  * @see ConsoleLogger
+ * @since 2.20
  */
 public final class PluginConsoleLogger implements ConsoleLogger {
     private final Logger logger;

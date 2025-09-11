@@ -64,10 +64,10 @@ import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIf
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
 final class TestNGExecutor {
-    /** The default name for a suite launched from the maven surefire plugin */
+    /** The default name for a suite launched from the maven surefire plugin. */
     private static final String DEFAULT_SUREFIRE_SUITE_NAME = "Surefire suite";
 
-    /** The default name for a test launched from the maven surefire plugin */
+    /** The default name for a test launched from the maven surefire plugin. */
     private static final String DEFAULT_SUREFIRE_TEST_NAME = "Surefire test";
 
     private static final boolean HAS_TEST_ANNOTATION_ON_CLASSPATH =

@@ -21,8 +21,7 @@ package org.apache.maven.surefire.group.match;
 import java.util.Collection;
 
 /**
- * OR group matcher
- *
+ * OR group matcher.
  */
 public class OrGroupMatcher extends JoinGroupMatcher {
 

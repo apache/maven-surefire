@@ -23,9 +23,6 @@ import java.nio.charset.Charset;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-/**
- *
- */
 public final class Constants {
     private static final String MAGIC_NUMBER_FOR_EVENTS = "maven-surefire-event";
     public static final String MAGIC_NUMBER_FOR_COMMANDS = "maven-surefire-command";

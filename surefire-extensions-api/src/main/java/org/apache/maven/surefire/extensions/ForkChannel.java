@@ -46,7 +46,7 @@ public abstract class ForkChannel implements Closeable {
     private final ForkNodeArguments arguments;
 
     /**
-     * @param arguments data necessary for command reader and event handler.
+     * @param arguments data necessary for command reader and event handler
      */
     protected ForkChannel(@Nonnull ForkNodeArguments arguments) {
         this.arguments = arguments;
@@ -55,8 +55,8 @@ public abstract class ForkChannel implements Closeable {
     /**
      * Asynchronously connects to the client.
      *
-     * @throws IOException if stream fails
      * @throws InterruptedException if interrupted thread
+     * @throws IOException if stream fails
      */
     public abstract void tryConnectToClient() throws IOException, InterruptedException;
 
@@ -68,7 +68,7 @@ public abstract class ForkChannel implements Closeable {
     public abstract String getForkNodeConnectionString();
 
     /**
-     * the permits in {@link CountdownCloseable}.
+     * The permits in {@link CountdownCloseable}.
      */
     public abstract int getCountdownCloseablePermits();
 
@@ -77,8 +77,8 @@ public abstract class ForkChannel implements Closeable {
      *
      * @param commands command reader, see {@link CommandReader#readNextCommand()}
      * @param stdIn    optional standard input stream of the JVM to write the encoded commands into it
-     * @throws IOException if an error in the fork channel
      * @throws InterruptedException channel interrupted
+     * @throws IOException if an error in the fork channel
      */
     public abstract void bindCommandReader(@Nonnull CommandReader commands, WritableByteChannel stdIn)
             throws IOException, InterruptedException;
@@ -89,8 +89,8 @@ public abstract class ForkChannel implements Closeable {
      * @param eventHandler       event eventHandler
      * @param countdownCloseable count down of the final call of {@link Closeable#close()}
      * @param stdOut             optional standard output stream of the JVM
-     * @throws IOException if an error in the fork channel
      * @throws InterruptedException channel interrupted
+     * @throws IOException if an error in the fork channel
      */
     public abstract void bindEventHandler(
             @Nonnull EventHandler<Event> eventHandler,

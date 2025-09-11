@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire.util;
 import javax.annotation.Nonnull;
 
 /**
- * Relocates class names when running with relocated provider
+ * Relocates class names when running with relocated provider.
  *
  * @author Kristian Rosenvold
  */

@@ -19,8 +19,7 @@
 package org.apache.maven.surefire.group.match;
 
 /**
- * Group Matcher
- *
+ * Group Matcher.
  */
 public interface GroupMatcher {
 

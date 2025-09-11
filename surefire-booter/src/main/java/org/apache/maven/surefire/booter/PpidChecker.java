@@ -309,7 +309,7 @@ final class PpidChecker {
      * https://technet.microsoft.com/en-us/library/ee198928.aspx <br>
      * We use UTC time zone which avoids DST changes, see SUREFIRE-1512.
      *
-     * @return Windows WMIC format yyyymmddHHMMSS.xxx
+     * @return windows WMIC format yyyymmddHHMMSS.xxx
      */
     private static SimpleDateFormat createWindowsCreationDateFormat() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss'.'SSS");
