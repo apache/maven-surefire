@@ -1944,7 +1944,7 @@ public class AbstractSurefireMojoTest {
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo(
                 Artifact junitPlatformArtifact, TestClassPath testClasspathWrapper) {
-            return new JUnitPlatformProviderInfo(null, junitPlatformArtifact, testClasspathWrapper);
+            return new JUnitPlatformProviderInfo(null, junitPlatformArtifact, testClasspathWrapper, null, null);
         }
 
         void setProjectTestArtifacts(List<Artifact> projectTestArtifacts) {

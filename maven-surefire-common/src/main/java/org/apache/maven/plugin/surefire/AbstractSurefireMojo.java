@@ -1162,13 +1162,22 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         Artifact junitDepArtifact = getJunitDepArtifact();
         return providerDetector.resolve(
                 new DynamicProviderInfo(null),
-                new JUnitPlatformProviderInfo(getJUnitPlatformRunnerArtifact(), getJUnit5Artifact(), testClasspath),
+                new JUnitPlatformProviderInfo(
+                        getJUnitPlatformRunnerArtifact(),
+                        getJUnit5Artifact(),
+                        testClasspath,
+                        getJunitArtifact(),
+                        junitDepArtifact),
                 new TestNgProviderInfo(getTestNgArtifact()),
                 new JUnitCoreProviderInfo(getJunitArtifact(), junitDepArtifact),
                 new JUnit4ProviderInfo(getJunitArtifact(), junitDepArtifact),
                 new JUnit3ProviderInfo(),
                 new JUnitPlatformProviderShadefireInfo(
-                        getJUnitPlatformRunnerArtifact(), getJUnit5Artifact(), testClasspath));
+                        getJUnitPlatformRunnerArtifact(),
+                        getJUnit5Artifact(),
+                        testClasspath,
+                        getJunitArtifact(),
+                        junitDepArtifact));
     }
 
     SurefireProperties setupProperties() {
@@ -3039,7 +3048,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         @Override
         public boolean isApplicable() {
-            return junitDepArtifact != null || isAnyJunit4(junitArtifact);
+            return false; // junitDepArtifact != null || isAnyJunit4(junitArtifact);
         }
 
         @Override
@@ -3060,6 +3069,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
     }
 
+    private enum Engine {
+        JUNIT3,
+        JUNIT4,
+        JUNIT47,
+        TESTNG,
+        JUNIT_PLATFORM
+    }
+
     class JUnitPlatformProviderInfo implements ProviderInfo {
         private static final String PROVIDER_DEP_GID = "org.junit.platform";
         private static final String PROVIDER_DEP_AID = "junit-platform-launcher";
@@ -3068,13 +3085,25 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         private final Artifact junitPlatformArtifact;
         private final TestClassPath testClasspath;
 
+        private final Artifact junitArtifact;
+        private final Artifact junitDepArtifact;
+
+        private Engine engine = Engine.JUNIT_PLATFORM;
+
         JUnitPlatformProviderInfo(
                 Artifact junitPlatformRunnerArtifact,
                 Artifact junitPlatformArtifact,
-                @Nonnull TestClassPath testClasspath) {
+                @Nonnull TestClassPath testClasspath,
+                Artifact junitArtifact,
+                Artifact junitDepArtifact) {
             this.junitPlatformRunnerArtifact = junitPlatformRunnerArtifact;
             this.junitPlatformArtifact = junitPlatformArtifact;
             this.testClasspath = testClasspath;
+            this.junitArtifact = junitArtifact;
+            this.junitDepArtifact = junitDepArtifact;
+            if (junitDepArtifact != null || isAnyJunit4(junitArtifact)) {
+                this.engine = Engine.JUNIT47;
+            }
         }
 
         @Override
@@ -3089,7 +3118,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         @Override
         public boolean isApplicable() {
-            return junitPlatformRunnerArtifact == null && junitPlatformArtifact != null;
+            return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null)
+                    || (junitDepArtifact != null || isAnyJunit4(junitArtifact));
         }
 
         @Override
@@ -3102,7 +3132,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
             boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
-            return hasTestDescriptor ? getJpmsArgs() : Collections.<String[]>emptyList();
+            return hasTestDescriptor ? getJpmsArgs() : Collections.emptyList();
         }
 
         @Override
@@ -3151,6 +3181,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                                 .debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
                                         + engineVersion);
                         addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                    } else {
+                        addEngineByApi(engineGroupId, engineArtifactId, "5.12.1", providerArtifacts);
                     }
                 }
             }
@@ -3193,6 +3225,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+            if (junitPlatformArtifact == null) {
+                return;
+            }
             String version = junitPlatformArtifact.getBaseVersion();
             for (Artifact launcherArtifact : resolve(PROVIDER_DEP_GID, PROVIDER_DEP_AID, version, null, "jar")) {
                 String key = launcherArtifact.getGroupId() + ":" + launcherArtifact.getArtifactId();
@@ -3203,7 +3238,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         private Set<Artifact> resolve(String g, String a, String v, String c, String t) throws MojoExecutionException {
-            ArtifactHandler handler = junitPlatformArtifact.getArtifactHandler();
+            // FIXME will be different with 3 and testng
+            ArtifactHandler handler = junitPlatformArtifact != null
+                    ? junitPlatformArtifact.getArtifactHandler()
+                    : junitArtifact.getArtifactHandler();
             Artifact artifact = new DefaultArtifact(g, a, v, null, t, c, handler);
             getConsoleLogger().debug("Resolving artifact " + g + ":" + a + ":" + v);
             Set<Artifact> r = surefireDependencyResolver.resolveArtifacts(
@@ -3232,8 +3270,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         JUnitPlatformProviderShadefireInfo(
                 Artifact junitPlatformRunnerArtifact,
                 Artifact junitPlatformArtifact,
-                @Nonnull TestClassPath testClasspath) {
-            super(junitPlatformRunnerArtifact, junitPlatformArtifact, testClasspath);
+                @Nonnull TestClassPath testClasspath,
+                Artifact junitArtifact,
+                Artifact junitDepArtifact) {
+            super(junitPlatformRunnerArtifact, junitPlatformArtifact, testClasspath, junitArtifact, junitDepArtifact);
         }
 
         @Override
