@@ -28,7 +28,8 @@ public class BalancerFactory {
 
     /**
      * Infinite permits.
-     * @return Balancer wih infinite permits
+     *
+     * @return balancer wih infinite permits
      */
     public static Balancer createInfinitePermitsBalancer() {
         return balancer(0, false);
@@ -39,7 +40,7 @@ public class BalancerFactory {
      * Fairness guarantees the waiting schedulers to wake up in order they acquired a permit.
      *
      * @param concurrency number of permits to acquire when maintaining concurrency on tests
-     * @return Balancer with given number of permits
+     * @return balancer with given number of permits
      */
     public static Balancer createBalancer(int concurrency) {
         return balancer(concurrency, false);
@@ -50,7 +51,7 @@ public class BalancerFactory {
      * Fairness guarantees the waiting schedulers to wake up in order they acquired a permit.
      *
      * @param concurrency number of permits to acquire when maintaining concurrency on tests
-     * @return Balancer with given number of permits
+     * @return balancer with given number of permits
      */
     public static Balancer createBalancerWithFairness(int concurrency) {
         return balancer(concurrency, true);

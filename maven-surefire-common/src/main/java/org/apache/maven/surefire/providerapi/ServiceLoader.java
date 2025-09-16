@@ -78,9 +78,9 @@ public class ServiceLoader {
      * Method loadServices loads the services of a class that are
      * defined using the SPI mechanism.
      *
-     * @param urlEnumeration The urls from the resource
-     * @return The set of service provider names
-     * @throws IOException When reading the streams fails
+     * @param urlEnumeration the urls from the resource
+     * @return the set of service provider names
+     * @throws IOException when reading the streams fails
      */
     @Nonnull
     @SuppressWarnings("checkstyle:innerassignment")

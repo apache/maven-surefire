@@ -203,7 +203,7 @@ public final class TestLessInputStream extends DefaultCommandReader {
          * {@link NotifiableTestStream#skipSinceNextTest()} are supported.
          * Another methods throw {@link UnsupportedOperationException}.
          *
-         * @return commands which are cached for currently alive or future forks.
+         * @return commands which are cached for currently alive or future forks
          */
         public NotifiableTestStream getCachableCommands() {
             return cachableCommands;

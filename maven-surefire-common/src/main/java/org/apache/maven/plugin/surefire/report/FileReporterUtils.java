@@ -21,7 +21,7 @@ package org.apache.maven.plugin.surefire.report;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 
 /**
- * Utils class for file-based reporters
+ * Utils class for file-based reporters.
  *
  * @author Andreas Gudian
  */

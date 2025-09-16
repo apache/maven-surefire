@@ -19,8 +19,7 @@
 package org.apache.maven.plugin.surefire.report;
 
 /**
- * Type of an entry in the report
- *
+ * Type of an entry in the report.
  */
 public enum ReportEntryType {
     ERROR("error", "flakyError", "rerunError"),

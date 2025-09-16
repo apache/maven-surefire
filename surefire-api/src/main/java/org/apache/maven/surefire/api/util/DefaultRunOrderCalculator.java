@@ -30,7 +30,7 @@ import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 
 /**
- * Applies the final runorder of the tests
+ * Applies the final runorder of the tests.
  *
  * @author Kristian Rosenvold
  */

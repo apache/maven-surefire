@@ -112,7 +112,7 @@ import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.remov
  * <br>
  * Lives only on the plugin-side (not present in remote vms)
  * <br>
- * Knows how to fork new vms and also how to delegate non-forking invocation to SurefireStarter directly
+ * Knows how to fork new vms and also how to delegate non-forking invocation to SurefireStarter directly.
  *
  * @author Jason van Zyl
  * @author Emmanuel Venisse

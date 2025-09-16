@@ -35,7 +35,7 @@ public interface Balancer {
      * Acquires a permit from this balancer, blocking until one is available.
      *
      * @return {@code true} if current thread is <b>NOT</b> interrupted
-     *         while waiting for a permit.
+     *         while waiting for a permit
      */
     boolean acquirePermit();
 

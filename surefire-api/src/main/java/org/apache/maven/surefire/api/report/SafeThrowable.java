@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.api.report;
 
 /**
- * Guards against misbehaving throwables
+ * Guards against misbehaving throwables.
  */
 public class SafeThrowable {
     private final Throwable target;

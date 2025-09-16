@@ -22,8 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Joins several group matchers
- *
+ * Joins several group matchers.
  */
 public abstract class JoinGroupMatcher implements GroupMatcher {
 
