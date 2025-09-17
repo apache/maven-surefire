@@ -59,6 +59,8 @@ import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 
 /**
+ * Internal component used by the surefire plugin. Not a public API.
+ * not guaranteed to remain unchanged across surefire plugin versions.
  * Does dependency resolution and artifact handling for the surefire plugin.
  *
  * @author Stephen Connolly
@@ -66,7 +68,7 @@ import static org.apache.maven.artifact.versioning.VersionRange.createFromVersio
  */
 @Named
 @Singleton
-class SurefireDependencyResolver {
+public class SurefireDependencyResolver {
 
     static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
@@ -93,7 +95,7 @@ class SurefireDependencyResolver {
         this.repositorySystem = repositorySystem;
     }
 
-    static boolean isWithinVersionSpec(@Nullable Artifact artifact, @Nonnull String versionSpec) {
+    public static boolean isWithinVersionSpec(@Nullable Artifact artifact, @Nonnull String versionSpec) {
         if (artifact == null) {
             return false;
         }
