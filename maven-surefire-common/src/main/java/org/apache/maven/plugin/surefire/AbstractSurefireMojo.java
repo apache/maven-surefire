@@ -2067,7 +2067,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return getPluginArtifactMap().get("org.apache.maven.surefire:surefire-logger-api");
     }
 
-    private Artifact getBooterArtifact() {
+    Artifact getBooterArtifact() {
         return getPluginArtifactMap().get("org.apache.maven.surefire:surefire-booter");
     }
 
