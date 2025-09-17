@@ -26,10 +26,21 @@ import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 
+import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
+
 /**
  * @author Kristian Rosenvold
  */
 public interface ProviderInfo {
+
+    enum Engine {
+        JUNIT3,
+        JUNIT4,
+        JUNIT47,
+        TESTNG,
+        JUNIT_PLATFORM
+    }
+
     @Nonnull
     String getProviderName();
 
@@ -42,4 +53,8 @@ public interface ProviderInfo {
 
     @Nonnull
     List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements);
+
+    default boolean isAnyJunit4(Artifact artifact) {
+        return isWithinVersionSpec(artifact, "[4.0,)");
+    }
 }

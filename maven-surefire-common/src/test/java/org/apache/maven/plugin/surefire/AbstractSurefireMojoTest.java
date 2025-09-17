@@ -49,7 +49,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo.JUnitPlatformProviderInfo;
 import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
@@ -1944,7 +1943,19 @@ public class AbstractSurefireMojoTest {
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo(
                 Artifact junitPlatformArtifact, TestClassPath testClasspathWrapper) {
-            return new JUnitPlatformProviderInfo(null, junitPlatformArtifact, testClasspathWrapper, null, null);
+            return new JUnitPlatformProviderInfo(
+                    null,
+                    junitPlatformArtifact,
+                    testClasspathWrapper,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null);
         }
 
         void setProjectTestArtifacts(List<Artifact> projectTestArtifacts) {
