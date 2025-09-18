@@ -754,7 +754,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final PluginConsoleLogger consoleLogger = new PluginConsoleLogger(logger);
+    private PluginConsoleLogger consoleLogger = new PluginConsoleLogger(logger);
 
     /**
      * (TestNG only) Define the factory class used to create all test instances.
@@ -985,10 +985,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     void setLogger(Logger logger) {
         this.logger = logger;
+        this.consoleLogger = new PluginConsoleLogger(logger);
     }
 
     void setSurefireDependencyResolver(SurefireDependencyResolver surefireDependencyResolver) {
         this.surefireDependencyResolver = surefireDependencyResolver;
+    }
+
+    SurefireDependencyResolver getSurefireDependencyResolver() {
+        return surefireDependencyResolver;
     }
 
     @Nonnull
