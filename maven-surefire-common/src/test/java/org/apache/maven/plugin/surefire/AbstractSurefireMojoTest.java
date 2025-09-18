@@ -609,7 +609,7 @@ public class AbstractSurefireMojoTest {
         File classesDir = mockFile("classes");
         File testClassesDir = mockFile("test-classes");
         TestClassPath testClassPath =
-                new TestClassPath(new ArrayList<Artifact>(), classesDir, testClassesDir, Collections.emptyList());
+                new TestClassPath(new ArrayList<>(), classesDir, testClassesDir, Collections.emptyList());
 
         Artifact common = new DefaultArtifact(
                 "org.apache.maven.surefire",
@@ -1748,7 +1748,6 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-engine");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-
         PluginDescriptor pluginDescriptor = mock(PluginDescriptor.class);
         mojo.setPluginDescriptor(pluginDescriptor);
         Plugin p = mock(Plugin.class);
@@ -1760,7 +1759,6 @@ public class AbstractSurefireMojoTest {
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
-
 
         Artifact surefireProvider = new DefaultArtifact(
                 "org.apache.maven.surefire", "surefire-junit-platform", surefireVersion, null, "jar", "", null);
@@ -1951,8 +1949,8 @@ public class AbstractSurefireMojoTest {
                     testClasspathWrapper,
                     null,
                     null,
-                    getBooterArtifact() ,
-                    mock(SurefireDependencyResolver.class),
+                    getBooterArtifact(),
+                    getSurefireDependencyResolver(),
                     mock(MavenSession.class),
                     mock(MavenProject.class),
                     getPluginDescriptor(),
