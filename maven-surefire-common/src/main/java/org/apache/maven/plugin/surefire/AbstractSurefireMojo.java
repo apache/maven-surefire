@@ -3062,7 +3062,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         @Override
         public boolean isApplicable() {
-            return false; // junitDepArtifact != null || isAnyJunit4(junitArtifact);
+            return isWithinVersionSpec(junitArtifact, "[4.0,4.11]");
         }
 
         @Override
