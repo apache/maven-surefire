@@ -39,6 +39,8 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderRequirements;
 
+import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
+
 class JUnitPlatformProviderInfo implements ProviderInfo {
 
     private static final String PROVIDER_DEP_GID = "org.junit.platform";
@@ -112,7 +114,11 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
     @Override
     public boolean isApplicable() {
         return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null)
-                || (junitDepArtifact != null || isAnyJunit4(junitArtifact));
+                || (junitDepArtifact != null || isJunit412(junitArtifact));
+    }
+
+    private boolean isJunit412(Artifact junitArtifact) {
+        return isWithinVersionSpec(junitArtifact, "[4.12,)");
     }
 
     @Override
@@ -241,16 +247,12 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
     }
 
     private boolean hasDependencyPlatformEngine(Map<String, Artifact> dependencies) {
-        for (Map.Entry<String, Artifact> dependency : dependencies.entrySet()) {
-            if (dependency.getKey().equals("org.junit.platform:junit-platform-engine")) {
-                return true;
-            }
-        }
-
-        return false;
+        return dependencies.entrySet().stream()
+                .anyMatch(stringArtifactEntry ->
+                        stringArtifactEntry.getKey().equals("org.junit.platform:junit-platform-engine"));
     }
 
-    // TODO why an enclosing class on the top do we reall need this shading???
+    // TODO why an enclosing class on the top do we real need this shading??
     @SuppressWarnings("checkstyle:parameternumber")
     public static class JUnitPlatformProviderShadefireInfo extends JUnitPlatformProviderInfo {
 
