@@ -73,7 +73,8 @@ public class AbstractSurefireMojoProvidersInfoTest {
     @Test
     public void jUnitPlatformProviderApplicable() {
         Artifact junitPlatform = mock(Artifact.class);
-        ProviderInfo providerInfo = mojo.new JUnitPlatformProviderInfo(null, junitPlatform, aTestClassPath());
+        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
+                null, junitPlatform, aTestClassPath(), null, null, null, null, null, null, null, null, null);
 
         assertThat(providerInfo.isApplicable()).isTrue();
 
@@ -83,7 +84,8 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnitPlatformProviderNotApplicable() {
-        ProviderInfo providerInfo = mojo.new JUnitPlatformProviderInfo(null, null, aTestClassPath());
+        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), null, null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
@@ -91,8 +93,19 @@ public class AbstractSurefireMojoProvidersInfoTest {
     public void jUnitPlatformProviderNotApplicableForPlatformRunner() {
         // not applicable if junit-platform-runner is on classpath
         Artifact junitPlatformRunnerArtifact = mock(Artifact.class);
-        ProviderInfo providerInfo =
-                mojo.new JUnitPlatformProviderInfo(junitPlatformRunnerArtifact, null, aTestClassPath());
+        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
+                junitPlatformRunnerArtifact,
+                null,
+                aTestClassPath(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         assertThat(providerInfo.isApplicable()).isFalse();
 
         // no interaction with artifact only reference are checked
@@ -112,7 +125,7 @@ public class AbstractSurefireMojoProvidersInfoTest {
         Artifact junitDep = mock(Artifact.class);
         ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(null, junitDep);
 
-        assertThat(providerInfo.isApplicable()).isTrue();
+        assertThat(providerInfo.isApplicable()).isFalse();
 
         // no interaction with artifact only reference are checked
         verifyNoMoreInteractions(junitDep);
@@ -126,7 +139,7 @@ public class AbstractSurefireMojoProvidersInfoTest {
         ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, junitDep);
 
         // ??? only existing for junitDep in any version is checked
-        assertThat(providerInfo.isApplicable()).isTrue();
+        assertThat(providerInfo.isApplicable()).isFalse();
 
         // no interaction with artifact only reference are checked
         verifyNoMoreInteractions(junitDep);

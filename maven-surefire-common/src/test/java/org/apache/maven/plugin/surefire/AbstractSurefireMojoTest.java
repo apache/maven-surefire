@@ -49,7 +49,6 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.surefire.AbstractSurefireMojo.JUnitPlatformProviderInfo;
 import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
@@ -610,7 +609,7 @@ public class AbstractSurefireMojoTest {
         File classesDir = mockFile("classes");
         File testClassesDir = mockFile("test-classes");
         TestClassPath testClassPath =
-                new TestClassPath(new ArrayList<Artifact>(), classesDir, testClassesDir, Collections.emptyList());
+                new TestClassPath(new ArrayList<>(), classesDir, testClassesDir, Collections.emptyList());
 
         Artifact common = new DefaultArtifact(
                 "org.apache.maven.surefire",
@@ -1749,17 +1748,17 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-engine");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
-                mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
-
-        assertThat(prov.isApplicable()).isTrue();
-
         PluginDescriptor pluginDescriptor = mock(PluginDescriptor.class);
         mojo.setPluginDescriptor(pluginDescriptor);
         Plugin p = mock(Plugin.class);
         when(pluginDescriptor.getPlugin()).thenReturn(p);
         List<Dependency> directPluginDependencies = toDependencies(pluginDepJupiterEngine);
         when(p.getDependencies()).thenReturn(directPluginDependencies);
+
+        JUnitPlatformProviderInfo prov =
+                mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
+
+        assertThat(prov.isApplicable()).isTrue();
 
         Artifact surefireProvider = new DefaultArtifact(
                 "org.apache.maven.surefire", "surefire-junit-platform", surefireVersion, null, "jar", "", null);
@@ -1944,7 +1943,19 @@ public class AbstractSurefireMojoTest {
 
         private JUnitPlatformProviderInfo createJUnitPlatformProviderInfo(
                 Artifact junitPlatformArtifact, TestClassPath testClasspathWrapper) {
-            return new JUnitPlatformProviderInfo(null, junitPlatformArtifact, testClasspathWrapper);
+            return new JUnitPlatformProviderInfo(
+                    null,
+                    junitPlatformArtifact,
+                    testClasspathWrapper,
+                    null,
+                    null,
+                    getBooterArtifact(),
+                    getSurefireDependencyResolver(),
+                    mock(MavenSession.class),
+                    mock(MavenProject.class),
+                    getPluginDescriptor(),
+                    getPluginArtifactMap(),
+                    getConsoleLogger());
         }
 
         void setProjectTestArtifacts(List<Artifact> projectTestArtifacts) {
