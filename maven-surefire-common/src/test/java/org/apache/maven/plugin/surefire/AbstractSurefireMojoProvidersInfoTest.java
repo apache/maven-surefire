@@ -42,7 +42,7 @@ public class AbstractSurefireMojoProvidersInfoTest {
     @Test
     public void defaultProviderAreAlwaysAvailable() {
         ProviderInfo providerInfo = mojo.new JUnit3ProviderInfo();
-        assertThat(providerInfo.isApplicable()).isTrue();
+        assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test

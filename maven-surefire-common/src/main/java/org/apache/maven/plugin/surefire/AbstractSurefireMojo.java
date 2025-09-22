@@ -3018,7 +3018,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         @Override
         public boolean isApplicable() {
-            return true;
+            return false;
         }
 
         @Override
