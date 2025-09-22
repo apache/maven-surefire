@@ -114,7 +114,7 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
     @Override
     public boolean isApplicable() {
         return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null)
-                || (junitDepArtifact != null || isJunit412(junitArtifact));
+                || (junitDepArtifact != null || isAnyJunit4(junitArtifact));
     }
 
     private boolean isJunit412(Artifact junitArtifact) {
@@ -163,6 +163,16 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                 consoleLogger.debug(
                         "Test dependencies contain " + api + ". Resolving " + engineCoordinates + ":" + engineVersion);
                 addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+            }
+
+            if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]")) {
+                // need to replace with 4.12 as vintage engine requires 4.12+
+                // not really needed as we do it in decorateTestClassPath
+                resolve("junit", "junit", "4.12", null, "jar").stream()
+                        .filter(artifact -> artifact.getGroupId().equals("junit")
+                                && artifact.getArtifactId().equals("junit"))
+                        .findFirst()
+                        .ifPresent(junit412 -> testDeps.put("junit:junit", junit412));
             }
 
             if ((testDeps.containsKey("junit:junit") || testDeps.containsKey("junit:junit-dep"))
@@ -250,6 +260,28 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
         return dependencies.entrySet().stream()
                 .anyMatch(stringArtifactEntry ->
                         stringArtifactEntry.getKey().equals("org.junit.platform:junit-platform-engine"));
+    }
+
+    @Override
+    public TestClassPath decorateTestClassPath(TestClassPath testClasspath) throws MojoExecutionException {
+        Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
+        if (isWithinVersionSpec(testDeps.get("junit:junit"), "[4.0,4.11]")) {
+            // need to replace with 4.12 as vintage engine requires 4.12+ (could be higher version but let's keep it
+            // simple)
+            resolve("junit", "junit", "4.12", null, "jar").stream()
+                    .filter(artifact -> artifact.getGroupId().equals("junit")
+                            && artifact.getArtifactId().equals("junit"))
+                    .findFirst()
+                    .ifPresent(junit412 -> testDeps.put("junit:junit", junit412));
+            consoleLogger.warning(
+                    "Your build is using JUnit 4.11 or older. This dependency has been upgraded to JUnit 4.12.");
+            return new TestClassPath(
+                    testDeps.values(),
+                    testClasspath.getClassesDirectory(),
+                    testClasspath.getTestClassesDirectory(),
+                    testClasspath.getAdditionalClasspathElements());
+        }
+        return testClasspath;
     }
 
     // TODO why an enclosing class on the top do we real need this shading??
