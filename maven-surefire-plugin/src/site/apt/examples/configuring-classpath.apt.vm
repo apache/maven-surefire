@@ -93,7 +93,7 @@ Additional Classpath Elements
   override project dependencies or resources (except those which are filtered with <<<classpathDependencyExclude>>>).
   All artifacts of scope <<<compile>>> and <<<runtime>>> scope from the dependency tree rooted in the given dependency are added.
   The parametrization works like for regular {{{https://maven.apache.org/pom.html#dependencies}Maven dependencies in a POM}}.
-  {{{https://maven.apache.org/pom.html#exclusions}Exlusions}} are supported as well.
+  {{{https://maven.apache.org/pom.html#exclusions}Exclusions}} are supported as well.
   Neither the dependency management section from the underlying POM is used nor are the conflicts among the different dependency trees 
   (from the project dependencies or from the additional dependencies) automatically resolved. 
   Conflicts lead to warnings, though, which help you clean up the classpath manually.
