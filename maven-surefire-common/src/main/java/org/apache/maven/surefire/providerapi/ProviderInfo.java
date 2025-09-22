@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.surefire.TestClassPath;
 
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
 
@@ -56,5 +57,10 @@ public interface ProviderInfo {
 
     default boolean isAnyJunit4(Artifact artifact) {
         return isWithinVersionSpec(artifact, "[4.0,)");
+    }
+
+    default TestClassPath decorateTestClassPath(TestClassPath testClasspath) throws MojoExecutionException {
+        // no op
+        return testClasspath;
     }
 }
