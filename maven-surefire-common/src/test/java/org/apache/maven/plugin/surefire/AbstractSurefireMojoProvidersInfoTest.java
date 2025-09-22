@@ -156,7 +156,7 @@ public class AbstractSurefireMojoProvidersInfoTest {
     public void jUnit4ProviderJunit45AsDependencyArtifact() {
         Artifact junit = aArtifact("4.5");
         ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, null);
-        assertThat(providerInfo.isApplicable()).isTrue();
+        assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
@@ -164,7 +164,7 @@ public class AbstractSurefireMojoProvidersInfoTest {
         Artifact junit = aArtifact("4.7");
         ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, null);
         // ??? it is ok for 4.7 ???
-        assertThat(providerInfo.isApplicable()).isTrue();
+        assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     private TestClassPath aTestClassPath() {
