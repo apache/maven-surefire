@@ -532,6 +532,7 @@ public class AbstractSurefireMojoTest {
         ProviderInfo providerInfo = mock(ProviderInfo.class);
         when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
         when(providerInfo.getProviderClasspath()).thenReturn(providerArtifacts);
+        when(providerInfo.decorateTestClassPath(any())).thenReturn(testClasspath);
 
         StartupConfiguration conf = invokeMethod(
                 mojo, "newStartupConfigWithClasspath", classLoaderConfiguration, providerInfo, testClasspath);
@@ -581,6 +582,9 @@ public class AbstractSurefireMojoTest {
         provider.setFile(mockFile("original-test-provider.jar"));
         Set<Artifact> providerClasspath = singleton(provider);
         when(providerInfo.getProviderClasspath()).thenReturn(providerClasspath);
+        TestClassPath testClassPath =
+                new TestClassPath(providerClasspath, new File("target"), new File("target"), Collections.emptyList());
+        when(providerInfo.decorateTestClassPath(any())).thenReturn(testClassPath);
 
         StartupConfiguration startupConfiguration = startupConfigurationForProvider(providerInfo);
         assertThat(startupConfiguration

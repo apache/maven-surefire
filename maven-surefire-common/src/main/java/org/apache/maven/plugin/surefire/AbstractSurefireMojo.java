@@ -1891,7 +1891,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             @Nonnull ProviderInfo providerInfo,
             @Nonnull TestClassPath testClasspathWrapper)
             throws MojoExecutionException {
-        Classpath testClasspath = testClasspathWrapper.toClasspath();
+        Classpath testClasspath =
+                providerInfo.decorateTestClassPath(testClasspathWrapper).toClasspath();
         Set<Artifact> providerArtifacts = providerInfo.getProviderClasspath();
         String providerName = providerInfo.getProviderName();
         Classpath providerClasspath = classpathCache.getCachedClassPath(providerName);
@@ -2706,7 +2707,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * @return the classpath elements
      * @throws MojoFailureException
      */
-    private TestClassPath generateTestClasspath() throws MojoFailureException {
+    private TestClassPath generateTestClasspath(ArtifactFilter... dependencyFilters) throws MojoFailureException {
         Set<Artifact> classpathArtifacts = getProject().getArtifacts();
 
         if (getClasspathDependencyScopeExclude() != null
@@ -2719,6 +2720,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             List<String> excludedDependencies = asList(getClasspathDependencyExcludes());
             ArtifactFilter dependencyFilter = new PatternIncludesArtifactFilter(excludedDependencies);
             classpathArtifacts = filterArtifacts(classpathArtifacts, dependencyFilter);
+        }
+
+        if (dependencyFilters != null) {
+            for (ArtifactFilter dependencyFilter : dependencyFilters) {
+                if (dependencyFilter != null) {
+                    classpathArtifacts = filterArtifacts(classpathArtifacts, dependencyFilter);
+                }
+            }
         }
 
         Map<String, Artifact> dependencyConflictIdsProjectArtifacts = classpathArtifacts.stream()
@@ -2817,6 +2826,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private Classpath getArtifactClasspath(Artifact surefireArtifact) throws MojoExecutionException {
+
         Classpath existing = classpathCache.getCachedClassPath(surefireArtifact.getArtifactId());
         if (existing == null) {
             List<String> items = new ArrayList<>();
@@ -3058,7 +3068,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         @Override
         public boolean isApplicable() {
-            return isWithinVersionSpec(junitArtifact, "[4.0,4.11]");
+            return false;
+            //            return isWithinVersionSpec(junitArtifact, "[4.0,4.11]");
         }
 
         @Override
