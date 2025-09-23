@@ -165,9 +165,10 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                 addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
             }
 
-            if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]")) {
+            if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]") || junitDepArtifact != null) {
                 // need to replace with 4.12 as vintage engine requires 4.12+
                 // not really needed as we do it in decorateTestClassPath
+                testDeps.remove("junit:junit-dep");
                 resolve("junit", "junit", "4.12", null, "jar").stream()
                         .filter(artifact -> artifact.getGroupId().equals("junit")
                                 && artifact.getArtifactId().equals("junit"))
@@ -239,16 +240,17 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
         }
     }
 
-    private Set<Artifact> resolve(String g, String a, String v, String c, String t) throws MojoExecutionException {
+    private Set<Artifact> resolve(String groupId, String artifactId, String version, String classifier, String type)
+            throws MojoExecutionException {
         // FIXME will be different with 3 and testng
         ArtifactHandler handler = junitPlatformArtifact != null
                 ? junitPlatformArtifact.getArtifactHandler()
-                : junitArtifact.getArtifactHandler();
-        Artifact artifact = new DefaultArtifact(g, a, v, null, t, c, handler);
-        consoleLogger.debug("Resolving artifact " + g + ":" + a + ":" + v);
+                : junitArtifact != null ? junitArtifact.getArtifactHandler() : junitDepArtifact.getArtifactHandler();
+        Artifact artifact = new DefaultArtifact(groupId, artifactId, version, null, type, classifier, handler);
+        consoleLogger.debug("Resolving artifact " + groupId + ":" + artifactId + ":" + version);
         Set<Artifact> r = surefireDependencyResolver.resolveArtifacts(
                 session.getRepositorySession(), project.getRemoteProjectRepositories(), artifact);
-        consoleLogger.debug("Resolved artifact " + g + ":" + a + ":" + v + " to " + r);
+        consoleLogger.debug("Resolved artifact " + groupId + ":" + artifactId + ":" + version + " to " + r);
         return r;
     }
 
@@ -265,7 +267,8 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
     @Override
     public TestClassPath decorateTestClassPath(TestClassPath testClasspath) throws MojoExecutionException {
         Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
-        if (isWithinVersionSpec(testDeps.get("junit:junit"), "[4.0,4.11]")) {
+        if (isWithinVersionSpec(testDeps.get("junit:junit"), "[4.0,4.11]") || junitDepArtifact != null) {
+            // JUnit 4.11 or older or junit-dep is used
             // need to replace with 4.12 as vintage engine requires 4.12+ (could be higher version but let's keep it
             // simple)
             resolve("junit", "junit", "4.12", null, "jar").stream()
@@ -273,6 +276,19 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                             && artifact.getArtifactId().equals("junit"))
                     .findFirst()
                     .ifPresent(junit412 -> testDeps.put("junit:junit", junit412));
+            if (junitDepArtifact != null) {
+                Set<Artifact> artifacts = resolve(
+                        junitDepArtifact.getGroupId(),
+                        junitDepArtifact.getArtifactId(),
+                        junitDepArtifact.getBaseVersion(),
+                        null,
+                        "jar");
+                if (!artifacts.isEmpty()) {
+                    artifacts.forEach(
+                            artifact -> testDeps.put(artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact));
+                }
+            }
+            testDeps.remove("junit:junit-dep");
             consoleLogger.warning(
                     "Your build is using JUnit 4.11 or older. This dependency has been upgraded to JUnit 4.12.");
             return new TestClassPath(
