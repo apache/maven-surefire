@@ -29,7 +29,7 @@
   <name>Test of @Ignore annotation</name>
 
   <properties>
-    <junit.version>4.4</junit.version>
+    <junit.version>4.12</junit.version>
     <surefire.parallel></surefire.parallel>
     <surefire.threadcount>3</surefire.threadcount>
     <maven.compiler.source>1.8</maven.compiler.source>
