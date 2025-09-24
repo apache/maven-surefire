@@ -452,10 +452,6 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(providerInfo.getProviderName()).isEqualTo("custom.Provider");
         assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
 
-        providerInfo = mojo.newJUnit3ProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junit.JUnit3Provider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
         providerInfo = mojo.newTestNgProviderInfo();
         assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.testng.TestNGProvider");
         assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
@@ -511,10 +507,6 @@ public class AbstractSurefireMojoJava7PlusTest {
     public static class Mojo extends AbstractSurefireMojo {
         ProviderInfo newDynamicProviderInfo() {
             return new DynamicProviderInfo("custom.Provider");
-        }
-
-        ProviderInfo newJUnit3ProviderInfo() {
-            return new JUnit3ProviderInfo();
         }
 
         ProviderInfo newTestNgProviderInfo() {
