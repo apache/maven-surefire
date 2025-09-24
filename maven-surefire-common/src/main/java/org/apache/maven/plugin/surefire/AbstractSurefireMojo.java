@@ -1156,7 +1156,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         getJUnit5Artifact(),
                         testClasspath,
                         getJunitArtifact(),
-                        junitDepArtifact,
                         getBooterArtifact(),
                         surefireDependencyResolver,
                         session,
@@ -1165,15 +1164,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger),
                 new TestNgProviderInfo(getTestNgArtifact()),
-                new JUnitCoreProviderInfo(getJunitArtifact(), junitDepArtifact),
-                new JUnit4ProviderInfo(getJunitArtifact(), junitDepArtifact),
                 new JUnit3ProviderInfo(),
                 new JUnitPlatformProviderInfo.JUnitPlatformProviderShadefireInfo(
                         getJUnitPlatformRunnerArtifact(),
                         getJUnit5Artifact(),
                         testClasspath,
                         getJunitArtifact(),
-                        junitDepArtifact,
                         getBooterArtifact(),
                         surefireDependencyResolver,
                         session,
@@ -3038,95 +3034,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             String version = getBooterArtifact().getBaseVersion();
             return surefireDependencyResolver.getProviderClasspath(
                     session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit3", version);
-        }
-    }
-
-    final class JUnit4ProviderInfo implements ProviderInfo {
-        private final Artifact junitArtifact;
-
-        private final Artifact junitDepArtifact;
-
-        JUnit4ProviderInfo(Artifact junitArtifact, Artifact junitDepArtifact) {
-            this.junitArtifact = junitArtifact;
-            this.junitDepArtifact = junitDepArtifact;
-        }
-
-        @Override
-        @Nonnull
-        public String getProviderName() {
-            return "org.apache.maven.surefire.junit4.JUnit4Provider";
-        }
-
-        @Override
-        public boolean isApplicable() {
-            return false;
-            //            return isWithinVersionSpec(junitArtifact, "[4.0,4.11]");
-        }
-
-        @Override
-        public void addProviderProperties() {}
-
-        @Nonnull
-        @Override
-        public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return emptyList();
-        }
-
-        @Override
-        @Nonnull
-        public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
-            String version = getBooterArtifact().getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath(
-                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit4", version);
-        }
-    }
-
-    final class JUnitCoreProviderInfo implements ProviderInfo {
-        private final Artifact junitArtifact;
-
-        private final Artifact junitDepArtifact;
-
-        JUnitCoreProviderInfo(Artifact junitArtifact, Artifact junitDepArtifact) {
-            this.junitArtifact = junitArtifact;
-            this.junitDepArtifact = junitDepArtifact;
-        }
-
-        @Override
-        @Nonnull
-        public String getProviderName() {
-            return "org.apache.maven.surefire.junitcore.JUnitCoreProvider";
-        }
-
-        private boolean is47CompatibleJunitDep() {
-            return isJunit47Compatible(junitDepArtifact);
-        }
-
-        @Override
-        public boolean isApplicable() {
-            final boolean isJunitArtifact47 = isAnyJunit4(junitArtifact) && isJunit47Compatible(junitArtifact);
-            final boolean isAny47ProvidersForces = isAnyConcurrencySelected() || isAnyGroupsSelected();
-            return isAny47ProvidersForces && (isJunitArtifact47 || is47CompatibleJunitDep());
-        }
-
-        @Override
-        public void addProviderProperties() throws MojoExecutionException {
-            convertJunitCoreParameters();
-            convertGroupParameters();
-            convertJunitEngineParameters();
-        }
-
-        @Nonnull
-        @Override
-        public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return emptyList();
-        }
-
-        @Override
-        @Nonnull
-        public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
-            String version = getBooterArtifact().getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath(
-                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit47", version);
         }
     }
 
