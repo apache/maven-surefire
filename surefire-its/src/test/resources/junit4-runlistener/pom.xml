@@ -29,7 +29,7 @@
   <name>JUnit4 RunListener test</name>
 
   <properties>
-    <junitVersion>4.4</junitVersion>
+    <junitVersion>4.12</junitVersion>
     <provider>surefire-junit4</provider>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
