@@ -41,7 +41,7 @@
   -->
 
   <properties>
-    <junitVersion>4.4</junitVersion>
+    <junitVersion>4.12</junitVersion>
   </properties>
 
   <dependencies>
