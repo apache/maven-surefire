@@ -1175,7 +1175,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger),
                 new TestNgProviderInfo(getTestNgArtifact()),
-                new JUnit3ProviderInfo(),
                 new JUnitPlatformProviderInfo.JUnitPlatformProviderShadefireInfo(
                         getJUnitPlatformRunnerArtifact(),
                         getJUnit5Artifact(),
@@ -3015,38 +3014,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             String version = surefireArtifact.getBaseVersion();
             return surefireDependencyResolver.getProviderClasspath(
                     session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-testng", version);
-        }
-    }
-
-    final class JUnit3ProviderInfo implements ProviderInfo {
-        @Override
-        @Nonnull
-        public String getProviderName() {
-            return "org.apache.maven.surefire.junit.JUnit3Provider";
-        }
-
-        @Override
-        public boolean isApplicable() {
-            return true;
-        }
-
-        @Override
-        public void addProviderProperties() {}
-
-        @Nonnull
-        @Override
-        public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return emptyList();
-        }
-
-        @Override
-        @Nonnull
-        public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
-            // add the JUnit provider as default - it doesn't require JUnit to be present,
-            // since it supports POJO tests.
-            String version = getBooterArtifact().getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath(
-                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-junit3", version);
         }
     }
 
