@@ -33,9 +33,7 @@
   <description>Surefire Providers Aggregator POM</description>
 
   <modules>
-    <module>common-junit3</module>
     <module>common-java5</module>
-    <module>surefire-junit3</module>
     <module>surefire-junit-platform</module>
     <module>surefire-testng-utils</module>
     <module>surefire-testng</module>
