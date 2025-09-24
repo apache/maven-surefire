@@ -530,8 +530,7 @@ public class AbstractSurefireMojoJava7PlusTest {
         }
 
         ProviderInfo newJUnitPlatformProviderInfo() {
-            return new JUnitPlatformProviderInfo(
-                    null, null, null, null, null, null, null, null, null, null, null, null);
+            return new JUnitPlatformProviderInfo(null, null, null, null, null, null, null, null, null, null, null);
         }
 
         @Override
