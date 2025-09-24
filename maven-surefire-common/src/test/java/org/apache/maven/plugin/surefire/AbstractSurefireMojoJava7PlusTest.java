@@ -456,14 +456,6 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junit.JUnit3Provider");
         assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
 
-        providerInfo = mojo.newJUnit4ProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junit4.JUnit4Provider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
-        providerInfo = mojo.newJUnit47ProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junitcore.JUnitCoreProvider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
         providerInfo = mojo.newTestNgProviderInfo();
         assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.testng.TestNGProvider");
         assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
@@ -525,21 +517,12 @@ public class AbstractSurefireMojoJava7PlusTest {
             return new JUnit3ProviderInfo();
         }
 
-        ProviderInfo newJUnit4ProviderInfo() {
-            return new JUnit4ProviderInfo(null, null);
-        }
-
-        ProviderInfo newJUnit47ProviderInfo() {
-            return new JUnitCoreProviderInfo(null, null);
-        }
-
         ProviderInfo newTestNgProviderInfo() {
             return new TestNgProviderInfo(null);
         }
 
         ProviderInfo newJUnitPlatformProviderInfo() {
-            return new JUnitPlatformProviderInfo(
-                    null, null, null, null, null, null, null, null, null, null, null, null);
+            return new JUnitPlatformProviderInfo(null, null, null, null, null, null, null, null, null, null, null);
         }
 
         @Override
