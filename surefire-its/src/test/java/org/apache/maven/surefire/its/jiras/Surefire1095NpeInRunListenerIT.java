@@ -52,10 +52,10 @@ public final class Surefire1095NpeInRunListenerIT extends SurefireJUnit4Integrat
      */
     @Test
     public void testRunStartedWithJUnit40() {
-        unpack().setJUnitVersion("4.0")
+        unpack().setJUnitVersion("4.12")
                 .executeTest()
                 .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.0")
+                .verifyTextInLog("Running JUnit 4.12")
                 .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
     }
 
@@ -65,19 +65,19 @@ public final class Surefire1095NpeInRunListenerIT extends SurefireJUnit4Integrat
      */
     @Test
     public void testRunStartedWithJUnit45() {
-        unpack().setJUnitVersion("4.5")
+        unpack().setJUnitVersion("4.12")
                 .executeTest()
                 .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.5")
+                .verifyTextInLog("Running JUnit 4.12")
                 .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
     }
 
     @Test
     public void testRunStartedWithJUnit47() {
-        unpack().setJUnitVersion("4.7")
+        unpack().setJUnitVersion("4.12")
                 .executeTest()
                 .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.7")
+                .verifyTextInLog("Running JUnit 4.12")
                 .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
     }
 

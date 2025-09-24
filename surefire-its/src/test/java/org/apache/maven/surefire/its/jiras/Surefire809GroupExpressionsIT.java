@@ -45,7 +45,7 @@ public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTest
     @Test
     public void incorrectJUnitVersions() {
         unpackJUnit()
-                .setJUnitVersion("4.5")
+                .setJUnitVersion("4.12")
                 .groups("junit4.CategoryA AND junit4.CategoryB")
                 .maven()
                 .withFailure()
