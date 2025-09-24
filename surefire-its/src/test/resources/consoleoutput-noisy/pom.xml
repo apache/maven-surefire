@@ -51,7 +51,7 @@
 
     <properties>
       <useFile>true</useFile>
-      <junit.version>4.8.1</junit.version>
+      <junit.version>4.12</junit.version>
       <redirect.to.file>true</redirect.to.file>
       <forkCount>1</forkCount>
       <reuseForks>true</reuseForks>

@@ -35,11 +35,7 @@
   <modules>
     <module>common-junit3</module>
     <module>common-java5</module>
-    <module>common-junit4</module>
-    <module>common-junit48</module>
     <module>surefire-junit3</module>
-    <module>surefire-junit4</module>
-    <module>surefire-junit47</module>
     <module>surefire-junit-platform</module>
     <module>surefire-testng-utils</module>
     <module>surefire-testng</module>
