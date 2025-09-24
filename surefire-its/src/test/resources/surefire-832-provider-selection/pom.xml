@@ -30,7 +30,7 @@
 
 
   <properties>
-    <junitVersion>4.8.1</junitVersion>
+    <junitVersion>4.12</junitVersion>
       <groups>junit4.CategoryA,junit4.CategoryB</groups>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
