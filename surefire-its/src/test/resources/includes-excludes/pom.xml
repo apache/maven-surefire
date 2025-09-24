@@ -30,7 +30,7 @@ under the License.
   <description>Test surefire inclusion/exclusions</description>
 
   <properties>
-    <junit.version>3.8.2</junit.version>
+    <junit.version>4.12</junit.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
