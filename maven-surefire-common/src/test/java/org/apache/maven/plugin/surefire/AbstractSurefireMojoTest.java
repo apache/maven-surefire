@@ -19,10 +19,10 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,7 +72,6 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -98,6 +97,7 @@ import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -119,8 +119,6 @@ import static org.powermock.reflect.Whitebox.setInternalState;
 @PrepareForTest(AbstractSurefireMojo.class)
 @PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
 public class AbstractSurefireMojoTest {
-    @Rule
-    public final ExpectedException e = ExpectedException.none();
 
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
@@ -718,14 +716,14 @@ public class AbstractSurefireMojoTest {
         File testClassesDirectory = new File(baseDir, "mock-dir");
         mojo.setTestClassesDirectory(testClassesDirectory);
         TestClassPath testClassPath = new TestClassPath(
-                Collections.<Artifact>emptySet(), classesDirectory, testClassesDirectory, Collections.emptyList());
+                Collections.emptySet(), classesDirectory, testClassesDirectory, Collections.emptyList());
 
         ProviderInfo providerInfo = mock(ProviderInfo.class);
         when(providerInfo.getProviderName()).thenReturn("provider mock");
-        when(providerInfo.getProviderClasspath()).thenReturn(Collections.<Artifact>emptySet());
+        when(providerInfo.getProviderClasspath()).thenReturn(Collections.emptySet());
 
         DefaultScanResult defaultScanResult = mock(DefaultScanResult.class);
-        when(defaultScanResult.getClasses()).thenReturn(Collections.<String>emptyList());
+        when(defaultScanResult.getClasses()).thenReturn(Collections.emptyList());
 
         Path pathToModularDescriptor =
                 Paths.get(baseDir, "src", "test", "resources", "org", "apache", "maven", "plugin", "surefire");
@@ -1055,7 +1053,7 @@ public class AbstractSurefireMojoTest {
                 testClasspathOpentest4j,
                 testClasspathCommons);
 
-        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[testArtifacts.size()]));
+        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[0]));
 
         File classesDirectory = new File("target/classes");
 
@@ -1079,7 +1077,7 @@ public class AbstractSurefireMojoTest {
         mojo.setPluginDescriptor(pluginDescriptor);
         Plugin p = mock(Plugin.class);
         when(pluginDescriptor.getPlugin()).thenReturn(p);
-        when(p.getDependencies()).thenReturn(Collections.<Dependency>emptyList());
+        when(p.getDependencies()).thenReturn(Collections.emptyList());
 
         Artifact junitPlatformArtifact = invokeMethod(mojo, "getJUnit5Artifact");
         assertThat(junitPlatformArtifact.getGroupId()).isEqualTo("org.junit.platform");
@@ -1146,7 +1144,7 @@ public class AbstractSurefireMojoTest {
         Collection<Artifact> testArtifacts =
                 asList(testClasspathSomeTestArtifact, testClasspathApiguardian, testClasspathCommons);
 
-        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[testArtifacts.size()]));
+        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[0]));
 
         File classesDirectory = new File("target/classes");
 
@@ -1172,7 +1170,7 @@ public class AbstractSurefireMojoTest {
         mojo.setPluginDescriptor(pluginDescriptor);
         Plugin p = mock(Plugin.class);
         when(pluginDescriptor.getPlugin()).thenReturn(p);
-        when(p.getDependencies()).thenReturn(Collections.<Dependency>emptyList());
+        when(p.getDependencies()).thenReturn(Collections.emptyList());
 
         Artifact junitPlatformArtifact = invokeMethod(mojo, "getJUnit5Artifact");
         assertThat(junitPlatformArtifact.getGroupId()).isEqualTo("org.junit.platform");
@@ -1260,7 +1258,7 @@ public class AbstractSurefireMojoTest {
                 testClasspathCommons,
                 testClasspathOpentest4j);
 
-        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[testArtifacts.size()]));
+        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[0]));
 
         File classesDirectory = new File("target/classes");
 
@@ -1368,7 +1366,7 @@ public class AbstractSurefireMojoTest {
                 testClasspathCommons,
                 testClasspathOpentest4j);
 
-        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[testArtifacts.size()]));
+        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[0]));
 
         File classesDirectory = new File("target/classes");
 
@@ -1413,7 +1411,7 @@ public class AbstractSurefireMojoTest {
         mojo.setPluginDescriptor(pluginDescriptor);
         Plugin p = mock(Plugin.class);
         when(pluginDescriptor.getPlugin()).thenReturn(p);
-        when(p.getDependencies()).thenReturn(Collections.<Dependency>emptyList());
+        when(p.getDependencies()).thenReturn(Collections.emptyList());
 
         Artifact junitPlatformArtifact = invokeMethod(mojo, "getJUnit5Artifact");
         assertThat(junitPlatformArtifact.getGroupId()).isEqualTo("org.junit.platform");
@@ -1533,7 +1531,7 @@ public class AbstractSurefireMojoTest {
                 testClasspathCommons,
                 testClasspathOpentest4j);
 
-        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[testArtifacts.size()]));
+        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[0]));
 
         File classesDirectory = new File("target/classes");
 
@@ -1716,7 +1714,7 @@ public class AbstractSurefireMojoTest {
                 testClasspathCommons,
                 testClasspathOpentest4j);
 
-        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[testArtifacts.size()]));
+        setProjectDepedenciesToMojo(testArtifacts.toArray(new Artifact[0]));
 
         File classesDirectory = new File("target/classes");
 
@@ -1886,6 +1884,7 @@ public class AbstractSurefireMojoTest {
 
     @Test
     public void shouldVerifyConfigParameters() throws Exception {
+
         Mojo mojo = new Mojo() {
             @Override
             public File getTestClassesDirectory() {
@@ -1898,9 +1897,9 @@ public class AbstractSurefireMojoTest {
             }
         };
 
-        e.expect(MojoFailureException.class);
-        e.expectMessage("Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'.");
-        mojo.verifyParameters();
+        MojoFailureException m = assertThrows(MojoFailureException.class, mojo::verifyParameters);
+        assertThat(m.getMessage())
+                .isEqualTo("Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'.");
     }
 
     private void setProjectDepedenciesToMojo(Artifact... deps) {
@@ -1951,7 +1950,6 @@ public class AbstractSurefireMojoTest {
                     null,
                     junitPlatformArtifact,
                     testClasspathWrapper,
-                    null,
                     null,
                     getBooterArtifact(),
                     getSurefireDependencyResolver(),
@@ -2375,8 +2373,9 @@ public class AbstractSurefireMojoTest {
         plugin.setProjectTestArtifacts(singletonList(testDeps));
         plugin.setDependenciesToScan(new String[] {"g:a"});
 
-        e.expectMessage("Method filter prohibited in includes|excludes parameter: AnotherTest#method ");
-        plugin.scanDependencies();
+        Exception e = assertThrows(Exception.class, plugin::scanDependencies);
+        assertThat(e.getMessage())
+                .isEqualTo("Method filter prohibited in includes|excludes parameter: AnotherTest#method ");
     }
 
     @Test
@@ -2516,7 +2515,7 @@ public class AbstractSurefireMojoTest {
                 systemProperties.put("userProperties1", "source2");
                 try {
                     File propertiesFile = tempFolder.newFile();
-                    try (OutputStream outputStream = new FileOutputStream(propertiesFile)) {
+                    try (OutputStream outputStream = Files.newOutputStream(propertiesFile.toPath())) {
                         systemProperties.store(outputStream, "comments");
                     }
                     return propertiesFile;
