@@ -37,7 +37,6 @@ public interface ProviderInfo {
     enum Engine {
         JUNIT3,
         JUNIT4,
-        JUNIT47,
         TESTNG,
         JUNIT_PLATFORM
     }
@@ -56,7 +55,7 @@ public interface ProviderInfo {
     List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements);
 
     default boolean isAnyJunit4(Artifact artifact) {
-        return isWithinVersionSpec(artifact, "[4.0,)");
+        return isWithinVersionSpec(artifact, "[4.12,)");
     }
 
     default TestClassPath decorateTestClassPath(TestClassPath testClasspath) throws MojoExecutionException {

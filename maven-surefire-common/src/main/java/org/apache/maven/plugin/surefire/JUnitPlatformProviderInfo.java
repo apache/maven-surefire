@@ -51,7 +51,6 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
     private final TestClassPath testClasspath;
 
     private final Artifact junitArtifact;
-    private final Artifact junitDepArtifact;
     private final Artifact booterArtifact;
     private final SurefireDependencyResolver surefireDependencyResolver;
     private final MavenSession session;
@@ -67,7 +66,6 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
             Artifact junitPlatformArtifact,
             @Nonnull TestClassPath testClasspath,
             Artifact junitArtifact,
-            Artifact junitDepArtifact,
             Artifact booterArtifact,
             SurefireDependencyResolver surefireDependencyResolver,
             MavenSession session,
@@ -84,10 +82,7 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
         this.junitPlatformArtifact = junitPlatformArtifact;
         this.testClasspath = testClasspath;
         this.junitArtifact = junitArtifact;
-        this.junitDepArtifact = junitDepArtifact;
         this.booterArtifact = booterArtifact;
-        // FIXME check this logic in align versions
-        // JUnit 4.7+ vintage engine
         // JUnit 4.12+ is required by JUnit 5.3+
         // JUnit 4.13+ is required by JUnit 5.8+
         // JUnit 4.13.2 is required by JUnit 5.9+
@@ -95,8 +90,8 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
         // JUnit 4.13.4 is required by JUnit 5.12+
         // https://junit.org/junit5/docs/current/user-guide/#dependency-metadata
         //
-        if (junitDepArtifact != null || isAnyJunit4(junitArtifact)) {
-            this.engine = ProviderInfo.Engine.JUNIT47;
+        if (isAnyJunit4(junitArtifact)) {
+            this.engine = Engine.JUNIT4;
         }
         this.surefireDependencyResolver = surefireDependencyResolver;
     }
@@ -113,8 +108,7 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
 
     @Override
     public boolean isApplicable() {
-        return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null)
-                || (junitDepArtifact != null || isAnyJunit4(junitArtifact));
+        return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null) || (isAnyJunit4(junitArtifact));
     }
 
     private boolean isJunit412(Artifact junitArtifact) {
@@ -165,18 +159,14 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                 addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
             }
 
-            if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]") || junitDepArtifact != null) {
-                // need to replace with 4.12 as vintage engine requires 4.12+
-                // not really needed as we do it in decorateTestClassPath
-                testDeps.remove("junit:junit-dep");
-                resolve("junit", "junit", "4.12", null, "jar").stream()
-                        .filter(artifact -> artifact.getGroupId().equals("junit")
-                                && artifact.getArtifactId().equals("junit"))
-                        .findFirst()
-                        .ifPresent(junit412 -> testDeps.put("junit:junit", junit412));
+            if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]")) {
+                String message = "Surefire is not compatible with JUnit 4.11 or older. Project version is "
+                        + junitArtifact.getBaseVersion();
+                consoleLogger.error(message);
+                throw new MojoExecutionException(message);
             }
 
-            if ((testDeps.containsKey("junit:junit") || testDeps.containsKey("junit:junit-dep"))
+            if ((testDeps.containsKey("junit:junit"))
                     && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
                 String engineGroupId = "org.junit.vintage";
                 String engineArtifactId = "junit-vintage-engine";
@@ -245,7 +235,7 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
         // FIXME will be different with 3 and testng
         ArtifactHandler handler = junitPlatformArtifact != null
                 ? junitPlatformArtifact.getArtifactHandler()
-                : junitArtifact != null ? junitArtifact.getArtifactHandler() : junitDepArtifact.getArtifactHandler();
+                : junitArtifact != null ? junitArtifact.getArtifactHandler() : null;
         Artifact artifact = new DefaultArtifact(groupId, artifactId, version, null, type, classifier, handler);
         consoleLogger.debug("Resolving artifact " + groupId + ":" + artifactId + ":" + version);
         Set<Artifact> r = surefireDependencyResolver.resolveArtifacts(
@@ -264,42 +254,6 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                         stringArtifactEntry.getKey().equals("org.junit.platform:junit-platform-engine"));
     }
 
-    @Override
-    public TestClassPath decorateTestClassPath(TestClassPath testClasspath) throws MojoExecutionException {
-        Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
-        if (isWithinVersionSpec(testDeps.get("junit:junit"), "[4.0,4.11]") || junitDepArtifact != null) {
-            // JUnit 4.11 or older or junit-dep is used
-            // need to replace with 4.12 as vintage engine requires 4.12+ (could be higher version but let's keep it
-            // simple)
-            resolve("junit", "junit", "4.12", null, "jar").stream()
-                    .filter(artifact -> artifact.getGroupId().equals("junit")
-                            && artifact.getArtifactId().equals("junit"))
-                    .findFirst()
-                    .ifPresent(junit412 -> testDeps.put("junit:junit", junit412));
-            if (junitDepArtifact != null) {
-                Set<Artifact> artifacts = resolve(
-                        junitDepArtifact.getGroupId(),
-                        junitDepArtifact.getArtifactId(),
-                        junitDepArtifact.getBaseVersion(),
-                        null,
-                        "jar");
-                if (!artifacts.isEmpty()) {
-                    artifacts.forEach(
-                            artifact -> testDeps.put(artifact.getGroupId() + ":" + artifact.getArtifactId(), artifact));
-                }
-            }
-            testDeps.remove("junit:junit-dep");
-            consoleLogger.warning(
-                    "Your build is using JUnit 4.11 or older. This dependency has been upgraded to JUnit 4.12.");
-            return new TestClassPath(
-                    testDeps.values(),
-                    testClasspath.getClassesDirectory(),
-                    testClasspath.getTestClassesDirectory(),
-                    testClasspath.getAdditionalClasspathElements());
-        }
-        return testClasspath;
-    }
-
     // TODO why an enclosing class on the top do we real need this shading??
     @SuppressWarnings("checkstyle:parameternumber")
     public static class JUnitPlatformProviderShadefireInfo extends JUnitPlatformProviderInfo {
@@ -309,7 +263,6 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                 Artifact junitPlatformArtifact,
                 @Nonnull TestClassPath testClasspath,
                 Artifact junitArtifact,
-                Artifact junitDepArtifact,
                 Artifact booterArtifact,
                 SurefireDependencyResolver surefireDependencyResolver,
                 MavenSession session,
@@ -322,7 +275,6 @@ class JUnitPlatformProviderInfo implements ProviderInfo {
                     junitPlatformArtifact,
                     testClasspath,
                     junitArtifact,
-                    junitDepArtifact,
                     booterArtifact,
                     surefireDependencyResolver,
                     session,
