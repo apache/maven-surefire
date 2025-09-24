@@ -40,12 +40,6 @@ public class AbstractSurefireMojoProvidersInfoTest {
     private AbstractSurefireMojo mojo;
 
     @Test
-    public void defaultProviderAreAlwaysAvailable() {
-        ProviderInfo providerInfo = mojo.new JUnit3ProviderInfo();
-        assertThat(providerInfo.isApplicable()).isTrue();
-    }
-
-    @Test
     public void dynamicProviderAreAlwaysApplicable() {
         ProviderInfo providerInfo = mojo.new DynamicProviderInfo("test");
         assertThat(providerInfo.isApplicable()).isTrue();
