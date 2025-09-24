@@ -35,10 +35,8 @@ public class JUnit4RunListenerIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testJUnit4RunListener() {
-        final OutputValidator outputValidator = unpack()
-                .setJUnitVersion("4.12")
-                .executeTest()
-                .verifyErrorFreeLog();
+        final OutputValidator outputValidator =
+                unpack().setJUnitVersion("4.12").executeTest().verifyErrorFreeLog();
         assertResults(outputValidator);
         outputValidator.verifyTextInLog("testRunStarted null");
         outputValidator.verifyTextInLog("testFinished simpleTest");
@@ -47,8 +45,7 @@ public class JUnit4RunListenerIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testRunlistenerJunitCoreProvider() {
-        final OutputValidator outputValidator = unpack()
-                .setJUnitVersion("4.12")
+        final OutputValidator outputValidator = unpack().setJUnitVersion("4.12")
                 .addGoal("-DjunitVersion=4.12")
                 .executeTest()
                 .verifyErrorFreeLog(); // Todo: Fix junitVesion
