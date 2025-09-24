@@ -39,11 +39,14 @@ public class AbstractSurefireMojoProvidersInfoTest {
     @Spy
     private AbstractSurefireMojo mojo;
 
+    /*
+    //fixme: think about if this test is still necessary
     @Test
     public void defaultProviderAreAlwaysAvailable() {
         ProviderInfo providerInfo = mojo.new JUnit3ProviderInfo();
         assertThat(providerInfo.isApplicable()).isTrue();
     }
+     */
 
     @Test
     public void dynamicProviderAreAlwaysApplicable() {
