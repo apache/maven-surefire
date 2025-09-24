@@ -124,7 +124,6 @@ public class AbstractSurefireMojoProvidersInfoTest {
         ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
                 null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
-        assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
