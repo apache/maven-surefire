@@ -16,20 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.common.junit48.tests.group;
+package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.common.junit48.tests.group.marker.CategoryC;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
- * AbstractCTest.
+ * Test JUnit test that contains inner classes
+ *
+ * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-@Category(CategoryC.class)
-public abstract class AbstractCTest {
-
+public class Surefire412InnerClassTestIT extends SurefireJUnit4IntegrationTestCase {
     @Test
-    public void pc() {
-        System.out.println("AbstractCTest#pc");
+    public void testInnerClass() {
+        executeErrorFreeTest("/junit-innerClass", 1);
     }
 }
