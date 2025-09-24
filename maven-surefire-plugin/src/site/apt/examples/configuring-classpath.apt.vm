@@ -112,7 +112,7 @@ Additional Classpath Elements
           <additionalClasspathDependencies>
             <additionalClasspathDependency>
               <groupId>myGroupId</groupId>
-              <artifactId>myArtifactId</artfactId>
+              <artifactId>myArtifactId</artifactId>
               <version>1.0.0</version>
               <exclusions>
                 <exclusion>
