@@ -24,6 +24,5 @@ package org.apache.maven.surefire.its.fixture;
  */
 public enum TestFramework {
     JUNIT4,
-    JUNIT47,
     TestNG
 }
