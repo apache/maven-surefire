@@ -47,6 +47,8 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -1118,9 +1120,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private void executeAfterPreconditionsChecked(@Nonnull DefaultScanResult scanResult, @Nonnull Platform platform)
             throws MojoExecutionException, MojoFailureException {
-        // TODO check if those 2 methods can be called here
-        convertJunitEngineParameters();
-        convertGroupParameters();
 
         TestClassPath testClasspath = generateTestClasspath();
         List<ProviderInfo> providers = createProviders(testClasspath);
@@ -1148,7 +1147,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     protected List<ProviderInfo> createProviders(TestClassPath testClasspath) throws MojoExecutionException {
-        Artifact junitDepArtifact = getJunitDepArtifact();
         return providerDetector.resolve(
                 new DynamicProviderInfo(null),
                 new JUnitPlatformProviderInfo(
@@ -1164,7 +1162,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger),
                 new TestNgProviderInfo(getTestNgArtifact()),
-                new JUnitPlatformProviderInfo.JUnitPlatformProviderShadefireInfo(
+                new JUnitPlatformProviderShadefireInfo(
                         getJUnitPlatformRunnerArtifact(),
                         getJUnit5Artifact(),
                         testClasspath,
@@ -1558,7 +1556,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
-    private void convertJunitCoreParameters() throws MojoExecutionException {
+    void convertJunitCoreParameters() throws MojoExecutionException {
         checkThreadCountEntity(getThreadCountSuites(), "suites");
         checkThreadCountEntity(getThreadCountClasses(), "classes");
         checkThreadCountEntity(getThreadCountMethods(), "methods");
@@ -1569,10 +1567,20 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             checkNonForkedThreads(parallel);
         }
 
-        getProperties().setProperty(ProviderParameterNames.PARALLEL_PROP, usedParallel);
+        getProperties()
+                .setProperty(
+                        "junit.vintage.execution.parallel.enabled", Boolean.toString(!"none".equals(usedParallel)));
         if (this.getThreadCount() > 0) {
-            getProperties().setProperty(ProviderParameterNames.THREADCOUNT_PROP, Integer.toString(getThreadCount()));
+            getProperties()
+                    .setProperty("junit.vintage.execution.parallel.pool-size", Integer.toString(getThreadCount()));
         }
+        if ("classes".equals(parallel) || "both".equals(parallel)) {
+            getProperties().setProperty("junit.vintage.execution.parallel.classes", "true");
+        }
+        if ("methods".equals(parallel) || "both".equals(parallel)) {
+            getProperties().setProperty("junit.vintage.execution.parallel.methods", "true");
+        }
+
         getProperties().setProperty("perCoreThreadCount", Boolean.toString(getPerCoreThreadCount()));
         getProperties().setProperty("useUnlimitedThreads", Boolean.toString(getUseUnlimitedThreads()));
         getProperties()
@@ -3053,6 +3061,277 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     plugin,
                     getPluginArtifactMap());
             return new LinkedHashSet<>(providerArtifacts.values());
+        }
+    }
+
+    class JUnitPlatformProviderInfo implements ProviderInfo {
+
+        private static final String PROVIDER_DEP_GID = "org.junit.platform";
+        private static final String PROVIDER_DEP_AID = "junit-platform-launcher";
+
+        private final Artifact junitPlatformRunnerArtifact;
+        private final Artifact junitPlatformArtifact;
+        private final TestClassPath testClasspath;
+
+        private final Artifact junitArtifact;
+        private final Artifact booterArtifact;
+        private final SurefireDependencyResolver surefireDependencyResolver;
+        private final MavenSession session;
+        private final MavenProject project;
+        private final PluginDescriptor pluginDescriptor;
+        private final Map<String, Artifact> pluginArtifactMap;
+        private final ConsoleLogger consoleLogger;
+        private ProviderInfo.Engine engine = ProviderInfo.Engine.JUNIT_PLATFORM;
+
+        @SuppressWarnings("checkstyle:parameternumber")
+        JUnitPlatformProviderInfo(
+                Artifact junitPlatformRunnerArtifact,
+                Artifact junitPlatformArtifact,
+                @Nonnull TestClassPath testClasspath,
+                Artifact junitArtifact,
+                Artifact booterArtifact,
+                SurefireDependencyResolver surefireDependencyResolver,
+                MavenSession session,
+                MavenProject project,
+                PluginDescriptor pluginDescriptor,
+                Map<String, Artifact> pluginArtifactMap,
+                ConsoleLogger consoleLogger) {
+            this.session = session;
+            this.project = project;
+            this.pluginDescriptor = pluginDescriptor;
+            this.pluginArtifactMap = pluginArtifactMap;
+            this.consoleLogger = consoleLogger;
+            this.junitPlatformRunnerArtifact = junitPlatformRunnerArtifact;
+            this.junitPlatformArtifact = junitPlatformArtifact;
+            this.testClasspath = testClasspath;
+            this.junitArtifact = junitArtifact;
+            this.booterArtifact = booterArtifact;
+            // JUnit 4.12+ is required by JUnit 5.3+
+            // JUnit 4.13+ is required by JUnit 5.8+
+            // JUnit 4.13.2 is required by JUnit 5.9+
+            // JUnit 4.13.3 is required by JUnit 5.10+
+            // JUnit 4.13.4 is required by JUnit 5.12+
+            // https://junit.org/junit5/docs/current/user-guide/#dependency-metadata
+            //
+            if (isAnyJunit4(junitArtifact)) {
+                this.engine = Engine.JUNIT4;
+            }
+            this.surefireDependencyResolver = surefireDependencyResolver;
+        }
+
+        @Override
+        @Nonnull
+        public String getProviderName() {
+            return "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
+        }
+
+        protected String getProviderArtifactName() {
+            return "surefire-junit-platform";
+        }
+
+        @Override
+        public boolean isApplicable() {
+            return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null)
+                    || (isAnyJunit4(junitArtifact));
+        }
+
+        @Override
+        public void addProviderProperties() throws MojoExecutionException {
+            convertJunitEngineParameters();
+            convertGroupParameters();
+            // TODO only junit4?
+            convertJunitCoreParameters();
+        }
+
+        @Nonnull
+        @Override
+        public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
+            boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
+            return hasTestDescriptor ? getJpmsArgs() : Collections.emptyList();
+        }
+
+        @Override
+        @Nonnull
+        public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
+            String surefireVersion = booterArtifact.getBaseVersion();
+            Map<String, Artifact> providerArtifacts = surefireDependencyResolver.getProviderClasspathAsMap(
+                    session.getRepositorySession(),
+                    project.getRemotePluginRepositories(),
+                    getProviderArtifactName(),
+                    surefireVersion);
+            Map<String, Artifact> testDeps = testClasspath.getTestDependencies();
+
+            Plugin plugin = pluginDescriptor.getPlugin();
+            Map<String, Artifact> pluginDeps = surefireDependencyResolver.resolvePluginDependencies(
+                    session.getRepositorySession(), project.getRemotePluginRepositories(), plugin, pluginArtifactMap);
+
+            if (hasDependencyPlatformEngine(pluginDeps)) {
+                providerArtifacts.putAll(pluginDeps);
+            } else {
+                String engineVersion = null;
+                if (hasDependencyJupiterAPI(testDeps)
+                        && !testDeps.containsKey("org.junit.jupiter:junit-jupiter-engine")) {
+                    String engineGroupId = "org.junit.jupiter";
+                    String engineArtifactId = "junit-jupiter-engine";
+                    String engineCoordinates = engineGroupId + ":" + engineArtifactId;
+                    String api = "org.junit.jupiter:junit-jupiter-api";
+                    engineVersion = testDeps.get(api).getBaseVersion();
+                    consoleLogger.debug("Test dependencies contain " + api + ". Resolving " + engineCoordinates + ":"
+                            + engineVersion);
+                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                }
+
+                if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]")) {
+                    String message = "Surefire is not compatible with JUnit 4.11 or older. Project version is "
+                            + junitArtifact.getBaseVersion();
+                    consoleLogger.error(message);
+                    throw new MojoExecutionException(message);
+                }
+
+                if ((testDeps.containsKey("junit:junit"))
+                        && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
+                    String engineGroupId = "org.junit.vintage";
+                    String engineArtifactId = "junit-vintage-engine";
+                    String engineCoordinates = engineGroupId + ":" + engineArtifactId;
+
+                    if (engineVersion != null) {
+                        consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
+                                + engineVersion);
+                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                    } else {
+                        addEngineByApi(engineGroupId, engineArtifactId, "5.12.1", providerArtifacts);
+                    }
+                }
+            }
+
+            narrowDependencies(providerArtifacts, testDeps);
+            alignProviderVersions(providerArtifacts);
+
+            return new LinkedHashSet<>(providerArtifacts.values());
+        }
+
+        private List<String[]> getJpmsArgs() {
+            List<String[]> args = new ArrayList<>();
+
+            args.add(new String[] {
+                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
+            });
+
+            args.add(new String[] {
+                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
+            });
+
+            return args;
+        }
+
+        private void addEngineByApi(
+                String engineGroupId,
+                String engineArtifactId,
+                String engineVersion,
+                Map<String, Artifact> providerArtifacts)
+                throws MojoExecutionException {
+            for (Artifact dep : resolve(engineGroupId, engineArtifactId, engineVersion, null, "jar")) {
+                String key = dep.getGroupId() + ":" + dep.getArtifactId();
+                providerArtifacts.put(key, dep);
+            }
+        }
+
+        private void narrowDependencies(
+                Map<String, Artifact> providerArtifacts, Map<String, Artifact> testDependencies) {
+            providerArtifacts.keySet().removeAll(testDependencies.keySet());
+        }
+
+        protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+            if (junitPlatformArtifact == null) {
+                return;
+            }
+            String version = junitPlatformArtifact.getBaseVersion();
+            for (Artifact launcherArtifact : resolve(PROVIDER_DEP_GID, PROVIDER_DEP_AID, version, null, "jar")) {
+                String key = launcherArtifact.getGroupId() + ":" + launcherArtifact.getArtifactId();
+                if (providerArtifacts.containsKey(key)) {
+                    providerArtifacts.put(key, launcherArtifact);
+                }
+            }
+        }
+
+        private Set<Artifact> resolve(String groupId, String artifactId, String version, String classifier, String type)
+                throws MojoExecutionException {
+            // FIXME will be different with 3 and testng
+            ArtifactHandler handler = junitPlatformArtifact != null
+                    ? junitPlatformArtifact.getArtifactHandler()
+                    : junitArtifact != null ? junitArtifact.getArtifactHandler() : null;
+            Artifact artifact = new DefaultArtifact(groupId, artifactId, version, null, type, classifier, handler);
+            consoleLogger.debug("Resolving artifact " + groupId + ":" + artifactId + ":" + version);
+            Set<Artifact> r = surefireDependencyResolver.resolveArtifacts(
+                    session.getRepositorySession(), project.getRemoteProjectRepositories(), artifact);
+            consoleLogger.debug("Resolved artifact " + groupId + ":" + artifactId + ":" + version + " to " + r);
+            return r;
+        }
+
+        private boolean hasDependencyJupiterAPI(Map<String, Artifact> dependencies) {
+            return dependencies.containsKey("org.junit.jupiter:junit-jupiter-api");
+        }
+
+        private boolean hasDependencyPlatformEngine(Map<String, Artifact> dependencies) {
+            return dependencies.entrySet().stream()
+                    .anyMatch(stringArtifactEntry ->
+                            stringArtifactEntry.getKey().equals("org.junit.platform:junit-platform-engine"));
+        }
+    }
+
+    // TODO why an enclosing class on the top do we real need this shading??
+    @SuppressWarnings("checkstyle:parameternumber")
+    final class JUnitPlatformProviderShadefireInfo extends JUnitPlatformProviderInfo {
+
+        JUnitPlatformProviderShadefireInfo(
+                Artifact junitPlatformRunnerArtifact,
+                Artifact junitPlatformArtifact,
+                @Nonnull TestClassPath testClasspath,
+                Artifact junitArtifact,
+                Artifact booterArtifact,
+                SurefireDependencyResolver surefireDependencyResolver,
+                MavenSession session,
+                MavenProject project,
+                PluginDescriptor pluginDescriptor,
+                Map<String, Artifact> pluginArtifactMap,
+                ConsoleLogger consoleLogger) {
+            super(
+                    junitPlatformRunnerArtifact,
+                    junitPlatformArtifact,
+                    testClasspath,
+                    junitArtifact,
+                    booterArtifact,
+                    surefireDependencyResolver,
+                    session,
+                    project,
+                    pluginDescriptor,
+                    pluginArtifactMap,
+                    consoleLogger);
+        }
+
+        @Override
+        public boolean isApplicable() {
+            // newer discover this provider automatically
+            return false;
+        }
+
+        @Override
+        @Nonnull
+        public String getProviderName() {
+            return "org.apache.maven.shadefire.surefire.junitplatform.JUnitPlatformProvider";
+        }
+
+        @Override
+        protected String getProviderArtifactName() {
+            return "surefire-shadefire";
+        }
+
+        @Override
+        protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+            // shadefire is used as booter we can not provide additional dependencies,
+            // so we need add a launcher here
+            providerArtifacts.put("org.junit.platform:junit-platform-launcher", null);
+            super.alignProviderVersions(providerArtifacts);
         }
     }
 
