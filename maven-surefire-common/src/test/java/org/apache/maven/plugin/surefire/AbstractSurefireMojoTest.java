@@ -934,7 +934,7 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-engine");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
@@ -1084,7 +1084,7 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-commons");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
@@ -1177,7 +1177,7 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-commons");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
@@ -1285,7 +1285,7 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-commons");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
@@ -1418,7 +1418,7 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-commons");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
@@ -1556,7 +1556,7 @@ public class AbstractSurefireMojoTest {
         assertThat(junitPlatformArtifact.getArtifactId()).isEqualTo("junit-platform-commons");
         assertThat(junitPlatformArtifact.getVersion()).isEqualTo("1.4.0");
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
@@ -1757,7 +1757,7 @@ public class AbstractSurefireMojoTest {
         List<Dependency> directPluginDependencies = toDependencies(pluginDepJupiterEngine);
         when(p.getDependencies()).thenReturn(directPluginDependencies);
 
-        JUnitPlatformProviderInfo prov =
+        AbstractSurefireMojo.JUnitPlatformProviderInfo prov =
                 mojo.createJUnitPlatformProviderInfo(junitPlatformArtifact, testClasspathWrapper);
 
         assertThat(prov.isApplicable()).isTrue();
