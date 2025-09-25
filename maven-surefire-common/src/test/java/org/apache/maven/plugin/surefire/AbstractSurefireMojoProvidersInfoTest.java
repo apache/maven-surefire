@@ -67,7 +67,8 @@ public class AbstractSurefireMojoProvidersInfoTest {
     @Test
     public void jUnitPlatformProviderApplicable() {
         Artifact junitPlatform = mock(Artifact.class);
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
                 null, junitPlatform, aTestClassPath(), null, null, null, null, null, null, null, null);
 
         assertThat(providerInfo.isApplicable()).isTrue();
@@ -78,8 +79,8 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnitPlatformProviderNotApplicable() {
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
-                null, null, aTestClassPath(), null, null, null, null, null, null, null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(null, null, aTestClassPath(), null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
@@ -87,7 +88,8 @@ public class AbstractSurefireMojoProvidersInfoTest {
     public void jUnitPlatformProviderNotApplicableForPlatformRunner() {
         // not applicable if junit-platform-runner is on classpath
         Artifact junitPlatformRunnerArtifact = mock(Artifact.class);
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
                 junitPlatformRunnerArtifact, null, aTestClassPath(), null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
 
@@ -99,40 +101,40 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnit4ProviderNullArtifacts() {
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
-                null, null, aTestClassPath(), null, null, null, null, null, null, null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(null, null, aTestClassPath(), null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
     public void jUnit4ProviderJunit3AsDependencyArtifact() {
         Artifact junit = aArtifact("3.8.1");
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
-                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
     public void jUnit4ProviderJunit45AsDependencyArtifact() {
         Artifact junit = aArtifact("3.8.1");
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
-                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
     public void jUnit4ProviderJunit47AsDependencyArtifact() {
         Artifact junit = aArtifact("3.8.1");
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
-                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
     public void jUnit4ProviderJunit413AsDependencyArtifact() {
         Artifact junit = aArtifact("4.13");
-        ProviderInfo providerInfo = new JUnitPlatformProviderInfo(
-                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(null, null, aTestClassPath(), junit, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isTrue();
     }
 
