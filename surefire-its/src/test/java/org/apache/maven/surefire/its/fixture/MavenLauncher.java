@@ -201,11 +201,15 @@ public final class MavenLauncher {
     }
 
     public FailsafeOutputValidator executeVerify() {
-        return new FailsafeOutputValidator(conditionalExec("verify"));
+        return new FailsafeOutputValidator(executeGoal("verify"));
+    }
+
+    public FailsafeOutputValidator executeVerifyWithExpectedError(String expectedErrorMessage) {
+        return new FailsafeOutputValidator(executeGoalWithExpectedError("verify", expectedErrorMessage));
     }
 
     public OutputValidator executeTest() {
-        return conditionalExec("test");
+        return executeGoal("test");
     }
 
     List<String> getGoals() {
@@ -231,15 +235,23 @@ public final class MavenLauncher {
         goals.add(newGoal);
     }
 
-    private OutputValidator conditionalExec(String goal) {
+    private OutputValidator executeGoal(String goal) {
+        return executeGoalWithExpectedError(goal, null);
+    }
+
+    private OutputValidator executeGoalWithExpectedError(String goal, String expectedErrorMessage) {
         OutputValidator verify;
         try {
             verify = execute(goal);
-        } catch (SurefireVerifierException exc) {
-            if (expectFailure) {
+        } catch (SurefireVerifierException cause) {
+            boolean messageIsSet = expectedErrorMessage != null && !expectedErrorMessage.isEmpty();
+            if (!messageIsSet) {
+                return validator;
+            }
+            if (cause.getMessage().contains(expectedErrorMessage)) {
                 return getValidator();
             } else {
-                throw exc;
+                throw cause;
             }
         }
         if (expectFailure) {
