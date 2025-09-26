@@ -36,6 +36,7 @@ import static java.nio.CharBuffer.wrap;
 /**
  * The base class of stream encoder.
  * The type of message is expressed by opcode where the opcode object is described by the generic type {@link E}.
+ *
  * @param <E> type of the message
  */
 public abstract class AbstractStreamEncoder<E extends Enum<E>> {

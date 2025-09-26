@@ -102,7 +102,8 @@ public class SurefireProperties extends Properties implements KeyValueSource {
     }
 
     /**
-     * Copies all keys and values from source to these properties, overwriting existing properties with same name
+     * Copies all keys and values from source to these properties, overwriting existing properties with same name.
+     *
      * @param source
      * @return all overwritten property names (may be empty if there was no property name clash)
      */
@@ -115,7 +116,8 @@ public class SurefireProperties extends Properties implements KeyValueSource {
     }
 
     /**
-     * Copies all keys and values from source to these properties, overwriting existing properties with same name
+     * Copies all keys and values from source to these properties, overwriting existing properties with same name.
+     *
      * @param source
      * @return all overwritten property names (may be empty if there was no property name clash)
      */

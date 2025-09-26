@@ -47,7 +47,7 @@ public class IsolatedClassLoader extends URLClassLoader {
 
     /**
      * @deprecated this method will use {@link java.io.File} instead of {@link URL} in the next
-     * major version.
+     * major version
      */
     @Override
     @Deprecated

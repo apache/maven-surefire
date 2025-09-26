@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.api.testset;
 
 /**
- * Contains information about the detected test artifact
+ * Contains information about the detected test artifact.
  *
  * @author Kristian Rosenvold
  */

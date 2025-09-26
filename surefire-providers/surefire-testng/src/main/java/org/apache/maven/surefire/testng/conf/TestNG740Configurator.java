@@ -43,7 +43,7 @@ public class TestNG740Configurator extends TestNG60Configurator {
      * Surefire plugin configuration to its corresponding constant and applies this to the specified suite object.
      *
      * @param suite TestNG {@link XmlSuite} object
-     * @param options Surefire plugin configuration options
+     * @param options surefire plugin configuration options
      * @throws TestSetFailedException if unable to convert specified [parallel] setting
      */
     @Override
