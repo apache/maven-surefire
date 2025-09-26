@@ -2894,20 +2894,19 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
+        Artifact junitArtifact = getJunitArtifact();
+        if (junitArtifact.getVersion().startsWith("3.")) {
+            throw new MojoFailureException("JUnit 3 is not supported anymore. Please update to version 4.12+");
+        }
         if (isAnyGroupsSelected()) {
             if (getTestNgArtifact() == null) {
-                Artifact junitArtifact = getJunitArtifact();
                 boolean junit47Compatible = isJunit47Compatible(junitArtifact);
                 boolean junit5PlatformCompatible = getJUnit5Artifact() != null;
                 if (!junit47Compatible && !junit5PlatformCompatible) {
-                    if (junitArtifact != null) {
-                        throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on "
-                                + "classpath is too old to support groups. "
-                                + "Check your dependency:tree to see if your project "
-                                + "is picking up an old junit version");
-                    }
-                    throw new MojoFailureException("groups/excludedGroups require TestNG, JUnit48+ or JUnit 5 "
-                            + "(a specific engine required on classpath) on project test classpath");
+                    throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on "
+                        + "classpath is too old to support groups. "
+                        + "Check your dependency:tree to see if your project "
+                        + "is picking up an old junit version");
                 }
             }
         }
