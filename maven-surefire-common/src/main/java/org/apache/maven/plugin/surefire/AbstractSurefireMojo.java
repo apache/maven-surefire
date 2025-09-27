@@ -1805,10 +1805,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         final TestRequest testSuiteDefinition = new TestRequest(
                 suiteXmlFiles(), getTestSourceDirectory(), getSpecificTests(), getRerunFailingTestsCount());
 
-        final boolean actualFailIfNoTests;
         DirectoryScannerParameters directoryScannerParameters = null;
         if (hasSuiteXmlFiles() && !isSpecificTestSpecified()) {
-            actualFailIfNoTests = getFailIfNoTests();
             if (!isTestNg) {
                 throw new MojoExecutionException("suiteXmlFiles is configured, but there is no TestNG dependency");
             }
