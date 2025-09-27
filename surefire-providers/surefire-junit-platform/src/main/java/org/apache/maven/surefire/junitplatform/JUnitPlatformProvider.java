@@ -56,7 +56,6 @@ import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
@@ -103,6 +102,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
         configurationParameters = newConfigurationParameters();
+        parameters.getProviderProperties().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
+                .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
     }
@@ -256,7 +258,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private Map<String, String> newConfigurationParameters() {
         String content = parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS);
         if (content == null) {
-            return emptyMap();
+            return new HashMap<>();
         }
         try (StringReader reader = new StringReader(content)) {
             Map<String, String> result = new HashMap<>();
