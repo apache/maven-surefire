@@ -30,7 +30,11 @@ import org.apache.maven.surefire.booter.Classpath;
 import static java.util.Collections.addAll;
 import static org.apache.maven.surefire.shared.utils.StringUtils.split;
 
-final class TestClassPath {
+/**
+ * this class is part of internal implementation and should not be used.
+ * There is mot guarantee about backward compatibility.
+ */
+public final class TestClassPath {
     private final Iterable<Artifact> artifacts;
     private final File classesDirectory;
     private final File testClassesDirectory;
@@ -76,5 +80,21 @@ final class TestClassPath {
         }
 
         return new Classpath(classpath);
+    }
+
+    public Iterable<Artifact> getArtifacts() {
+        return artifacts;
+    }
+
+    public File getClassesDirectory() {
+        return classesDirectory;
+    }
+
+    public File getTestClassesDirectory() {
+        return testClassesDirectory;
+    }
+
+    public Iterable<String> getAdditionalClasspathElements() {
+        return additionalClasspathElements;
     }
 }
