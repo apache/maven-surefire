@@ -37,7 +37,7 @@ import static org.junit.runners.Parameterized.Parameters;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 @RunWith(Parameterized.class)
-public class JUnit3VersionsIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit3VersionsUnsupportedIT extends SurefireJUnit4IntegrationTestCase {
 
     @Parameters(name = "{index}: JUnit {0}")
     public static Collection<Object[]> junitVersions() {
@@ -51,7 +51,8 @@ public class JUnit3VersionsIT extends SurefireJUnit4IntegrationTestCase {
     @Test()
     public void testJunit() {
         version.configure(unpack())
-                .executeVerifyWithExpectedError("JUnit 3 is not supported anymore. Please update to version 4.12+");
+                .executeVerifyWithExpectedError(
+                        "The used JUnit Version is not supported anymore. Please update to version 4.12+");
     }
 
     private SurefireLauncher unpack() {
