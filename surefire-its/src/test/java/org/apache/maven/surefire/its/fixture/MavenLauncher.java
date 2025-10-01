@@ -241,10 +241,14 @@ public final class MavenLauncher {
 
     private OutputValidator executeGoalWithExpectedError(String goal, String expectedErrorMessage) {
         OutputValidator verify;
+        boolean messageIsSet = expectedErrorMessage != null && !expectedErrorMessage.isEmpty();
+
+        if (messageIsSet) {
+            expectFailure = true;
+        }
         try {
             verify = execute(goal);
         } catch (SurefireVerifierException cause) {
-            boolean messageIsSet = expectedErrorMessage != null && !expectedErrorMessage.isEmpty();
             if (!messageIsSet) {
                 return validator;
             }
