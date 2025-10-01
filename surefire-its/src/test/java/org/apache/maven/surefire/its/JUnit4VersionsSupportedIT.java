@@ -18,30 +18,18 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.junit.Test;
+
+import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_12;
 
 /**
- * Enum listing all the JUnit version.
+ * Basic suite test supported JUnit 4 versions
  */
-public enum JUnitVersion {
-    JUNIT_3_8_2("3.8.2"),
-    JUNIT_4_11("4.11"),
-    JUNIT_4_12("4.12"),
-    JUNIT_4_13("4.13"),
-    JUNIT_4_13_1("4.13.1"),
-    JUNIT_4_13_2("4.13.2");
+public class JUnit4VersionsSupportedIT extends SurefireJUnit4IntegrationTestCase {
 
-    private final String version;
-
-    JUnitVersion(String version) {
-        this.version = version;
-    }
-
-    public SurefireLauncher configure(SurefireLauncher launcher) {
-        return launcher.setJUnitVersion(version);
-    }
-
-    public String toString() {
-        return version;
+    @Test()
+    public void testJunit4Dot12Supported() {
+        JUNIT_4_12.configure(unpack("junit4-supported")).executeVerify();
     }
 }
