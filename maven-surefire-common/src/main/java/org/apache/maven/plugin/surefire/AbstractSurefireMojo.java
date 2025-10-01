@@ -2888,8 +2888,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
         Artifact junitArtifact = getJunitArtifact();
-        if (junitArtifact.getVersion().startsWith("3.")) {
-            throw new MojoFailureException("JUnit 3 is not supported anymore. Please update to version 4.12+");
+        if (!isWithinVersionSpec(junitArtifact, "[4.12,)")) {
+            throw new MojoFailureException(
+                    "The used JUnit Version is not supported anymore. Please update to version 4.12+");
         }
         if (isAnyGroupsSelected()) {
             if (getTestNgArtifact() == null) {
