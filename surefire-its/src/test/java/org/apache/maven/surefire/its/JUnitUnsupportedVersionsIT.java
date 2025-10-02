@@ -35,7 +35,6 @@ import static org.junit.runners.Parameterized.Parameters;
 /**
  * Basic suite test using all known versions of JUnit 4.x
  *
- * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
 @RunWith(Parameterized.class)
 public class JUnitUnsupportedVersionsIT extends SurefireJUnit4IntegrationTestCase {
@@ -50,10 +49,12 @@ public class JUnitUnsupportedVersionsIT extends SurefireJUnit4IntegrationTestCas
     public JUnitVersion version;
 
     @Test()
-    public void testJunit() {
+    public void testJunitTemp() {
         version.configure(unpack())
-                .executeVerifyWithExpectedError(
-                        "The used JUnit Version is not supported anymore. Please update to version 4.12+");
+                .maven()
+                .withFailure()
+                .execute("verify")
+                .verifyTextInLog("The used JUnit Version is not supported anymore. Please update to version 4.12+");
     }
 
     private SurefireLauncher unpack() {
