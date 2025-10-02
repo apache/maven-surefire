@@ -134,10 +134,6 @@ public final class SurefireLauncher {
         return new FailsafeOutputValidator(verify);
     }
 
-    public FailsafeOutputValidator executeVerifyWithExpectedError(String expectedErrorMessage) {
-        return new FailsafeOutputValidator(mavenLauncher.executeVerifyWithExpectedError(expectedErrorMessage));
-    }
-
     public OutputValidator execute(String goal) {
         return mavenLauncher.execute(goal);
     }
