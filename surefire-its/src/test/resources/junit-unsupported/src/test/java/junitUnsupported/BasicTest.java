@@ -1,4 +1,4 @@
-package junit3Unsupported;
+package junitUnsupported;
 
 import junit.framework.TestCase;
 
