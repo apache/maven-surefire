@@ -99,7 +99,6 @@
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-shared-utils</artifactId>
-      <version>3.3.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.doxia</groupId>
@@ -192,6 +191,16 @@
       <groupId>org.apache.maven.wagon</groupId>
       <artifactId>wagon-http-lightweight</artifactId>
       <version>3.5.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- Issue: current code expect version 0.9.0-M3, but Maven 4 uses 0.9.0-M4 and this is the version
+           that we get in the class-path no matter which version we declare here. It causes a compilation
+           failure because of API change in `org.codehaus.plexus.PlexusTestCase.lookup(Class)`, where the
+           `Class` argument has been removed. The `lookup` method now requires a `String`, and I don't
+           know what should be the value of that string (I saw no documentation). -->
+      <groupId>org.eclipse.sisu</groupId>
+      <artifactId>org.eclipse.sisu.plexus</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
