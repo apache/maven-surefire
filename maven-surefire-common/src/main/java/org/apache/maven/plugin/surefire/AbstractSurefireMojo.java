@@ -2905,9 +2905,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 boolean junit5PlatformCompatible = getJUnit5Artifact() != null;
                 if (!junit47Compatible && !junit5PlatformCompatible) {
                     throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on "
-                        + "classpath is too old to support groups. "
-                        + "Check your dependency:tree to see if your project "
-                        + "is picking up an old junit version");
+                            + "classpath is too old to support groups. "
+                            + "Check your dependency:tree to see if your project "
+                            + "is picking up an old junit version");
                 }
             }
         }
