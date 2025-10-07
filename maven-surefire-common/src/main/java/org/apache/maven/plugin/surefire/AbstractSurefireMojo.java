@@ -139,6 +139,7 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumbe
 import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
@@ -3192,7 +3193,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     String engineGroupId = "org.junit.vintage";
                     String engineArtifactId = "junit-vintage-engine";
                     String engineCoordinates = engineGroupId + ":" + engineArtifactId;
-
+                    getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
+                    // TODO exclude transitive deps (hamcrest etc...)
                     if (engineVersion != null) {
                         consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
                                 + engineVersion);
