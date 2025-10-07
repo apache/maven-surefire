@@ -21,7 +21,10 @@ package org.apache.maven.surefire.junitplatform;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,6 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
@@ -48,8 +52,12 @@ import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
+import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
@@ -62,6 +70,7 @@ import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
@@ -228,11 +237,20 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
-        getPropertiesList(TESTNG_GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED))) {
+            getPropertiesList(TESTNG_GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
 
-        getPropertiesList(TESTNG_EXCLUDEDGROUPS_PROP)
-                .map(TagFilter::excludeTags)
-                .ifPresent(filters::add);
+            getPropertiesList(TESTNG_EXCLUDEDGROUPS_PROP)
+                    .map(TagFilter::excludeTags)
+                    .ifPresent(filters::add);
+        } else {
+            Optional<Class<?>> categoryClass = getCategoryClass();
+            if (categoryClass.isPresent()) {
+                getPropertiesList(TESTNG_GROUPS_PROP)
+                        .map(strings -> getIncludeCategoryFilter(strings, categoryClass))
+                        .ifPresent(filters::add);
+            }
+        }
 
         of(optionallyWildcardFilter(parameters.getTestRequest().getTestListResolver()))
                 .filter(f -> !f.isEmpty())
@@ -253,6 +271,87 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     Filter<?>[] getFilters() {
         return filters;
+    }
+
+    PostDiscoveryFilter getIncludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
+
+        return testDescriptor -> {
+            Optional<MethodSource> methodSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof MethodSource)
+                    .map(testSource -> (MethodSource) testSource);
+            boolean hasCategoryClass = false, hasCategoryMethod = false;
+            if (methodSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryClass = hasCategoryAnnotation(
+                            methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            Optional<ClassSource> classSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof ClassSource)
+                    .map(testSource -> (ClassSource) testSource);
+            if (classSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryMethod = hasCategoryAnnotation(
+                            getClass(classSource.get().getClassName()).get(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            return hasCategoryClass || hasCategoryMethod
+                    ? FilterResult.included("Category found")
+                    : FilterResult.excluded("Does not have category annotation");
+        };
+    }
+
+    private boolean hasCategoryAnnotation(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
+        Optional<Annotation> anno = stream(clazz.getAnnotations())
+                .filter(annotation -> annotation.annotationType().equals(categoryClass))
+                .findFirst();
+        if (anno.isPresent()) {
+            List<String> catValue = getCategoryValue(of(anno.get()));
+            return catValue.stream().anyMatch(categories::contains);
+        }
+        return false;
+    }
+
+    private boolean hasCategoryAnnotation(Method method, Class<?> categoryClass, List<String> categories) {
+        Optional<Annotation> anno = stream(method.getAnnotations())
+                .filter(annotation -> annotation.annotationType().equals(categoryClass))
+                .findFirst();
+        if (anno.isPresent()) {
+            List<String> catValue = getCategoryValue(of(anno.get()));
+            return catValue.stream().anyMatch(categories::contains);
+        }
+        return false;
+    }
+
+    private Optional<Class<?>> getCategoryClass() {
+        return getClass("org.junit.experimental.categories.Category");
+    }
+
+    private Optional<Class<?>> getClass(String className) {
+        Thread currentThread = Thread.currentThread();
+        try {
+            return Optional.of(currentThread.getContextClassLoader().loadClass(className));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private List<String> getCategoryValue(Optional<Object> instance) {
+        Optional<Class<?>> optionalClass = getCategoryClass();
+        if (optionalClass.isPresent()) {
+            try {
+                Class<?>[] classes =
+                        (Class<?>[]) optionalClass.get().getMethod("value").invoke(instance.get());
+                return stream(classes).map(Class::getName).collect(Collectors.toList());
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return Collections.emptyList();
     }
 
     private Map<String, String> newConfigurationParameters() {
