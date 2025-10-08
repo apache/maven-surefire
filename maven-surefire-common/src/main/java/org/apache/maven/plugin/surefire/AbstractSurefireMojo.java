@@ -2889,11 +2889,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
         Artifact junitArtifact = getJunitArtifact();
-        if (junitArtifact != null && !isWithinVersionSpec(junitArtifact, "[4.12,)")) {
-            throw new MojoFailureException(String.format(
-                    "The used JUnit Version %s is not supported anymore. Please update to version 4.12+",
-                    junitArtifact.getVersion()));
-        }
         if (isAnyGroupsSelected()) {
             if (getTestNgArtifact() == null) {
                 boolean junit47Compatible = isJunit47Compatible(junitArtifact);
@@ -3118,7 +3113,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             // JUnit 4.13.3 is required by JUnit 5.10+
             // JUnit 4.13.4 is required by JUnit 5.12+
             // https://junit.org/junit5/docs/current/user-guide/#dependency-metadata
-            //
+
             if (isAnyJunit4(junitArtifact)) {
                 this.engine = Engine.JUNIT4;
             }
@@ -3159,6 +3154,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
+            if (junitArtifact != null && !isWithinVersionSpec(junitArtifact, "[4.12,)")) {
+                throw new MojoExecutionException(String.format(
+                        "The used JUnit Version %s is not supported anymore. Please update to version 4.12+",
+                        junitArtifact.getVersion()));
+            }
             String surefireVersion = booterArtifact.getBaseVersion();
             Map<String, Artifact> providerArtifacts = surefireDependencyResolver.getProviderClasspathAsMap(
                     session.getRepositorySession(),
