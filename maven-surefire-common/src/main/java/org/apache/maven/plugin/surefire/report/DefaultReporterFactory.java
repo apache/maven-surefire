@@ -275,24 +275,32 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             List<TestMethodStats> testMethodStats = entry.getValue();
             String testClassMethodName = entry.getKey();
 
-            // Handle @BeforeAll failures (null method names)
-            if (testClassMethodName == null) {
-                for (TestMethodStats methodStats : testMethodStats) {
-                    String className = extractClassNameFromStackTrace(methodStats);
+            // Handle @BeforeAll failures (null, empty, or ends with ".null" method names)
+            // But only if they actually failed (ERROR or FAILURE), not if they were skipped
+            if ((testClassMethodName == null || testClassMethodName.isEmpty() || testClassMethodName.endsWith(".null"))
+                    && (testClassMethodName == null || !testClassMethodName.contains("$"))) {
+
+                // Check if this is actually a failure/error (not skipped or success)
+                boolean isActualFailure = testMethodStats.stream()
+                        .anyMatch(stat -> stat.getResultType() == ReportEntryType.ERROR
+                                || stat.getResultType() == ReportEntryType.FAILURE);
+
+                if (isActualFailure) {
+                    // Extract class name from the test class method name
+                    String className = extractClassNameFromMethodName(testClassMethodName);
                     if (className != null) {
                         if (beforeAllFailures.containsKey(className)) {
                             List<TestMethodStats> previousMethodStats = beforeAllFailures.get(className);
-                            previousMethodStats.add(methodStats);
+                            previousMethodStats.addAll(testMethodStats);
                             beforeAllFailures.put(className, previousMethodStats);
                         } else {
-                            List<TestMethodStats> initMethodStats = new ArrayList<>();
-                            initMethodStats.add(methodStats);
-                            beforeAllFailures.put(className, initMethodStats);
+                            beforeAllFailures.put(className, new ArrayList<>(testMethodStats));
                         }
                     }
+                    // Skip normal processing of @BeforeAll failures because it needs special care
+                    continue;
                 }
-                // Skip normal processing of @BeforeAll failures because it needs special care
-                continue;
+                // If it's skipped or success with null method name, fall through to normal processing
             }
 
             completedCount++;
@@ -313,15 +321,6 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
                     }
                     completedCount += successCount - 1;
                     successTests.put(testClassMethodName, testMethodStats);
-
-                    // If current test belong to class that failed during beforeAll store that info to proper log info
-                    String className = extractClassNameFromMethodName(testClassMethodName);
-                    if (beforeAllFailures.containsKey(className)) {
-                        List<TestMethodStats> previousMethodStats = beforeAllFailures.get(className);
-                        previousMethodStats.addAll(testMethodStats);
-                        beforeAllFailures.put(className, previousMethodStats);
-                    }
-
                     break;
                 case SKIPPED:
                     skipped++;
@@ -340,6 +339,19 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             }
         }
 
+        // Loop over all success tests and find those that are passed flakes for beforeAll failures
+        for (Map.Entry<String, List<TestMethodStats>> entry : successTests.entrySet()) {
+            List<TestMethodStats> testMethodStats = entry.getValue();
+            String testClassMethodName = entry.getKey();
+            // If current test belong to class that failed during beforeAll store that info to proper log info
+            String className = extractClassNameFromMethodName(testClassMethodName);
+            if (beforeAllFailures.containsKey(className)) {
+                List<TestMethodStats> previousMethodStats = beforeAllFailures.get(className);
+                previousMethodStats.addAll(testMethodStats);
+                beforeAllFailures.put(className, previousMethodStats);
+            }
+        }
+
         // Process @BeforeAll failures after we know which classes have successful tests
         for (Map.Entry<String, List<TestMethodStats>> entry : beforeAllFailures.entrySet()) {
             String className = entry.getKey();
@@ -347,7 +359,10 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             String classNameKey = className + ".<beforeAll>";
 
             if (reportConfiguration.getRerunFailingTestsCount() > 0
-                    && testMethodStats.stream().anyMatch(methodStats -> methodStats.getTestClassMethodName() != null)) {
+                    && testMethodStats.stream()
+                            .anyMatch(methodStats -> methodStats.getTestClassMethodName() != null
+                                    && !methodStats.getTestClassMethodName().isEmpty()
+                                    && methodStats.getResultType().equals(ReportEntryType.SUCCESS))) {
                 flakyTests.put(classNameKey, testMethodStats);
             } else {
                 errorTests.put(classNameKey, testMethodStats);
