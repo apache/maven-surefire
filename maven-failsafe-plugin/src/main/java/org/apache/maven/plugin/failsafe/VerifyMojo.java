@@ -147,15 +147,6 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     private int failOnFlakeCount;
 
     /**
-     * No effect. UTF-8 is always used for <code>failsafe-summary.xml</code>.
-     *
-     * @deprecated since 2.20.1
-     */
-    @Deprecated
-    @Parameter(property = "encoding", defaultValue = "${project.reporting.outputEncoding}")
-    private String encoding;
-
-    /**
      * The current build session instance.
      */
     @Parameter(defaultValue = "${session}", readonly = true)
