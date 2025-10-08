@@ -29,8 +29,8 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
  * Wrapper logger of miscellaneous implementations of {@link Log}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.20
  * @see ConsoleLogger
+ * @since 2.20
  */
 final class PluginConsoleLogger implements ConsoleLogger {
     private final Log mojoLogger;

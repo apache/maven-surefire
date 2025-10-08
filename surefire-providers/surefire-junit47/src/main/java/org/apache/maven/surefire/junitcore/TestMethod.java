@@ -31,7 +31,7 @@ import org.apache.maven.surefire.api.report.TestReportListener;
  * Represents the test-state of a single test method that is run.
  * <br>
  * Notes about thread safety: This instance is serially confined to 1-3 threads (construction, test-run, reporting),
- * without any actual parallel access
+ * without any actual parallel access.
  */
 @Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 class TestMethod implements TestOutputReceiver<TestOutputReportEntry> {
