@@ -68,6 +68,12 @@ public class DefaultReporterFactoryTest extends TestCase {
 
     private static final String ERROR = "error";
 
+    private static final String TEST_BEFORE_ALL_FLAKE = "com.example.FlakyClass";
+
+    private static final String TEST_BEFORE_ALL_ERROR = "com.example.AlwaysFailClass";
+
+    private static final String TEST_ERROR_SUFFIX = "-- Time elapsed: 292.2 s <<< ERROR!";
+
     public void testMergeTestHistoryResult() throws Exception {
         MessageUtils.setColorEnabled(false);
         File target = new File(System.getProperty("user.dir"), "target");
@@ -97,7 +103,7 @@ public class DefaultReporterFactoryTest extends TestCase {
 
         DefaultReporterFactory factory = new DefaultReporterFactory(reportConfig, reporter);
 
-        // First run, four tests failed and one passed
+        // First run, four tests failed and one passed, plus @BeforeAll failure
         Queue<TestMethodStats> firstRunStats = new ArrayDeque<>();
         firstRunStats.add(new TestMethodStats(TEST_ONE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
         firstRunStats.add(new TestMethodStats(TEST_TWO, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
@@ -106,6 +112,11 @@ public class DefaultReporterFactoryTest extends TestCase {
         firstRunStats.add(
                 new TestMethodStats(TEST_FOUR, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL)));
         firstRunStats.add(new TestMethodStats(TEST_FIVE, ReportEntryType.SUCCESS, null));
+        // @BeforeAll failure for a test class that will eventually succeed
+        firstRunStats.add(new TestMethodStats(
+                null,
+                ReportEntryType.ERROR,
+                new DummyStackTraceWriter(TEST_BEFORE_ALL_FLAKE + ".null " + TEST_ERROR_SUFFIX)));
 
         // Second run, two tests passed
         Queue<TestMethodStats> secondRunStats = new ArrayDeque<>();
@@ -114,11 +125,21 @@ public class DefaultReporterFactoryTest extends TestCase {
         secondRunStats.add(new TestMethodStats(TEST_TWO, ReportEntryType.SUCCESS, null));
         secondRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
         secondRunStats.add(new TestMethodStats(TEST_FOUR, ReportEntryType.SUCCESS, null));
+        // Successful test from the class that had @BeforeAll failure
+        secondRunStats.add(new TestMethodStats(TEST_BEFORE_ALL_FLAKE + ".testSucceed", ReportEntryType.SUCCESS, null));
+        // @BeforeAll failure for a different class that will stay as error
+        secondRunStats.add(new TestMethodStats(
+                null,
+                ReportEntryType.ERROR,
+                new DummyStackTraceWriter(TEST_BEFORE_ALL_ERROR + ".null " + TEST_ERROR_SUFFIX)));
 
         // Third run, another test passed
         Queue<TestMethodStats> thirdRunStats = new ArrayDeque<>();
         thirdRunStats.add(new TestMethodStats(TEST_ONE, ReportEntryType.SUCCESS, null));
         thirdRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
+        // Another @BeforeAll failure for the always-failing class
+        thirdRunStats.add(new TestMethodStats(
+                null, ReportEntryType.ERROR, new DummyStackTraceWriter(TEST_BEFORE_ALL_ERROR + ".null")));
 
         TestSetRunListener firstRunListener = mock(TestSetRunListener.class);
         TestSetRunListener secondRunListener = mock(TestSetRunListener.class);
@@ -134,17 +155,21 @@ public class DefaultReporterFactoryTest extends TestCase {
         invokeMethod(factory, "mergeTestHistoryResult");
         RunStatistics mergedStatistics = factory.getGlobalRunStatistics();
 
-        // Only TEST_THREE is a failing test, other three are flaky tests
-        assertEquals(5, mergedStatistics.getCompletedCount());
-        assertEquals(1, mergedStatistics.getErrors());
+        // TEST_THREE and AlwaysFailClass.null are failing tests, regular tests + FlakyClass.null are flaky
+        assertEquals(7, mergedStatistics.getCompletedCount());
+        assertEquals(2, mergedStatistics.getErrors());
         assertEquals(0, mergedStatistics.getFailures());
-        assertEquals(3, mergedStatistics.getFlakes());
+        assertEquals(4, mergedStatistics.getFlakes());
         assertEquals(0, mergedStatistics.getSkipped());
 
         // Now test the result will be printed out correctly
         factory.printTestFailures(TestResultType.FLAKE);
         String[] expectedFlakeOutput = {
             "Flakes: ",
+            TEST_BEFORE_ALL_FLAKE + ".<beforeAll>",
+            "  Run 1: " + TEST_BEFORE_ALL_FLAKE + ".null " + TEST_ERROR_SUFFIX,
+            "  Run 2: PASS",
+            "",
             TEST_FOUR,
             "  Run 1: " + ASSERTION_FAIL,
             "  Run 2: PASS",
@@ -164,7 +189,16 @@ public class DefaultReporterFactoryTest extends TestCase {
         reporter.reset();
         factory.printTestFailures(TestResultType.ERROR);
         String[] expectedFailureOutput = {
-            "Errors: ", TEST_THREE, "  Run 1: " + ASSERTION_FAIL, "  Run 2: " + ERROR, "  Run 3: " + ERROR, ""
+            "Errors: ",
+            TEST_BEFORE_ALL_ERROR + ".<beforeAll>",
+            "  Run 1: " + TEST_BEFORE_ALL_ERROR + ".null " + TEST_ERROR_SUFFIX,
+            "  Run 2: " + TEST_BEFORE_ALL_ERROR + ".null",
+            "",
+            TEST_THREE,
+            "  Run 1: " + ASSERTION_FAIL,
+            "  Run 2: " + ERROR,
+            "  Run 3: " + ERROR,
+            ""
         };
         assertEquals(asList(expectedFailureOutput), reporter.getMessages());
 
