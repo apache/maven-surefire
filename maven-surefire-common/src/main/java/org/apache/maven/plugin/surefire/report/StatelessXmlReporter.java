@@ -161,7 +161,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 OutputStreamWriter fw = getWriter(outputStream)) {
             XMLWriter ppw = new PrettyPrintXMLWriter(new PrintWriter(fw), XML_INDENT, XML_NL, UTF_8.name(), null);
 
-            createTestSuiteElement(ppw, testSetReportEntry, testSetStats); // TestSuite
+            createTestSuiteElement(ppw, testSetReportEntry, classMethodStatistics); // TestSuite
 
             if (enablePropertiesElement) {
                 showProperties(ppw, testSetReportEntry.getSystemProperties());
@@ -186,9 +186,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             }
 
             for (Entry<String, Map<String, List<WrappedReportEntry>>> statistics : classMethodStatistics.entrySet()) {
-                for (Entry<String, List<WrappedReportEntry>> thisMethodRuns :
-                        statistics.getValue().entrySet()) {
-                    serializeTestClass(outputStream, fw, ppw, thisMethodRuns.getValue());
+                Map<String, List<WrappedReportEntry>> methodStatistics = statistics.getValue();
+                for (Entry<String, List<WrappedReportEntry>> thisMethodRuns : methodStatistics.entrySet()) {
+                    serializeTestClass(outputStream, fw, ppw, thisMethodRuns.getValue(), methodStatistics);
                 }
             }
 
@@ -224,10 +224,14 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     }
 
     private void serializeTestClass(
-            OutputStream outputStream, OutputStreamWriter fw, XMLWriter ppw, List<WrappedReportEntry> methodEntries)
+            OutputStream outputStream,
+            OutputStreamWriter fw,
+            XMLWriter ppw,
+            List<WrappedReportEntry> methodEntries,
+            Map<String, List<WrappedReportEntry>> methodStatistics)
             throws IOException {
         if (rerunFailingTestsCount > 0) {
-            serializeTestClassWithRerun(outputStream, fw, ppw, methodEntries);
+            serializeTestClassWithRerun(outputStream, fw, ppw, methodEntries, methodStatistics);
         } else {
             // rerunFailingTestsCount is smaller than 1, but for some reasons a test could be run
             // for more than once
@@ -258,10 +262,18 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     }
 
     private void serializeTestClassWithRerun(
-            OutputStream outputStream, OutputStreamWriter fw, XMLWriter ppw, List<WrappedReportEntry> methodEntries)
+            OutputStream outputStream,
+            OutputStreamWriter fw,
+            XMLWriter ppw,
+            List<WrappedReportEntry> methodEntries,
+            Map<String, List<WrappedReportEntry>> methodStatistics)
             throws IOException {
         WrappedReportEntry firstMethodEntry = methodEntries.get(0);
-        switch (getTestResultType(methodEntries)) {
+
+        TestResultType resultType =
+                getTestResultTypeWithBeforeAllHandling(firstMethodEntry.getName(), methodEntries, methodStatistics);
+
+        switch (resultType) {
             case SUCCESS:
                 for (WrappedReportEntry methodEntry : methodEntries) {
                     if (methodEntry.getReportEntryType() == SUCCESS) {
@@ -370,6 +382,40 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         return DefaultReporterFactory.getTestResultType(testResultTypeList, rerunFailingTestsCount);
     }
 
+    /**
+     * Determines the final result type for a test method, applying special handling for @BeforeAll failures.
+     * If a @BeforeAll fails but any actual test methods succeed, it's classified as a FLAKE.
+     *
+     * @param methodName the name of the test method (null or "null" for @BeforeAll)
+     * @param methodRuns the list of runs for this method
+     * @param methodStatistics all method statistics for the test class
+     * @return the final TestResultType
+     */
+    private TestResultType getTestResultTypeWithBeforeAllHandling(
+            String methodName,
+            List<WrappedReportEntry> methodRuns,
+            Map<String, List<WrappedReportEntry>> methodStatistics) {
+        TestResultType resultType = getTestResultType(methodRuns);
+
+        // Special handling for @BeforeAll failures (null method name or method name is "null")
+        // If @BeforeAll failed but any actual test methods succeeded, treat it as a flake
+        if ((methodName == null || methodName.equals("null"))
+                && (resultType == TestResultType.ERROR || resultType == TestResultType.FAILURE)) {
+            // Check if any actual test methods (non-null and not "null" names) succeeded
+            boolean hasSuccessfulTestMethods = methodStatistics.entrySet().stream()
+                    .filter(entry ->
+                            entry.getKey() != null && !entry.getKey().equals("null")) // Only actual test methods
+                    .anyMatch(entry -> entry.getValue().stream()
+                            .anyMatch(reportEntry -> reportEntry.getReportEntryType() == SUCCESS));
+
+            if (hasSuccessfulTestMethods) {
+                resultType = TestResultType.FLAKE;
+            }
+        }
+
+        return resultType;
+    }
+
     private Deque<WrappedReportEntry> getAddMethodRunHistoryMap(String testClassName) {
         Deque<WrappedReportEntry> methodRunHistory = testClassMethodRunHistoryMap.get(testClassName);
         if (methodRunHistory == null) {
@@ -420,7 +466,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         }
     }
 
-    private void createTestSuiteElement(XMLWriter ppw, WrappedReportEntry report, TestSetStats testSetStats)
+    private void createTestSuiteElement(
+            XMLWriter ppw,
+            WrappedReportEntry report,
+            Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics)
             throws IOException {
         ppw.startElement("testsuite");
 
@@ -441,13 +490,46 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             ppw.addAttribute("time", String.valueOf(report.getElapsed() / ONE_SECOND));
         }
 
-        ppw.addAttribute("tests", String.valueOf(testSetStats.getCompletedCount()));
+        // Count actual unique test methods and their final results from classMethodStatistics (accumulated across
+        // reruns)
+        int actualTestCount = 0;
+        int errors = 0;
+        int failures = 0;
+        int skipped = 0;
+        int flakes = 0;
 
-        ppw.addAttribute("errors", String.valueOf(testSetStats.getErrors()));
+        for (Map<String, List<WrappedReportEntry>> methodStats : classMethodStatistics.values()) {
+            actualTestCount += methodStats.size();
+            for (Map.Entry<String, List<WrappedReportEntry>> methodEntry : methodStats.entrySet()) {
+                String methodName = methodEntry.getKey();
+                List<WrappedReportEntry> methodRuns = methodEntry.getValue();
+                TestResultType resultType = getTestResultTypeWithBeforeAllHandling(methodName, methodRuns, methodStats);
 
-        ppw.addAttribute("skipped", String.valueOf(testSetStats.getSkipped()));
+                switch (resultType) {
+                    case ERROR:
+                        errors++;
+                        break;
+                    case FAILURE:
+                        failures++;
+                        break;
+                    case SKIPPED:
+                        skipped++;
+                        break;
+                    case FLAKE:
+                        flakes++;
+                        break;
+                    case SUCCESS:
+                    default:
+                        break;
+                }
+            }
+        }
 
-        ppw.addAttribute("failures", String.valueOf(testSetStats.getFailures()));
+        ppw.addAttribute("tests", String.valueOf(actualTestCount));
+        ppw.addAttribute("errors", String.valueOf(errors));
+        ppw.addAttribute("skipped", String.valueOf(skipped));
+        ppw.addAttribute("failures", String.valueOf(failures));
+        ppw.addAttribute("flakes", String.valueOf(flakes));
     }
 
     private static void getTestProblems(
