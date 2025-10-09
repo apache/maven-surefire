@@ -54,7 +54,8 @@ public class JUnitUnsupportedVersionsIT extends SurefireJUnit4IntegrationTestCas
                 .maven()
                 .withFailure()
                 .execute("verify")
-                .verifyTextInLog("The used JUnit Version is not supported anymore. Please update to version 4.12+");
+                .verifyTextInLog(String.format(
+                        "The used JUnit Version %s is not supported anymore. Please update to version 4.12+", version));
     }
 
     private SurefireLauncher unpack() {
