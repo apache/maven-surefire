@@ -1957,7 +1957,8 @@ public class AbstractSurefireMojoTest {
                     mock(MavenProject.class),
                     getPluginDescriptor(),
                     getPluginArtifactMap(),
-                    getConsoleLogger());
+                    getConsoleLogger(),
+                    null);
         }
 
         void setProjectTestArtifacts(List<Artifact> projectTestArtifacts) {
