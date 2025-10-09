@@ -52,6 +52,7 @@ import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
@@ -1171,8 +1172,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         project,
                         pluginDescriptor,
                         pluginArtifactMap,
-                        consoleLogger),
-                new TestNgProviderInfo(getTestNgArtifact()),
+                        consoleLogger,
+                        getTestNgArtifact()),
+                // new TestNgProviderInfo(getTestNgArtifact()),
                 new JUnitPlatformProviderShadefireInfo(
                         getJUnitPlatformRunnerArtifact(),
                         getJUnit5Artifact(),
@@ -1184,7 +1186,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         project,
                         pluginDescriptor,
                         pluginArtifactMap,
-                        consoleLogger));
+                        consoleLogger,
+                        getTestNgArtifact()));
     }
 
     SurefireProperties setupProperties() {
@@ -3079,6 +3082,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         private final Artifact junitArtifact;
         private final Artifact booterArtifact;
+        private final Artifact testNgArtifact;
         private final SurefireDependencyResolver surefireDependencyResolver;
         private final MavenSession session;
         private final MavenProject project;
@@ -3099,7 +3103,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 MavenProject project,
                 PluginDescriptor pluginDescriptor,
                 Map<String, Artifact> pluginArtifactMap,
-                ConsoleLogger consoleLogger) {
+                ConsoleLogger consoleLogger,
+                Artifact testNgArtifact) {
             this.session = session;
             this.project = project;
             this.pluginDescriptor = pluginDescriptor;
@@ -3110,6 +3115,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             this.testClasspath = testClasspath;
             this.junitArtifact = junitArtifact;
             this.booterArtifact = booterArtifact;
+            this.testNgArtifact = testNgArtifact;
             // JUnit 4.12+ is required by JUnit 5.3+
             // JUnit 4.13+ is required by JUnit 5.8+
             // JUnit 4.13.2 is required by JUnit 5.9+
@@ -3136,7 +3142,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         public boolean isApplicable() {
             return (junitPlatformRunnerArtifact == null && junitPlatformArtifact != null)
-                    || (isAnyJunit4(junitArtifact));
+                    || (isAnyJunit4(junitArtifact))
+                    || testNgArtifact != null;
         }
 
         @Override
@@ -3176,6 +3183,16 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             if (hasDependencyPlatformEngine(pluginDeps)) {
                 providerArtifacts.putAll(pluginDeps);
+            } else if (testNgArtifact != null) {
+                // FIXME support only from TestNG 6.14.3
+                // FIXME check if already present as plugin dependency or project dependency
+                String engineGroupId = "org.junit.support";
+                String engineArtifactId = "testng-engine";
+                String engineCoordinates = engineGroupId + ":" + engineArtifactId;
+                // FIXME configurable?
+                String version = "1.0.6";
+                consoleLogger.debug("TestNG is present. Resolving " + engineCoordinates + ":" + version);
+                addEngineByApi(engineGroupId, engineArtifactId, version, providerArtifacts);
             } else {
                 String engineVersion = null;
                 if (hasDependencyJupiterAPI(testDeps)
@@ -3242,7 +3259,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 throws MojoExecutionException {
             for (Artifact dep : resolve(engineGroupId, engineArtifactId, engineVersion, null, "jar")) {
                 String key = dep.getGroupId() + ":" + dep.getArtifactId();
-                providerArtifacts.put(key, dep);
+                Artifact removed = providerArtifacts.put(key, dep);
+                if (removed != null) {
+                    consoleLogger.debug("Replaced provider dependency " + key + " " + removed + " with " + dep);
+                    ComparableVersion removedVersion = new ComparableVersion(removed.getVersion());
+                    ComparableVersion depVersion = new ComparableVersion(dep.getVersion());
+                    // keep the highest version
+                    if (removedVersion.compareTo(depVersion) > 0) {
+                        providerArtifacts.put(key, removed);
+                        consoleLogger.debug("Kept higher version " + key + " " + removed);
+                    }
+                }
             }
         }
 
@@ -3269,7 +3296,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             // FIXME will be different with 3 and testng
             ArtifactHandler handler = junitPlatformArtifact != null
                     ? junitPlatformArtifact.getArtifactHandler()
-                    : junitArtifact != null ? junitArtifact.getArtifactHandler() : null;
+                    : junitArtifact != null
+                            ? junitArtifact.getArtifactHandler()
+                            : testNgArtifact != null ? testNgArtifact.getArtifactHandler() : null;
             Artifact artifact = new DefaultArtifact(groupId, artifactId, version, null, type, classifier, handler);
             consoleLogger.debug("Resolving artifact " + groupId + ":" + artifactId + ":" + version);
             Set<Artifact> r = surefireDependencyResolver.resolveArtifacts(
@@ -3304,7 +3333,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 MavenProject project,
                 PluginDescriptor pluginDescriptor,
                 Map<String, Artifact> pluginArtifactMap,
-                ConsoleLogger consoleLogger) {
+                ConsoleLogger consoleLogger,
+                Artifact testNgArtifact) {
             super(
                     junitPlatformRunnerArtifact,
                     junitPlatformArtifact,
@@ -3316,7 +3346,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     project,
                     pluginDescriptor,
                     pluginArtifactMap,
-                    consoleLogger);
+                    consoleLogger,
+                    testNgArtifact);
         }
 
         @Override
