@@ -35,8 +35,6 @@
   <modules>
     <module>common-java5</module>
     <module>surefire-junit-platform</module>
-    <module>surefire-testng-utils</module>
-    <module>surefire-testng</module>
   </modules>
 
   <dependencies>
