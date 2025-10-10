@@ -45,23 +45,6 @@ public class AbstractSurefireMojoProvidersInfoTest {
         assertThat(providerInfo.isApplicable()).isTrue();
     }
 
-    @Test
-    public void testNgProviderApplicable() {
-        Artifact testNg = mock(Artifact.class);
-        ProviderInfo providerInfo = mojo.new TestNgProviderInfo(testNg);
-
-        assertThat(providerInfo.isApplicable()).isTrue();
-
-        // no interaction with artifact only reference are checked
-        verifyNoMoreInteractions(testNg);
-    }
-
-    @Test
-    public void testNgProviderNotApplicable() {
-        ProviderInfo providerInfo = mojo.new TestNgProviderInfo(null);
-        assertThat(providerInfo.isApplicable()).isFalse();
-    }
-
     // surefire-junit-platform
 
     @Test
