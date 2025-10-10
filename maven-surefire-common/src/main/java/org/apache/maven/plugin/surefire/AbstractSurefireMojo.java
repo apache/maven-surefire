@@ -1585,6 +1585,25 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             getProperties().setProperty("junit.vintage.execution.parallel.methods", "true");
         }
 
+        if ("methods".equals(parallel)
+                || "tests".equals(parallel)
+                || "classes".equals(parallel)
+                || "instances".equals(parallel)) {
+            getProperties().setProperty("testng.parallel", parallel);
+        }
+
+        if (threadCount > 0) {
+            getProperties().setProperty("testng.threadCount", Integer.toString(threadCount));
+        }
+
+        if (groups != null) {
+            getProperties().setProperty("testng.groups", groups);
+        }
+
+        if (excludedGroups != null) {
+            getProperties().setProperty("testng.excludedGroups", excludedGroups);
+        }
+
         getProperties().setProperty("perCoreThreadCount", Boolean.toString(getPerCoreThreadCount()));
         getProperties().setProperty("useUnlimitedThreads", Boolean.toString(getUseUnlimitedThreads()));
         getProperties()
@@ -1635,17 +1654,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             setThreadCountClasses(0);
             setThreadCountMethods(0);
         } else if ("classes".equals(parallel)) {
-            if (!(getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountClasses() > 0)) {
-                throw new MojoExecutionException(
-                        "Use threadCount or threadCountClasses > 0 or useUnlimitedThreads=true for parallel='classes'");
-            }
             setThreadCountSuites(0);
             setThreadCountMethods(0);
         } else if ("methods".equals(parallel)) {
-            if (!(getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountMethods() > 0)) {
-                throw new MojoExecutionException(
-                        "Use threadCount or threadCountMethods > 0 or useUnlimitedThreads=true for parallel='methods'");
-            }
             setThreadCountSuites(0);
             setThreadCountClasses(0);
         } else if ("suitesAndClasses".equals(parallel)) {
