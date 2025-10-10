@@ -116,6 +116,20 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
+
+        parameters.getProviderProperties().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("testng."))
+                .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
+        // testng compatibility parameters
+        String groups = parameters.getProviderProperties().get(TESTNG_GROUPS_PROP);
+        if (groups != null) {
+            configurationParameters.put("testng.groups", groups);
+        }
+
+        String excludeGroups = parameters.getProviderProperties().get(TESTNG_EXCLUDEDGROUPS_PROP);
+        if (excludeGroups != null) {
+            configurationParameters.put("testng.excludedGroups", excludeGroups);
+        }
     }
 
     @Override
