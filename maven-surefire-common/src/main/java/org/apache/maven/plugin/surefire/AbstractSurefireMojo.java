@@ -2290,25 +2290,21 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         String projectArtifactName = projectArtifact.getGroupId() + ":" + projectArtifact.getArtifactId();
 
         if (artifact != null) {
-            VersionRange range = createVersionRange();
-            if (!range.containsVersion(new DefaultArtifactVersion(artifact.getVersion()))) {
-                throw new MojoExecutionException(
-                        "TestNG support requires version 4.7 or above. You have declared version "
-                                + artifact.getVersion());
+            try {
+                VersionRange range = VersionRange.createFromVersionSpec("[6.14.3,)");
+                if (!range.containsVersion(new DefaultArtifactVersion(artifact.getVersion()))) {
+                    throw new MojoExecutionException(
+                            "TestNG support requires version 6.14.3 or above. You have declared version "
+                                    + artifact.getVersion());
+                }
+            } catch (InvalidVersionSpecificationException e) {
+                throw new MojoExecutionException("Unable to parse version of TestNG: " + artifact.getVersion(), e);
             }
         } else if (projectArtifactName.equals(getTestNGArtifactName())) {
             artifact = projectArtifact;
         }
 
         return artifact;
-    }
-
-    private VersionRange createVersionRange() {
-        try {
-            return VersionRange.createFromVersionSpec("[4.7,)");
-        } catch (InvalidVersionSpecificationException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private Artifact getJunitArtifact() {
@@ -2321,10 +2317,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         return artifact;
-    }
-
-    private Artifact getJunitDepArtifact() {
-        return getProjectArtifactMap().get("junit:junit-dep");
     }
 
     private Artifact getJUnitPlatformRunnerArtifact() {
