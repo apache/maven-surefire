@@ -2976,45 +2976,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
     }
 
-    final class TestNgProviderInfo implements ProviderInfo {
-        private final Artifact testNgArtifact;
-
-        TestNgProviderInfo(Artifact testNgArtifact) {
-            this.testNgArtifact = testNgArtifact;
-        }
-
-        @Override
-        @Nonnull
-        public String getProviderName() {
-            return "org.apache.maven.surefire.testng.TestNGProvider";
-        }
-
-        @Override
-        public boolean isApplicable() {
-            return testNgArtifact != null;
-        }
-
-        @Override
-        public void addProviderProperties() throws MojoExecutionException {
-            convertTestNGParameters();
-        }
-
-        @Nonnull
-        @Override
-        public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return emptyList();
-        }
-
-        @Override
-        @Nonnull
-        public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
-            Artifact surefireArtifact = getBooterArtifact();
-            String version = surefireArtifact.getBaseVersion();
-            return surefireDependencyResolver.getProviderClasspath(
-                    session.getRepositorySession(), project.getRemotePluginRepositories(), "surefire-testng", version);
-        }
-    }
-
     /**
      * Provides the Provider information for manually configured providers.
      */
