@@ -59,6 +59,8 @@ import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 
 /**
+ * Internal component used by the surefire plugin. Not a public API.
+ * not guaranteed to remain unchanged across surefire plugin versions.
  * Does dependency resolution and artifact handling for the surefire plugin.
  *
  * @author Stephen Connolly
@@ -66,7 +68,7 @@ import static org.apache.maven.artifact.versioning.VersionRange.createFromVersio
  */
 @Named
 @Singleton
-class SurefireDependencyResolver {
+public class SurefireDependencyResolver {
 
     static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
@@ -93,7 +95,7 @@ class SurefireDependencyResolver {
         this.repositorySystem = repositorySystem;
     }
 
-    static boolean isWithinVersionSpec(@Nullable Artifact artifact, @Nonnull String versionSpec) {
+    public static boolean isWithinVersionSpec(@Nullable Artifact artifact, @Nonnull String versionSpec) {
         if (artifact == null) {
             return false;
         }
@@ -151,17 +153,12 @@ class SurefireDependencyResolver {
             org.eclipse.aether.graph.Dependency dependency)
             throws MojoExecutionException {
 
-        try {
-            List<ArtifactResult> results = resolveDependencies(
-                    session, repositories, dependency, DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME));
-            return results.stream()
-                    .map(ArtifactResult::getArtifact)
-                    .map(RepositoryUtils::toArtifact)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        } catch (DependencyResolutionException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
-        }
+        List<ArtifactResult> results = resolveDependencies(
+                session, repositories, dependency, DependencyFilterUtils.classpathFilter(JavaScopes.RUNTIME));
+        return results.stream()
+                .map(ArtifactResult::getArtifact)
+                .map(RepositoryUtils::toArtifact)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     private List<ArtifactResult> resolveDependencies(
@@ -169,17 +166,22 @@ class SurefireDependencyResolver {
             List<RemoteRepository> repositories,
             org.eclipse.aether.graph.Dependency dependency,
             DependencyFilter dependencyFilter)
-            throws DependencyResolutionException {
+            throws MojoExecutionException {
 
-        // use a collect request without a root in order to not resolve optional dependencies
-        CollectRequest collectRequest = new CollectRequest(Collections.singletonList(dependency), null, repositories);
+        try {
+            // use a collect request without a root in order to not resolve optional dependencies
+            CollectRequest collectRequest =
+                    new CollectRequest(Collections.singletonList(dependency), null, repositories);
 
-        DependencyRequest request = new DependencyRequest();
-        request.setCollectRequest(collectRequest);
-        request.setFilter(dependencyFilter);
+            DependencyRequest request = new DependencyRequest();
+            request.setCollectRequest(collectRequest);
+            request.setFilter(dependencyFilter);
 
-        DependencyResult dependencyResult = repositorySystem.resolveDependencies(session, request);
-        return dependencyResult.getArtifactResults();
+            DependencyResult dependencyResult = repositorySystem.resolveDependencies(session, request);
+            return dependencyResult.getArtifactResults();
+        } catch (DependencyResolutionException e) {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
     }
 
     @Nonnull
@@ -189,6 +191,7 @@ class SurefireDependencyResolver {
             String providerArtifactId,
             String providerVersion)
             throws MojoExecutionException {
+
         Dependency provider = toProviderDependency(providerArtifactId, providerVersion);
 
         org.eclipse.aether.graph.Dependency dependency =

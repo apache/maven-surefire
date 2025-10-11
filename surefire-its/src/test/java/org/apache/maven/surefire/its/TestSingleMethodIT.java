@@ -80,8 +80,7 @@ public class TestSingleMethodIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTestNg() {
         Map<String, String> props = new HashMap<>();
-        props.put("testNgVersion", "5.7");
-        props.put("testNgClassifier", "jdk15");
+        props.put("testNgVersion", "6.14.3");
         singleMethod("testng-single-method", props, null);
     }
 
@@ -111,8 +110,7 @@ public class TestSingleMethodIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void fullyQualifiedTestNg() {
         Map<String, String> props = new HashMap<>();
-        props.put("testNgVersion", "5.7");
-        props.put("testNgClassifier", "jdk15");
+        props.put("testNgVersion", "6.14.3");
         singleMethod("testng-single-method", props, "testng.BasicTest#testSuccessOne");
     }
 }
