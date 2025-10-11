@@ -33,35 +33,14 @@
     <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
-  <profiles>
-    <profile>
-      <id>testng-old</id>
-      <activation>
-        <property><name>testNgClassifier</name></property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <version>${testNgVersion}</version>
-          <classifier>${testNgClassifier}</classifier>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>testng-new</id>
-      <activation>
-        <property><name>!testNgClassifier</name></property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <version>${testNgVersion}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
+  <dependencies>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>${testNgVersion}</version>
+    </dependency>
+  </dependencies>
+
 
   <build>
     <plugins>
