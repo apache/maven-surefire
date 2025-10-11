@@ -43,8 +43,7 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>5.7</version>
-      <classifier>jdk14</classifier>
+      <version>6.14.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

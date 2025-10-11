@@ -41,8 +41,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTwoTestCases() {
         unpack("junit-twoTestCases")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFreeLog()
                 .assertTestSuiteResults(2, 0, 0, 0);
@@ -54,8 +53,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTwoTestCaseSuite() {
         final OutputValidator outputValidator = unpack("junit-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
         List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
@@ -85,8 +83,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testJunit4Suite() {
         final OutputValidator outputValidator = unpack("junit4-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
 
@@ -102,8 +99,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTestNGSuite() {
         final OutputValidator outputValidator = unpack("testng-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest();
         outputValidator.assertTestSuiteResults(2, 0, 0, 0);
         List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());

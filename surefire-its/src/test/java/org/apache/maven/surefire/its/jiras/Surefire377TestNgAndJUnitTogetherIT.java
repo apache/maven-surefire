@@ -30,8 +30,7 @@ public class Surefire377TestNgAndJUnitTogetherIT extends SurefireJUnit4Integrati
     @Test
     public void testTestNgAndJUnitTogether() {
         unpack("/testng-junit-together")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(2);
     }
@@ -39,8 +38,7 @@ public class Surefire377TestNgAndJUnitTogetherIT extends SurefireJUnit4Integrati
     @Test
     public void testTestNgAndJUnit4Together() {
         unpack("/testng-junit4-together")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(3);
     }
