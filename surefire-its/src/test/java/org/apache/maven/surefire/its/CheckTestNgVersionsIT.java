@@ -76,10 +76,6 @@ public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
     private void runTestNgTest(String version, String classifier, boolean validateRunOrder) {
         final SurefireLauncher launcher = unpack("testng-simple").sysProp("testNgVersion", version);
 
-        if (classifier != null) {
-            launcher.sysProp("testNgClassifier", classifier);
-        }
-
         final OutputValidator outputValidator = launcher.executeTest();
 
         outputValidator.assertTestSuiteResults(3, 0, 0, 0);

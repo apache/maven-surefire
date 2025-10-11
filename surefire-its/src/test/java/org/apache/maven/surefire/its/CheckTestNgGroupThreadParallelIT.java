@@ -31,8 +31,7 @@ public class CheckTestNgGroupThreadParallelIT extends SurefireJUnit4IntegrationT
     @Test
     public void testNgGroupThreadParallel() {
         unpack("testng-group-thread-parallel")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(3);
     }
