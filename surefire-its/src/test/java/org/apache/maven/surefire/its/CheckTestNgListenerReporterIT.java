@@ -93,10 +93,6 @@ public class CheckTestNgListenerReporterIT extends SurefireJUnit4IntegrationTest
         final SurefireLauncher launcher =
                 unpack("testng-listener-reporter", "_" + version).sysProp("testNgVersion", version);
 
-        if (classifier != null) {
-            launcher.sysProp("testNgClassifier", "jdk15");
-        }
-
         launcher.executeTest()
                 .assertTestSuiteResults(1, 0, 0, 0)
                 .getTargetFile("resultlistener-output.txt")

@@ -40,8 +40,7 @@ public class CheckTestNgExecuteErrorIT extends SurefireJUnit4IntegrationTestCase
     public void executionError() {
         OutputValidator outputValidator = unpack("/testng-execute-error")
                 .maven()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .showErrorStackTraces()
                 .withFailure()
                 .executeTest()

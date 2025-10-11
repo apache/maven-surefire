@@ -33,8 +33,7 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testNgReport() {
         unpack("/testng-simple")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .addSurefireReportGoal()
                 .executeCurrentGoals()
                 .verifyErrorFree(3)
@@ -45,8 +44,7 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void shouldNotBeVerbose() throws Exception {
         unpack("/testng-simple")
-                .sysProp("testNgVersion", "5.10")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFreeLog()
                 .assertThatLogLine(containsString("[Parser] Running:"), is(0));
@@ -55,8 +53,7 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void shouldBeVerbose() throws Exception {
         unpack("/testng-simple")
-                .sysProp("testNgVersion", "5.10")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .sysProp("surefire.testng.verbose", "10")
                 .executeTest()
                 .verifyErrorFreeLog()
