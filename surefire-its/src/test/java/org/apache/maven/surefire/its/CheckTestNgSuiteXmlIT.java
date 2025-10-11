@@ -44,6 +44,6 @@ public class CheckTestNgSuiteXmlIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     private SurefireLauncher unpack() {
-        return unpack("testng-suite-xml").sysProp("testNgVersion", "5.7").sysProp("testNgClassifier", "jdk15");
+        return unpack("testng-suite-xml").sysProp("testNgVersion", "6.14.3");
     }
 }

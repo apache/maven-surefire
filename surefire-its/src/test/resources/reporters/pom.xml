@@ -12,9 +12,8 @@
     <dependency>
        <groupId>org.testng</groupId>
        <artifactId>testng</artifactId>
-       <version>5.8</version>
+       <version>6.14.3</version>
        <scope>test</scope>
-       <classifier>jdk15</classifier>
      </dependency>
   </dependencies>
   <build>
