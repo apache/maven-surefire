@@ -30,8 +30,7 @@ public class CheckTestNgSuiteXmlSingleIT extends SurefireJUnit4IntegrationTestCa
     @Test
     public void testNgSuite() {
         unpack("/testng-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .setTestToRun("TestNGTestTwo")
                 .executeTest()
                 .verifyErrorFree(1);
