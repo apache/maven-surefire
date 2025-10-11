@@ -51,7 +51,6 @@ import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
 import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
@@ -1460,70 +1459,16 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         Artifact testNgArtifact = getTestNgArtifact();
         if (testNgArtifact != null) {
-            DefaultArtifactVersion defaultArtifactVersion = new DefaultArtifactVersion(testNgArtifact.getVersion());
-            getProperties()
-                    .setProperty(
-                            "testng.configurator", getConfiguratorName(defaultArtifactVersion, getConsoleLogger()));
-        }
-    }
-
-    private static String getConfiguratorName(ArtifactVersion version, PluginConsoleLogger log)
-            throws MojoExecutionException {
-        try {
-            VersionRange range = VersionRange.createFromVersionSpec("[4.7,5.2)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNG4751Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[5.2,5.3)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNG52Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[5.3,5.10)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNGMapConfigurator";
-            }
-            range = VersionRange.createFromVersionSpec("[5.10,5.13)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNG510Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[5.13,5.14.1)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNG513Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[5.14.1,5.14.3)");
-            if (range.containsVersion(version)) {
-                log.warning("The 'reporter' or 'listener' may not work properly in TestNG 5.14.1 and 5.14.2.");
-                return "org.apache.maven.surefire.testng.conf.TestNG5141Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[5.14.3,6.0)");
-            if (range.containsVersion(version)) {
-                if (version.equals(new DefaultArtifactVersion("[5.14.3,5.14.5]"))) {
-                    throw new MojoExecutionException("TestNG 5.14.3-5.14.5 is not supported. "
-                            + "System dependency org.testng:guice missed path.");
-                }
-                return "org.apache.maven.surefire.testng.conf.TestNG5143Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[6.0,7.4.0)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNG60Configurator";
-            }
-            range = VersionRange.createFromVersionSpec("[7.4.0,)");
-            if (range.containsVersion(version)) {
-                return "org.apache.maven.surefire.testng.conf.TestNG740Configurator";
-            }
-
-            throw new MojoExecutionException("Unknown TestNG version " + version);
-        } catch (InvalidVersionSpecificationException invsex) {
-            throw new MojoExecutionException("Bug in plugin. Please report it with the attached stacktrace", invsex);
+            getProperties().setProperty("testng.version", testNgArtifact.getVersion());
         }
     }
 
     private void convertGroupParameters() {
         if (this.getExcludedGroups() != null) {
-            getProperties().setProperty(ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP, this.getExcludedGroups());
+            getProperties().setProperty(ProviderParameterNames.EXCLUDEDGROUPS_PROP, this.getExcludedGroups());
         }
         if (this.getGroups() != null) {
-            getProperties().setProperty(ProviderParameterNames.TESTNG_GROUPS_PROP, this.getGroups());
+            getProperties().setProperty(ProviderParameterNames.GROUPS_PROP, this.getGroups());
         }
     }
 
@@ -3105,8 +3050,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         public void addProviderProperties() throws MojoExecutionException {
             convertJunitEngineParameters();
             convertGroupParameters();
-            // TODO only junit4?
             convertJunitCoreParameters();
+            // FIXME look at duplicate parameters to remove
+            if (testNgArtifact != null) {
+                convertTestNGParameters();
+            }
         }
 
         @Nonnull

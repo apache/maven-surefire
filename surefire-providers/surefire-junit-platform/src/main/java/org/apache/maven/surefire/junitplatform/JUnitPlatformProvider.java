@@ -68,11 +68,11 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
@@ -121,12 +121,12 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .filter(entry -> entry.getKey().startsWith("testng."))
                 .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
         // testng compatibility parameters
-        String groups = parameters.getProviderProperties().get(TESTNG_GROUPS_PROP);
+        String groups = parameters.getProviderProperties().get(GROUPS_PROP);
         if (groups != null) {
             configurationParameters.put("testng.groups", groups);
         }
 
-        String excludeGroups = parameters.getProviderProperties().get(TESTNG_EXCLUDEDGROUPS_PROP);
+        String excludeGroups = parameters.getProviderProperties().get(EXCLUDEDGROUPS_PROP);
         if (excludeGroups != null) {
             configurationParameters.put("testng.excludedGroups", excludeGroups);
         }
@@ -251,16 +251,15 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
-        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED))) {
-            getPropertiesList(TESTNG_GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+        boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
 
-            getPropertiesList(TESTNG_EXCLUDEDGROUPS_PROP)
-                    .map(TagFilter::excludeTags)
-                    .ifPresent(filters::add);
-        } else {
+        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED)) && !useTestNG) {
+            getPropertiesList(GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+            getPropertiesList(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags).ifPresent(filters::add);
+        } else if (!useTestNG) {
             Optional<Class<?>> categoryClass = getCategoryClass();
             if (categoryClass.isPresent()) {
-                getPropertiesList(TESTNG_GROUPS_PROP)
+                getPropertiesList(GROUPS_PROP)
                         .map(strings -> getIncludeCategoryFilter(strings, categoryClass))
                         .ifPresent(filters::add);
             }

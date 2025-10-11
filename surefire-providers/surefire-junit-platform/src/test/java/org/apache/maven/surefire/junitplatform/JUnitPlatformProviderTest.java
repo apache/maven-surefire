@@ -67,10 +67,10 @@ import org.mockito.InOrder;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -716,7 +716,7 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void onlyGroupsIsDeclared() {
-        Map<String, String> properties = singletonMap(TESTNG_GROUPS_PROP, "groupOne, groupTwo");
+        Map<String, String> properties = singletonMap(GROUPS_PROP, "groupOne, groupTwo");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);
@@ -728,7 +728,7 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void onlyExcludeTagsIsDeclared() {
-        Map<String, String> properties = singletonMap(TESTNG_EXCLUDEDGROUPS_PROP, "tagOne, tagTwo");
+        Map<String, String> properties = singletonMap(EXCLUDEDGROUPS_PROP, "tagOne, tagTwo");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);
@@ -740,7 +740,7 @@ public class JUnitPlatformProviderTest {
 
     @Test
     public void noFiltersAreCreatedIfTagsAreEmpty() {
-        Map<String, String> properties = singletonMap(TESTNG_GROUPS_PROP, "");
+        Map<String, String> properties = singletonMap(GROUPS_PROP, "");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);
@@ -752,7 +752,7 @@ public class JUnitPlatformProviderTest {
     @Test
     public void filtersWithEmptyTagsAreNotRegistered() {
         // Here only tagOne is registered as a valid tag and other tags are ignored as they are empty
-        Map<String, String> properties = singletonMap(TESTNG_EXCLUDEDGROUPS_PROP, "tagOne,");
+        Map<String, String> properties = singletonMap(EXCLUDEDGROUPS_PROP, "tagOne,");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);
@@ -764,8 +764,8 @@ public class JUnitPlatformProviderTest {
     @Test
     public void bothIncludeAndExcludeAreAllowed() {
         Map<String, String> properties = new HashMap<>();
-        properties.put(TESTNG_GROUPS_PROP, "tagOne, tagTwo");
-        properties.put(TESTNG_EXCLUDEDGROUPS_PROP, "tagThree, tagFour");
+        properties.put(GROUPS_PROP, "tagOne, tagTwo");
+        properties.put(EXCLUDEDGROUPS_PROP, "tagThree, tagFour");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);
@@ -778,8 +778,8 @@ public class JUnitPlatformProviderTest {
     @Test
     public void tagExpressionsAreSupportedForIncludeTagsContainingVerticalBar() {
         Map<String, String> properties = new HashMap<>();
-        properties.put(TESTNG_GROUPS_PROP, "tagOne | tagTwo");
-        properties.put(TESTNG_EXCLUDEDGROUPS_PROP, "tagThree | tagFour");
+        properties.put(GROUPS_PROP, "tagOne | tagTwo");
+        properties.put(EXCLUDEDGROUPS_PROP, "tagThree | tagFour");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);
@@ -792,8 +792,8 @@ public class JUnitPlatformProviderTest {
     @Test
     public void tagExpressionsAreSupportedForIncludeTagsContainingAmpersand() {
         Map<String, String> properties = new HashMap<>();
-        properties.put(TESTNG_GROUPS_PROP, "tagOne & !tagTwo");
-        properties.put(TESTNG_EXCLUDEDGROUPS_PROP, "tagThree & !tagFour");
+        properties.put(GROUPS_PROP, "tagOne & !tagTwo");
+        properties.put(EXCLUDEDGROUPS_PROP, "tagThree & !tagFour");
 
         ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
         when(providerParameters.getProviderProperties()).thenReturn(properties);

@@ -22,9 +22,9 @@ package org.apache.maven.surefire.api.booter;
  * @author Kristian Rosenvold
  */
 public class ProviderParameterNames {
-    public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+    public static final String EXCLUDEDGROUPS_PROP = "excludegroups";
 
-    public static final String TESTNG_GROUPS_PROP = "groups";
+    public static final String GROUPS_PROP = "groups";
 
     public static final String INCLUDE_JUNIT5_ENGINES_PROP = "includejunit5engines";
 
