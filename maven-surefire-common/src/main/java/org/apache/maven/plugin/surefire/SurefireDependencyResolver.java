@@ -73,19 +73,7 @@ public class SurefireDependencyResolver {
     static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
     private static final String[] PROVIDER_CLASSPATH_ORDER = {
-        "surefire-junit3",
-        "surefire-junit4",
-        "surefire-junit47",
-        "surefire-testng",
-        "surefire-junit-platform",
-        "surefire-api",
-        "surefire-logger-api",
-        "surefire-shared-utils",
-        "common-java5",
-        "common-junit3",
-        "common-junit4",
-        "common-junit48",
-        "common-testng-utils"
+        "surefire-junit-platform", "surefire-api", "surefire-logger-api", "surefire-shared-utils", "common-java5"
     };
 
     private final RepositorySystem repositorySystem;

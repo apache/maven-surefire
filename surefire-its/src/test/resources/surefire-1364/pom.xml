@@ -75,39 +75,6 @@
     </build>
     <profiles>
         <profile>
-            <id>junit3</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.apache.maven.surefire</groupId>
-                                    <artifactId>surefire-junit3</artifactId>
-                                    <version>${surefire.version}</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-        <profile>
-            <id>junit47</id>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-        <profile>
             <id>testng</id>
             <dependencies>
                 <dependency>
@@ -128,17 +95,6 @@
                                     <testInclude>*.java</testInclude>
                                 </testIncludes>
                             </configuration>
-                        </plugin>
-                        <plugin>
-                            <groupId>org.apache.maven.plugins</groupId>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.apache.maven.surefire</groupId>
-                                    <artifactId>surefire-testng</artifactId>
-                                    <version>${surefire.version}</version>
-                                </dependency>
-                            </dependencies>
                         </plugin>
                     </plugins>
                 </pluginManagement>
