@@ -71,7 +71,7 @@ public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTes
                 .verifyErrorFree(3);
 
         validator
-                .getSurefireReportsXmlFile("TEST-TestSuite.xml")
+                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
                 .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
     }
 
@@ -85,7 +85,7 @@ public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTes
                 .verifyErrorFree(3);
 
         validator
-                .getSurefireReportsXmlFile("TEST-TestSuite.xml")
+                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
                 .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
     }
 }
