@@ -3086,16 +3086,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             if (hasDependencyPlatformEngine(pluginDeps)) {
                 providerArtifacts.putAll(pluginDeps);
-            } else if (testNgArtifact != null) {
-                // FIXME support only from TestNG 6.14.3
-                // FIXME check if already present as plugin dependency or project dependency
-                String engineGroupId = "org.junit.support";
-                String engineArtifactId = "testng-engine";
-                String engineCoordinates = engineGroupId + ":" + engineArtifactId;
-                // FIXME configurable?
-                String version = "1.0.6";
-                consoleLogger.debug("TestNG is present. Resolving " + engineCoordinates + ":" + version);
-                addEngineByApi(engineGroupId, engineArtifactId, version, providerArtifacts);
             } else {
                 String engineVersion = null;
                 if (hasDependencyJupiterAPI(testDeps)
@@ -3132,6 +3122,18 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         addEngineByApi(engineGroupId, engineArtifactId, "5.12.1", providerArtifacts);
                     }
                 }
+            }
+
+            if (testNgArtifact != null) {
+                // FIXME support only from TestNG 6.14.3
+                // FIXME check if already present as plugin dependency or project dependency
+                String engineGroupId = "org.junit.support";
+                String engineArtifactId = "testng-engine";
+                String engineCoordinates = engineGroupId + ":" + engineArtifactId;
+                // FIXME configurable?
+                String version = "1.0.6";
+                consoleLogger.debug("TestNG is present. Resolving " + engineCoordinates + ":" + version);
+                addEngineByApi(engineGroupId, engineArtifactId, version, providerArtifacts);
             }
 
             narrowDependencies(providerArtifacts, testDeps);
