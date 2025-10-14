@@ -79,7 +79,7 @@ public abstract class ForkConfiguration {
     protected abstract Classpath getBooterClasspath();
 
     /**
-     * @param config               The startup configuration
+     * @param config               the startup configuration
      * @param forkNumber           index of forked JVM, to be the replacement in the argLine
      * @param dumpLogDirectory     directory for dump log file
      * @return CommandLine able to flush entire command going to be sent to forked JVM

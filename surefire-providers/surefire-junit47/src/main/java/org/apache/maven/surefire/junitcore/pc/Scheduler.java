@@ -146,7 +146,6 @@ public class Scheduler implements RunnerScheduler {
      *                        or {@link #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)}
      * @param strategy        scheduling strategy
      * @param concurrency     determines maximum concurrent children scheduled a time via {@link #schedule(Runnable)}
-     *
      * @see #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy)
      * @see #Scheduler(ConsoleLogger, org.junit.runner.Description, SchedulingStrategy, int)
      */
@@ -186,7 +185,7 @@ public class Scheduler implements RunnerScheduler {
 
     /**
      * @param slave a slave scheduler to register
-     * @return {@code true} if successfully registered the <code>slave</code>.
+     * @return {@code true} if successfully registered the <code>slave</code>
      */
     private boolean register(Scheduler slave) {
         boolean canRegister = slave != null && slave != this;
@@ -202,7 +201,7 @@ public class Scheduler implements RunnerScheduler {
     }
 
     /**
-     * @return {@code true} if new tasks can be scheduled.
+     * @return {@code true} if new tasks can be scheduled
      */
     private boolean canSchedule() {
         return !shutdown && (masterController == null || masterController.canSchedule());
@@ -236,18 +235,18 @@ public class Scheduler implements RunnerScheduler {
     /**
      * Stop/Shutdown/Interrupt scheduler and its children (if any).
      *
-     * @param executedTests       Started tests which have finished normally or abruptly till called this method.
-     * @param incompleteTests     Started tests which have finished incomplete due to shutdown.
-     * @param tryCancelFutures    Useful to set to {@code false} if a timeout is specified in plugin config.
+     * @param executedTests       started tests which have finished normally or abruptly till called this method
+     * @param incompleteTests     started tests which have finished incomplete due to shutdown
+     * @param tryCancelFutures    useful to set to {@code false} if a timeout is specified in plugin config.
      *                            When the runner of
      *                            {@link ParallelComputer#getSuite(org.junit.runners.model.RunnerBuilder, Class[])}
      *                            is finished in
      *                            {@link org.junit.runners.Suite#run(org.junit.runner.notification.RunNotifier)}
      *                            all the thread-pools created by {@link ParallelComputerBuilder.PC} are already dead.
      *                            See the unit test {@code ParallelComputerBuilder#timeoutAndForcedShutdown()}.
-     * @param stopNow             Interrupting tests by {@link java.util.concurrent.ExecutorService#shutdownNow()} or
+     * @param stopNow             interrupting tests by {@link java.util.concurrent.ExecutorService#shutdownNow()} or
      *                            {@link java.util.concurrent.Future#cancel(boolean) Future#cancel(true)} or
-     *                            {@link Thread#interrupt()}.
+     *                            {@link Thread#interrupt()}
      */
     private void stop(
             Collection<Description> executedTests,
@@ -369,7 +368,7 @@ public class Scheduler implements RunnerScheduler {
         }
 
         /**
-         * @return {@code true} if new children can be scheduled.
+         * @return {@code true} if new children can be scheduled
          */
         boolean canSchedule() {
             return Scheduler.this.canSchedule();

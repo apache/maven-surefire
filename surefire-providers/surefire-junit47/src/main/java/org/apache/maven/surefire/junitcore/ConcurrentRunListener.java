@@ -37,10 +37,10 @@ import static org.apache.maven.surefire.junitcore.TestMethod.getThreadTestMethod
  * Stuff to remember about JUnit threading:
  * parallel=classes; beforeClass/afterClass, constructor and all tests method run on same thread
  * parallel=methods; beforeClass/afterClass run on main thread, constructor + each test method run on same thread
- * parallel=both; same as parallel=methods
+ * parallel=both; same as parallel=methods.
  *
- * @see org.apache.maven.surefire.junitcore.JUnitCoreRunListener for details about regular junit run listening
  * @author Kristian Rosenvold
+ * @see org.apache.maven.surefire.junitcore.JUnitCoreRunListener for details about regular junit run listening
  */
 @Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 abstract class ConcurrentRunListener implements TestReportListener<TestOutputReportEntry> {

@@ -64,7 +64,7 @@ public class TestNGReporter
      * method call has already associated with this instance <i>before</i> the test
      * suite is run.
      *
-     * @param reportManager Instance to report suite status to
+     * @param reportManager instance to report suite status to
      */
     public TestNGReporter(TestReportListener<TestOutputReportEntry> reportManager) {
         this.reporter = reportManager;
@@ -146,8 +146,8 @@ public class TestNGReporter
      * Creates a string out of the list of testng groups in the
      * form of <pre>"group1,group2,group3"</pre>.
      *
-     * @param groups       The groups being run
-     * @param defaultValue The default to use if no groups
+     * @param groups       the groups being run
+     * @param defaultValue the default to use if no groups
      * @return a string describing the groups
      */
     private static String groupString(String[] groups, String defaultValue) {
@@ -182,7 +182,7 @@ public class TestNGReporter
 
     /**
      * Acquire a better representation of the test name that includes parameters and the invocation count, if there are
-     * any parameters
+     * any parameters.
      *
      * @param result the test result to extract from
      * @return a descriptive name for the test

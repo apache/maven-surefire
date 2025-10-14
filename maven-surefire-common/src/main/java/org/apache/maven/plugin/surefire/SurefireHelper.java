@@ -49,7 +49,7 @@ import static org.apache.maven.surefire.api.util.internal.DumpFileUtils.newForma
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 
 /**
- * Helper class for surefire plugins
+ * Helper class for surefire plugins.
  */
 public final class SurefireHelper {
     private static final String DUMP_FILE_DATE = newFormattedDateFileName();
@@ -95,7 +95,7 @@ public final class SurefireHelper {
 
     /**
      * The placeholder that is replaced by the executing fork's running number. The fork number
-     * range starts with 1
+     * range starts with 1.
      */
     private static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
 
