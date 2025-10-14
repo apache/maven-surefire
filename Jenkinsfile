@@ -213,7 +213,6 @@ static def sourcesPatternCsv() {
             '**/surefire-booter/src/main/java,' +
             '**/surefire-extensions-api/src/main/java,' +
             '**/surefire-extensions-spi/src/main/java,' +
-            '**/surefire-grouper/src/main/java,' +
             '**/surefire-its/src/main/java,' +
             '**/surefire-logger-api/src/main/java,' +
             '**/surefire-providers/**/src/main/java,' +
@@ -230,7 +229,6 @@ static def classPatternCsv() {
             '**/surefire-booter/target/classes,' +
             '**/surefire-extensions-api/target/classes,' +
             '**/surefire-extensions-spi/target/classes,' +
-            '**/surefire-grouper/target/classes,' +
             '**/surefire-its/target/classes,' +
             '**/surefire-logger-api/target/classes,' +
             '**/surefire-providers/**/target/classes,' +
@@ -245,7 +243,6 @@ static def testReportsPatternCsv() {
             '**/maven-surefire-report-plugin/target/surefire-reports/*.xml,' +
             '**/surefire-api/target/surefire-reports/*.xml,' +
             '**/surefire-booter/target/surefire-reports/*.xml,' +
-            '**/surefire-grouper/target/surefire-reports/*.xml,' +
             '**/surefire-its/target/surefire-reports/*.xml,' +
             '**/surefire-logger-api/target/surefire-reports/*.xml,' +
             '**/surefire-providers/**/target/surefire-reports/*.xml,' +
