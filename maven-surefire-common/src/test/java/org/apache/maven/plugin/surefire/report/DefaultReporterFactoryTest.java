@@ -114,7 +114,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         firstRunStats.add(new TestMethodStats(TEST_FIVE, ReportEntryType.SUCCESS, null));
         // @BeforeAll failure for a test class that will eventually succeed
         firstRunStats.add(new TestMethodStats(
-                null,
+                TEST_BEFORE_ALL_FLAKE + ".null",
                 ReportEntryType.ERROR,
                 new DummyStackTraceWriter(TEST_BEFORE_ALL_FLAKE + ".null " + TEST_ERROR_SUFFIX)));
 
@@ -129,7 +129,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         secondRunStats.add(new TestMethodStats(TEST_BEFORE_ALL_FLAKE + ".testSucceed", ReportEntryType.SUCCESS, null));
         // @BeforeAll failure for a different class that will stay as error
         secondRunStats.add(new TestMethodStats(
-                null,
+                TEST_BEFORE_ALL_ERROR + ".null",
                 ReportEntryType.ERROR,
                 new DummyStackTraceWriter(TEST_BEFORE_ALL_ERROR + ".null " + TEST_ERROR_SUFFIX)));
 
@@ -139,7 +139,9 @@ public class DefaultReporterFactoryTest extends TestCase {
         thirdRunStats.add(new TestMethodStats(TEST_THREE, ReportEntryType.ERROR, new DummyStackTraceWriter(ERROR)));
         // Another @BeforeAll failure for the always-failing class
         thirdRunStats.add(new TestMethodStats(
-                null, ReportEntryType.ERROR, new DummyStackTraceWriter(TEST_BEFORE_ALL_ERROR + ".null")));
+                TEST_BEFORE_ALL_ERROR + ".null",
+                ReportEntryType.ERROR,
+                new DummyStackTraceWriter(TEST_BEFORE_ALL_ERROR + ".null")));
 
         TestSetRunListener firstRunListener = mock(TestSetRunListener.class);
         TestSetRunListener secondRunListener = mock(TestSetRunListener.class);
