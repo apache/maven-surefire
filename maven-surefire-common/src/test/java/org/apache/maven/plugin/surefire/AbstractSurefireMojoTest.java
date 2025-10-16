@@ -132,6 +132,8 @@ public class AbstractSurefireMojoTest {
     public void setupMojo() {
         Artifact mojoArtifact = mojo.getMojoArtifact();
 
+        mojo.setProperties(new Properties());
+
         mojo.setPluginArtifactMap(new LinkedHashMap<>());
         mojo.getPluginArtifactMap().put(mojoArtifact.getGroupId() + ":" + mojoArtifact.getArtifactId(), mojoArtifact);
         Artifact forkedBooter = new DefaultArtifact(
