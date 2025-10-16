@@ -3107,7 +3107,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     throw new MojoExecutionException(message);
                 }
 
-                if ((testDeps.containsKey("junit:junit"))
+                String junit = (String) properties.get("junit");
+                boolean runJunit = Boolean.parseBoolean(junit == null ? "true" : junit);
+
+                if (runJunit
+                        && (testDeps.containsKey("junit:junit"))
                         && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
                     String engineGroupId = "org.junit.vintage";
                     String engineArtifactId = "junit-vintage-engine";
