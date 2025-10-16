@@ -3107,7 +3107,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     throw new MojoExecutionException(message);
                 }
 
-                String junit = (String) properties.get("junit");
+                String junit = (String) getProperties().get("junit");
                 boolean runJunit = Boolean.parseBoolean(junit == null ? "true" : junit);
 
                 if (runJunit
