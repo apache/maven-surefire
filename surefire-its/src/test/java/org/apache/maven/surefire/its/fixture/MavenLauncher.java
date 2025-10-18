@@ -201,11 +201,11 @@ public final class MavenLauncher {
     }
 
     public FailsafeOutputValidator executeVerify() {
-        return new FailsafeOutputValidator(conditionalExec("verify"));
+        return new FailsafeOutputValidator(executeGoal("verify"));
     }
 
     public OutputValidator executeTest() {
-        return conditionalExec("test");
+        return executeGoal("test");
     }
 
     List<String> getGoals() {
@@ -231,7 +231,7 @@ public final class MavenLauncher {
         goals.add(newGoal);
     }
 
-    private OutputValidator conditionalExec(String goal) {
+    private OutputValidator executeGoal(String goal) {
         OutputValidator verify;
         try {
             verify = execute(goal);
