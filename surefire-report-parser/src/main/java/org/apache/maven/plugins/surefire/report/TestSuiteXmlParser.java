@@ -23,9 +23,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,13 +63,16 @@ public final class TestSuiteXmlParser extends DefaultHandler {
 
     private boolean parseContent;
 
+    private long lastModified;
+
     public TestSuiteXmlParser(ConsoleLogger consoleLogger) {
         this.consoleLogger = consoleLogger;
     }
 
     public List<ReportTestSuite> parse(String xmlPath) throws ParserConfigurationException, SAXException, IOException {
         File f = new File(xmlPath);
-        try (InputStreamReader stream = new InputStreamReader(new FileInputStream(f), UTF_8)) {
+        try (InputStreamReader stream = new InputStreamReader(Files.newInputStream(f.toPath()), UTF_8)) {
+            this.lastModified = f.lastModified();
             return parse(stream);
         }
     }
@@ -217,6 +220,7 @@ public final class TestSuiteXmlParser extends DefaultHandler {
         switch (qName) {
             case "testcase":
                 currentSuite.getTestCases().add(testCase);
+                currentSuite.lastModified(this.lastModified);
                 break;
             case "failure":
             case "error":
