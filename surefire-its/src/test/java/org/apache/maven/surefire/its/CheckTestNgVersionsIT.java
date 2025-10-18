@@ -53,12 +53,22 @@ public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void test69136() {
-        runTestNgTestWithRunOrder("6.9.13.6");
+        unpack("testng-simple")
+                .sysProp("testNgVersion", "6.9.13.6")
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog("TestNG support requires version 6.14.3 or above");
     }
 
     @Test
     public void test6821() {
-        runTestNgTestWithRunOrder("6.8.21");
+        unpack("testng-simple")
+                .sysProp("testNgVersion", "6.8.21")
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog("TestNG support requires version 6.14.3 or above");
     }
 
     private void runTestNgTestWithRunOrder(String version) {
@@ -87,7 +97,7 @@ public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
             assertEquals(3, report.size());
 
             assertTrue(
-                    "TestNGSuiteTestC was executed first",
+                    "TestNGSuiteTestC was not executed first",
                     getTestClass(report, 0).endsWith("TestNGSuiteTestC"));
 
             assertTrue(
