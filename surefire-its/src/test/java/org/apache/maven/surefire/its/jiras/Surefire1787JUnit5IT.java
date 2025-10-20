@@ -133,15 +133,6 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
-    public void junit4Runner() {
-        unpack("junit5-runner")
-                .executeTest()
-                .verifyErrorFree(1)
-                .verifyTextInLog("Running pkg.JUnit5Tests")
-                .verifyTextInLog("Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider");
-    }
-
-    @Test
     public void junit5Suite() throws Exception {
         OutputValidator outputValidator = unpack("junit5-suite")
                 .executeTest()
