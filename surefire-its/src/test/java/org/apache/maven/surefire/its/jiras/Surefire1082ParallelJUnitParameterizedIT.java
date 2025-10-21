@@ -63,16 +63,16 @@ public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnit4Inte
         assertThat(log.size(), is(4));
 
         Set<String> expectedLogs1 = new TreeSet<>();
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-1");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-1");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-2");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-2");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 0 ForkJoinPool.*");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 0 ForkJoinPool.*");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 1 ForkJoinPool.*");
 
         Set<String> expectedLogs2 = new TreeSet<>();
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-1");
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-1");
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-2");
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-2");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 1 ForkJoinPool.*");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 0 ForkJoinPool.*");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 0 ForkJoinPool.*");
 
         assertThat(log, anyOf(regex(expectedLogs1), regex(expectedLogs2)));
     }
