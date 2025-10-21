@@ -126,6 +126,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
             configurationParameters.put("testng.groups", groups);
         }
 
+        //        configurationParameters.put("testng.useDefaultListeners", "true");
+
         Optional.ofNullable(parameters.getProviderProperties().get("listener"))
                 .ifPresent(listener -> configurationParameters.put("testng.listeners", listener));
 
