@@ -34,8 +34,11 @@ public class ReportersIT extends SurefireJUnit4IntegrationTestCase {
         OutputValidator reporters =
                 unpack("reporters").redirectToFile(true).printSummary(true).executeTest();
 
-        reporters.getSurefireReportsFile("TestSuite-output.txt").assertFileExists();
-        reporters.getSurefireReportsXmlFile("TEST-TestSuite.xml").assertFileExists();
-        reporters.getSurefireReportsFile("TestSuite.txt").assertFileExists();
+        reporters.getSurefireReportsFile("TEST-reporters.Test1.xml").assertFileExists();
+        reporters.getSurefireReportsXmlFile("TEST-reporters.Test1.xml").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test1.txt").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test2.txt").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test1-output.txt").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test2-output.txt").assertFileExists();
     }
 }
