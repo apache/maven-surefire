@@ -126,6 +126,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
             configurationParameters.put("testng.groups", groups);
         }
 
+        Optional.ofNullable(parameters.getProviderProperties().get("listener"))
+                .ifPresent(listener -> configurationParameters.put("testng.listeners", listener));
+
+        Optional.ofNullable(parameters.getProviderProperties().get("reporter"))
+                .ifPresent(reporter -> configurationParameters.compute(
+                        "testng.listeners", (key, value) -> value == null ? reporter : value + "," + reporter));
+
         String excludeGroups = parameters.getProviderProperties().get(EXCLUDEDGROUPS_PROP);
         if (excludeGroups != null) {
             configurationParameters.put("testng.excludedGroups", excludeGroups);
