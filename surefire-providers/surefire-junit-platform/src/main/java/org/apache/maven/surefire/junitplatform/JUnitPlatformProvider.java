@@ -47,6 +47,7 @@ import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
@@ -62,6 +63,7 @@ import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.runner.notification.RunListener;
 
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
@@ -227,20 +229,44 @@ public class JUnitPlatformProvider extends AbstractProvider {
         //                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
         //        };
 
-        TestExecutionListener[] testExecutionListeners = new TestExecutionListener[] {adapter};
+        List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
+        testExecutionListeners.add(adapter);
+        testExecutionListeners.addAll(createCustomListener());
 
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
 
             LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectors);
-            launcher.execute(builder.build(), testExecutionListeners);
+            launcher.execute(
+                    builder.build(),
+                    testExecutionListeners.toArray(new TestExecutionListener[testExecutionListeners.size()]));
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
                 LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectClass(c.getName()));
-                launcher.execute(builder.build(), testExecutionListeners);
+                launcher.execute(
+                        builder.build(),
+                        testExecutionListeners.toArray(new TestExecutionListener[testExecutionListeners.size()]));
             });
         }
+    }
+
+    private List<TestExecutionListener> createCustomListener() {
+
+        List<TestExecutionListener> result = new ArrayList<>();
+        String listeners = parameters.getProviderProperties().get("listener");
+        if (listeners != null) {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            for (String listener : listeners.split(",")) {
+                try {
+                    result.add(ReflectionUtils.instantiate(cl, listener, CustomTestExecutionListener.class));
+                } catch (ClassCastException c) {
+                    RunListener oldListener = ReflectionUtils.instantiate(cl, listener, RunListener.class);
+                    result.add(new CustomTestExecutionListener(oldListener));
+                }
+            }
+        }
+        return result;
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
