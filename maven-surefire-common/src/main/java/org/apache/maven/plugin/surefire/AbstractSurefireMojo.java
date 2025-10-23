@@ -447,9 +447,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Arbitrary JVM options to set on the command line. Only effective for forked executions.
      * <br>
      * <br>
-     * Since the Version 2.17 using an alternate syntax for {@code argLine}, <b>@{...}</b> allows late replacement
-     * of properties when the plugin is executed, so properties that have been modified by other plugins will be picked
+     * Using an alternate syntax for placeholders in {@code argLine}, namely <code>@{...}</code> allows late replacement
+     * of properties when the plugin is executed, so properties that have been <i>modified</i> by other plugins will be picked
      * up correctly.
+     * In contrast to the standard Maven property replacement the <code>@{...}</code> placeholder is replaced by the empty string if the referenced
+     * propery cannot be found.
+     * <br>
+     * <i>This mechanism is only necessary for properties which are modified i.e. also available with a different value at initialization of the
+     * POM model. Otherwise standard Maven property replacement kicks in properly directly before this goal is being executed (instead of when the POM model is being resolved)</i>.
+     * <br>
      * See the Frequently Asked Questions page with more details:<br>
      * <a href="http://maven.apache.org/surefire/maven-surefire-plugin/faq.html">
      *     http://maven.apache.org/surefire/maven-surefire-plugin/faq.html</a>

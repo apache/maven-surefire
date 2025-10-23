@@ -100,9 +100,13 @@ under the License.
           plugin is run. So Surefire would never see the place-holders in its argLine property.
         </p>
         <p>
-          Since the Version 2.17 using an alternate syntax for these properties, <pre>@{...}</pre> allows late
+          Using an alternate syntax for these properties, <pre>@{...}</pre> allows late
           replacement of properties when the plugin is executed, so properties that have been modified by other
           plugins will be picked up correctly.
+          In contrast to the standard Maven property replacement the <code>@{...}</code> placeholder is replaced by the empty string if the referenced 
+          property cannot be found.
+          <i>This mechanism is only necessary for properties which are modified, i.e. also available with a different value at initialization of the 
+          POM model. Otherwise standard Maven property replacement kicks in properly directly before this goal is being executed (instead of when the POM model is being resolved)</i>.
         </p>
       </answer>
     </faq>
