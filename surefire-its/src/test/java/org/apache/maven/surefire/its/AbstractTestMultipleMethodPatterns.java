@@ -28,7 +28,7 @@ import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLU
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
-import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT47;
+import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT4;
 import static org.apache.maven.surefire.its.fixture.TestFramework.TestNG;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
@@ -102,7 +102,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void simpleNameTestAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT4), is(TestNG)));
         prepare("TestTwo")
                 .parallel("classes")
                 .useUnlimitedThreads()
@@ -326,7 +326,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT4), is(TestNG)));
         assumeThat(getSettings().getConfiguration(), is(TEST));
         String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2
@@ -356,7 +356,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsComplexAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT4), is(TestNG)));
         assumeThat(getSettings().getConfiguration(), is(TEST));
         String test = "**/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2

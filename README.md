@@ -70,16 +70,11 @@ Build the Surefire project using **Maven 3.6.3+** and **JDK 8+**.
     ```
     mvn install -P ide-development -f surefire-shared-utils/pom.xml
     ```
-  * Build module `surefire-grouper` in order to generate and compile sources into `target/generated-sources/javacc` using this Maven command:
-    ```
-    mvn compile -f surefire-grouper/pom.xml
-    ```
+    
   * In Eclipse, select _File > Import ... > Maven Project_
 
      * Select all projects (poms) except `surefire-shared-utils`,
        enter profile `ide-development` in _Advanced -> Profiles_
-     * Check module `surefire-grouper` has source folder `target/generated-sources/javacc`.
-       If not, add it manually in the module's project properties
   * In IntelliJ, select _Maven > Profiles_ and check `ide-development`
 
 ### Deploying web site

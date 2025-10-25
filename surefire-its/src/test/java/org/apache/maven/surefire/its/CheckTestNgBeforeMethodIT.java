@@ -31,8 +31,7 @@ public class CheckTestNgBeforeMethodIT extends SurefireJUnit4IntegrationTestCase
     @Test
     public void testNgBeforeMethod() {
         unpack("/testng-beforeMethod")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(1);
     }
