@@ -27,9 +27,6 @@ import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 
-/**
- *
- */
 public final class ForkedNodeArg implements ForkNodeArguments {
     private final int forkChannelId;
     private final ConsoleLogger logger;

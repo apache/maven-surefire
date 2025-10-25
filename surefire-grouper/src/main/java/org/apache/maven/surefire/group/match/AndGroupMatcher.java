@@ -21,8 +21,7 @@ package org.apache.maven.surefire.group.match;
 import java.util.Collection;
 
 /**
- * AND group matcher
- *
+ * AND group matcher.
  */
 public class AndGroupMatcher extends JoinGroupMatcher {
 

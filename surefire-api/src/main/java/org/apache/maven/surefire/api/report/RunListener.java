@@ -29,61 +29,61 @@ import org.apache.maven.surefire.api.provider.SurefireProvider;
  */
 public interface RunListener {
     /**
-     * Indicates the start of a given test-set
+     * Indicates the start of a given test-set.
      *
      * @param report the report entry describing the testset
-     * @throws ReporterException When reporting fails
+     * @throws ReporterException when reporting fails
      */
     void testSetStarting(TestSetReportEntry report);
 
     /**
-     * Indicates end of a given test-set
+     * Indicates end of a given test-set.
      *
      * @param report the report entry describing the testset
-     * @throws ReporterException When reporting fails
+     * @throws ReporterException when reporting fails
      */
     void testSetCompleted(TestSetReportEntry report);
 
     /**
-     * Event fired when a test is about to start
+     * Event fired when a test is about to start.
      *
-     * @param report The report entry to log for
+     * @param report the report entry to log for
      */
     void testStarting(ReportEntry report);
 
     /**
-     * Event fired when a test ended successfully
+     * Event fired when a test ended successfully.
      *
-     * @param report The report entry to log for
+     * @param report the report entry to log for
      */
     void testSucceeded(ReportEntry report);
 
     /**
      * Event fired when a test assumption failure was encountered.
-     * An assumption failure indicates that the test is not relevant
+     * An assumption failure indicates that the test is not relevant.
      *
-     * @param report The report entry to log for
+     * @param report the report entry to log for
      */
     void testAssumptionFailure(ReportEntry report);
 
     /**
      * Event fired when a test ended with an error (non anticipated problem)
      *
-     * @param report The report entry to log for
+     * @param report the report entry to log for
      */
     void testError(ReportEntry report);
 
     /**
      * Event fired when a test ended with a failure (anticipated problem)
      *
-     * @param report The report entry to log for
+     * @param report the report entry to log for
      */
     void testFailed(ReportEntry report);
 
     /**
-     * Event fired when a test is skipped
+     * Event fired when a test is skipped.
      *
-     * @param report The report entry to log for
+     * @param report the report entry to log for
      */
     void testSkipped(ReportEntry report);
 

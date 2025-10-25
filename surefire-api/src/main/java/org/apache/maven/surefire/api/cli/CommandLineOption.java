@@ -26,8 +26,8 @@ import java.util.List;
  * CLI options.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
  * @see <a href="http://books.sonatype.com/mvnref-book/reference/running-sect-options.html">command line options</a>
+ * @since 2.19
  */
 public enum CommandLineOption {
     REACTOR_FAIL_FAST,

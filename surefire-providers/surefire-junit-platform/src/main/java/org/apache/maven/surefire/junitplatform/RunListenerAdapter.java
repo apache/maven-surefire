@@ -305,7 +305,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8
+     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8.
      *
      * @param testIdentifier the test identifier to check
      * @return true if the test identifier has a parent ID, false otherwise
@@ -514,7 +514,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * @return Map of tests that failed.
+     * @return map of tests that failed
      */
     Map<TestIdentifier, TestExecutionResult> getFailures() {
         return failures;

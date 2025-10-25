@@ -36,7 +36,7 @@ public final class ForkNumberBucket {
     private final AtomicInteger highWaterMark = new AtomicInteger(1);
 
     /**
-     * Non-public constructor
+     * Non-public constructor.
      */
     private ForkNumberBucket() {}
 
@@ -49,7 +49,7 @@ public final class ForkNumberBucket {
     }
 
     /**
-     * @param number the number to return to the bucket so that it can be reused.
+     * @param number the number to return to the bucket so that it can be reused
      */
     public static void returnNumber(int number) {
         getInstance().returnNumberInternal(number);
@@ -79,7 +79,7 @@ public final class ForkNumberBucket {
     }
 
     /**
-     * @param number the number to return to the bucket so that it can be reused.
+     * @param number the number to return to the bucket so that it can be reused
      */
     private void returnNumberInternal(int number) {
         qFree.add(number);

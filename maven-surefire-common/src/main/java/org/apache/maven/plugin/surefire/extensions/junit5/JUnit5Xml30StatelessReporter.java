@@ -30,6 +30,7 @@ import org.apache.maven.surefire.extensions.StatelessReportEventListener;
  * Selectively enables phrased classes, methods and report files upon JUnit5 annotation <em>DisplayName</em>.
  *
  * author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ *
  * @since 3.0.0-M4
  */
 public class JUnit5Xml30StatelessReporter extends SurefireStatelessReporter {

@@ -29,9 +29,6 @@ import java.util.Scanner;
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.EventHandler;
 
-/**
- *
- */
 public final class LineConsumerThread extends CloseableDaemonThread {
     private final Charset encoding;
     private final ReadableByteChannel channel;

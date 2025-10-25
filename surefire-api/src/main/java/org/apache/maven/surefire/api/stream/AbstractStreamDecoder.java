@@ -355,9 +355,6 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         memento.getLine().clear();
     }
 
-    /**
-     *
-     */
     public static final class Segment {
         private final byte[] array;
         private final int fromIndex;
@@ -447,9 +444,6 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         }
     }
 
-    /**
-     *
-     */
     public final class Memento {
         private CharsetDecoder currentDecoder;
         private final CharsetDecoder defaultDecoder;
@@ -617,9 +611,6 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         }
     }
 
-    /**
-     *
-     */
     public static final class MalformedFrameException extends Exception {
         private final int readFrom;
         private final int readTo;
@@ -647,7 +638,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
      * <br>
      * Overflow - read all bytes or more
      * <br>
-     * EOF - end of stream
+     * EOF - end of stream.
      */
     public enum StreamReadStatus {
         UNDERFLOW,
