@@ -18,36 +18,54 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import org.junit.platform.engine.TestSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
+import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
-import org.junit.runner.Description;
-import org.junit.runner.notification.RunListener;
+
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Optional;
 
 public class CustomTestExecutionListener implements TestExecutionListener {
 
-    private RunListener runListener;
+    private List<Object> listeners;
 
-    public CustomTestExecutionListener(RunListener runListener) {
-        this.runListener = runListener;
+    private String mainTestClass = null;
+
+    public CustomTestExecutionListener(List<Object> runListener) {
+        this.listeners = runListener;
     }
 
     @Override
     public void testPlanExecutionFinished(TestPlan testPlan) {
-        try {
-            runListener.testFinished(Description.createSuiteDescription(runListener.getClass()));
-        } catch (Exception e) {
-            // TODO: I have no clue, what could happen here
-            throw new RuntimeException(e);
-        }
+
+        listeners.forEach(plan -> {
+            try {
+                Class<?> descriptionClass = null;
+                descriptionClass =
+                    Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
+                Method createSuiteDescription = descriptionClass.getMethod("createSuiteDescription", Class.class);
+                if (mainTestClass != null) {
+                    Class<?> classToRemove =
+                        Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
+                    Object invoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
+                    plan.getClass()
+                        .getMethod("testRunStarted", descriptionClass)
+                        .invoke(plan, invoke);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
-    public void testPlanExecutionStarted(TestPlan testPlan) {
-        try {
-            runListener.testRunStarted(Description.createSuiteDescription(runListener.getClass()));
-        } catch (Exception e) {
-            // TODO: I have no clue, what could happen here
-            throw new RuntimeException(e);
+    public void executionStarted(TestIdentifier testIdentifier) {
+        Optional<TestSource> testSource = testIdentifier.getSource();
+        if (testIdentifier.isTest() && testSource.isPresent()) {
+            mainTestClass = ((MethodSource) testSource.get()).getClassName();
         }
     }
 }

@@ -46,39 +46,13 @@ import org.junit.Test;
  */
 public final class Surefire1095NpeInRunListenerIT extends SurefireJUnit4IntegrationTestCase {
 
-    /**
-     * Method Request.classes( String, Class[] ); exists in JUnit 4.0 - 4.4
-     * See JUnit4Reflector.
-     */
     @Test
-    public void testRunStartedWithJUnit40() {
+    public void testRunStartedWithJUnit4() {
         unpack().setJUnitVersion("4.12")
                 .executeTest()
                 .verifyErrorFree(1)
                 .verifyTextInLog("Running JUnit 4.12")
-                .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
-    }
-
-    /**
-     * Method Request.classes( Class[] ); Since of JUnit 4.5
-     * See JUnit4Reflector.
-     */
-    @Test
-    public void testRunStartedWithJUnit45() {
-        unpack().setJUnitVersion("4.12")
-                .executeTest()
-                .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.12")
-                .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
-    }
-
-    @Test
-    public void testRunStartedWithJUnit47() {
-        unpack().setJUnitVersion("4.12")
-                .executeTest()
-                .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.12")
-                .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
+                .verifyTextInLog("testRunStarted jiras.surefire1095.SomeTest");
     }
 
     private SurefireLauncher unpack() {

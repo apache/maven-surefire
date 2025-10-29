@@ -63,7 +63,6 @@ import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
-import org.junit.runner.notification.RunListener;
 
 import static java.util.Arrays.stream;
 import static java.util.Optional.empty;
@@ -222,16 +221,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void execute(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
-        // parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS)
-        // add this LegacyXmlReportGeneratingListener ?
-        //            adapter,
-        //            new LegacyXmlReportGeneratingListener(
-        //                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
-        //        };
-
         List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
         testExecutionListeners.add(adapter);
-        testExecutionListeners.addAll(createCustomListener());
+
+        TestExecutionListener customListeners = createCustomListener();
+        if (customListeners != null) {
+            testExecutionListeners.add(customListeners);
+        }
 
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
@@ -251,22 +247,23 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private List<TestExecutionListener> createCustomListener() {
+    private TestExecutionListener createCustomListener() {
 
-        List<TestExecutionListener> result = new ArrayList<>();
         String listeners = parameters.getProviderProperties().get("listener");
         if (listeners != null) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            List<Object> runListeners = new ArrayList<>();
             for (String listener : listeners.split(",")) {
                 try {
-                    result.add(ReflectionUtils.instantiate(cl, listener, CustomTestExecutionListener.class));
-                } catch (ClassCastException c) {
-                    RunListener oldListener = ReflectionUtils.instantiate(cl, listener, RunListener.class);
-                    result.add(new CustomTestExecutionListener(oldListener));
+                    Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
+                    runListeners.add(ReflectionUtils.instantiate(cl, listener, runListenerClass));
+                } catch (ClassCastException | ClassNotFoundException c) {
+                    throw new RuntimeException(c);
                 }
             }
+            return new CustomTestExecutionListener(runListeners);
         }
-        return result;
+        return null;
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
