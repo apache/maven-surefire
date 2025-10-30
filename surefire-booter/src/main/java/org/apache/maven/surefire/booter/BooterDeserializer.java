@@ -110,7 +110,7 @@ public class BooterDeserializer {
 
         TestArtifactInfo testNg = new TestArtifactInfo(testNgVersion, testArtifactClassifier);
         TestRequest testSuiteDefinition = new TestRequest(
-            Collections.emptyList(), sourceDirectory, new TestListResolver(requestedTest), rerunFailingTestsCount);
+                Collections.emptyList(), sourceDirectory, new TestListResolver(requestedTest), rerunFailingTestsCount);
 
         ReporterConfiguration reporterConfiguration =
                 new ReporterConfiguration(reportsDirectory, properties.getBooleanProperty(ISTRIMSTACKTRACE));
