@@ -1515,7 +1515,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
-    void convertJunitCoreParameters() throws MojoExecutionException {
+    void convertJunitCoreParameters() throws MojoFailureException {
         checkThreadCountEntity(getThreadCountSuites(), "suites");
         checkThreadCountEntity(getThreadCountClasses(), "classes");
         checkThreadCountEntity(getThreadCountMethods(), "methods");
@@ -1581,10 +1581,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 .setProperty(
                         ProviderParameterNames.ENABLE_OUT_ERR_ELEMENTS_PROP,
                         Boolean.toString(isEnableOutErrElements()));
-        getProperties()
-                .setProperty(
-                        ProviderParameterNames.ENABLE_PROPERTIES_ELEMENT_PROP,
-                        Boolean.toString(isEnablePropertiesElement()));
+        if (!getIncludedScanList().isEmpty()) {
+            getProperties()
+                    .setProperty(ProviderParameterNames.INCLUDES_SCAN_LIST, String.join(",", getIncludedScanList()));
+        }
+
+        if (!getExcludedScanList().isEmpty()) {
+            getProperties()
+                    .setProperty(ProviderParameterNames.EXCLUDES_SCAN_LIST, String.join(",", getExcludedScanList()));
+        }
 
         String message = "parallel='" + usedParallel + '\''
                 + ", perCoreThreadCount=" + getPerCoreThreadCount()
@@ -1600,10 +1605,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         logDebugOrCliShowErrors(message);
     }
 
-    private void checkNonForkedThreads(String parallel) throws MojoExecutionException {
+    private void checkNonForkedThreads(String parallel) throws MojoFailureException {
         if ("suites".equals(parallel)) {
             if (!(getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountSuites() > 0)) {
-                throw new MojoExecutionException(
+                throw new MojoFailureException(
                         "Use threadCount or threadCountSuites > 0 or useUnlimitedThreads=true for parallel='suites'");
             }
             setThreadCountClasses(0);
@@ -1630,7 +1635,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             && getThreadCount() > getThreadCountSuites()
                             && getThreadCountClasses() == 0
                             && getThreadCountMethods() == 0)) {
-                throw new MojoExecutionException("Use useUnlimitedThreads=true, "
+                throw new MojoFailureException("Use useUnlimitedThreads=true, "
                         + "or only threadCount > 0, "
                         + "or (threadCountSuites > 0 and threadCountClasses > 0), "
                         + "or (threadCount > 0 and threadCountSuites > 0 and threadCountClasses > 0) "
@@ -1654,7 +1659,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             && getThreadCount() > getThreadCountSuites()
                             && getThreadCountClasses() == 0
                             && getThreadCountMethods() == 0)) {
-                throw new MojoExecutionException("Use useUnlimitedThreads=true, "
+                throw new MojoFailureException("Use useUnlimitedThreads=true, "
                         + "or only threadCount > 0, "
                         + "or (threadCountSuites > 0 and threadCountMethods > 0), "
                         + "or (threadCount > 0 and threadCountSuites > 0 and threadCountMethods > 0), "
@@ -1678,7 +1683,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             && getThreadCount() > getThreadCountClasses()
                             && getThreadCountSuites() == 0
                             && getThreadCountMethods() == 0)) {
-                throw new MojoExecutionException("Use useUnlimitedThreads=true, "
+                throw new MojoFailureException("Use useUnlimitedThreads=true, "
                         + "or only threadCount > 0, "
                         + "or (threadCountClasses > 0 and threadCountMethods > 0), "
                         + "or (threadCount > 0 and threadCountClasses > 0 and threadCountMethods > 0), "
@@ -1695,7 +1700,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             && getThreadCountClasses() > 0
                             && getThreadCountMethods() == 0
                             && getThreadCount() > (getThreadCountSuites() + getThreadCountClasses()))) {
-                throw new MojoExecutionException("Use useUnlimitedThreads=true, "
+                throw new MojoFailureException("Use useUnlimitedThreads=true, "
                         + "or only threadCount > 0, "
                         + "or (threadCountSuites > 0 and threadCountClasses > 0 and threadCountMethods > 0), "
                         + "or every thread-count is specified, "
@@ -1704,7 +1709,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         + "for parallel='all'");
             }
         } else {
-            throw new MojoExecutionException("Illegal parallel='" + parallel + "'");
+            throw new MojoFailureException("Illegal parallel='" + parallel + "'");
         }
     }
 
@@ -1715,9 +1720,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 && getThreadCountMethods() == 0;
     }
 
-    private static void checkThreadCountEntity(int count, String entity) throws MojoExecutionException {
+    private static void checkThreadCountEntity(int count, String entity) throws MojoFailureException {
         if (count < 0) {
-            throw new MojoExecutionException("parallel maven execution does not allow negative thread-count" + entity);
+            throw new MojoFailureException("parallel maven execution does not allow negative thread-count" + entity);
         }
     }
 
@@ -2957,8 +2962,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         public void addProviderProperties() throws MojoExecutionException {
             // Ok this is a bit lazy.
-            convertJunitCoreParameters();
-            convertTestNGParameters();
+            try {
+                convertJunitCoreParameters();
+                convertTestNGParameters();
+            } catch (MojoFailureException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
         }
 
         @Nonnull
@@ -3057,9 +3066,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         @Override
         public void addProviderProperties() throws MojoExecutionException {
-            convertJunitEngineParameters();
-            convertGroupParameters();
-            convertJunitCoreParameters();
+            try {
+                convertJunitEngineParameters();
+                convertGroupParameters();
+                convertJunitCoreParameters();
+            } catch (MojoFailureException e) {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
             // FIXME look at duplicate parameters to remove
             if (testNgArtifact != null) {
                 convertTestNGParameters();
