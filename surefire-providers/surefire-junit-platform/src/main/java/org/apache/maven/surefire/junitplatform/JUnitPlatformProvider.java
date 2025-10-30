@@ -297,7 +297,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
             List<String> includes = Stream.of(includesList.get().split(","))
                     .filter(s -> !s.startsWith("%regex["))
                     .map(pattern -> StringUtils.replace(pattern, ".java", ""))
-                    .map(pattern -> StringUtils.replace(pattern, "/", "."))
+                    .map(pattern -> StringUtils.replace(pattern, "/", ""))
                     .collect(toList());
             if (!includes.isEmpty()) {
                 // use of CompositeFilter?
@@ -321,7 +321,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
             List<String> excludes = Stream.of(excludesList.get().split(","))
                     .filter(s -> !s.startsWith("%regex["))
                     .map(pattern -> StringUtils.replace(pattern, ".java", ""))
-                    .map(pattern -> StringUtils.replace(pattern, "/", "."))
+                    .map(pattern -> StringUtils.replace(pattern, "/", ""))
                     .collect(toList());
             if (!excludes.isEmpty()) {
                 // use of CompositeFilter?
