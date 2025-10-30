@@ -235,7 +235,6 @@ public class BooterDeserializerProviderConfigurationTest extends TestCase {
         File cwd = new File(".");
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration(cwd, true);
         TestRequest testSuiteDefinition = new TestRequest(
-                getSuiteXmlFileStrings(),
                 getTestSourceDirectory(),
                 new TestListResolver(USER_REQUESTED_TEST + "#aUserRequestedTestMethod"),
                 RERUN_FAILING_TEST_COUNT);
