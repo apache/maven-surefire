@@ -1737,8 +1737,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         final boolean isTestNg = testNgArtifact != null;
         final TestArtifactInfo testNg =
                 isTestNg ? new TestArtifactInfo(testNgArtifact.getVersion(), testNgArtifact.getClassifier()) : null;
-        final TestRequest testSuiteDefinition = new TestRequest(
-                Collections.emptyList(), getTestSourceDirectory(), getSpecificTests(), getRerunFailingTestsCount());
+        final TestRequest testSuiteDefinition =
+                new TestRequest(getTestSourceDirectory(), getSpecificTests(), getRerunFailingTestsCount());
 
         // @todo remove these three params and use DirectoryScannerParameters to pass into DirectoryScanner only
         // @todo or remove it in next major version :: 3.0
