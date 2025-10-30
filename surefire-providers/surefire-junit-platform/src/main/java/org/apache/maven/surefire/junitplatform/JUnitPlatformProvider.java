@@ -35,8 +35,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
@@ -50,9 +52,11 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.discovery.ClassNameFilter;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.EngineFilter;
@@ -259,6 +263,87 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
+
+        // includeClassNamePatterns support only regex patterns
+        Optional<String> includesList =
+                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.INCLUDES_SCAN_LIST));
+        if (includesList.isPresent()) {
+            String[] includesRegex = Stream.of(includesList.get().split(","))
+                    .filter(s -> s.startsWith("%regex["))
+                    .map(s -> StringUtils.replace(s, "%regex[", ""))
+                    .map(s -> s.substring(0, s.length() - 1))
+                    .toArray(String[]::new);
+            if (includesRegex.length > 0) {
+                filters.add(ClassNameFilter.includeClassNamePatterns(includesRegex));
+            }
+        }
+
+        // excludeClassNamePatterns support only regex patterns
+        Optional<String> excludesList =
+                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.EXCLUDES_SCAN_LIST));
+        if (excludesList.isPresent()) {
+            String[] excludesRegex = Stream.of(excludesList.get().split(","))
+                    .filter(s -> s.startsWith("%regex["))
+                    .map(s -> StringUtils.replace(s, "%regex[", ""))
+                    .map(s -> s.substring(0, s.length() - 1))
+                    .toArray(String[]::new);
+            if (excludesRegex.length > 0) {
+                filters.add(ClassNameFilter.excludeClassNamePatterns(excludesRegex));
+            }
+        }
+
+        if (includesList.isPresent()) {
+            // usual include/exclude are scanner style patterns
+            List<String> includes = Stream.of(includesList.get().split(","))
+                    .filter(s -> !s.startsWith("%regex["))
+                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
+                    .map(pattern -> StringUtils.replace(pattern, "/", "."))
+                    .collect(toList());
+            if (!includes.isEmpty()) {
+                // use of CompositeFilter?
+                ClassNameFilter classNameFilter = new ClassNameFilter() {
+                    @Override
+                    public FilterResult apply(String clasName) {
+                        FilterResult result = includes.stream()
+                                .map(pattern -> FilterResult.includedIf(SelectorUtils.match(pattern, clasName)))
+                                .filter(FilterResult::included)
+                                .findFirst()
+                                .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
+                        return result;
+                    }
+                };
+                filters.add(classNameFilter);
+            }
+        }
+
+        if (excludesList.isPresent()) {
+
+            List<String> excludes = Stream.of(excludesList.get().split(","))
+                    .filter(s -> !s.startsWith("%regex["))
+                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
+                    .map(pattern -> StringUtils.replace(pattern, "/", "."))
+                    .collect(toList());
+            if (!excludes.isEmpty()) {
+                // use of CompositeFilter?
+                ClassNameFilter classNameFilter = new ClassNameFilter() {
+                    @Override
+                    public FilterResult apply(String className) {
+                        FilterResult result = excludes.stream()
+                                .map(pattern -> {
+                                    boolean inclusive = SelectorUtils.match(pattern, className);
+                                    return !inclusive
+                                            ? FilterResult.included("Not excluded by pattern: " + pattern)
+                                            : FilterResult.excluded("Excluded by pattern: " + pattern);
+                                })
+                                .filter(FilterResult::excluded)
+                                .findFirst()
+                                .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
+                        return result;
+                    }
+                };
+                filters.add(classNameFilter);
+            }
+        }
 
         boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
 

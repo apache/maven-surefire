@@ -83,7 +83,7 @@ final class FileScanner {
     private static String toJavaPackage(String... subDirectories) {
         StringBuilder pkg = new StringBuilder();
         for (int i = 0; i < subDirectories.length; i++) {
-            if (i > 0 && i < subDirectories.length) {
+            if (i > 0) {
                 pkg.append('.');
             }
             pkg.append(subDirectories[i]);
@@ -94,7 +94,7 @@ final class FileScanner {
     private static String toPath(String... subDirectories) {
         StringBuilder pkg = new StringBuilder();
         for (int i = 0; i < subDirectories.length; i++) {
-            if (i > 0 && i < subDirectories.length) {
+            if (i > 0) {
                 pkg.append('/');
             }
             pkg.append(subDirectories[i]);
