@@ -28,7 +28,6 @@ import java.util.List;
  * @author Kristian Rosenvold
  */
 public class TestRequest {
-    private final List<File> suiteXmlFiles;
 
     private final File testSourceDirectory;
 
@@ -42,19 +41,9 @@ public class TestRequest {
 
     public TestRequest(
             List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests, int rerunFailingTestsCount) {
-        this.suiteXmlFiles = createFiles(suiteXmlFiles);
         this.testSourceDirectory = testSourceDirectory;
         this.requestedTests = requestedTests;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
-    }
-
-    /**
-     * Represents suitexmlfiles that define the test-run request.
-     *
-     * @return a list of java.io.File objects
-     */
-    public List<File> getSuiteXmlFiles() {
-        return suiteXmlFiles;
     }
 
     /**

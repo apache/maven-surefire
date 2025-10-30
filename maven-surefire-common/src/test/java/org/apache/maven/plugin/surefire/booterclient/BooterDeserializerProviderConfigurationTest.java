@@ -143,10 +143,6 @@ public class BooterDeserializerProviderConfigurationTest extends TestCase {
         ProviderConfiguration reloaded = getReloadedProviderConfiguration();
 
         TestRequest testSuiteDefinition = reloaded.getTestSuiteDefinition();
-        List<?> suiteXmlFiles = testSuiteDefinition.getSuiteXmlFiles();
-        File[] expected = getSuiteXmlFiles();
-        Assert.assertEquals(expected[0], suiteXmlFiles.get(0));
-        Assert.assertEquals(expected[1], suiteXmlFiles.get(1));
         Assert.assertEquals(getTestSourceDirectory(), testSuiteDefinition.getTestSourceDirectory());
         TestListResolver resolver = testSuiteDefinition.getTestListResolver();
         Assert.assertNotNull(resolver);
@@ -272,10 +268,6 @@ public class BooterDeserializerProviderConfigurationTest extends TestCase {
 
     private File getTestSourceDirectory() {
         return new File("TestSrc");
-    }
-
-    private File[] getSuiteXmlFiles() {
-        return new File[] {new File("A1"), new File("A2")};
     }
 
     private List<String> getSuiteXmlFileStrings() {
