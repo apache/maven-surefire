@@ -51,4 +51,8 @@ public class ProviderParameterNames {
     public static final String ENABLE_PROPERTIES_ELEMENT_PROP = "enablepropertieselement";
 
     public static final String JUNIT_VINTAGE_DETECTED = "junit.vintage.engine.detected";
+
+    public static final String INCLUDES_SCAN_LIST = "junit.includes.scan.list";
+
+    public static final String EXCLUDES_SCAN_LIST = "junit.excludes.scan.list";
 }
