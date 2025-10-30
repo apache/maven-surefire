@@ -61,7 +61,6 @@ import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.suite.RunResult;
-import org.apache.maven.surefire.api.testset.TestRequest;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
@@ -302,9 +301,7 @@ public class ForkStarter {
     }
 
     private boolean hasSuiteXmlFiles() {
-        TestRequest testSuiteDefinition = providerConfiguration.getTestSuiteDefinition();
-        return testSuiteDefinition != null
-                && !testSuiteDefinition.getSuiteXmlFiles().isEmpty();
+        return providerConfiguration.getTestSuiteDefinition() != null;
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
