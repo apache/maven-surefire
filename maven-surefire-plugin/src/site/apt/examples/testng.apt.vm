@@ -59,30 +59,6 @@ Using TestNG
   If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
   {{{./inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
 
-* Using Suite XML Files
-
-  Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
-  These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
-
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <suiteXmlFiles>
-            <suiteXmlFile>testng.xml</suiteXmlFile>
-          </suiteXmlFiles>
-        </configuration>
-      </plugin>
-    [...]
-</plugins>
-+---+
-
-  This configuration will override the includes and excludes patterns and run all tests in the suite files.
-
 * Specifying Test Parameters
 
   Your TestNG test can accept parameters with the <<<@Parameters>>> annotation.  You can also pass parameters from Maven
@@ -177,32 +153,7 @@ Using TestNG
     [...]
 </plugins>
 +---+
-  
-  You can run suites in parallel.
-  
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <suiteXmlFiles>
-            <file>src/test/resources/testng1.xml</file>
-            <file>src/test/resources/testng2.xml</file>
-          </suiteXmlFiles>
-          <properties>
-            <property>
-              <name>suitethreadpoolsize</name>
-              <value>2</value>
-            </property>
-          </properties>
-        </configuration>
-      </plugin>
-    [...]
-</plugins>
-+---+
+
 
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 
@@ -342,62 +293,6 @@ Using TestNG
     [...]
 </plugins>
 +---+
-
-* Running 'testnames' in test tag
-
-  Only tests defined in a <<<test>>> tag matching one of these names will be run.
-  In this example two tests run out of 7; namely <InstallTest> and <ATest>.
-  The test <a-t3> does not match any test in <suite.xml>.
-  
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          [...]
-          <suiteXmlFiles>
-            <file>src/test/resources/suite.xml</file>
-          </suiteXmlFiles>
-          <properties>
-            <property>
-              <name>testnames</name>
-              <value>a-t1,a-t3</value>
-            </property>
-          </properties>
-          [...]
-        </configuration>
-      </plugin>
-    [...]
-</plugins>
-+---+
-
-
-  The test suite 'suite.xml' :
-
-+---+
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="Component Tests" verbose="2" annotations="JDK">
-  <test name="a-t1" preserve-order="true" >
-    <classes>
-      <class name="server.InstallTest" />
-      <class name="server.ATest" />
-    </classes>
-  </test>
-  <test name="a-t2" preserve-order="true" >
-    <classes>
-      <class name="server.SCHTest" />
-      <class name="server.PRGTest" />
-      <class name="server.SIBBTest" />
-      <class name="server.EDNTest" />
-      <class name="server.PPVTest" />
-    </classes>
-  </test>
-</suite>
-+---+
-
 
 * Running TestNG and JUnit Tests
 

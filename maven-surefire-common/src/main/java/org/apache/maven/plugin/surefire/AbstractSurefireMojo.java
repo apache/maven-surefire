@@ -503,7 +503,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * in test run, if specified.<br>
      * For JUnit4 tests, this parameter forces the use of the 4.7 provider. For JUnit5 tests, this parameter forces
      * the use of the JUnit platform provider.<br>
-     * This parameter is ignored if the {@code suiteXmlFiles} parameter is specified.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
      * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
@@ -519,7 +518,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * run.<br>
      * For JUnit4, this parameter forces the use of the 4.7 provider. For JUnit5, this parameter forces the use of the
      * JUnit platform provider.<br>
-     * This parameter is ignored if the {@code suiteXmlFiles} parameter is specified.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
      * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
@@ -874,24 +872,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     public abstract File getExcludesFile();
 
-    /**
-     * Calls {@link #getSuiteXmlFiles()} as {@link List list}.
-     * Never returns <code>null</code>.
-     *
-     * @return list of TestNG suite XML files provided by MOJO
-     */
-    protected abstract List<File> suiteXmlFiles();
-
-    /**
-     * @return {@code true} if {@link #getSuiteXmlFiles() suite-xml files array} is not empty.
-     */
-    protected abstract boolean hasSuiteXmlFiles();
-
     protected abstract String[] getExcludedEnvironmentVariables();
-
-    public abstract File[] getSuiteXmlFiles();
-
-    public abstract void setSuiteXmlFiles(File[] suiteXmlFiles);
 
     public abstract String getRunOrder();
 
@@ -956,7 +937,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         try {
             if (verifyParameters() && !hasExecutedBefore()) {
                 DefaultScanResult scan = scanForTestClasses();
-                if (!hasSuiteXmlFiles() && scan.isEmpty()) {
+                if (scan.isEmpty()) {
                     switch (getEffectiveFailIfNoTests()) {
                         case COULD_NOT_RUN_DEFAULT_TESTS:
                             throw new MojoFailureException(
@@ -1763,26 +1744,19 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         final TestArtifactInfo testNg =
                 isTestNg ? new TestArtifactInfo(testNgArtifact.getVersion(), testNgArtifact.getClassifier()) : null;
         final TestRequest testSuiteDefinition = new TestRequest(
-                suiteXmlFiles(), getTestSourceDirectory(), getSpecificTests(), getRerunFailingTestsCount());
+                Collections.emptyList(), getTestSourceDirectory(), getSpecificTests(), getRerunFailingTestsCount());
 
-        DirectoryScannerParameters directoryScannerParameters = null;
-        if (hasSuiteXmlFiles() && !isSpecificTestSpecified()) {
-            if (!isTestNg) {
-                throw new MojoExecutionException("suiteXmlFiles is configured, but there is no TestNG dependency");
-            }
-        } else {
-            // @todo remove these three params and use DirectoryScannerParameters to pass into DirectoryScanner only
-            // @todo or remove it in next major version :: 3.0
-            // @todo remove deprecated methods in ProviderParameters => included|excluded|specificTests not needed here
+        // @todo remove these three params and use DirectoryScannerParameters to pass into DirectoryScanner only
+        // @todo or remove it in next major version :: 3.0
+        // @todo remove deprecated methods in ProviderParameters => included|excluded|specificTests not needed here
 
-            List<String> actualIncludes = getIncludeList(); // Collections.emptyList(); behaves same
-            List<String> actualExcludes = getExcludeList(); // Collections.emptyList(); behaves same
-            // Collections.emptyList(); behaves same
-            List<String> specificTests = Collections.emptyList();
+        List<String> actualIncludes = getIncludeList(); // Collections.emptyList(); behaves same
+        List<String> actualExcludes = getExcludeList(); // Collections.emptyList(); behaves same
+        // Collections.emptyList(); behaves same
+        List<String> specificTests = Collections.emptyList();
 
-            directoryScannerParameters = new DirectoryScannerParameters(
-                    getTestClassesDirectory(), actualIncludes, actualExcludes, specificTests, getRunOrder());
-        }
+        DirectoryScannerParameters directoryScannerParameters = new DirectoryScannerParameters(
+                getTestClassesDirectory(), actualIncludes, actualExcludes, specificTests, getRunOrder());
 
         Map<String, String> providerProperties = toStringProperties(getProperties());
 
@@ -2600,7 +2574,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         checksum.add(getExcludedGroups());
         checksum.add(getIncludeJUnit5Engines());
         checksum.add(getExcludeJUnit5Engines());
-        checksum.add(getSuiteXmlFiles());
         checksum.add(getJunitArtifact());
         checksum.add(getTestNGArtifactName());
         checksum.add(getThreadCount());
