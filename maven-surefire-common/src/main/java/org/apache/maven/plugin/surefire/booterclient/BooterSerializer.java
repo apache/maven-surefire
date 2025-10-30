@@ -20,7 +20,6 @@ package org.apache.maven.plugin.surefire.booterclient;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.SurefireProperties;
@@ -69,7 +68,6 @@ import static org.apache.maven.surefire.booter.BooterConstants.SYSTEM_EXIT_TIMEO
 import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_CLASSIFIER;
 import static org.apache.maven.surefire.booter.BooterConstants.TESTARTIFACT_VERSION;
 import static org.apache.maven.surefire.booter.BooterConstants.TEST_CLASSES_DIRECTORY;
-import static org.apache.maven.surefire.booter.BooterConstants.TEST_SUITE_XML_FILES;
 import static org.apache.maven.surefire.booter.BooterConstants.USEMANIFESTONLYJAR;
 import static org.apache.maven.surefire.booter.BooterConstants.USESYSTEMCLASSLOADER;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
@@ -133,11 +131,6 @@ class BooterSerializer {
         TestRequest testSuiteDefinition = providerConfiguration.getTestSuiteDefinition();
         if (testSuiteDefinition != null) {
             properties.setProperty(SOURCE_DIRECTORY, testSuiteDefinition.getTestSourceDirectory());
-            if (testSet instanceof File) {
-                properties.addList(Collections.singletonList((File) testSet), TEST_SUITE_XML_FILES);
-            } else {
-                properties.addList(testSuiteDefinition.getSuiteXmlFiles(), TEST_SUITE_XML_FILES);
-            }
             TestListResolver testFilter = testSuiteDefinition.getTestListResolver();
             properties.setProperty(REQUESTEDTEST, testFilter == null ? "" : testFilter.getPluginParameterTest());
             int rerunFailingTestsCount = testSuiteDefinition.getRerunFailingTestsCount();

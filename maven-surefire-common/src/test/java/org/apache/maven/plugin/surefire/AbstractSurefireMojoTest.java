@@ -2212,27 +2212,9 @@ public class AbstractSurefireMojoTest {
         }
 
         @Override
-        protected List<File> suiteXmlFiles() {
-            return null;
-        }
-
-        @Override
-        protected boolean hasSuiteXmlFiles() {
-            return false;
-        }
-
-        @Override
         protected String[] getExcludedEnvironmentVariables() {
             return new String[0];
         }
-
-        @Override
-        public File[] getSuiteXmlFiles() {
-            return new File[0];
-        }
-
-        @Override
-        public void setSuiteXmlFiles(File[] suiteXmlFiles) {}
 
         @Override
         public String getRunOrder() {

@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.surefire.api.booter.Shutdown;
@@ -94,7 +95,6 @@ public class BooterDeserializer {
         final List<String> includes = properties.getStringList(INCLUDES_PROPERTY_PREFIX);
         final List<String> specificTests = properties.getStringList(SPECIFIC_TEST_PROPERTY_PREFIX);
 
-        final List<String> testSuiteXmlFiles = properties.getStringList(TEST_SUITE_XML_FILES);
         final File testClassesDirectory = properties.getFileProperty(TEST_CLASSES_DIRECTORY);
         final String runOrder = properties.getProperty(RUN_ORDER);
         final Long runOrderRandomSeed = properties.getLongProperty(RUN_ORDER_RANDOM_SEED);
@@ -110,7 +110,7 @@ public class BooterDeserializer {
 
         TestArtifactInfo testNg = new TestArtifactInfo(testNgVersion, testArtifactClassifier);
         TestRequest testSuiteDefinition = new TestRequest(
-                testSuiteXmlFiles, sourceDirectory, new TestListResolver(requestedTest), rerunFailingTestsCount);
+            Collections.emptyList(), sourceDirectory, new TestListResolver(requestedTest), rerunFailingTestsCount);
 
         ReporterConfiguration reporterConfiguration =
                 new ReporterConfiguration(reportsDirectory, properties.getBooleanProperty(ISTRIMSTACKTRACE));

@@ -95,19 +95,4 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
         HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
     }
-
-    @Test
-    public void testTestNGSuite() {
-        final OutputValidator outputValidator = unpack("testng-twoTestCaseSuite")
-                .sysProp("testNgVersion", "6.14.3")
-                .executeTest();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0);
-        List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
-        Set<String> classNames = extractClassNames(reports);
-        assertContains(classNames, "testng.two.TestNGTestTwo");
-        assertContains(classNames, "testng.two.TestNGSuiteTest");
-        assertEquals("wrong number of classes", 2, classNames.size());
-        IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
-        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
-    }
 }
