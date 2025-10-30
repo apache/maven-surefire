@@ -46,37 +46,13 @@
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-report-parser</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-logger-api</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.surefire</groupId>
-      <artifactId>surefire-junit-platform</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-surefire-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-surefire-report-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-failsafe-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -183,6 +159,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
@@ -196,7 +173,7 @@
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-            <version>3.5.2</version>
+            <version>3.5.4</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -231,7 +208,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.4</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
             <configuration>
               <skipTests>${skipTests}</skipTests>
@@ -239,7 +216,7 @@
               <forkCount>${its.forkCount}</forkCount>
               <threadCount>${its.threadCount}</threadCount>
               <perCoreThreadCount>false</perCoreThreadCount>
-              <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+              <argLine>-Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
               <!-- Pass current surefire version to the main suite so that it -->
               <!-- can forward to all integration test projects. SUREFIRE-513 -->
               <systemPropertyVariables>
