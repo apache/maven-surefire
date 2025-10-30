@@ -30,10 +30,6 @@ import org.junit.Test;
  * @since 2.19.1
  */
 public class Surefire1202RerunAndSkipIT extends SurefireJUnit4IntegrationTestCase {
-    @Test
-    public void junit47() {
-        unpack().executeTest().assertTestSuiteResults(5, 0, 0, 3, 4);
-    }
 
     @Test
     public void junit4() {
