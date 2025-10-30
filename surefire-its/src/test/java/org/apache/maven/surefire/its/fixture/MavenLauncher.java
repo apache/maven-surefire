@@ -260,6 +260,7 @@ public final class MavenLauncher {
 
     public OutputValidator executeCurrentGoals() {
         try {
+            props.put("maven.build.cache.enabled", "false");
             getVerifier().addCliArguments(cliOptions.toArray(new String[0]));
             getVerifier().addCliArguments(goals.toArray(new String[] {}));
             getVerifier().setSystemProperties(props);
