@@ -19,7 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -174,7 +174,7 @@ public class MojoMocklessTest {
 
         File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
         testDeps.setFile(artifactFile);
-        try (ZipOutputStream os = new ZipOutputStream(new FileOutputStream(artifactFile))) {
+        try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
             os.closeEntry();
             os.putNextEntry(new ZipEntry("pkg/MyTest.class"));
@@ -203,7 +203,7 @@ public class MojoMocklessTest {
 
         File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
         testDeps.setFile(artifactFile);
-        try (ZipOutputStream os = new ZipOutputStream(new FileOutputStream(artifactFile))) {
+        try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
             os.closeEntry();
             os.finish();
@@ -268,7 +268,7 @@ public class MojoMocklessTest {
         Artifact testDep2 = new DefaultArtifact("g", "a", version, "test", "jar", null, handler);
         File artifactFile2 = SureFireFileManager.createTempFile("surefire", ".jar");
         testDep2.setFile(artifactFile2);
-        try (ZipOutputStream os = new ZipOutputStream(new FileOutputStream(artifactFile2))) {
+        try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile2.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
             os.closeEntry();
             os.putNextEntry(new ZipEntry("pkg/MyTest.class"));
@@ -507,27 +507,9 @@ public class MojoMocklessTest {
         }
 
         @Override
-        protected List<File> suiteXmlFiles() {
-            return null;
-        }
-
-        @Override
-        protected boolean hasSuiteXmlFiles() {
-            return false;
-        }
-
-        @Override
         protected String[] getExcludedEnvironmentVariables() {
             return new String[0];
         }
-
-        @Override
-        public File[] getSuiteXmlFiles() {
-            return new File[0];
-        }
-
-        @Override
-        public void setSuiteXmlFiles(File[] suiteXmlFiles) {}
 
         @Override
         public String getRunOrder() {
