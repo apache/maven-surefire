@@ -261,6 +261,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return request().filters(filters).configurationParameters(configurationParameters);
     }
 
+    private boolean matchClassName(String className, String pattern) {
+        // pattern can be either fully qualified or simple class name
+        return className.equals(pattern) || className.endsWith("." + pattern);
+    }
+
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
@@ -305,9 +310,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     @Override
                     public FilterResult apply(String clasName) {
                         FilterResult result = includes.stream()
-                                .map(pattern -> FilterResult.includedIf(SelectorUtils.match(pattern, clasName)))
+                                .map(pattern -> FilterResult.includedIf(
+                                        SelectorUtils.match(pattern, clasName) || matchClassName(clasName, pattern)))
                                 .filter(FilterResult::included)
-                                .findFirst()
+                                .findAny()
                                 .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
                         return result;
                     }
@@ -336,7 +342,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                                             : FilterResult.excluded("Excluded by pattern: " + pattern);
                                 })
                                 .filter(FilterResult::excluded)
-                                .findFirst()
+                                .findAny()
                                 .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
                         return result;
                     }
