@@ -21,7 +21,10 @@ package org.apache.maven.surefire.junitplatform;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,8 +34,11 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
@@ -46,25 +52,31 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
+import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.discovery.ClassNameFilter;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
@@ -103,8 +115,34 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
         configurationParameters = newConfigurationParameters();
+        parameters.getProviderProperties().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
+                .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
+
+        parameters.getProviderProperties().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("testng."))
+                .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
+        // testng compatibility parameters
+        String groups = parameters.getProviderProperties().get(GROUPS_PROP);
+        if (groups != null) {
+            configurationParameters.put("testng.groups", groups);
+        }
+
+        //        configurationParameters.put("testng.useDefaultListeners", "true");
+
+        Optional.ofNullable(parameters.getProviderProperties().get("listener"))
+                .ifPresent(listener -> configurationParameters.put("testng.listeners", listener));
+
+        Optional.ofNullable(parameters.getProviderProperties().get("reporter"))
+                .ifPresent(reporter -> configurationParameters.compute(
+                        "testng.listeners", (key, value) -> value == null ? reporter : value + "," + reporter));
+
+        String excludeGroups = parameters.getProviderProperties().get(EXCLUDEDGROUPS_PROP);
+        if (excludeGroups != null) {
+            configurationParameters.put("testng.excludedGroups", excludeGroups);
+        }
     }
 
     @Override
@@ -223,14 +261,109 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return request().filters(filters).configurationParameters(configurationParameters);
     }
 
+    private boolean matchClassName(String className, String pattern) {
+        // pattern can be either fully qualified or simple class name
+        return className.equals(pattern) || className.endsWith("." + pattern);
+    }
+
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
-        getPropertiesList(TESTNG_GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+        // includeClassNamePatterns support only regex patterns
+        Optional<String> includesList =
+                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.INCLUDES_SCAN_LIST));
+        if (includesList.isPresent()) {
+            String[] includesRegex = Stream.of(includesList.get().split(","))
+                    .filter(s -> s.startsWith("%regex["))
+                    .map(s -> StringUtils.replace(s, "%regex[", ""))
+                    .map(s -> s.substring(0, s.length() - 1))
+                    .toArray(String[]::new);
+            if (includesRegex.length > 0) {
+                filters.add(ClassNameFilter.includeClassNamePatterns(includesRegex));
+            }
+        }
 
-        getPropertiesList(TESTNG_EXCLUDEDGROUPS_PROP)
-                .map(TagFilter::excludeTags)
-                .ifPresent(filters::add);
+        // excludeClassNamePatterns support only regex patterns
+        Optional<String> excludesList =
+                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.EXCLUDES_SCAN_LIST));
+        if (excludesList.isPresent()) {
+            String[] excludesRegex = Stream.of(excludesList.get().split(","))
+                    .filter(s -> s.startsWith("%regex["))
+                    .map(s -> StringUtils.replace(s, "%regex[", ""))
+                    .map(s -> s.substring(0, s.length() - 1))
+                    .toArray(String[]::new);
+            if (excludesRegex.length > 0) {
+                filters.add(ClassNameFilter.excludeClassNamePatterns(excludesRegex));
+            }
+        }
+
+        if (includesList.isPresent()) {
+            // usual include/exclude are scanner style patterns
+            List<String> includes = Stream.of(includesList.get().split(","))
+                    .filter(s -> !s.startsWith("%regex["))
+                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
+                    .map(pattern -> StringUtils.replace(pattern, "/", ""))
+                    .collect(toList());
+            if (!includes.isEmpty()) {
+                // use of CompositeFilter?
+                ClassNameFilter classNameFilter = new ClassNameFilter() {
+                    @Override
+                    public FilterResult apply(String clasName) {
+                        FilterResult result = includes.stream()
+                                .map(pattern -> FilterResult.includedIf(
+                                        SelectorUtils.match(pattern, clasName) || matchClassName(clasName, pattern)))
+                                .filter(FilterResult::included)
+                                .findAny()
+                                .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
+                        return result;
+                    }
+                };
+                filters.add(classNameFilter);
+            }
+        }
+
+        if (excludesList.isPresent()) {
+
+            List<String> excludes = Stream.of(excludesList.get().split(","))
+                    .filter(s -> !s.startsWith("%regex["))
+                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
+                    .map(pattern -> StringUtils.replace(pattern, "/", ""))
+                    .collect(toList());
+            if (!excludes.isEmpty()) {
+                // use of CompositeFilter?
+                ClassNameFilter classNameFilter = new ClassNameFilter() {
+                    @Override
+                    public FilterResult apply(String className) {
+                        FilterResult result = excludes.stream()
+                                .map(pattern -> {
+                                    boolean inclusive = SelectorUtils.match(pattern, className);
+                                    return !inclusive
+                                            ? FilterResult.included("Not excluded by pattern: " + pattern)
+                                            : FilterResult.excluded("Excluded by pattern: " + pattern);
+                                })
+                                .filter(FilterResult::excluded)
+                                .findAny()
+                                .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
+                        return result;
+                    }
+                };
+                filters.add(classNameFilter);
+            }
+        }
+
+        boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
+
+        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED)) && !useTestNG) {
+            getPropertiesList(GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+            getPropertiesList(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags).ifPresent(filters::add);
+        } else if (!useTestNG) {
+            Optional<Class<?>> categoryClass = getCategoryClass();
+            if (categoryClass.isPresent()) {
+                getPropertiesList(GROUPS_PROP)
+                        .map(strings -> getIncludeCategoryFilter(strings, categoryClass))
+                        .ifPresent(filters::add);
+            }
+        }
 
         of(optionallyWildcardFilter(parameters.getTestRequest().getTestListResolver()))
                 .filter(f -> !f.isEmpty())
@@ -253,10 +386,91 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return filters;
     }
 
+    PostDiscoveryFilter getIncludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
+
+        return testDescriptor -> {
+            Optional<MethodSource> methodSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof MethodSource)
+                    .map(testSource -> (MethodSource) testSource);
+            boolean hasCategoryClass = false, hasCategoryMethod = false;
+            if (methodSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryClass = hasCategoryAnnotation(
+                            methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            Optional<ClassSource> classSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof ClassSource)
+                    .map(testSource -> (ClassSource) testSource);
+            if (classSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryMethod = hasCategoryAnnotation(
+                            getClass(classSource.get().getClassName()).get(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            return hasCategoryClass || hasCategoryMethod
+                    ? FilterResult.included("Category found")
+                    : FilterResult.excluded("Does not have category annotation");
+        };
+    }
+
+    private boolean hasCategoryAnnotation(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
+        Optional<Annotation> anno = stream(clazz.getAnnotations())
+                .filter(annotation -> annotation.annotationType().equals(categoryClass))
+                .findFirst();
+        if (anno.isPresent()) {
+            List<String> catValue = getCategoryValue(of(anno.get()));
+            return catValue.stream().anyMatch(categories::contains);
+        }
+        return false;
+    }
+
+    private boolean hasCategoryAnnotation(Method method, Class<?> categoryClass, List<String> categories) {
+        Optional<Annotation> anno = stream(method.getAnnotations())
+                .filter(annotation -> annotation.annotationType().equals(categoryClass))
+                .findFirst();
+        if (anno.isPresent()) {
+            List<String> catValue = getCategoryValue(of(anno.get()));
+            return catValue.stream().anyMatch(categories::contains);
+        }
+        return false;
+    }
+
+    private Optional<Class<?>> getCategoryClass() {
+        return getClass("org.junit.experimental.categories.Category");
+    }
+
+    private Optional<Class<?>> getClass(String className) {
+        Thread currentThread = Thread.currentThread();
+        try {
+            return Optional.of(currentThread.getContextClassLoader().loadClass(className));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private List<String> getCategoryValue(Optional<Object> instance) {
+        Optional<Class<?>> optionalClass = getCategoryClass();
+        if (optionalClass.isPresent()) {
+            try {
+                Class<?>[] classes =
+                        (Class<?>[]) optionalClass.get().getMethod("value").invoke(instance.get());
+                return stream(classes).map(Class::getName).collect(Collectors.toList());
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return Collections.emptyList();
+    }
+
     private Map<String, String> newConfigurationParameters() {
         String content = parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS);
         if (content == null) {
-            return emptyMap();
+            return new HashMap<>();
         }
         try (StringReader reader = new StringReader(content)) {
             Map<String, String> result = new HashMap<>();

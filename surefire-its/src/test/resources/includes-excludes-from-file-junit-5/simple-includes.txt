@@ -1,0 +1,4 @@
+# simple includes
+
+**/NotIncludedByDefault.java
+**/*Test.java

@@ -19,8 +19,6 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -74,8 +72,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * <code>**{@literal /}${test}.java</code>, so you can just type {@code -Dtest=MyTest} to run a single test called
      * "foo/MyTest.java". The test patterns prefixed with a <em>!</em> will be excluded.
      * <br>
-     * This parameter overrides the parameter {@code includes}, {@code excludes}, and the TestNG parameter
-     * {@code suiteXmlFiles}.
+     * This parameter overrides the parameter {@code includes}, {@code excludes}.
      * <br>
      * Since 2.7.3, you can execute a limited number of methods in the test by adding <i>#myMethod</i> or
      * <i>#my*ethod</i>. For example, {@code -Dtest=MyTest#myMethod}. This is supported for junit 4.x and TestNg.<br>
@@ -201,7 +198,6 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
      * </code></pre>
      * <br>
-     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.<br>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
      * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
@@ -221,8 +217,6 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * {@literal </excludes>}
      * </code></pre>
      * (which excludes all inner classes).
-     * <br>
-     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.
      * <br>
      * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
      * {@literal <exclude>} entries.<br>
@@ -293,6 +287,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     private int failOnFlakeCount;
 
     /**
+     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
      * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
      * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
      * {@code includes} and {@code excludes}.<br>
@@ -820,17 +815,6 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     }
 
     @Override
-    public File[] getSuiteXmlFiles() {
-        return suiteXmlFiles.clone();
-    }
-
-    @Override
-    @SuppressWarnings("UnusedDeclaration")
-    public void setSuiteXmlFiles(File[] suiteXmlFiles) {
-        this.suiteXmlFiles = suiteXmlFiles.clone();
-    }
-
-    @Override
     public String getRunOrder() {
         return runOrder;
     }
@@ -869,16 +853,6 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     @Override
     protected void setUseModulePath(boolean useModulePath) {
         this.useModulePath = useModulePath;
-    }
-
-    @Override
-    protected final List<File> suiteXmlFiles() {
-        return hasSuiteXmlFiles() ? Arrays.asList(suiteXmlFiles) : Collections.<File>emptyList();
-    }
-
-    @Override
-    protected final boolean hasSuiteXmlFiles() {
-        return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 
     @Override

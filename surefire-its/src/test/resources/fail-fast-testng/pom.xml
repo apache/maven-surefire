@@ -37,8 +37,7 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>5.10</version>
-      <classifier>jdk15</classifier>
+      <version>6.14.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -48,6 +47,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
         <configuration>
           <runOrder>alphabetical</runOrder>
           <argLine>-Xms64m -Xmx128m</argLine>

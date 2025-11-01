@@ -42,7 +42,6 @@
       <item name="Using TestNG" href="examples/testng.html"/>
       <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Using JUnit 5 Platform" href="examples/junit-platform.html"/>
-      <item name="Using POJO Tests" href="examples/pojo-test.html"/>
       <item name="Using Spock" href="examples/spock.html"/>
       <item name="Using Cucumber" href="examples/cucumber.html"/>
       <item name="Special characters in directories" href="examples/cwd.html"/>

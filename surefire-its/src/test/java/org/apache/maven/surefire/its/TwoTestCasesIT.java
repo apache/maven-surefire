@@ -41,8 +41,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTwoTestCases() {
         unpack("junit-twoTestCases")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFreeLog()
                 .assertTestSuiteResults(2, 0, 0, 0);
@@ -54,8 +53,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTwoTestCaseSuite() {
         final OutputValidator outputValidator = unpack("junit-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
         List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
@@ -85,8 +83,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testJunit4Suite() {
         final OutputValidator outputValidator = unpack("junit4-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
 
@@ -94,22 +91,6 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
         Set<String> classNames = extractClassNames(reports);
         assertContains(classNames, "twoTestCaseSuite.BasicTest");
         assertContains(classNames, "twoTestCaseSuite.Junit4TestTwo");
-        assertEquals("wrong number of classes", 2, classNames.size());
-        IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
-        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
-    }
-
-    @Test
-    public void testTestNGSuite() {
-        final OutputValidator outputValidator = unpack("testng-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
-                .executeTest();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0);
-        List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
-        Set<String> classNames = extractClassNames(reports);
-        assertContains(classNames, "testng.two.TestNGTestTwo");
-        assertContains(classNames, "testng.two.TestNGSuiteTest");
         assertEquals("wrong number of classes", 2, classNames.size());
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
         HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);

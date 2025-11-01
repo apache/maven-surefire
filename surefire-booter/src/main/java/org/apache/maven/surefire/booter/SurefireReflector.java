@@ -117,11 +117,10 @@ public final class SurefireReflector {
             return null;
         } else {
             Object resolver = createTestListResolver(suiteDefinition.getTestListResolver());
-            Class<?>[] arguments = {List.class, File.class, testListResolver, int.class};
+            Class<?>[] arguments = {File.class, testListResolver, int.class};
             Constructor<?> constructor = getConstructor(testRequest, arguments);
             return newInstance(
                     constructor,
-                    suiteDefinition.getSuiteXmlFiles(),
                     suiteDefinition.getTestSourceDirectory(),
                     resolver,
                     suiteDefinition.getRerunFailingTestsCount());
