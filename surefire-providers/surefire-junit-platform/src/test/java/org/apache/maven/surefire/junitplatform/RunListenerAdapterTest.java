@@ -97,7 +97,7 @@ public class RunListenerAdapterTest {
     public void setUp() {
         listener = mock(TestReportListener.class);
         adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
-        adapter.testPlanExecutionStarted(TestPlan.from(emptyList(), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        adapter.testPlanExecutionStarted(TestPlan.from(false, emptyList(), CONFIG_PARAMS, OUTPUT_DIRECTORY));
         adapter.setRunMode(NORMAL_RUN);
     }
 
@@ -106,7 +106,7 @@ public class RunListenerAdapterTest {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
 
         TestPlan testPlan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(testPlan);
 
         TestIdentifier methodIdentifier =
@@ -126,7 +126,7 @@ public class RunListenerAdapterTest {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
 
         TestPlan testPlan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(testPlan);
 
         TestIdentifier methodIdentifier =
@@ -150,7 +150,7 @@ public class RunListenerAdapterTest {
         engine.addChild(parent);
         TestDescriptor child = newMethodDescriptor();
         parent.addChild(child);
-        TestPlan plan = TestPlan.from(singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
 
         String className = MyTestClass.class.getName();
 
@@ -214,7 +214,7 @@ public class RunListenerAdapterTest {
                 new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
         parent.addChild(child2);
 
-        TestPlan plan = TestPlan.from(singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
 
         InOrder inOrder = inOrder(listener);
 
@@ -306,7 +306,7 @@ public class RunListenerAdapterTest {
                 return TEST;
             }
         };
-        TestPlan plan = TestPlan.from(singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
 
         adapter.testPlanExecutionStarted(plan);
         assertThat((TestPlan) getInternalState(adapter, "testPlan")).isSameAs(plan);
@@ -358,7 +358,7 @@ public class RunListenerAdapterTest {
         TestDescriptor method2 = newMethodDescriptor();
         classTestDescriptor.addChild(method2);
         engineDescriptor.addChild(classTestDescriptor);
-        TestPlan testPlan = TestPlan.from(singletonList(engineDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        TestPlan testPlan = TestPlan.from(false, singletonList(engineDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(testPlan);
 
         TestIdentifier classIdentifier =
@@ -430,7 +430,7 @@ public class RunListenerAdapterTest {
     public void notifiedWithCorrectNamesWhenClassExecutionFailed() {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         TestPlan testPlan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(testPlan);
 
         adapter.executionFinished(
@@ -449,7 +449,7 @@ public class RunListenerAdapterTest {
     public void notifiedWithCorrectNamesWhenClassExecutionErrored() {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         TestPlan testPlan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(testPlan);
 
         adapter.executionFinished(
@@ -468,7 +468,7 @@ public class RunListenerAdapterTest {
     public void notifiedWithCorrectNamesWhenContainerFailed() throws Exception {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         TestPlan testPlan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(testPlan);
 
         adapter.executionFinished(newContainerIdentifier(), failed(new RuntimeException()));
@@ -493,7 +493,8 @@ public class RunListenerAdapterTest {
         EngineDescriptor engineDescriptor = newEngineDescriptor();
         TestDescriptor classDescriptor = newClassDescriptor();
         engineDescriptor.addChild(classDescriptor);
-        adapter.testPlanExecutionStarted(TestPlan.from(singleton(engineDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        adapter.testPlanExecutionStarted(
+                TestPlan.from(false, singleton(engineDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY));
         adapter.executionStarted(TestIdentifier.from(classDescriptor));
 
         adapter.executionFinished(TestIdentifier.from(classDescriptor), successful());
@@ -524,7 +525,7 @@ public class RunListenerAdapterTest {
     public void notifiedWithParentDisplayNameWhenTestClassUnknown() {
         // Set up a test plan
         TestPlan plan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Luke's Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(plan);
 
         // Use the test plan to set up child with parent.
@@ -545,7 +546,7 @@ public class RunListenerAdapterTest {
     @Test
     public void stackTraceWriterPresentWhenParentHasSource() {
         TestPlan plan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Some Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Some Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(plan);
 
         TestIdentifier child =
@@ -559,7 +560,7 @@ public class RunListenerAdapterTest {
     @Test
     public void stackTraceWriterDefaultsToTestClass() {
         TestPlan plan = TestPlan.from(
-                singletonList(new EngineDescriptor(newId(), "Some Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+                false, singletonList(new EngineDescriptor(newId(), "Some Plan")), CONFIG_PARAMS, OUTPUT_DIRECTORY);
         adapter.testPlanExecutionStarted(plan);
 
         TestIdentifier child = newSourcelessChildIdentifierWithParent(plan, "Parent", null);
