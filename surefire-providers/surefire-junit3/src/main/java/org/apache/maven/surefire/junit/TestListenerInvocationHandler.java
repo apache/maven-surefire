@@ -37,7 +37,6 @@ import static org.apache.maven.surefire.api.util.internal.TestClassMethodNameUti
 
 /**
  * Invocation Handler for TestListener proxies to delegate to our {@link RunListener}
- *
  */
 public class TestListenerInvocationHandler implements InvocationHandler {
     // The String names of the four methods in interface junit.framework.TestListener

@@ -74,9 +74,9 @@ public final class StringUtils {
     /**
      * Determines if {@code buffer} starts with specific literal(s).
      *
-     * @param buffer     Examined StringBuffer
+     * @param buffer     examined StringBuffer
      * @param pattern    a pattern which should start in {@code buffer}
-     * @return    {@code true} if buffer's literal starts with given {@code pattern}, or both are empty.
+     * @return {@code true} if buffer's literal starts with given {@code pattern}, or both are empty
      */
     public static boolean startsWith(StringBuffer buffer, String pattern) {
         if (buffer.length() < pattern.length()) {

@@ -349,7 +349,7 @@ public final class ForkClient implements EventHandler<Event> {
      * Used when getting reporters on the plugin side of a fork.
      * Used by testing purposes only. May not be volatile variable.
      *
-     * @return A mock provider reporter
+     * @return a mock provider reporter
      */
     public RunListener getReporter() {
         return getTestSetReporter();

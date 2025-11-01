@@ -488,7 +488,7 @@ public final class ForkedBooter {
      * This method is invoked when Surefire is forked - this method parses and organizes the arguments passed to it and
      * then calls the Surefire class' run method. <br> The system exit code will be 1 if an exception is thrown.
      *
-     * @param args Commandline arguments
+     * @param args commandline arguments
      */
     public static void main(String[] args) {
         ForkedBooter booter = new ForkedBooter();
@@ -496,7 +496,7 @@ public final class ForkedBooter {
     }
 
     /**
-     * created for testing purposes.
+     * Created for testing purposes.
      *
      * @param booter booter in JVM
      * @param args arguments passed to JVM

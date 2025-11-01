@@ -33,6 +33,7 @@ import org.apache.maven.surefire.extensions.StatelessReporter;
  * The listener handles <em>testSetCompleted</em> event.
  *
  * author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
+ *
  * @since 3.0.0-M4
  */
 public class SurefireStatelessReporter
@@ -46,6 +47,7 @@ public class SurefireStatelessReporter
 
     /**
      * Activated if null injection point in MOJO.
+     *
      * @param disable             {@code true} to disable performing the report
      * @param version             version of the schema
      */

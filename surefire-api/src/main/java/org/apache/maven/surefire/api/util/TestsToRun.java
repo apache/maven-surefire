@@ -43,9 +43,9 @@ public class TestsToRun implements Iterable<Class<?>> {
     private int iteratedCount;
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param locatedClasses A set of java.lang.Class objects representing tests to run
+     * @param locatedClasses a set of java.lang.Class objects representing tests to run
      */
     public TestsToRun(Set<Class<?>> locatedClasses) {
         this.locatedClasses = new ArrayList<>(locatedClasses);
@@ -56,14 +56,14 @@ public class TestsToRun implements Iterable<Class<?>> {
     }
 
     /**
-     * @return test classes which have been retrieved by {@link TestsToRun#iterator()}.
+     * @return test classes which have been retrieved by {@link TestsToRun#iterator()}
      */
     public Iterator<Class<?>> iterated() {
         return newWeakIterator();
     }
 
     /**
-     * Returns an iterator over the located java.lang.Class objects
+     * Returns an iterator over the located java.lang.Class objects.
      *
      * @return an unmodifiable iterator
      */
@@ -163,10 +163,10 @@ public class TestsToRun implements Iterable<Class<?>> {
     }
 
     /**
-     * Get test class which matches className
+     * Get test class which matches className.
      *
      * @param className string used to find the test class
-     * @return Class object with the matching name, null if could not find a class with the matching name
+     * @return class object with the matching name, null if could not find a class with the matching name
      */
     public Class<?> getClassByName(String className) {
         for (Class<?> clazz : this) {

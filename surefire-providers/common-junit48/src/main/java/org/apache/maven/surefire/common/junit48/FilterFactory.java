@@ -46,7 +46,7 @@ public class FilterFactory {
     /**
      * @return {@code true} if non-blank
      * {@link ProviderParameterNames#TESTNG_GROUPS_PROP} and/or
-     * {@link ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP} exists.
+     * {@link ProviderParameterNames#TESTNG_EXCLUDEDGROUPS_PROP} exists
      */
     public boolean canCreateGroupFilter(Map<String, String> providerProperties) {
         String groups = providerProperties.get(TESTNG_GROUPS_PROP);
