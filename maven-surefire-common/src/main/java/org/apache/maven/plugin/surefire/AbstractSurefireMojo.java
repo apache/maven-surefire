@@ -1149,7 +1149,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger,
                         getTestNgArtifact()),
-                // new TestNgProviderInfo(getTestNgArtifact()),
                 new JUnitPlatformProviderShadefireInfo(
                         getJUnitPlatformRunnerArtifact(),
                         getJUnit5Artifact(),
@@ -3039,20 +3038,22 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             Map<String, Artifact> pluginDeps = surefireDependencyResolver.resolvePluginDependencies(
                     session.getRepositorySession(), project.getRemotePluginRepositories(), plugin, pluginArtifactMap);
 
+            String engineGroupId = "org.junit.jupiter";
+            String engineArtifactId = "junit-jupiter-engine";
+            String engineCoordinates = engineGroupId + ":" + engineArtifactId;
+            String api = "org.junit.jupiter:junit-jupiter-api";
+            Optional<String> engineVersion = Optional.ofNullable(
+                    testDeps.get(api) == null ? null : testDeps.get(api).getBaseVersion());
+            consoleLogger.debug(
+                    "Test dependencies contain " + api + ". Resolving " + engineCoordinates + ":" + engineVersion);
+
             if (hasDependencyPlatformEngine(pluginDeps)) {
                 providerArtifacts.putAll(pluginDeps);
             } else {
-                String engineVersion = null;
                 if (hasDependencyJupiterAPI(testDeps)
+                        && engineVersion.isPresent()
                         && !testDeps.containsKey("org.junit.jupiter:junit-jupiter-engine")) {
-                    String engineGroupId = "org.junit.jupiter";
-                    String engineArtifactId = "junit-jupiter-engine";
-                    String engineCoordinates = engineGroupId + ":" + engineArtifactId;
-                    String api = "org.junit.jupiter:junit-jupiter-api";
-                    engineVersion = testDeps.get(api).getBaseVersion();
-                    consoleLogger.debug("Test dependencies contain " + api + ". Resolving " + engineCoordinates + ":"
-                            + engineVersion);
-                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion.get(), providerArtifacts);
                 }
 
                 if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]")) {
@@ -3061,37 +3062,37 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     consoleLogger.error(message);
                     throw new MojoExecutionException(message);
                 }
+            }
 
-                String junit = (String) getProperties().get("junit");
-                boolean runJunit = Boolean.parseBoolean(junit == null ? "true" : junit);
+            // need to check there is at least one test engine in the classpath
+            String junit = (String) getProperties().get("junit");
+            boolean runJunit = Boolean.parseBoolean(junit == null ? "true" : junit);
 
-                if (runJunit
-                        && (testDeps.containsKey("junit:junit"))
-                        && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
-                    String engineGroupId = "org.junit.vintage";
-                    String engineArtifactId = "junit-vintage-engine";
-                    String engineCoordinates = engineGroupId + ":" + engineArtifactId;
-                    getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
-                    // TODO exclude transitive deps (hamcrest etc...)
-                    if (engineVersion != null) {
-                        consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
-                                + engineVersion);
-                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
-                    } else {
-                        addEngineByApi(engineGroupId, engineArtifactId, "5.12.1", providerArtifacts);
-                    }
+            if (runJunit
+                    && (testDeps.containsKey("junit:junit"))
+                    && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
+                getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
+                // TODO exclude transitive deps (hamcrest etc...)
+                if (engineVersion.isPresent()) {
+                    consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
+                            + engineVersion.get());
+                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion.get(), providerArtifacts);
+                } else {
+                    addEngineByApi(engineGroupId, engineArtifactId, "5.12.1", providerArtifacts);
                 }
+                // add org.junit.vintage:junit-vintage-engine
+                addEngineByApi("org.junit.vintage", "junit-vintage-engine", "5.14.1", providerArtifacts);
             }
 
             if (testNgArtifact != null) {
                 // FIXME support only from TestNG 6.14.3
                 // FIXME check if already present as plugin dependency or project dependency
-                String engineGroupId = "org.junit.support";
-                String engineArtifactId = "testng-engine";
-                String engineCoordinates = engineGroupId + ":" + engineArtifactId;
+                String testNgEngineArtifactId = "testng-engine";
+                String testNgEngineCoordinates = engineGroupId + ":" + testNgEngineArtifactId;
                 // FIXME configurable?
+                // or picked from test dependencies
                 String version = "1.0.6";
-                consoleLogger.debug("TestNG is present. Resolving " + engineCoordinates + ":" + version);
+                consoleLogger.debug("TestNG is present. Resolving " + testNgEngineCoordinates + ":" + version);
                 addEngineByApi(engineGroupId, engineArtifactId, version, providerArtifacts);
             }
 
