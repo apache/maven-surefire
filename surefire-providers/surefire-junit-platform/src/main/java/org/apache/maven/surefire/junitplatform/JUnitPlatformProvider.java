@@ -262,7 +262,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private boolean matchClassName(String className, String pattern) {
-        // pattern can be either fully qualified or simple class name
+        // pattern can be either fully qualified or simple class name or package + simple class name + #method
+        int hashIndex = pattern.indexOf('#');
+        if (hashIndex != -1) {
+            pattern = pattern.substring(0, hashIndex);
+        }
         return className.equals(pattern) || className.endsWith("." + pattern);
     }
 
