@@ -3078,7 +3078,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             + engineVersion.get());
                     addEngineByApi(engineGroupId, engineArtifactId, engineVersion.get(), providerArtifacts);
                 } else {
-                    addEngineByApi(engineGroupId, engineArtifactId, "5.12.1", providerArtifacts);
+                    addEngineByApi(engineGroupId, engineArtifactId, "5.14.1", providerArtifacts);
                 }
                 // add org.junit.vintage:junit-vintage-engine
                 addEngineByApi("org.junit.vintage", "junit-vintage-engine", "5.14.1", providerArtifacts);
@@ -3087,13 +3087,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             if (testNgArtifact != null) {
                 // FIXME support only from TestNG 6.14.3
                 // FIXME check if already present as plugin dependency or project dependency
+                String junitSupportGroupId = "org.junit.support";
                 String testNgEngineArtifactId = "testng-engine";
-                String testNgEngineCoordinates = engineGroupId + ":" + testNgEngineArtifactId;
+                String testNgEngineCoordinates = junitSupportGroupId + ":" + testNgEngineArtifactId;
                 // FIXME configurable?
                 // or picked from test dependencies
                 String version = "1.0.6";
                 consoleLogger.debug("TestNG is present. Resolving " + testNgEngineCoordinates + ":" + version);
-                addEngineByApi(engineGroupId, engineArtifactId, version, providerArtifacts);
+                addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
+                addEngineByApi(engineGroupId, engineArtifactId, "5.14.1", providerArtifacts);
             }
 
             narrowDependencies(providerArtifacts, testDeps);
