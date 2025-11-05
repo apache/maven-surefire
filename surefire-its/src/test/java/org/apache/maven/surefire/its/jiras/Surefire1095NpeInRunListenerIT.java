@@ -52,7 +52,8 @@ public final class Surefire1095NpeInRunListenerIT extends SurefireJUnit4Integrat
                 .executeTest()
                 .verifyErrorFree(1)
                 .verifyTextInLog("Running JUnit 4.12")
-                .verifyTextInLog("testRunStarted jiras.surefire1095.SomeTest");
+                .verifyTextInLog("testRunStarted jiras.surefire1095.SomeTest")
+                .verifyTextInLog("testRunFinished true");
     }
 
     private SurefireLauncher unpack() {

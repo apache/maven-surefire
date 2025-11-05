@@ -18,42 +18,42 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
-import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.support.descriptor.MethodSource;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.List;
+
+import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Optional;
-
 public class CustomTestExecutionListener implements TestExecutionListener {
 
     private List<Object> listeners;
-
-    private String mainTestClass = null;
 
     public CustomTestExecutionListener(List<Object> runListener) {
         this.listeners = runListener;
     }
 
     @Override
-    public void testPlanExecutionFinished(TestPlan testPlan) {
+    public void testPlanExecutionStarted(TestPlan testPlan) {
 
+        String mainTestClass = extractMainClassName(testPlan);
         listeners.forEach(plan -> {
             try {
-                Class<?> descriptionClass = null;
-                descriptionClass =
-                    Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
+                Class<?> descriptionClass =
+                        Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
                 Method createSuiteDescription = descriptionClass.getMethod("createSuiteDescription", Class.class);
                 if (mainTestClass != null) {
                     Class<?> classToRemove =
-                        Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
+                            Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object invoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
                     plan.getClass()
-                        .getMethod("testRunStarted", descriptionClass)
-                        .invoke(plan, invoke);
+                            .getMethod("testRunStarted", descriptionClass)
+                            .invoke(plan, invoke);
+                    plan.getClass()
+                            .getMethod("testSuiteStarted", descriptionClass)
+                            .invoke(plan, invoke);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -62,10 +62,45 @@ public class CustomTestExecutionListener implements TestExecutionListener {
     }
 
     @Override
-    public void executionStarted(TestIdentifier testIdentifier) {
-        Optional<TestSource> testSource = testIdentifier.getSource();
-        if (testIdentifier.isTest() && testSource.isPresent()) {
-            mainTestClass = ((MethodSource) testSource.get()).getClassName();
+    public void testPlanExecutionFinished(TestPlan testPlan) {
+
+        String mainTestClass = extractMainClassName(testPlan);
+        listeners.forEach(plan -> {
+            try {
+                Class<?> resultClass =
+                        Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Result");
+                Constructor<?> resultClassConstructor = resultClass.getConstructor();
+                if (mainTestClass != null) {
+                    Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
+                    Object invoke = resultClassConstructor.newInstance();
+                    plan.getClass().getMethod("testRunFinished", resultClass).invoke(plan, invoke);
+
+                    Class<?> descriptionClass =
+                            Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
+                    Method createSuiteDescription = descriptionClass.getMethod("createSuiteDescription", Class.class);
+                    Class<?> classToRemove =
+                            Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
+                    Object createSuiteDescInvoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
+                    plan.getClass()
+                            .getMethod("testSuiteFinished", descriptionClass)
+                            .invoke(plan, createSuiteDescInvoke);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private String extractMainClassName(TestPlan testPlan) {
+        for (Object identifier : testPlan.getRoots().toArray()) {
+            for (TestIdentifier child : testPlan.getChildren((TestIdentifier) identifier)) {
+                if (child.getType().isContainer()) {
+                    if (child.getSource().isPresent() && child.getSource().get() instanceof ClassSource) {
+                        return ((ClassSource) child.getSource().get()).getClassName();
+                    }
+                }
+            }
         }
+        return null;
     }
 }
