@@ -85,25 +85,14 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
-    public void testJUnit44() throws Exception {
-        runMethodPattern("junit44-method-pattern", Collections.emptyMap());
+    public void testJUnit4() throws Exception {
+        runMethodPattern("junit4-method-pattern", Collections.emptyMap());
     }
 
     @Test
-    public void testJUnit48Provider4() throws Exception {
-        runMethodPattern("junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit4");
-    }
-
-    @Test
-    public void testJUnit48Provider47() throws Exception {
-        runMethodPattern("junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit47")
-                .verifyTextInLog(RUNNING_WITH_PROVIDER47);
-    }
-
-    @Test
-    public void testJUnit48WithCategoryFilter() throws Exception {
+    public void testJUnit4WithCategoryFilter() throws Exception {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        SurefireLauncher launcher = unpack("junit48-method-pattern", profileId == null ? "" : "-" + profileId);
+        SurefireLauncher launcher = unpack("junit4-method-pattern", profileId == null ? "" : "-" + profileId);
 
         if (profileId != null) {
             launcher.activateProfile(profileId);
