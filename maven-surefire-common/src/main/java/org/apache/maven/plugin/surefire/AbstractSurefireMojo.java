@@ -3077,7 +3077,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             if (runJunit
                     && (testDeps.containsKey("junit:junit"))
-                    && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
+                    && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")
+                    && !pluginDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
                 getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
                 // TODO exclude transitive deps (hamcrest etc...)
                 if (engineVersion.isPresent()) {
