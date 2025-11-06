@@ -257,9 +257,13 @@
     <profile>
       <id>apache.ci</id>
       <properties>
-        <its.forkCount>0.4C</its.forkCount>
+        <its.forkCount>1</its.forkCount>
         <its.threadCount>1</its.threadCount>
         <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
+        <junit.vintage.execution.parallel.enabled>true</junit.vintage.execution.parallel.enabled>
+        <junit.vintage.execution.parallel.classes>true</junit.vintage.execution.parallel.classes>
+        <junit.vintage.execution.parallel.methods>false</junit.vintage.execution.parallel.methods>
+        <junit.vintage.execution.parallel.pool>5</junit.vintage.execution.parallel.pool>
       </properties>
     </profile>
     <profile>
