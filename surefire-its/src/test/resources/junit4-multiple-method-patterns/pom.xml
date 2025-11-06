@@ -57,9 +57,6 @@
 
   <profiles>
     <profile>
-      <id>junit4-test</id>
-    </profile>
-    <profile>
       <id>junit4-includes</id>
       <build>
         <plugins>
