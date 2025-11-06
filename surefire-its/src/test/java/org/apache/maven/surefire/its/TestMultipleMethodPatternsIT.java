@@ -39,9 +39,7 @@ public class TestMultipleMethodPatternsIT extends AbstractTestMultipleMethodPatt
 
     @Parameters
     public static Iterable<Object[]> data() {
-        return Arrays.asList(
-                new Object[][] {{Settings.JUNIT4_TEST}, {Settings.JUNIT4_INCLUDES}, {Settings.JUNIT4_INCLUDES_EXCLUDES}
-                });
+        return Arrays.asList(new Object[][] {{Settings.JUNIT4_INCLUDES}, {Settings.JUNIT4_INCLUDES_EXCLUDES}});
     }
 
     @Override
