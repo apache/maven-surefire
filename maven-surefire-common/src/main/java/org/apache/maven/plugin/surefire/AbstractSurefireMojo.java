@@ -22,6 +22,7 @@ import javax.annotation.Nonnull;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
@@ -3045,12 +3046,16 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             Map<String, Artifact> pluginDeps = surefireDependencyResolver.resolvePluginDependencies(
                     session.getRepositorySession(), project.getRemotePluginRepositories(), plugin, pluginArtifactMap);
 
+            String defaultJunitVersion = getDefaultJunitVersion();
+
             String engineGroupId = "org.junit.jupiter";
             String engineArtifactId = "junit-jupiter-engine";
             String engineCoordinates = engineGroupId + ":" + engineArtifactId;
             String api = "org.junit.jupiter:junit-jupiter-api";
-            Optional<String> engineVersion = Optional.ofNullable(
-                    testDeps.get(api) == null ? null : testDeps.get(api).getBaseVersion());
+            // FIXME this default version should be aligned with the junit-platform-version property from pom
+            String engineVersion = testDeps.get(api) == null
+                    ? defaultJunitVersion
+                    : testDeps.get(api).getBaseVersion();
             consoleLogger.debug(
                     "Test dependencies contain " + api + ". Resolving " + engineCoordinates + ":" + engineVersion);
 
@@ -3058,9 +3063,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 providerArtifacts.putAll(pluginDeps);
             } else {
                 if (hasDependencyJupiterAPI(testDeps)
-                        && engineVersion.isPresent()
+                        && engineVersion != null
                         && !testDeps.containsKey("org.junit.jupiter:junit-jupiter-engine")) {
-                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion.get(), providerArtifacts);
+                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
                 }
 
                 if (isWithinVersionSpec(junitArtifact, "[4.0,4.11]")) {
@@ -3080,16 +3085,18 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")
                     && !pluginDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
                 getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
-                // TODO exclude transitive deps (hamcrest etc...)
-                if (engineVersion.isPresent()) {
-                    consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
-                            + engineVersion.get());
-                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion.get(), providerArtifacts);
-                } else {
-                    addEngineByApi(engineGroupId, engineArtifactId, "5.14.1", providerArtifacts);
+                if (!hasDependencyPlatformEngine(providerArtifacts)) {
+                    // TODO exclude transitive deps (hamcrest etc...)
+                    if (engineVersion != null) {
+                        consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
+                                + engineVersion);
+                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                    } else {
+                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                    }
                 }
                 // add org.junit.vintage:junit-vintage-engine
-                addEngineByApi("org.junit.vintage", "junit-vintage-engine", "5.14.1", providerArtifacts);
+                addEngineByApi("org.junit.vintage", "junit-vintage-engine", engineVersion, providerArtifacts);
             }
 
             if (testNgArtifact != null) {
@@ -3103,7 +3110,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 String version = "1.0.6";
                 consoleLogger.debug("TestNG is present. Resolving " + testNgEngineCoordinates + ":" + version);
                 addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
-                addEngineByApi(engineGroupId, engineArtifactId, "5.14.1", providerArtifacts);
+                if (!hasDependencyPlatformEngine(providerArtifacts)) {
+                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                }
             }
 
             narrowDependencies(providerArtifacts, testDeps);
@@ -3145,6 +3154,20 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         consoleLogger.debug("Kept higher version " + key + " " + removed);
                     }
                 }
+            }
+        }
+
+        private String getDefaultJunitVersion() {
+            try (InputStream inputStream = Thread.currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream("surefire.junit.version.properties")) {
+                Properties junitProperties = new Properties();
+                junitProperties.load(inputStream);
+                return junitProperties.getProperty("junit.version");
+            } catch (Exception e) {
+                consoleLogger.warning(
+                        "Could not load default JUnit version from junit.version.properties use default 5.14.1");
+                return "5.14.1";
             }
         }
 
