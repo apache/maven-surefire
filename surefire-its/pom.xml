@@ -39,6 +39,10 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
+    <junit.vintage.execution.parallel.enabled>false</junit.vintage.execution.parallel.enabled>
+    <junit.vintage.execution.parallel.classes>true</junit.vintage.execution.parallel.classes>
+    <junit.vintage.execution.parallel.methods>false</junit.vintage.execution.parallel.methods>
+    <junit.vintage.execution.parallel.pool>5</junit.vintage.execution.parallel.pool>
   </properties>
 
   <dependencies>
@@ -211,6 +215,12 @@
             <version>3.5.4</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
             <configuration>
+              <properties>
+                <configurationParameters>junit.vintage.execution.parallel.enabled=${junit.vintage.execution.parallel.enabled}
+                  junit.vintage.execution.parallel.classes=${junit.vintage.execution.parallel.classes}
+                  junit.vintage.execution.parallel.methods=${junit.vintage.execution.parallel.methods}
+                  junit.vintage.execution.parallel.pool-size=${junit.vintage.execution.parallel.pool}</configurationParameters>
+              </properties>
               <skipTests>${skipTests}</skipTests>
               <runOrder>alphabetical</runOrder>
               <forkCount>${its.forkCount}</forkCount>
