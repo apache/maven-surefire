@@ -91,7 +91,7 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
         unpack("junit-4-5")
                 .activateProfile("select-junit5")
                 .executeTest()
-                .verifyErrorFree(1)
+                .verifyErrorFree(2)
                 .verifyTextInLog("Running pkg.JUnit5Test")
                 .verifyTextInLog(
                         "Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
