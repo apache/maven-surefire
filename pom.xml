@@ -93,7 +93,7 @@
     <commonsLang3Version>3.19.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
     <commonsIoVersion>2.20.0</commonsIoVersion>
-    <plexus-java-version>1.5.0</plexus-java-version>
+    <plexus-java-version>1.5.1</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
     <powermockVersion>2.0.9</powermockVersion>
