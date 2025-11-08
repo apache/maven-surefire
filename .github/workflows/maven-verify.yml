@@ -32,9 +32,21 @@ jobs:
       ff-site-goal: '-v'
       verify-goal: 'clean install -nsu -P run-its'
       verify-fail-fast: false
+      # Investigation reasons: Some tests generate custom files, standard reports and logs.
+      # Remove the line with `*-jvmRun*-events.bin` pattern if large streams should be investigated.
       failure-upload-path: |
-        surefire-its/target/*/log.txt
-        surefire-its/target/**/surefire-reports/*
-        surefire-its/target/**/failsafe-reports/*
+        **/*
+        !**/pom.xml
+        !**/*.java
+        !**/*.class
+        !**/*.jar
+        !**/*.war
+        !**/*.tar.gz
+        !**/*.tgz
+        !**/*.zip
+        !**/target/site/*
+        !**/target/staging/*
+        !**/hs_err_pid*
+        !surefire-its/target/ConsoleOutputIT_*/target/surefire-reports/*-jvmRun*-events.bin
       timeout-minutes: 600
       os-matrix: '[ "ubuntu-latest", "windows-2022", "macos-latest" ]'
