@@ -77,7 +77,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * Since 2.7.3, you can execute a limited number of methods in the test by adding <i>#myMethod</i> or
      * <i>#my*ethod</i>. For example, {@code -Dtest=MyTest#myMethod}. This is supported for junit 4.x and TestNg.<br>
      * <br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>"-Dtest=???Test, !Unstable*, pkg{@literal /}**{@literal /}Ci*leTest.java, *Test#test*One+testTwo?????, #fast*+slowTest"</code></pre>
      * or e.g.
      * <pre><code>"-Dtest=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyTest.class#one.*|two.*], %regex[#fast.*|slow.*]"</code></pre>

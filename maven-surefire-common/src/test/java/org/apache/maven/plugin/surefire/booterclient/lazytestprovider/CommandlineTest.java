@@ -19,7 +19,6 @@
 package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
@@ -34,13 +33,13 @@ public class CommandlineTest {
         Commandline cli = new Commandline();
         String[] env = cli.getEnvironmentVariables();
 
-        assertThat(env).doesNotHaveDuplicates().satisfies(new ContainsAnyStartsWith("JAVA_HOME="));
+        assertThat(env).doesNotHaveDuplicates().anyMatch(s -> s != null && s.startsWith("JAVA_HOME"));
 
         String[] excluded = {"JAVA_HOME"};
         cli = new Commandline(excluded);
         env = cli.getEnvironmentVariables();
 
-        assertThat(env).doesNotHaveDuplicates().satisfies(new NotContainsAnyStartsWith("JAVA_HOME="));
+        assertThat(env).doesNotHaveDuplicates().allMatch(s -> s != null && !s.startsWith("JAVA_HOME"));
     }
 
     @Test
@@ -49,41 +48,5 @@ public class CommandlineTest {
         cli.getShell().setWorkingDirectory(System.getProperty("user.dir"));
         cli.getShell().setExecutable(IS_OS_WINDOWS ? "dir" : "ls");
         cli.execute();
-    }
-
-    private static final class ContainsAnyStartsWith extends Condition<Object[]> {
-        private final String expected;
-
-        ContainsAnyStartsWith(String expected) {
-            this.expected = expected;
-        }
-
-        @Override
-        public boolean matches(Object[] values) {
-            boolean matches = false;
-            for (Object value : values) {
-                assertThat(value).isInstanceOf(String.class);
-                matches |= ((String) value).startsWith(expected);
-            }
-            return matches;
-        }
-    }
-
-    private static final class NotContainsAnyStartsWith extends Condition<Object[]> {
-        private final String expected;
-
-        NotContainsAnyStartsWith(String expected) {
-            this.expected = expected;
-        }
-
-        @Override
-        public boolean matches(Object[] values) {
-            boolean matches = false;
-            for (Object value : values) {
-                assertThat(value).isInstanceOf(String.class);
-                matches |= ((String) value).startsWith(expected);
-            }
-            return !matches;
-        }
     }
 }
