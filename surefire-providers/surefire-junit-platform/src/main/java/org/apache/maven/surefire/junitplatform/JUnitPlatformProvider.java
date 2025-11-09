@@ -267,9 +267,16 @@ public class JUnitPlatformProvider extends AbstractProvider {
         if (hashIndex != -1) {
             pattern = pattern.substring(0, hashIndex);
         }
-        return className.equals(pattern)
+        boolean match = className.equals(pattern)
                 || className.endsWith("." + pattern)
                 || SelectorUtils.matchPath(pattern, className);
+
+        if (className.contains(".")) {
+            String simpleName = className.substring(className.lastIndexOf('.') + 1);
+            match = match || SelectorUtils.matchPath(pattern, simpleName);
+        }
+
+        return match;
     }
 
     private Filter<?>[] newFilters() {
