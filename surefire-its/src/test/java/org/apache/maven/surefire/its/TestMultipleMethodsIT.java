@@ -30,8 +30,6 @@ import org.junit.Test;
  */
 public class TestMultipleMethodsIT extends SurefireJUnit4IntegrationTestCase {
 
-    private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
-
     public OutputValidator multipleMethod(String projectName, String... goals) {
         SurefireLauncher launcher = unpack(projectName);
         for (String goal : goals) {
@@ -50,12 +48,7 @@ public class TestMultipleMethodsIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
-    public void testJunit48Provider4() {
-        multipleMethod("junit48-multiple-methods", "-P surefire-junit4");
-    }
-
-    @Test
-    public void testJunit48Provider47() {
-        multipleMethod("junit48-multiple-methods", "-P surefire-junit47").verifyTextInLog(RUNNING_WITH_PROVIDER47);
+    public void testJunit5() {
+        multipleMethod("junit44-multiple-methods");
     }
 }
