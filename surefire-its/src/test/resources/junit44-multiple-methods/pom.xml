@@ -35,11 +35,6 @@
   <version>1.0-SNAPSHOT</version>
   <name>Test for JUnit 4</name>
 
-  <!--
-  This is using junit 4.0 provider.
-  Same test in junit48-multiple-methods is used with different provider junit 4.7.
-  -->
-
   <properties>
     <junitVersion>4.12</junitVersion>
   </properties>
@@ -58,6 +53,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${surefire.version}</version>
         <configuration>
           <test>junit4/BasicTest#testSuccessOne+testFailOne,junit4/TestThree#testSuccessTwo</test>
         </configuration>

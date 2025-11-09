@@ -1474,14 +1474,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private static String join(String[] array) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0, length = array.length; i < length; i++) {
-            stringBuilder.append(array[i]);
-            if (i < length - 1) {
-                stringBuilder.append(',');
-            }
-        }
-        return stringBuilder.toString();
+        return String.join(",", array);
     }
 
     protected boolean isAnyConcurrencySelected() {
@@ -1562,12 +1555,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 .setProperty(
                         ProviderParameterNames.ENABLE_OUT_ERR_ELEMENTS_PROP,
                         Boolean.toString(isEnableOutErrElements()));
-        if (!getIncludedScanList().isEmpty()) {
+        if (!getIncludedScanList().isEmpty()) { // && getJunitArtifact() != null) {
             getProperties()
                     .setProperty(ProviderParameterNames.INCLUDES_SCAN_LIST, String.join(",", getIncludedScanList()));
         }
 
-        if (!getExcludedScanList().isEmpty()) {
+        if (!getExcludedScanList().isEmpty()) { // && getJunitArtifact() != null) {
             getProperties()
                     .setProperty(ProviderParameterNames.EXCLUDES_SCAN_LIST, String.join(",", getExcludedScanList()));
         }
