@@ -112,6 +112,7 @@ import org.apache.maven.surefire.providerapi.ConfigurableProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderDetector;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderRequirements;
+import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
@@ -3064,27 +3065,28 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             // need to check there is at least one test engine in the classpath
             String junit = (String) getProperties().get("junit");
-            boolean runJunit = Boolean.parseBoolean(junit == null ? "true" : junit);
-
-            if (runJunit
-                    && (testDeps.containsKey("junit:junit"))
-                    && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")
-                    && !pluginDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
-                getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
-                if (!hasDependencyPlatformEngine(providerArtifacts)) {
-                    // TODO exclude transitive deps (hamcrest etc...)
-                    if (engineVersion != null) {
-                        consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
-                                + engineVersion);
-                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
-                    } else {
-                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+            boolean runJunit = Boolean.parseBoolean(StringUtils.isEmpty(junit) ? "true" : junit);
+            if (StringUtils.isNotEmpty(junit) && !runJunit) {
+                consoleLogger.debug("System property 'junit' is explicity set to '" + junit + "'");
+            } else {
+                if (testDeps.containsKey("junit:junit")
+                        && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")
+                        && !pluginDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
+                    getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
+                    if (!hasDependencyPlatformEngine(providerArtifacts)) {
+                        // TODO exclude transitive deps (hamcrest etc...)
+                        if (engineVersion != null) {
+                            consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
+                                    + engineVersion);
+                            addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                        } else {
+                            addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+                        }
                     }
+                    // add org.junit.vintage:junit-vintage-engine
+                    addEngineByApi("org.junit.vintage", "junit-vintage-engine", engineVersion, providerArtifacts);
                 }
-                // add org.junit.vintage:junit-vintage-engine
-                addEngineByApi("org.junit.vintage", "junit-vintage-engine", engineVersion, providerArtifacts);
             }
-
             if (testNgArtifact != null) {
                 // FIXME support only from TestNG 6.14.3
                 // FIXME check if already present as plugin dependency or project dependency
