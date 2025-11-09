@@ -298,6 +298,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         if (hashIndex != -1) {
             pattern = pattern.substring(0, hashIndex);
         }
+
         boolean match = className.endsWith("." + pattern) || SelectorUtils.matchPath(pattern, className);
 
         if (className.contains(".")) {
@@ -310,7 +311,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
             match = match || SelectorUtils.matchPath(pkgStylePattern, className);
         }
 
-        return match;
+        return className.equals(pattern)
+                || className.endsWith("." + pattern)
+                || SelectorUtils.matchPath(pattern, className);
     }
 
     private Filter<?>[] newFilters() {
