@@ -1,20 +1,23 @@
-package junit4;
+package junit5;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterClass;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
-public class TestThree
+public class TestTwo
 {
 
     private boolean setUpCalled = false;
 
     private static boolean tearDownCalled = false;
     
-    @Before
+    @BeforeEach
     public void setUp()
     {
         setUpCalled = true;
@@ -22,7 +25,7 @@ public class TestThree
         System.out.println( "Called setUp" );
     }
 
-    @After
+    @AfterEach
     public void tearDown()
     {
         setUpCalled = false;
@@ -33,20 +36,20 @@ public class TestThree
     @Test
     public void testSetUp()
     {
-        Assert.assertTrue( "setUp was not called", setUpCalled );
+        assertTrue( "setUp was not called", setUpCalled );
     }
     
     
     @Test
     public void testSuccessOne()
     {
-        Assert.assertTrue( true );
+        assertTrue( true );
     } 
     
     @Test
     public void testSuccessTwo()
     {
-        Assert.assertTrue( true );
+        assertTrue( true );
     }    
 
     @AfterClass
