@@ -3051,7 +3051,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             } else {
                 if (hasDependencyJupiterAPI(testDeps)
                         && engineVersion != null
-                        && !testDeps.containsKey("org.junit.jupiter:junit-jupiter-engine")) {
+                        && !testDeps.containsKey(engineGroupId + ":" + engineArtifactId)) {
                     addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
                 }
 
@@ -3097,9 +3097,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 String version = "1.0.6";
                 consoleLogger.debug("TestNG is present. Resolving " + testNgEngineCoordinates + ":" + version);
                 addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
-                if (!hasDependencyPlatformEngine(providerArtifacts)) {
-                    addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
-                }
+            }
+
+            if (!hasDependencyPlatformEngine(providerArtifacts)) {
+                addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
             }
 
             narrowDependencies(providerArtifacts, testDeps);
