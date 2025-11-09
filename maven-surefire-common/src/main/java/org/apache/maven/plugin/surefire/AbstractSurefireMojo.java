@@ -3122,6 +3122,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
             }
 
+            if (!hasDependencyPlatformEngine(providerArtifacts)) {
+                addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
+            }
+
             narrowDependencies(providerArtifacts, testDeps);
             alignProviderVersions(providerArtifacts);
 
