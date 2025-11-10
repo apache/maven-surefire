@@ -46,6 +46,12 @@
             <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.2</version>
+          <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -61,6 +67,14 @@
                         <version>${surefire.version}</version>
                     </dependency>
                 </dependencies>
+                <configuration>
+                  <properties>
+                    <property>
+                      <name>junit</name>
+                      <value>false</value>
+                    </property>
+                  </properties>
+                </configuration>
             </plugin>
         </plugins>
     </build>
