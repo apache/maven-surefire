@@ -198,36 +198,6 @@ else
   Since JUnit 4.12 thread safe listener class should be annotated by
   <<<org.junit.runner.notification.RunListener.ThreadSafe>>> which avoids unnecessary locks in JUnit.
 
-
-* Using a Security Manager (JUnit3 only)
-
-   As long as <<<forkCount>>> is not 0 and you use JUnit3, you can run your tests with a Java security manager enabled.
-   The class name of the security manager must be sent as a system property variable to the JUnit3 provider.
-
-   The JDK 17 deprecated the class <<<java.lang.SecurityManager>>> and the security manager is not fully supported
-   since JDK 18. The JUnit3 provider fails with enabled system property <<surefire.security.manager>>> in JDK 18+.
-
-   JUnit4 uses mechanisms internally that are not compatible with the tested
-   security managers and thus this means of configuring a security manager with JUnit4 is not supported
-   by Surefire.
-
-+---+
-<plugins>
-[...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <systemPropertyVariables>
-            <surefire.security.manager>java.lang.SecurityManager</surefire.security.manager>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-[...]
-</plugins>
-+---+
-
 * Using a Security Manager (All providers)
 
     Alternatively you can define a policy file that allows all providers to run with Surefire
