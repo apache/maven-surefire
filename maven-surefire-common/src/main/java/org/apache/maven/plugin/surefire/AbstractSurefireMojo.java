@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -2662,7 +2661,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 .collect(Collectors.toMap(Artifact::getDependencyConflictId, Function.identity()));
         Set<String> additionalClasspathElements = new LinkedHashSet<>();
         if (getAdditionalClasspathElements() != null) {
-            Arrays.stream(getAdditionalClasspathElements()).forEach(additionalClasspathElements::add);
+            additionalClasspathElements.addAll(asList(getAdditionalClasspathElements()));
         }
         if (additionalClasspathDependencies != null && !additionalClasspathDependencies.isEmpty()) {
             Collection<Artifact> additionalArtifacts = resolveDependencies(additionalClasspathDependencies);
