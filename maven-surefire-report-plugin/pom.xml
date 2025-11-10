@@ -128,7 +128,7 @@
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interpolation</artifactId>
-      <version>1.28</version>
+      <version>1.29</version>
     </dependency>
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
