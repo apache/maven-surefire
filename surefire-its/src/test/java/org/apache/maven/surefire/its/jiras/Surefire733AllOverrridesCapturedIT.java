@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * @author Kristian Rosenvold
  */
-public class Surefire733AllOverrridesCapturedIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire733AllOverrridesCapturedIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testLogOutput() {
         unpack("surefire-733-allOverridesCaptured").executeTest().verifyTextInLog("abc");

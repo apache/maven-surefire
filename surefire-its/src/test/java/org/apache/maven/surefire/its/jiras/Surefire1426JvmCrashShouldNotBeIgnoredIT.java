@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsString;
@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.is;
  * Test https://issues.apache.org/jira/browse/SUREFIRE-1426
  *
  */
-public class Surefire1426JvmCrashShouldNotBeIgnoredIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1426JvmCrashShouldNotBeIgnoredIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void mavenShouldFail() throws VerificationException {
         unpack("surefire-1426-ignore-fail-jvm-crash")

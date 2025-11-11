@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  * @author Olivier Lamy
  */
-public class TestSingleMethodIT extends SurefireJUnit4IntegrationTestCase {
+public class TestSingleMethodIT extends SurefireJUnitIntegrationTestCase {
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
     public OutputValidator singleMethod(

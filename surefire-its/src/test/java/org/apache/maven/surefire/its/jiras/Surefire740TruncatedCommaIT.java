@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire740TruncatedCommaIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire740TruncatedCommaIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testRussianLocaleReport() {
         OutputValidator validator = unpack("/surefire-740-comma-truncated")

@@ -22,7 +22,7 @@ import java.io.File;
 
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.extractReports;
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
  * @author Kristian Rosenvold
  */
 @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:linelength"})
-public class XmlReporterRunTimeIT extends SurefireJUnit4IntegrationTestCase {
+public class XmlReporterRunTimeIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testForkAlways() {
         runTest("");

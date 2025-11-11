@@ -18,14 +18,14 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire806SpecifiedTestControlsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire806SpecifiedTestControlsIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     @Ignore("since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution")

@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -30,7 +30,7 @@ import org.junit.Test;
  * @author agudian
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class JUnit47WithCucumberIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47WithCucumberIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testWithoutParallel() {
         doTest("none");

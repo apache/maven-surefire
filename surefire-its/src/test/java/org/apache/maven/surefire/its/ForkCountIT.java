@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.BeforeClass;
@@ -38,7 +38,7 @@ import static org.junit.Assert.fail;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
+public class ForkCountIT extends SurefireJUnitIntegrationTestCase {
 
     private OutputValidator outputValidator;
 

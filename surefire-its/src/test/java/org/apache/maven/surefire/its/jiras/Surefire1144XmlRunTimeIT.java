@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.extractReports;
@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.is;
  * @author <a href="mailto:eloussi2@illinois.edu">Lamyaa Eloussi</a>
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1144XmlRunTimeIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1144XmlRunTimeIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testXmlRunTime() {
         OutputValidator outputValidator =

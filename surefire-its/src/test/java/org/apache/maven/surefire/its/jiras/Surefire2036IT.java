@@ -18,14 +18,14 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * Integration Tests for SUREFIRE-2036
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire2036IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire2036IT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void selectJUnit5UsingConfiguredProviderWithPlatformRunner() {
         unpack("surefire-2036")

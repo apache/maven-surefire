@@ -19,14 +19,14 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
 /**
  *
  */
-public class AssumptionFailureReportIT extends SurefireJUnit4IntegrationTestCase {
+public class AssumptionFailureReportIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testWriteSkippedMessageToReport() {
         final OutputValidator outputValidator =

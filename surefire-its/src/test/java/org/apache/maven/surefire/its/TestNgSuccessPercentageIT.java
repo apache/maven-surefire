@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Jon Todd
  * @author Andreas Gudian
  */
-public class TestNgSuccessPercentageIT extends SurefireJUnit4IntegrationTestCase {
+public class TestNgSuccessPercentageIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testPassesWhenFailuresLessThanSuccessPercentage() {
         OutputValidator validator = unpack("/testng-succes-percentage")

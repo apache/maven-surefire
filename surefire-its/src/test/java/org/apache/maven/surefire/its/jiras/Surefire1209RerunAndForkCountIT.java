@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import static org.hamcrest.CoreMatchers.is;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1209">SUREFIRE-1209</a>
  * @since 2.19
  */
-public class Surefire1209RerunAndForkCountIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1209RerunAndForkCountIT extends SurefireJUnitIntegrationTestCase {
     private static final String SUMMARY_COUNTS = "Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Flakes: 2";
 
     @Test

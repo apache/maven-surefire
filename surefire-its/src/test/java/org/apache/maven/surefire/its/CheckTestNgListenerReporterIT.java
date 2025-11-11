@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +38,7 @@ import static org.junit.runners.Parameterized.Parameters;
  */
 @RunWith(Parameterized.class)
 @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:linelength"})
-public class CheckTestNgListenerReporterIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgListenerReporterIT extends SurefireJUnitIntegrationTestCase {
     @Parameters(name = "{index}: TestNG {0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {

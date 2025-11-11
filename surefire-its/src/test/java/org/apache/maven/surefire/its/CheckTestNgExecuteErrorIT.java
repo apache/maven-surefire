@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static java.util.Objects.requireNonNull;
@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CheckTestNgExecuteErrorIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgExecuteErrorIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void executionError() {
         OutputValidator outputValidator = unpack("/testng-execute-error")

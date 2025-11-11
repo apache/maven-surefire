@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import static org.junit.Assert.fail;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-649">SUREFIRE-649</a>
  * @since 2.18
  */
-public class Surefire649EmptyStringSystemPropertiesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire649EmptyStringSystemPropertiesIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void systemProperties() throws VerificationException {

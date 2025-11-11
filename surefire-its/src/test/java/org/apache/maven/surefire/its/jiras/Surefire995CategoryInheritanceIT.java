@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.is;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-995">SUREFIRE-995</a>
  * @since 2.18.1
  */
-public class Surefire995CategoryInheritanceIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire995CategoryInheritanceIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void negativeTestShouldRunAllCategories() {

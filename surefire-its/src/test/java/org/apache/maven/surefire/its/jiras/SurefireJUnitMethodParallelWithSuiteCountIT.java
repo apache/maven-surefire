@@ -26,7 +26,7 @@ import java.util.TreeSet;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +46,7 @@ import static org.junit.Assert.assertTrue;
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire747MethodParallelWithSuiteCountIT extends SurefireJUnit4IntegrationTestCase {
+public class SurefireJUnitMethodParallelWithSuiteCountIT extends SurefireJUnitIntegrationTestCase {
     // if you want to change his constant, change it in SuiteTest1.java and SuiteTest2.java as well
     private static final int PERFORMANCE_TEST_MULTIPLICATION_FACTOR = 4;
 
@@ -84,7 +84,9 @@ public class Surefire747MethodParallelWithSuiteCountIT extends SurefireJUnit4Int
 
     @Test
     public void testMethodsParallelWithSuite() throws VerificationException {
-        OutputValidator validator = unpack().executeTest().verifyErrorFree(6);
+        OutputValidator validator = unpack().addGoal("-Djunit.jupiter.execution.parallel.mode.default=concurrent")
+                .executeTest()
+                .verifyErrorFree(6);
         Set<String> testLines = printTestLines(validator, "test finished after duration=");
         assertThat(testLines.size(), is(2));
         for (String testLine : testLines) {
@@ -125,7 +127,9 @@ public class Surefire747MethodParallelWithSuiteCountIT extends SurefireJUnit4Int
 
     @Test
     public void testClassesParallelWithSuite() throws VerificationException {
-        OutputValidator validator = unpack().parallelClasses().executeTest().verifyErrorFree(6);
+        OutputValidator validator = unpack().addGoal("-Djunit.vintage.execution.parallel.classes=true")
+                .executeTest()
+                .verifyErrorFree(6);
         Set<String> testLines = printTestLines(validator, "test finished after duration=");
         assertThat(testLines.size(), is(2));
         //        for (String testLine : testLines) {
@@ -147,6 +151,6 @@ public class Surefire747MethodParallelWithSuiteCountIT extends SurefireJUnit4Int
     }
 
     public SurefireLauncher unpack() {
-        return unpack("junit47-parallel-with-suite");
+        return unpack("junit-parallel-with-suite");
     }
 }

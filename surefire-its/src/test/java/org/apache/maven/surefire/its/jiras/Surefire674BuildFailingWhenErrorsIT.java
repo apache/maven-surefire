@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire674BuildFailingWhenErrorsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire674BuildFailingWhenErrorsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testBuildFailingWhenErrors() {
         unpack("/surefire-674-buildFailingWhenErrors")

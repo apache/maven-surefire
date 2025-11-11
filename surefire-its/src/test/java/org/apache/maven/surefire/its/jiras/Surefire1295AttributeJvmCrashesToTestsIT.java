@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import java.util.Iterator;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,7 +46,7 @@ import static org.junit.Assume.assumeTrue;
  * @since 2.20
  */
 @RunWith(Parameterized.class)
-public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnitIntegrationTestCase {
     private static final int ONE_FORK_REUSE_THREAD_COUNT = 1;
 
     /**

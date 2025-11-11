@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import java.util.ArrayList;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.equalTo;
  * @author Kristian Rosenvold
  */
 @RunWith(Parameterized.class)
-public class ConsoleOutputIT extends SurefireJUnit4IntegrationTestCase {
+public class ConsoleOutputIT extends SurefireJUnitIntegrationTestCase {
     private static final String LEGACY_FORK_NODE = "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
 
     private static final String SUREFIRE_FORK_NODE =

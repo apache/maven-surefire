@@ -23,7 +23,7 @@ import java.io.FileNotFoundException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import static org.junit.Assert.assertTrue;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1036">SUREFIRE-1036</a>
  * @since 2.18
  */
-public class Surefire1036NonFilterableJUnitRunnerWithCategoriesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1036NonFilterableJUnitRunnerWithCategoriesIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void test() throws FileNotFoundException {
