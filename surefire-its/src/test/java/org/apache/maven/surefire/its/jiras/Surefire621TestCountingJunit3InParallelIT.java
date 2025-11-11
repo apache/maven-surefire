@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -31,7 +31,7 @@ import org.junit.Test;
  * @author Kristian Rosenvold
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  */
-public class Surefire621TestCountingJunit3InParallelIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire621TestCountingJunit3InParallelIT extends SurefireJUnitIntegrationTestCase {
     /**
      * SUREFIRE-1264
      */

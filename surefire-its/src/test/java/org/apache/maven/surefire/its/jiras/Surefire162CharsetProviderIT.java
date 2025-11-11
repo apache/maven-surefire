@@ -22,7 +22,7 @@ import java.io.File;
 
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.Test;
@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class Surefire162CharsetProviderIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire162CharsetProviderIT extends SurefireJUnitIntegrationTestCase {
     @SuppressWarnings({"ResultOfMethodCallIgnored"})
     @Test
     public void testCharsetProvider() throws Exception {

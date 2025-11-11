@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -27,7 +27,7 @@ import org.junit.Test;
  * @author pgier
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class ClasspathScopeFilteringIT extends SurefireJUnit4IntegrationTestCase {
+public class ClasspathScopeFilteringIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void additionalClasspath() {
         unpack("classpath-scope-filtering").executeTest().verifyErrorFree(1);

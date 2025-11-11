@@ -23,7 +23,7 @@ import java.io.FileNotFoundException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class Surefire985ParameterizedRunnerAndCategoriesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire985ParameterizedRunnerAndCategoriesIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void test() throws Exception {

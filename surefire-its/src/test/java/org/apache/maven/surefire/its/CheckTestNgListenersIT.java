@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * Test annotation-based TestNG listener
  */
-public class CheckTestNgListenersIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgListenersIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testNgListenerReporter() {
         unpack("testng-listeners").mavenTestFailureIgnore(true).executeTest().assertTestSuiteResults(1, 0, 1, 0);

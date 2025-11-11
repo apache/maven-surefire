@@ -24,7 +24,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestCase;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class Surefire224WellFormedXmlFailuresIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire224WellFormedXmlFailuresIT extends SurefireJUnitIntegrationTestCase {
     @SuppressWarnings("ConstantConditions")
     @Test
     public void testWellFormedXmlFailures() {

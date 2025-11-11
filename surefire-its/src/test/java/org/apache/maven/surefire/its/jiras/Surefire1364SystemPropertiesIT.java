@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1364SystemPropertiesIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void junit4Forked() {

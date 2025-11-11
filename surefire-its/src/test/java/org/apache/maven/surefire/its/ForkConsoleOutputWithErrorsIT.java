@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class ForkConsoleOutputWithErrorsIT extends SurefireJUnit4IntegrationTestCase {
+public class ForkConsoleOutputWithErrorsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void xmlFileContainsConsoleOutput() {
         unpack("/fork-consoleOutputWithErrors")

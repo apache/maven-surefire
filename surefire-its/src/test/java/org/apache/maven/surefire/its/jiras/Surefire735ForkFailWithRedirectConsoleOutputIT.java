@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 /**
  * @author Kristian Rosenvold
  */
-public class Surefire735ForkFailWithRedirectConsoleOutputIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire735ForkFailWithRedirectConsoleOutputIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void vmStartFail() throws VerificationException {

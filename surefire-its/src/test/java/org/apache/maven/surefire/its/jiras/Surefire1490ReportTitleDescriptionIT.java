@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1490">SUREFIRE-1490</a>
  * @since 3.0.0-M1
  */
-public class Surefire1490ReportTitleDescriptionIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1490ReportTitleDescriptionIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void shouldHaveDefaultReportTitleAndDescription() {
         OutputValidator validator =

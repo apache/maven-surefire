@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author findepi
  */
-public class Surefire1967CheckTestNgMethodParallelOrderingIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1967CheckTestNgMethodParallelOrderingIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testNgParallelOrdering() {
         unpack("surefire-1967-testng-method-parallel-ordering")

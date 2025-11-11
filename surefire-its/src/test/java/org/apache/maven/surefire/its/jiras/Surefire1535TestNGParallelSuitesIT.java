@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import static org.hamcrest.CoreMatchers.is;
 /**
  *
  */
-public class Surefire1535TestNGParallelSuitesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1535TestNGParallelSuitesIT extends SurefireJUnitIntegrationTestCase {
     private static final String TEST_RESULT_1 = platformEncoding("Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, ");
     private static final String TEST_RESULT_2 = platformEncoding("Tests run: 2, Failures: 0, Errors: 0, Skipped: 0");
     private static final String SUITE1 = platformEncoding("Suite1");

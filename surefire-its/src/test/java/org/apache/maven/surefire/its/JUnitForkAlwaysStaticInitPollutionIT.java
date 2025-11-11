@@ -18,8 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -27,23 +26,9 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class JUnit4IgnoreIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnitForkAlwaysStaticInitPollutionIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testJunit4Ignore() {
-        // Todo: Support assumption failure == ignore for junit4
-        unpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults(7, 0, 0, 6);
-    }
-
-    @Test
-    public void testJunit47ParallelIgnore() {
-        unpack().setJUnitVersion("4.12")
-                .parallelClasses()
-                .executeTest()
-                .verifyErrorFreeLog()
-                .assertTestSuiteResults(7, 0, 0, 7);
-    }
-
-    private SurefireLauncher unpack() {
-        return unpack("/junit-ignore");
+        executeErrorFreeTest("junit4-forkAlways-staticInit", 2);
     }
 }

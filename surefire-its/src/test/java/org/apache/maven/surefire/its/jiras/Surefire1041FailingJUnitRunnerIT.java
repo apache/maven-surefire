@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author Andreas Gudian
  */
-public class Surefire1041FailingJUnitRunnerIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1041FailingJUnitRunnerIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void reportErrorInJUnitRunnerAsTestError() {
         unpack("surefire-1041-exception-in-junit-runner")

@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class Surefire377TestNgAndJUnitTogetherIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire377TestNgAndJUnitTogetherIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testTestNgAndJUnitTogether() {
         unpack("/testng-junit-together")

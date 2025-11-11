@@ -19,14 +19,14 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire832ProviderSelectionIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire832ProviderSelectionIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testJUnitRunCategoryAB() {
         OutputValidator validator =

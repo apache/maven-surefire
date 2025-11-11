@@ -18,14 +18,14 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * Failsafe should work with early return when no tests
  * s
  */
-public class Surefire901MIssingResultfileWhenNoTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire901MIssingResultfileWhenNoTestsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void failsafeWithNoTests() {
         unpack("failsafe-notests").executeVerify();

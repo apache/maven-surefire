@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class CheckTestNgPathWithSpacesIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgPathWithSpacesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testWithSpaces() {
         unpack("testng-path with spaces")

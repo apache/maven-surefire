@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public class JUnit47ParallelNotThreadSafeIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47ParallelNotThreadSafeIT extends SurefireJUnitIntegrationTestCase {
 
     private SurefireLauncher unpack() {
         return unpack("junit47-parallel-nts");

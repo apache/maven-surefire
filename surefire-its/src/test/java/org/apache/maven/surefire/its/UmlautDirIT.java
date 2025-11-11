@@ -26,7 +26,7 @@ import java.nio.file.Paths;
 
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.After;
 import org.junit.Before;
@@ -46,7 +46,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
+public class UmlautDirIT extends SurefireJUnitIntegrationTestCase {
     private String localRepo;
 
     @Before
