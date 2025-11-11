@@ -23,7 +23,7 @@ import java.util.List;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgVersionsIT extends SurefireJUnitIntegrationTestCase {
 
     // TestNG 7.6 and above needs JDK11
     @Test

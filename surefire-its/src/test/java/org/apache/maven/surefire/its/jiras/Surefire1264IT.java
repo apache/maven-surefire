@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1264">SUREFIRE-1264</a>
  * @since 2.20.1
  */
-public class Surefire1264IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1264IT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void positiveTests() {

@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -27,7 +27,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class Surefire1744AlwaysIncludeOutputLogsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1744AlwaysIncludeOutputLogsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testAlwaysIncludeOutputLogs() {
         OutputValidator outputValidator =

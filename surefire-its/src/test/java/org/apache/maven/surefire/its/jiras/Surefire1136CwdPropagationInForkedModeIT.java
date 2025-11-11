@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -30,7 +30,7 @@ import org.junit.Test;
  *
  * @author Norbert Wnuk
  */
-public class Surefire1136CwdPropagationInForkedModeIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1136CwdPropagationInForkedModeIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testTestNgAndJUnitTogether() {
         OutputValidator outputValidator =

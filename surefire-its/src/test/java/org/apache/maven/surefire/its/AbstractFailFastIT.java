@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -39,7 +39,7 @@ import static org.junit.runners.Parameterized.Parameter;
  * @since 2.19
  */
 @RunWith(Parameterized.class)
-public abstract class AbstractFailFastIT extends SurefireJUnit4IntegrationTestCase {
+public abstract class AbstractFailFastIT extends SurefireJUnitIntegrationTestCase {
     private static final String LEGACY_FORK_NODE = "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
 
     private static final String SUREFIRE_FORK_NODE =
