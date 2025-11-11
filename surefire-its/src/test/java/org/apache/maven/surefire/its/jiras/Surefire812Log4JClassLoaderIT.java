@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * @author Kristian Rosenvold
  */
-public class Surefire812Log4JClassLoaderIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire812Log4JClassLoaderIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testJunit3ParallelBuildResultCount() {
         executeErrorFreeTest("surefire-812-log4j-classloader", 1);

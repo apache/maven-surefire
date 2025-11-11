@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -44,7 +44,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1095}"/>
  * @since 2.18
  */
-public final class Surefire1095NpeInRunListenerIT extends SurefireJUnit4IntegrationTestCase {
+public final class Surefire1095NpeInRunListenerIT extends SurefireJUnitIntegrationTestCase {
 
     /**
      * Method Request.classes( String, Class[] ); exists in JUnit 4.0 - 4.4

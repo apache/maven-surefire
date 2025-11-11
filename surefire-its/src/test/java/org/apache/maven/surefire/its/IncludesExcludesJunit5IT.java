@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author Benjamin Bentmann
  */
-public class IncludesExcludesJunit5IT extends SurefireJUnit4IntegrationTestCase {
+public class IncludesExcludesJunit5IT extends SurefireJUnitIntegrationTestCase {
     private SurefireLauncher unpack() {
         return unpack("/includes-excludes-junit-5");
     }

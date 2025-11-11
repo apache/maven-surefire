@@ -102,7 +102,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private final Filter<?>[] filters;
 
-    private final Map<String, String> configurationParameters;
+    private Map<String, String> configurationParameters = new HashMap<>();
 
     private final CommandChainReader commandsReader;
 
@@ -114,10 +114,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.parameters = parameters;
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
-        configurationParameters = newConfigurationParameters();
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
                 .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
+        configurationParameters.putAll(newConfigurationParameters());
+
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
 

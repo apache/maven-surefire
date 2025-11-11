@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CrashDetectionIT extends SurefireJUnit4IntegrationTestCase {
+public class CrashDetectionIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void crashInFork() {
         unpack("crash-detection").maven().withFailure().executeTest();

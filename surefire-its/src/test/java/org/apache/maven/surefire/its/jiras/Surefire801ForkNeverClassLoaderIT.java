@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire801ForkNeverClassLoaderIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire801ForkNeverClassLoaderIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testShouldBeOkWithForkNever() {
         unpack("fork-count-resource-loading").forkNever().executeTest();

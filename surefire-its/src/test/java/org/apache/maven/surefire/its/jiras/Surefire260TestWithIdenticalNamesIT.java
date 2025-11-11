@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlAnchor;
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertTrue;
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire260TestWithIdenticalNamesIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testWithIdenticalNames() throws IOException {

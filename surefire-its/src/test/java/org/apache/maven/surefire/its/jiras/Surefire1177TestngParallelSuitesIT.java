@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.startsWith;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-public class Surefire1177TestngParallelSuitesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1177TestngParallelSuitesIT extends SurefireJUnitIntegrationTestCase {
     private static final String EXPECTED_LINE = "TestNGSuiteTest#shouldRunAndPrintItself()";
     private static final String UNEXPECTED_LINE = "ShouldNotRunTest#shouldNotRun()";
 

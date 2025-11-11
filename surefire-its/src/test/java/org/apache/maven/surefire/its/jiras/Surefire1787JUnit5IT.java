@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import javax.xml.transform.Source;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1787JUnit5IT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void bothEngines() {
