@@ -22,7 +22,7 @@ import java.io.FileNotFoundException;
 
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
  *
  * @author <a href="mailto:michal.bocek@gmail.com">Michal Bocek</a>
  */
-public class Surefire1135ImproveIgnoreMessageForTestNGIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1135ImproveIgnoreMessageForTestNGIT extends SurefireJUnitIntegrationTestCase {
 
     private enum ResultType {
         SKIPPED("skipped"),

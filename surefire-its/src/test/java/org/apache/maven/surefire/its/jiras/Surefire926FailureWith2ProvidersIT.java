@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * @author Kristian Rosenvold
  */
-public class Surefire926FailureWith2ProvidersIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire926FailureWith2ProvidersIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testBuildFailingWhenErrors() {
         unpack("surefire-926-2-provider-failure").maven().withFailure().executeTest();

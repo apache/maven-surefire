@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
 
 import java.util.Collection;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +37,7 @@ import static org.junit.runners.Parameterized.Parameters;
  *
  */
 @RunWith(Parameterized.class)
-public class JUnitUnsupportedVersionsIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnitUnsupportedVersionsIT extends SurefireJUnitIntegrationTestCase {
 
     @Parameters(name = "{index}: JUnit {0}")
     public static Collection<Object[]> junitVersions() {

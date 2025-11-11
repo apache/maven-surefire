@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import java.util.Collection;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertFalse;
 /**
  *
  */
-public class Surefire1004RunTestFromDependencyJarsTypeAndClassifierIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1004RunTestFromDependencyJarsTypeAndClassifierIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void shouldScanAndRunTestsInDependencyJars() throws Exception {

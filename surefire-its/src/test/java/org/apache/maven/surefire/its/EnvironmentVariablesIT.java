@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -28,7 +28,7 @@ import org.junit.Test;
  * @author Kristian Rosenvold
  * @author Christophe Deneux
  */
-public class EnvironmentVariablesIT extends SurefireJUnit4IntegrationTestCase {
+public class EnvironmentVariablesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testWhenUseSystemClassLoader() {
         unpack("/environment-variables")

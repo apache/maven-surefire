@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire141PluggableProvidersIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire141PluggableProvidersIT extends SurefireJUnitIntegrationTestCase {
     @BeforeClass
     public static void installProvider() {
         unpack(Surefire141PluggableProvidersIT.class, "surefire-141-pluggableproviders-provider", "prov")

@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
@@ -27,7 +27,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaM
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class SpockIT extends SurefireJUnit4IntegrationTestCase {
+public class SpockIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void test() {
         assumeJavaMaxVersion(14d);

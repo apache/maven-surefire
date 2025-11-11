@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ import static org.hamcrest.CoreMatchers.startsWith;
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class JUnitPlatformStreamCorruptionIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnitPlatformStreamCorruptionIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void warningIsNotEmitted() throws VerificationException {
         OutputValidator validator =

@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.matchesRegex;
  * Integration Test for SUREFIRE-2143
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire2143ParameterizedSkippedIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire2143ParameterizedSkippedIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void junit5ParameterizedSkipped() {
         OutputValidator validator = unpack("surefire-2143-junit5-parameterized-test-skipped")

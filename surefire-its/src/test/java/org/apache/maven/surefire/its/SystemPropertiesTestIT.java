@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -27,7 +27,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class SystemPropertiesTestIT extends SurefireJUnit4IntegrationTestCase {
+public class SystemPropertiesTestIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testSystemProperties() {

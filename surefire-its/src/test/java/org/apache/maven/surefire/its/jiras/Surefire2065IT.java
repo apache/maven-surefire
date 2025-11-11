@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Integration Tests for SUREFIRE-2065
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire2065IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire2065IT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void shouldNotDetectFlakyTestsWhenCombiningJunit4And5Tests() throws VerificationException {
         OutputValidator validator = unpack("surefire-2065-common")

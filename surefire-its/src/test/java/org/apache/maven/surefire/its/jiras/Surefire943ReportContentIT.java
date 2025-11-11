@@ -23,14 +23,14 @@ import java.io.FileNotFoundException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire943ReportContentIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire943ReportContentIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     @SuppressWarnings("checkstyle:methodname")

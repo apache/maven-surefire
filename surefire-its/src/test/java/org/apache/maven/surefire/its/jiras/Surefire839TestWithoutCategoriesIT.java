@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire839TestWithoutCategoriesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire839TestWithoutCategoriesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void classWithoutCategory() {
         unpack("junit48-categories").setJUnitVersion("4.12").executeTest().verifyErrorFree(3);

@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertFalse;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CheckTestFailIfNoTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestFailIfNoTestsIT extends SurefireJUnitIntegrationTestCase {
     private SurefireLauncher unpack() {
         return unpack("/default-configuration-noTests");
     }

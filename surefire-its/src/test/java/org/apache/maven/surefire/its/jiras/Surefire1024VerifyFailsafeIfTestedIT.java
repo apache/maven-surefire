@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1024">SUREFIRE-1024</a>
  * @since 2.19
  */
-public class Surefire1024VerifyFailsafeIfTestedIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1024VerifyFailsafeIfTestedIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void shouldScanAndRunTestsInDependencyJars() throws Exception {

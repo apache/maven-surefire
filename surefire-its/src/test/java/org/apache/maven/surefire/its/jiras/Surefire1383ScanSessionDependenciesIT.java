@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1383">SUREFIRE-1383</a>
  * @since 2.22.0
  */
-public class Surefire1383ScanSessionDependenciesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1383ScanSessionDependenciesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void test() throws VerificationException {
         SurefireLauncher launcher = unpack("surefire-1383");

@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class CheckTestNg740ParallelIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNg740ParallelIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void withTestNG740AndParallelSet() {
         unpack("testng-740-parallel").executeTest().assertTestSuiteResults(2, 0, 0, 0);

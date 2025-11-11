@@ -25,7 +25,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -42,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire946KillMainProcessInReusableForkIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire946KillMainProcessInReusableForkIT extends SurefireJUnitIntegrationTestCase {
     // there are 10 test classes that each would wait 3.5 seconds.
     private static final int TEST_SLEEP_TIME = 3_500;
 

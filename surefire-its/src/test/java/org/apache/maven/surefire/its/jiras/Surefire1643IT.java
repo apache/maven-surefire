@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
@@ -27,7 +27,7 @@ import org.junit.Test;
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1643IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1643IT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void shouldNotMixResults() {
         OutputValidator outputValidator = unpack("surefire-1643-parallel-junit5")

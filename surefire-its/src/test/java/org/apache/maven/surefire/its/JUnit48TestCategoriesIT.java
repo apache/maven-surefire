@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  * @author <a href="mailto:todd@apache.org">Todd Lipcon</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class JUnit48TestCategoriesIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit48TestCategoriesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testCategoriesAB() {
         runAB(unpacked());

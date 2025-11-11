@@ -24,7 +24,7 @@ import java.util.TreeSet;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertThat;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1082">SUREFIRE-1082</a>
  * @since 2.18
  */
-public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnitIntegrationTestCase {
     private static Set<String> printOnlyTestLinesFromOutFile(OutputValidator validator) {
         TestFile report = validator.getSurefireReportsFile("jiras.surefire1082.Jira1082Test-output.txt");
         report.assertFileExists();
