@@ -327,17 +327,14 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .collect(toList());
             if (!includes.isEmpty()) {
                 // use of CompositeFilter?
-                ClassNameFilter classNameFilter = new ClassNameFilter() {
-                    @Override
-                    public FilterResult apply(String clasName) {
-                        FilterResult result = includes.stream()
-                                .map(pattern -> FilterResult.includedIf(
-                                        SelectorUtils.match(pattern, clasName) || matchClassName(clasName, pattern)))
-                                .filter(FilterResult::included)
-                                .findAny()
-                                .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
-                        return result;
-                    }
+                ClassNameFilter classNameFilter = clasName -> {
+                    FilterResult result = includes.stream()
+                            .map(pattern -> FilterResult.includedIf(
+                                    SelectorUtils.match(pattern, clasName) || matchClassName(clasName, pattern)))
+                            .filter(FilterResult::included)
+                            .findAny()
+                            .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
+                    return result;
                 };
                 filters.add(classNameFilter);
             }
@@ -352,21 +349,18 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .collect(toList());
             if (!excludes.isEmpty()) {
                 // use of CompositeFilter?
-                ClassNameFilter classNameFilter = new ClassNameFilter() {
-                    @Override
-                    public FilterResult apply(String className) {
-                        FilterResult result = excludes.stream()
-                                .map(pattern -> {
-                                    boolean inclusive = SelectorUtils.match(pattern, className);
-                                    return !inclusive
-                                            ? FilterResult.included("Not excluded by pattern: " + pattern)
-                                            : FilterResult.excluded("Excluded by pattern: " + pattern);
-                                })
-                                .filter(FilterResult::excluded)
-                                .findAny()
-                                .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
-                        return result;
-                    }
+                ClassNameFilter classNameFilter = className -> {
+                    FilterResult result = excludes.stream()
+                            .map(pattern -> {
+                                boolean inclusive = SelectorUtils.match(pattern, className);
+                                return !inclusive
+                                        ? FilterResult.included("Not excluded by pattern: " + pattern)
+                                        : FilterResult.excluded("Excluded by pattern: " + pattern);
+                            })
+                            .filter(FilterResult::excluded)
+                            .findAny()
+                            .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
+                    return result;
                 };
                 filters.add(classNameFilter);
             }
@@ -386,6 +380,14 @@ public class JUnitPlatformProvider extends AbstractProvider {
             }
         }
 
+        if (!useTestNG) {
+            Optional<Class<?>> categoryClass = getCategoryClass();
+            if (categoryClass.isPresent()) {
+                getPropertiesList(EXCLUDEDGROUPS_PROP)
+                        .map(strings -> getExcludeCategoryFilter(strings, categoryClass))
+                        .ifPresent(filters::add);
+            }
+        }
         of(optionallyWildcardFilter(parameters.getTestRequest().getTestListResolver()))
                 .filter(f -> !f.isEmpty())
                 .filter(f -> !f.isWildcard())
@@ -417,8 +419,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
             boolean hasCategoryClass = false, hasCategoryMethod = false;
             if (methodSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotation(
-                            methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories);
+                    hasCategoryMethod = hasCategoryAnnotation(
+                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
+                            || hasCategoryAnnotation(
+                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
                 }
             }
 
@@ -428,14 +432,48 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .map(testSource -> (ClassSource) testSource);
             if (classSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotation(
-                            getClass(classSource.get().getClassName()).get(), categoryClass.orElse(null), categories);
+                    hasCategoryClass = hasCategoryAnnotation(
+                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
                 }
             }
 
             return hasCategoryClass || hasCategoryMethod
                     ? FilterResult.included("Category found")
                     : FilterResult.excluded("Does not have category annotation");
+        };
+    }
+
+    PostDiscoveryFilter getExcludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
+
+        return testDescriptor -> {
+            Optional<MethodSource> methodSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof MethodSource)
+                    .map(testSource -> (MethodSource) testSource);
+            boolean hasCategoryClass = false, hasCategoryMethod = false;
+            if (methodSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryMethod = hasCategoryAnnotation(
+                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
+                            || hasCategoryAnnotation(
+                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            Optional<ClassSource> classSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof ClassSource)
+                    .map(testSource -> (ClassSource) testSource);
+            if (classSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryClass = hasCategoryAnnotation(
+                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            return hasCategoryClass || hasCategoryMethod
+                    ? FilterResult.excluded("Does have exclude category annotation")
+                    : FilterResult.included("Does not have category excluded found");
         };
     }
 
