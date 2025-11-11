@@ -48,8 +48,6 @@ public class ProviderParameterNames {
 
     public static final String ENABLE_OUT_ERR_ELEMENTS_PROP = "enableouterrelements";
 
-    public static final String ENABLE_PROPERTIES_ELEMENT_PROP = "enablepropertieselement";
-
     public static final String JUNIT_VINTAGE_DETECTED = "junit.vintage.engine.detected";
 
     public static final String INCLUDES_SCAN_LIST = "junit.includes.scan.list";
