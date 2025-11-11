@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:qingzhouluo@google.com">Qingzhou Luo</a>
  */
-public class JUnit4RerunFailingTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnitRerunFailingTestsIT extends SurefireJUnitIntegrationTestCase {
     private static final String VERSION = "4.13.2";
 
     private SurefireLauncher unpack() {

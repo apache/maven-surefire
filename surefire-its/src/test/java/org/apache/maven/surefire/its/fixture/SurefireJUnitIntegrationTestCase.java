@@ -30,7 +30,7 @@ import static java.lang.Double.parseDouble;
  *
  * @author Kristian Rosenvold
  */
-public abstract class SurefireJUnit4IntegrationTestCase {
+public abstract class SurefireJUnitIntegrationTestCase {
     private static final int JAVA9_VERSION = 9;
 
     public static final double JAVA_VERSION = javaVersion();

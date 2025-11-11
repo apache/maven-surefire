@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import static org.junit.Assume.assumeFalse;
 /**
  * Verifies unicode filenames pass through correctly.
  */
-public class UnicodeTestNamesIT extends SurefireJUnit4IntegrationTestCase {
+public class UnicodeTestNamesIT extends SurefireJUnitIntegrationTestCase {
     private static final String REPORT_FILE_CONTENT = "junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test";
     private static final String TXT_REPORT = "junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test.txt";
     private static final String XML_REPORT = "TEST-junit.twoTestCases.\u800C\u7D22\u5176\u60C5Test.xml";

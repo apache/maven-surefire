@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-855">SUREFIRE-855</a>
  * @since 2.19
  */
-public class Surefire855AllowFailsafeUseArtifactFileIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire855AllowFailsafeUseArtifactFileIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void warShouldUseClasses() {
         unpack("surefire-855-failsafe-use-war").maven().executeVerify().verifyErrorFree(2);

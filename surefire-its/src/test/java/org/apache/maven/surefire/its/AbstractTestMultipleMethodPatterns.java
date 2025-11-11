@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.Settings;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Test project using multiple method patterns, including wildcards in class and method names.
  */
-public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4IntegrationTestCase {
+public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnitIntegrationTestCase {
     private static final String CSV_DELIMITER_SHORT = ",";
     private static final String CSV_DELIMITER_LONG = ", ";
     private static final String NOT_DELIMITER = "!";

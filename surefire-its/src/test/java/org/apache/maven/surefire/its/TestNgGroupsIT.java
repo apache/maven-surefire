@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -26,7 +26,7 @@ import org.junit.Test;
  * Test the group filter for TestNG
  *
  */
-public class TestNgGroupsIT extends SurefireJUnit4IntegrationTestCase {
+public class TestNgGroupsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testExclusion() {
         unpack().setExcludedGroups("notincluded").executeTest().verifyErrorFree(5);
