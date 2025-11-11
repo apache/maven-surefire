@@ -23,7 +23,7 @@ import java.util.Calendar;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
+public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
     private static final String[] TESTS_IN_ALPHABETICAL_ORDER = {"TA", "TB", "TC"};
 
     private static final String[] TESTS_IN_REVERSE_ALPHABETICAL_ORDER = {"TC", "TB", "TA"};

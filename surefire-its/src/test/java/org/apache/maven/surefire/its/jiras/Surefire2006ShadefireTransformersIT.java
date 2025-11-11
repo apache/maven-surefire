@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
@@ -30,7 +30,7 @@ import static org.hamcrest.core.StringContains.containsString;
  *
  * @author Slawomir Jaranowski
  */
-public class Surefire2006ShadefireTransformersIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire2006ShadefireTransformersIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void shadefireShouldBeUsed() throws VerificationException {
         unpack("surefire-2006-shadefire-transformers")

@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -27,7 +27,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold       assertContainsText
  */
-public class Surefire628ConsoleOutputBeforeAndAfterClassIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire628ConsoleOutputBeforeAndAfterClassIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testJunit3ParallelBuildResultCount() {

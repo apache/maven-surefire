@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:ytsolar@gmail.com">rainLee</a>
  */
-public class TestMultipleMethodsIT extends SurefireJUnit4IntegrationTestCase {
+public class TestMultipleMethodsIT extends SurefireJUnitIntegrationTestCase {
 
     public OutputValidator multipleMethod(String projectName, String... goals) {
         SurefireLauncher launcher = unpack(projectName);

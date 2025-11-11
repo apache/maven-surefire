@@ -26,7 +26,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -37,7 +37,7 @@ import static org.junit.Assert.fail;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
+public class TwoTestCasesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testTwoTestCases() {
         unpack("junit-twoTestCases")

@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertFalse;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1053">SUREFIRE-1053</a>
  * @since 2.18
  */
-public class Surefire1053SystemPropertiesIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1053SystemPropertiesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void checkWarningsFileEncoding() {
         unpack().sysProp("file.encoding", "ISO-8859-1")
