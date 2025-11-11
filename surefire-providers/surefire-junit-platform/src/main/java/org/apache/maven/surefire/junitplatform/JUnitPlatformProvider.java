@@ -265,6 +265,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private boolean matchClassName(String className, String pattern) {
         // pattern can be either fully qualified or simple class name or package + simple class name + #method
         int hashIndex = pattern.indexOf('#');
+        // we receive only -Dtest=#method (weird but possible)
+        if (hashIndex == 0) {
+            return true;
+        }
         if (hashIndex != -1) {
             pattern = pattern.substring(0, hashIndex);
         }
