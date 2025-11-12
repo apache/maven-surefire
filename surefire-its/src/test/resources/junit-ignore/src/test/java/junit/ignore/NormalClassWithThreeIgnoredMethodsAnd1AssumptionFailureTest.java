@@ -34,5 +34,11 @@ public class NormalClassWithThreeIgnoredMethodsAnd1AssumptionFailureTest
         Assume.assumeNotNull( new Object[]{ null} );
     }
 
+    @Test
+    public void testAllGood()
+    {
+        System.out.println("testAllGood");
+    }
+
 }
 

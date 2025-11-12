@@ -30,17 +30,16 @@ import org.junit.Test;
 public class JUnitIgnoreIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testJunit4Ignore() {
-        // Todo: Support assumption failure == ignore for junit4
-        unpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults(7, 0, 0, 6);
+        unpack().executeTest().verifyErrorFreeLog().assertTestSuiteResults(8, 0, 0, 7);
     }
 
     @Test
-    public void testJunit47ParallelIgnore() {
+    public void testJunit4ParallelIgnore() {
         unpack().setJUnitVersion("4.12")
                 .parallelClasses()
                 .executeTest()
                 .verifyErrorFreeLog()
-                .assertTestSuiteResults(7, 0, 0, 7);
+                .assertTestSuiteResults(8, 0, 0, 7);
     }
 
     private SurefireLauncher unpack() {
