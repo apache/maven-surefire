@@ -39,7 +39,7 @@ public class CustomTestExecutionListener implements TestExecutionListener {
     public void testPlanExecutionStarted(TestPlan testPlan) {
 
         String mainTestClass = extractMainClassName(testPlan);
-        listeners.forEach(plan -> {
+        listeners.forEach(runListener -> {
             try {
                 Class<?> descriptionClass =
                         Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
@@ -48,12 +48,12 @@ public class CustomTestExecutionListener implements TestExecutionListener {
                     Class<?> classToRemove =
                             Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object invoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
-                    plan.getClass()
+                    runListener.getClass()
                             .getMethod("testRunStarted", descriptionClass)
-                            .invoke(plan, invoke);
-                    plan.getClass()
+                            .invoke(runListener, invoke);
+                    runListener.getClass()
                             .getMethod("testSuiteStarted", descriptionClass)
-                            .invoke(plan, invoke);
+                            .invoke(runListener, invoke);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -65,7 +65,7 @@ public class CustomTestExecutionListener implements TestExecutionListener {
     public void testPlanExecutionFinished(TestPlan testPlan) {
 
         String mainTestClass = extractMainClassName(testPlan);
-        listeners.forEach(plan -> {
+        listeners.forEach(runListener -> {
             try {
                 Class<?> resultClass =
                         Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Result");
@@ -73,7 +73,7 @@ public class CustomTestExecutionListener implements TestExecutionListener {
                 if (mainTestClass != null) {
                     Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object invoke = resultClassConstructor.newInstance();
-                    plan.getClass().getMethod("testRunFinished", resultClass).invoke(plan, invoke);
+                    runListener.getClass().getMethod("testRunFinished", resultClass).invoke(runListener, invoke);
 
                     Class<?> descriptionClass =
                             Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
@@ -81,9 +81,9 @@ public class CustomTestExecutionListener implements TestExecutionListener {
                     Class<?> classToRemove =
                             Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object createSuiteDescInvoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
-                    plan.getClass()
+                    runListener.getClass()
                             .getMethod("testSuiteFinished", descriptionClass)
-                            .invoke(plan, createSuiteDescInvoke);
+                            .invoke(runListener, createSuiteDescInvoke);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
