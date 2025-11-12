@@ -48,10 +48,12 @@ public class CustomTestExecutionListener implements TestExecutionListener {
                     Class<?> classToRemove =
                             Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object invoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
-                    runListener.getClass()
+                    runListener
+                            .getClass()
                             .getMethod("testRunStarted", descriptionClass)
                             .invoke(runListener, invoke);
-                    runListener.getClass()
+                    runListener
+                            .getClass()
                             .getMethod("testSuiteStarted", descriptionClass)
                             .invoke(runListener, invoke);
                 }
@@ -73,7 +75,10 @@ public class CustomTestExecutionListener implements TestExecutionListener {
                 if (mainTestClass != null) {
                     Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object invoke = resultClassConstructor.newInstance();
-                    runListener.getClass().getMethod("testRunFinished", resultClass).invoke(runListener, invoke);
+                    runListener
+                            .getClass()
+                            .getMethod("testRunFinished", resultClass)
+                            .invoke(runListener, invoke);
 
                     Class<?> descriptionClass =
                             Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
@@ -81,7 +86,8 @@ public class CustomTestExecutionListener implements TestExecutionListener {
                     Class<?> classToRemove =
                             Thread.currentThread().getContextClassLoader().loadClass(mainTestClass);
                     Object createSuiteDescInvoke = createSuiteDescription.invoke(descriptionClass, classToRemove);
-                    runListener.getClass()
+                    runListener
+                            .getClass()
                             .getMethod("testSuiteFinished", descriptionClass)
                             .invoke(runListener, createSuiteDescInvoke);
                 }
