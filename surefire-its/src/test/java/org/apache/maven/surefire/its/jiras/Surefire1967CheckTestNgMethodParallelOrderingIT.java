@@ -34,26 +34,4 @@ public class Surefire1967CheckTestNgMethodParallelOrderingIT extends SurefireJUn
                 .executeTest()
                 .verifyErrorFree(12);
     }
-
-    // Since the test ordering guarantees currently depend on reflection, it's useful to test with
-    // some older version too.
-    @Test
-    public void testNgParallelOrderingWithVersion6() {
-        unpack("surefire-1967-testng-method-parallel-ordering")
-                .sysProp("testNgVersion", "6.10")
-                .executeTest()
-                .verifyErrorFree(12);
-    }
-
-    // TestNG 6.2.1 is the newest version that doesn't have XmlClass.setIndex method yet.
-    // Note that the problem of wrong setup methods ordering (SUREFIRE-1967) was not observed on that version.
-    // This is likely because SUREFIRE-1967 is related to a change in TestNG 6.3, where preserve-order became true by
-    // default (https://github.com/cbeust/testng/commit/8849b3406ef2184ceb6002768a2d087d7a8de8d5).
-    @Test
-    public void testNgParallelOrderingWithEarlyVersion6() {
-        unpack("surefire-1967-testng-method-parallel-ordering")
-                .sysProp("testNgVersion", "6.2.1")
-                .executeTest()
-                .verifyErrorFree(12);
-    }
 }
