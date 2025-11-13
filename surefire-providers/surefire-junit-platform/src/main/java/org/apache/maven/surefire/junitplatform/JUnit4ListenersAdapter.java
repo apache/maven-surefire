@@ -29,7 +29,7 @@ import org.junit.platform.launcher.TestPlan;
 
 public class JUnit4ListenersAdapter implements TestExecutionListener {
 
-    private List<Object> listeners;
+    private final List<Object> listeners;
 
     public JUnit4ListenersAdapter(List<Object> runListener) {
         this.listeners = runListener;

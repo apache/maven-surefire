@@ -234,15 +234,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
 
             LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectors);
-            launcher.execute(
-                    builder.build(),
-                    testExecutionListeners.toArray(new TestExecutionListener[0]));
+            launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
                 LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectClass(c.getName()));
-                launcher.execute(
-                        builder.build(),
-                        testExecutionListeners.toArray(new TestExecutionListener[0]));
+                launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
             });
         }
     }
