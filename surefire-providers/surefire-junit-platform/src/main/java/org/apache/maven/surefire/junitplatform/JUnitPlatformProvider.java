@@ -236,13 +236,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
             LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectors);
             launcher.execute(
                     builder.build(),
-                    testExecutionListeners.toArray(new TestExecutionListener[testExecutionListeners.size()]));
+                    testExecutionListeners.toArray(new TestExecutionListener[0]));
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
                 LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectClass(c.getName()));
                 launcher.execute(
                         builder.build(),
-                        testExecutionListeners.toArray(new TestExecutionListener[testExecutionListeners.size()]));
+                        testExecutionListeners.toArray(new TestExecutionListener[0]));
             });
         }
     }
@@ -261,7 +261,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     throw new RuntimeException(c);
                 }
             }
-            return new CustomTestExecutionListener(runListeners);
+            return new JUnit4ListenersAdapter(runListeners);
         }
         return null;
     }

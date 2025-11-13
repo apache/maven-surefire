@@ -27,11 +27,11 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
-public class CustomTestExecutionListener implements TestExecutionListener {
+public class JUnit4ListenersAdapter implements TestExecutionListener {
 
     private List<Object> listeners;
 
-    public CustomTestExecutionListener(List<Object> runListener) {
+    public JUnit4ListenersAdapter(List<Object> runListener) {
         this.listeners = runListener;
     }
 
