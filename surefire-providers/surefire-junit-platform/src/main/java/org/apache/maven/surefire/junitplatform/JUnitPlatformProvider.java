@@ -117,33 +117,34 @@ public class JUnitPlatformProvider extends AbstractProvider {
         filters = newFilters();
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
-                .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
-        configurationParameters.putAll(newConfigurationParameters());
+                .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
+        getConfigurationParameters().putAll(newConfigurationParameters());
 
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
 
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("testng."))
-                .forEach(entry -> configurationParameters.put(entry.getKey(), entry.getValue()));
+                .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
         // testng compatibility parameters
         String groups = parameters.getProviderProperties().get(GROUPS_PROP);
         if (groups != null) {
-            configurationParameters.put("testng.groups", groups);
+            getConfigurationParameters().put("testng.groups", groups);
         }
 
         //        configurationParameters.put("testng.useDefaultListeners", "true");
 
         Optional.ofNullable(parameters.getProviderProperties().get("listener"))
-                .ifPresent(listener -> configurationParameters.put("testng.listeners", listener));
+                .ifPresent(listener -> getConfigurationParameters().put("testng.listeners", listener));
 
         Optional.ofNullable(parameters.getProviderProperties().get("reporter"))
-                .ifPresent(reporter -> configurationParameters.compute(
-                        "testng.listeners", (key, value) -> value == null ? reporter : value + "," + reporter));
+                .ifPresent(reporter -> getConfigurationParameters()
+                        .compute(
+                                "testng.listeners", (key, value) -> value == null ? reporter : value + "," + reporter));
 
         String excludeGroups = parameters.getProviderProperties().get(EXCLUDEDGROUPS_PROP);
         if (excludeGroups != null) {
-            configurationParameters.put("testng.excludedGroups", excludeGroups);
+            getConfigurationParameters().put("testng.excludedGroups", excludeGroups);
         }
     }
 
@@ -278,7 +279,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private LauncherDiscoveryRequestBuilder newRequest() {
-        return request().filters(filters).configurationParameters(configurationParameters);
+        return request().filters(filters).configurationParameters(getConfigurationParameters());
     }
 
     private boolean matchClassName(String className, String pattern) {
