@@ -57,6 +57,8 @@ public class JUnit4ListenersAdapter implements TestExecutionListener {
                             .getMethod("testSuiteStarted", descriptionClass)
                             .invoke(runListener, invoke);
                 }
+            } catch (NoSuchMethodException e) {
+                // ignore as the RunListener might not have implemented any of those methods
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -91,6 +93,8 @@ public class JUnit4ListenersAdapter implements TestExecutionListener {
                             .getMethod("testSuiteFinished", descriptionClass)
                             .invoke(runListener, createSuiteDescInvoke);
                 }
+            } catch (NoSuchMethodException e) {
+                // ignore as the RunListener might not have implemented any of those methods
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
