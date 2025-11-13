@@ -49,6 +49,7 @@ import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
@@ -225,27 +226,45 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void execute(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
-        // parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS)
-        // add this LegacyXmlReportGeneratingListener ?
-        //            adapter,
-        //            new LegacyXmlReportGeneratingListener(
-        //                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
-        //        };
+        List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
+        testExecutionListeners.add(adapter);
 
-        TestExecutionListener[] testExecutionListeners = new TestExecutionListener[] {adapter};
+        TestExecutionListener customListeners = createCustomListener();
+        if (customListeners != null) {
+            testExecutionListeners.add(customListeners);
+        }
 
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
 
             LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectors);
-            launcher.execute(builder.build(), testExecutionListeners);
+            launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
                 LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectClass(c.getName()));
-                launcher.execute(builder.build(), testExecutionListeners);
+                launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
             });
         }
+    }
+
+    private TestExecutionListener createCustomListener() {
+
+        String listeners = parameters.getProviderProperties().get("listener");
+        if (listeners != null) {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            List<Object> runListeners = new ArrayList<>();
+            for (String listener : listeners.split(",")) {
+                try {
+                    Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
+                    runListeners.add(ReflectionUtils.instantiate(cl, listener, runListenerClass));
+                } catch (ClassCastException | ClassNotFoundException c) {
+                    throw new RuntimeException(c);
+                }
+            }
+            return new JUnit4ListenersAdapter(runListeners);
+        }
+        return null;
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
