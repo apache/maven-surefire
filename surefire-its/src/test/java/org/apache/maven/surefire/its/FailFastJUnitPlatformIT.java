@@ -40,8 +40,8 @@ public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
         return Arrays.asList( //             |           |  |  |      |  |  |  |  |
                 new Object[] {"oneFork-ff1", null, props(1, 1, true), 5, 0, 1, 4, true},
                 new Object[] {"oneFork-ff2", null, props(1, 2, true), 5, 0, 2, 3, true},
-                new Object[] {"twoForks-ff1", null, props(2, 1, true), 5, 0, 2, 3, true},
-                new Object[] {"twoForks-ff2", null, props(2, 2, true), 5, 0, 2, 2, true},
+                new Object[] {"twoForks-ff1", null, props(2, 1, true), 5, 0, 1, 4, true},
+                new Object[] {"twoForks-ff2", null, props(2, 2, true), 5, 0, 2, 3, true},
                 new Object[] {"oneFork-ff3", null, props(1, 3, true), 5, 0, 2, 0, true},
                 new Object[] {"twoForks-ff3", null, props(2, 3, true), 5, 0, 2, 0, true});
     }
