@@ -20,10 +20,7 @@ package org.apache.maven.surefire.its;
 
 import java.util.Arrays;
 
-import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
-
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
 
@@ -49,13 +46,5 @@ public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
     @Override
     protected String withProvider() {
         return "junit-platform";
-    }
-
-    @Override
-    @Test
-    public void test() throws Exception {
-        // JUnit 6.0.0 requires Java 17+
-        assumeJavaVersion(17);
-        super.test();
     }
 }
