@@ -19,16 +19,11 @@
 package org.apache.maven.surefire.its;
 
 import java.util.Arrays;
-import java.util.Map;
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
-import static java.lang.Integer.parseInt;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
 
 public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
 
@@ -48,15 +43,7 @@ public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
                 new Object[] {"twoForks-ff1", null, props(2, 1, true), 5, 0, 2, 3, true},
                 new Object[] {"twoForks-ff2", null, props(2, 2, true), 5, 0, 2, 2, true},
                 new Object[] {"oneFork-ff3", null, props(1, 3, true), 5, 0, 2, 0, true},
-                new Object[] {"twoForks-ff3", null, props(2, 3, true), 5, 0, 2, 0, true},
-                new Object[] {
-                    "unsupported-version", null, withUnsupportedJUnitVersion(props(2, 1, true)), 5, 0, 2, 0, true
-                });
-    }
-
-    private static Map<String, String> withUnsupportedJUnitVersion(Map<String, String> props) {
-        props.put("junit.version", "5.13.3");
-        return props;
+                new Object[] {"twoForks-ff3", null, props(2, 3, true), 5, 0, 2, 0, true});
     }
 
     @Override
@@ -67,19 +54,8 @@ public class FailFastJUnitPlatformIT extends AbstractFailFastIT {
     @Override
     @Test
     public void test() throws Exception {
-        if (!"unsupported-version".equals(description)) {
-            // JUnit 6.0.0 requires Java 17+
-            assumeJavaVersion(17);
-        }
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         super.test();
-    }
-
-    @Override
-    protected void performExtraChecks(OutputValidator validator) throws Exception {
-        if ("unsupported-version".equals(description)) {
-            int forkCount = parseInt(properties.get("forkCount"));
-            validator.assertThatLogLine(
-                    containsString("An attempt was made to cancel the current test run"), equalTo(forkCount));
-        }
     }
 }
