@@ -3103,7 +3103,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 // or picked from test dependencies
                 String version = "1.0.6";
                 consoleLogger.debug("TestNG is present. Resolving " + testNgEngineCoordinates + ":" + version);
-                addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
+                if (!testDeps.containsKey(testNgEngineCoordinates)
+                        && !pluginDeps.containsKey(testNgEngineCoordinates)) {
+                    addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
+                }
             }
 
             if (!hasDependencyPlatformEngine(providerArtifacts)) {
