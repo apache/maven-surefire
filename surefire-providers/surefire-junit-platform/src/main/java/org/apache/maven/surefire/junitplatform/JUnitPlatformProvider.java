@@ -230,7 +230,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
         testExecutionListeners.add(adapter);
 
-        TestExecutionListener customListeners = createCustomListener();
+        TestExecutionListener customListeners = createJUnit4Listeners();
         if (customListeners != null) {
             testExecutionListeners.add(customListeners);
         }
@@ -249,7 +249,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private TestExecutionListener createCustomListener() {
+    /* Takes care for JUnit 4 RunListener execution.
+     * The problem we have here is that testng's listeners are being configured with the same name in the project's pom.
+     * So we have to try wether we can instantiate something from JUnit 4 or not.
+     */
+    private TestExecutionListener createJUnit4Listeners() {
 
         String listeners = parameters.getProviderProperties().get("listener");
         if (listeners != null) {
@@ -259,8 +263,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 try {
                     Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
                     runListeners.add(ReflectionUtils.instantiate(cl, listener, runListenerClass));
-                } catch (ClassCastException | ClassNotFoundException c) {
-                    throw new RuntimeException(c);
+                     } catch (ClassCastException | ClassNotFoundException c) {
+                    // ignored as we may be in not-JUnit 4 context like testng
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
             return new JUnit4ListenersAdapter(runListeners);
