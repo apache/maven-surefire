@@ -19,14 +19,14 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * Integration tests for JUnit Platform @BeforeAll failures with rerun functionality.
  * Tests various scenarios where @BeforeAll lifecycle methods fail and are rerun.
  */
-public class JUnitPlatformFailingBeforeAllRerunIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnitPlatformFailingBeforeAllRerunIT extends SurefireJUnitIntegrationTestCase {
     private static final String VERSION = "5.9.1";
 
     private static final String TEST_PROJECT_BASE = "junit-platform-rerun-failing-before-all";
