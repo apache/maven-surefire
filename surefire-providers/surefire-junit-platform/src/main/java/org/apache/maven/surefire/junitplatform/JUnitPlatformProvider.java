@@ -311,7 +311,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
             match = match || SelectorUtils.matchPath(pkgStylePattern, className);
         }
 
-        return className.equals(pattern)
+        return match
+                || className.equals(pattern)
                 || className.endsWith("." + pattern)
                 || SelectorUtils.matchPath(pattern, className);
     }
