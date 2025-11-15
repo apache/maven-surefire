@@ -263,7 +263,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 try {
                     Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
                     runListeners.add(ReflectionUtils.instantiate(cl, listener, runListenerClass));
-                     } catch (ClassCastException | ClassNotFoundException c) {
+                } catch (ClassCastException | ClassNotFoundException c) {
                     // ignored as we may be in not-JUnit 4 context like testng
                 } catch (Exception e) {
                     throw new RuntimeException(e);
