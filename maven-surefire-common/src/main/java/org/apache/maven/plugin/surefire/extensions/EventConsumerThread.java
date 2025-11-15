@@ -34,9 +34,6 @@ import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.stream.EventDecoder;
 
-/**
- *
- */
 public class EventConsumerThread extends CloseableDaemonThread {
     private final ReadableByteChannel channel;
     private final EventHandler<Event> eventHandler;

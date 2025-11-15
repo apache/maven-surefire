@@ -49,9 +49,9 @@ public class TestRequest {
     }
 
     /**
-     * Represents suitexmlfiles that define the test-run request
+     * Represents suitexmlfiles that define the test-run request.
      *
-     * @return A list of java.io.File objects.
+     * @return a list of java.io.File objects
      */
     public List<File> getSuiteXmlFiles() {
         return suiteXmlFiles;
@@ -60,7 +60,7 @@ public class TestRequest {
     /**
      * Test source directory, normally ${project.build.testSourceDirectory}
      *
-     * @return A file pointing to test sources
+     * @return a file pointing to test sources
      */
     public File getTestSourceDirectory() {
         return testSourceDirectory;
@@ -78,7 +78,7 @@ public class TestRequest {
     /**
      * How many times to rerun failing tests, issued with -Dsurefire.rerunFailingTestsCount from the command line.
      *
-     * @return The int parameter to indicate how many times to rerun failing tests
+     * @return the int parameter to indicate how many times to rerun failing tests
      */
     public int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;

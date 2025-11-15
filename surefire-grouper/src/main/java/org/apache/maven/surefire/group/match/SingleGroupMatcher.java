@@ -22,8 +22,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Single group matcher
- *
+ * Single group matcher.
  */
 public class SingleGroupMatcher implements GroupMatcher {
     private final String enabled;

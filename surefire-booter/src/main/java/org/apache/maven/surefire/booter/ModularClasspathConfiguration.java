@@ -33,7 +33,7 @@ public class ModularClasspathConfiguration extends AbstractPathConfiguration {
     private final Classpath testClasspathUrls;
 
     /**
-     * The surefire classpath to use when invoking in-process with the plugin
+     * The surefire classpath to use when invoking in-process with the plugin.
      */
     private final Classpath inprocClasspath;
 

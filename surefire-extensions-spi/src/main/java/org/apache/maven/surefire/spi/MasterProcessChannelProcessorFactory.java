@@ -49,6 +49,7 @@ public interface MasterProcessChannelProcessorFactory extends Closeable {
 
     /**
      * Decoder factory method.
+     *
      * @param forkingArguments forking arguments
      * @return a new instance of decoder
      */
@@ -56,6 +57,7 @@ public interface MasterProcessChannelProcessorFactory extends Closeable {
 
     /**
      * Encoder factory method.
+     *
      * @param forkingArguments forking arguments
      * @return a new instance of encoder
      */
