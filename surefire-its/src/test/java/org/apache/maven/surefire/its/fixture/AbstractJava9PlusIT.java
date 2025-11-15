@@ -26,7 +26,7 @@ import static org.junit.Assume.assumeTrue;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-public abstract class AbstractJava9PlusIT extends SurefireJUnit4IntegrationTestCase {
+public abstract class AbstractJava9PlusIT extends SurefireJUnitIntegrationTestCase {
     protected abstract String getProjectDirectoryName();
 
     protected SurefireLauncher assumeJava9() {

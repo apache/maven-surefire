@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its.fixture;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -130,7 +131,9 @@ public final class HelperAssertions {
         ConsoleLogger logger = new PrintStreamLogger(System.out);
         SurefireReportParser parser = new SurefireReportParser(reportsDirs, logger);
         try {
-            return parser.parseXMLReportFiles();
+            List<ReportTestSuite> suites = parser.parseXMLReportFiles();
+            suites.sort(Comparator.comparing(ReportTestSuite::getLastModified));
+            return suites;
         } catch (Exception e) {
             throw new RuntimeException("Couldn't parse XML reports", e);
         }

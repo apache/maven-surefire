@@ -18,13 +18,13 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  *
  */
-public class JUnit47StaticInnerClassTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47StaticInnerClassTestsIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testStaticInnerClassTests() {
