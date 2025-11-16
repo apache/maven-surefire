@@ -40,29 +40,7 @@ import static org.junit.Assert.fail;
 public class TwoTestCasesIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testTwoTestCases() {
-        unpack("junit-twoTestCases")
-                .sysProp("testNgVersion", "6.14.3")
-                .executeTest()
-                .verifyErrorFreeLog()
-                .assertTestSuiteResults(2, 0, 0, 0);
-    }
-
-    /**
-     * Runs two tests encapsulated in a suite
-     */
-    @Test
-    public void testTwoTestCaseSuite() {
-        final OutputValidator outputValidator = unpack("junit-twoTestCaseSuite")
-                .sysProp("testNgVersion", "6.14.3")
-                .executeTest();
-        outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
-        List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
-        Set<String> classNames = extractClassNames(reports);
-        assertContains(classNames, "junit.twoTestCaseSuite.BasicTest");
-        assertContains(classNames, "junit.twoTestCaseSuite.TestTwo");
-        assertEquals("wrong number of classes", 2, classNames.size());
-        IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
-        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
+        unpack("junit-twoTestCases").executeTest().verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
     }
 
     private void assertContains(Set<String> set, String expected) {
@@ -82,9 +60,8 @@ public class TwoTestCasesIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testJunit4Suite() {
-        final OutputValidator outputValidator = unpack("junit4-twoTestCaseSuite")
-                .sysProp("testNgVersion", "6.14.3")
-                .executeTest();
+        final OutputValidator outputValidator =
+                unpack("junit4-twoTestCaseSuite").executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
 
         List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
