@@ -3118,7 +3118,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             }
 
             narrowDependencies(providerArtifacts, testDeps);
-            alignProviderVersions(providerArtifacts);
+            alignProviderVersions(providerArtifacts, engineVersion, testDeps.get(api));
 
             return new LinkedHashSet<>(providerArtifacts.values());
         }
@@ -3178,11 +3178,23 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerArtifacts.keySet().removeAll(testDependencies.keySet());
         }
 
-        protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+        protected void alignProviderVersions(
+                Map<String, Artifact> providerArtifacts, String engineVersion, Artifact engineApi)
+                throws MojoExecutionException {
             if (junitPlatformArtifact == null) {
                 return;
             }
+
             String version = junitPlatformArtifact.getBaseVersion();
+            // this might be dangerous for version before 6.x where versions were different between launcher, platform,,
+            boolean is6x = false;
+            if (engineApi != null) {
+                is6x = isWithinVersionSpec(engineApi, "[6.0.0,)");
+            }
+
+            if (!version.equals(engineVersion) && is6x) {
+                version = engineVersion;
+            }
             for (Artifact launcherArtifact : resolve(PROVIDER_DEP_GID, PROVIDER_DEP_AID, version, null, "jar")) {
                 String key = launcherArtifact.getGroupId() + ":" + launcherArtifact.getArtifactId();
                 if (providerArtifacts.containsKey(key)) {
@@ -3268,11 +3280,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         @Override
-        protected void alignProviderVersions(Map<String, Artifact> providerArtifacts) throws MojoExecutionException {
+        protected void alignProviderVersions(
+                Map<String, Artifact> providerArtifacts, String engineVersion, Artifact engineApi)
+                throws MojoExecutionException {
             // shadefire is used as booter we can not provide additional dependencies,
             // so we need add a launcher here
             providerArtifacts.put("org.junit.platform:junit-platform-launcher", null);
-            super.alignProviderVersions(providerArtifacts);
+            super.alignProviderVersions(providerArtifacts, engineVersion, engineApi);
         }
     }
 
