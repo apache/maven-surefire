@@ -146,6 +146,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         if (excludeGroups != null) {
             getConfigurationParameters().put("testng.excludedGroups", excludeGroups);
         }
+
+        // dataproviderthreadcount
+        Optional.ofNullable(parameters.getProviderProperties().get("dataproviderthreadcount"))
+                .ifPresent(dataproviderthreadcount ->
+                        getConfigurationParameters().put("testng.dataProviderThreadCount", dataproviderthreadcount));
     }
 
     @Override
