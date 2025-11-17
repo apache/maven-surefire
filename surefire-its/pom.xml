@@ -208,6 +208,9 @@
   <profiles>
     <profile>
       <id>run-its</id>
+      <properties>
+        <verifier.forkMode>forked</verifier.forkMode>
+      </properties>
       <build>
         <plugins>
           <plugin>
@@ -235,7 +238,7 @@
                 <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-                <verifier.forkMode>forked</verifier.forkMode>
+                <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
               </systemPropertyVariables>
               <redirectTestOutputToFile>true</redirectTestOutputToFile>
@@ -248,6 +251,22 @@
                   <goal>integration-test</goal>
                   <goal>verify</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <configuration>
+              <localRepositoryPath>${settings.localRepository}</localRepositoryPath>
+            </configuration>
+            <executions>
+              <execution>
+                <id>install-dependencies</id>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
               </execution>
             </executions>
           </plugin>
