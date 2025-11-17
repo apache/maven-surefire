@@ -297,11 +297,7 @@ public class ForkStarter {
     }
 
     private boolean isForkOnce() {
-        return forkConfiguration.isReuseForks() && (forkConfiguration.getForkCount() == 1 || hasSuiteXmlFiles());
-    }
-
-    private boolean hasSuiteXmlFiles() {
-        return providerConfiguration.getTestSuiteDefinition() != null;
+        return forkConfiguration.isReuseForks() && forkConfiguration.getForkCount() == 1;
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
