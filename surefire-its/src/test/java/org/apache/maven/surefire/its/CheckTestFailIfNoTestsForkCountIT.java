@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 /**
@@ -46,17 +47,35 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnitIntegrationT
 
     @Test
     public void dontFailIfNoTestsForkAlways() {
-        doTest(unpack().forkAlways().failIfNoTests(false));
+        Assertions.assertThat(unpack().forkAlways()
+                        .failIfNoTests(false)
+                        .executeTest()
+                        .verifyErrorFreeLog()
+                        .getSurefireReportsDirectory()
+                        .listFiles())
+                .isNull();
     }
 
     @Test
     public void dontFailIfNoTestsForkNever() {
-        doTest(unpack().forkNever().failIfNoTests(false));
+        Assertions.assertThat(unpack().forkNever()
+                        .failIfNoTests(false)
+                        .executeTest()
+                        .verifyErrorFreeLog()
+                        .getSurefireReportsDirectory()
+                        .listFiles())
+                .isNull();
     }
 
     @Test
     public void dontFailIfNoTestsForkOnce() {
-        doTest(unpack().forkOnce().failIfNoTests(false));
+        Assertions.assertThat(unpack().forkOnce()
+                        .failIfNoTests(false)
+                        .executeTest()
+                        .verifyErrorFreeLog()
+                        .getSurefireReportsDirectory()
+                        .listFiles())
+                .isEmpty();
     }
 
     private void doTest(SurefireLauncher launcher) {
