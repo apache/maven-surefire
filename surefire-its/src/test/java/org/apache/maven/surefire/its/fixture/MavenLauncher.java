@@ -268,9 +268,6 @@ public final class MavenLauncher {
             getVerifier().execute();
             return getValidator();
         } catch (VerificationException e) {
-            if (expectFailure) {
-                return getValidator();
-            }
             throw new SurefireVerifierException(e.getLocalizedMessage(), e);
         }
     }
