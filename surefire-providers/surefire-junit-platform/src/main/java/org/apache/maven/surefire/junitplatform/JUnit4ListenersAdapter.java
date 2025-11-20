@@ -18,10 +18,12 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
@@ -33,6 +35,103 @@ public class JUnit4ListenersAdapter implements TestExecutionListener {
 
     public JUnit4ListenersAdapter(List<Object> runListener) {
         this.listeners = runListener;
+    }
+
+    @Override
+    public void executionStarted(TestIdentifier testIdentifier) {
+        listeners.forEach(runListener -> {
+            try {
+                Class<?> descriptionClass =
+                        Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
+                Method createTestDescription = descriptionClass.getMethod(
+                        "createTestDescription", String.class, String.class, Annotation[].class);
+                if (testIdentifier.getSource().isPresent()
+                        && testIdentifier.getSource().get() instanceof ClassSource) {
+                    String className = ((ClassSource) testIdentifier.getSource().get()).getClassName();
+                    Class<?> classToRemove =
+                            Thread.currentThread().getContextClassLoader().loadClass(className);
+                    Object invoke = createTestDescription.invoke(
+                            descriptionClass, classToRemove.getName(), testIdentifier.getDisplayName(), null);
+                    runListener
+                            .getClass()
+                            .getMethod("testRunStarted", descriptionClass)
+                            .invoke(runListener, (Object) null);
+                    runListener
+                            .getClass()
+                            .getMethod("testStarted", descriptionClass)
+                            .invoke(runListener, invoke);
+                }
+            } catch (NoSuchMethodException e) {
+                // ignore as the RunListener might not have implemented any of those methods
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+        listeners.forEach(runListener -> {
+            try {
+                Class<?> descriptionClass =
+                        Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
+                Method createTestDescription = descriptionClass.getMethod(
+                        "createTestDescription", String.class, String.class, Annotation[].class);
+                if (testIdentifier.getSource().isPresent()
+                        && testIdentifier.getSource().get() instanceof ClassSource) {
+                    String className = ((ClassSource) testIdentifier.getSource().get()).getClassName();
+                    Class<?> classToRemove =
+                            Thread.currentThread().getContextClassLoader().loadClass(className);
+                    Object invoke = createTestDescription.invoke(
+                            descriptionClass, classToRemove.getName(), testIdentifier.getDisplayName(), null);
+
+                    Class<?> resultClass =
+                            Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Result");
+
+                    runListener
+                            .getClass()
+                            .getMethod("testRunFinished", resultClass)
+                            .invoke(runListener, resultClass.getConstructor().newInstance());
+
+                    runListener
+                            .getClass()
+                            .getMethod("testFinished", descriptionClass)
+                            .invoke(runListener, invoke);
+                }
+            } catch (NoSuchMethodException e) {
+                // ignore as the RunListener might not have implemented any of those methods
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+        listeners.forEach(runListener -> {
+            try {
+                Class<?> descriptionClass =
+                        Thread.currentThread().getContextClassLoader().loadClass("org.junit.runner.Description");
+                Method createTestDescription = descriptionClass.getMethod(
+                        "createTestDescription", String.class, String.class, Annotation[].class);
+                if (testIdentifier.getSource().isPresent()
+                        && testIdentifier.getSource().get() instanceof ClassSource) {
+                    String className = ((ClassSource) testIdentifier.getSource().get()).getClassName();
+                    Class<?> classToRemove =
+                            Thread.currentThread().getContextClassLoader().loadClass(className);
+                    Object invoke = createTestDescription.invoke(
+                            descriptionClass, classToRemove.getName(), testIdentifier.getDisplayName(), null);
+                    runListener
+                            .getClass()
+                            .getMethod("testIgnored", descriptionClass)
+                            .invoke(runListener, invoke);
+                }
+            } catch (NoSuchMethodException e) {
+                // ignore as the RunListener might not have implemented any of those methods
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
