@@ -1148,7 +1148,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     protected List<ProviderInfo> createProviders(TestClassPath testClasspath) throws MojoExecutionException {
-        return providerDetector.resolve(
+        List<ProviderInfo> providerInfos = providerDetector.resolve(
                 new DynamicProviderInfo(null),
                 new JUnitPlatformProviderInfo(
                         getJUnitPlatformRunnerArtifact(),
@@ -1176,6 +1176,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger,
                         getTestNgArtifact()));
+        if (providerInfos.isEmpty()
+                && getJunitArtifact() != null
+                && !isWithinVersionSpec(getJunitArtifact(), "[4.12,)")) {
+            throw new MojoExecutionException(String.format(
+                    "The used JUnit Version %s is not supported anymore. Please update to version 4.12+",
+                    getJunitArtifact().getVersion()));
+        }
+        return providerInfos;
     }
 
     SurefireProperties setupProperties() {
@@ -3031,11 +3039,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         @Nonnull
         public Set<Artifact> getProviderClasspath() throws MojoExecutionException {
-            if (junitArtifact != null && !isWithinVersionSpec(junitArtifact, "[4.12,)")) {
-                throw new MojoExecutionException(String.format(
-                        "The used JUnit Version %s is not supported anymore. Please update to version 4.12+",
-                        junitArtifact.getVersion()));
-            }
             String surefireVersion = booterArtifact.getBaseVersion();
             Map<String, Artifact> providerArtifacts = surefireDependencyResolver.getProviderClasspathAsMap(
                     session.getRepositorySession(),
