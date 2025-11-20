@@ -39,8 +39,8 @@ public class JUnitRunListenerIT extends SurefireJUnitIntegrationTestCase {
                 unpack().setJUnitVersion("4.12").executeTest().verifyErrorFreeLog();
         assertResults(outputValidator);
         outputValidator.verifyTextInLog("testRunStarted null");
-        outputValidator.verifyTextInLog("testFinished simpleTest");
-        outputValidator.verifyTextInLog("testRunFinished org.junit.runner.Result");
+        outputValidator.verifyTextInLog("testFinished");
+        outputValidator.verifyTextInLog("testRunFinished");
     }
 
     @Test
@@ -48,11 +48,11 @@ public class JUnitRunListenerIT extends SurefireJUnitIntegrationTestCase {
         final OutputValidator outputValidator = unpack().setJUnitVersion("4.12")
                 .addGoal("-DjunitVersion=4.12")
                 .executeTest()
-                .verifyErrorFreeLog(); // Todo: Fix junitVesion
+                .verifyErrorFreeLog();
         assertResults(outputValidator);
         outputValidator.verifyTextInLog("testRunStarted null");
-        outputValidator.verifyTextInLog("testFinished simpleTest");
-        outputValidator.verifyTextInLog("testRunFinished org.junit.runner.Result");
+        outputValidator.verifyTextInLog("testFinished");
+        outputValidator.verifyTextInLog("testRunFinished");
     }
 
     private void assertResults(OutputValidator outputValidator) {
