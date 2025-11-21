@@ -27,8 +27,8 @@ import org.apache.maven.surefire.extensions.EventHandler;
  * see {@link org.apache.maven.plugin.surefire.booterclient.ForkStarter}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.20
  * @see org.apache.maven.plugin.surefire.booterclient.ForkStarter
+ * @since 2.20
  */
 public final class NativeStdErrStreamConsumer implements EventHandler<String> {
     private final Object errStreamLock;

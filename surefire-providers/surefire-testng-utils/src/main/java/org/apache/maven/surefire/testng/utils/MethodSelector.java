@@ -26,7 +26,7 @@ import org.testng.IMethodSelectorContext;
 import org.testng.ITestNGMethod;
 
 /**
- * For internal use only
+ * For internal use only.
  *
  * @author Olivier Lamy
  * @since 2.7.3

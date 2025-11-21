@@ -43,7 +43,7 @@ final class JUnitCoreRunListener extends JUnit4RunListener {
 
     /**
      * @param reporter          the report manager to log testing events to
-     * @param classMethodCounts A map of methods
+     * @param classMethodCounts a map of methods
      */
     JUnitCoreRunListener(ConcurrentRunListener reporter, Map<String, TestSet> classMethodCounts) {
         super(reporter);
