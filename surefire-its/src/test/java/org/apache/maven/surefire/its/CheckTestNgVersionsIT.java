@@ -43,12 +43,12 @@ public class CheckTestNgVersionsIT extends SurefireJUnitIntegrationTestCase {
     // TestNG 7.6 and above needs JDK11
     @Test
     public void test751() {
-        runTestNgTestWithRunOrder("7.5.1");
+        runTestNgTest("7.5.1");
     }
 
     @Test
     public void test6143() {
-        runTestNgTestWithRunOrder("6.14.3");
+        runTestNgTest("6.14.3");
     }
 
     @Test
@@ -71,43 +71,28 @@ public class CheckTestNgVersionsIT extends SurefireJUnitIntegrationTestCase {
                 .verifyTextInLog("TestNG support requires version 6.14.3 or above");
     }
 
-    private void runTestNgTestWithRunOrder(String version) {
-        runTestNgTest(version, null, true);
-    }
-
     private void runTestNgTest(String version) {
-        runTestNgTest(version, null, false);
-    }
-
-    private void runTestNgTest(String version, String classifier) {
-        runTestNgTest(version, classifier, false);
-    }
-
-    private void runTestNgTest(String version, String classifier, boolean validateRunOrder) {
         final SurefireLauncher launcher = unpack("testng-simple").sysProp("testNgVersion", version);
 
         final OutputValidator outputValidator = launcher.executeTest();
 
         outputValidator.assertTestSuiteResults(3, 0, 0, 0);
 
-        if (validateRunOrder) {
-            // assert correct run order of tests
-            List<ReportTestSuite> report = HelperAssertions.extractReports(outputValidator.getBaseDir());
+        // assert correct run order of tests
+        List<ReportTestSuite> report = HelperAssertions.extractReports(outputValidator.getBaseDir());
 
-            assertEquals(3, report.size());
+        assertEquals(3, report.size());
 
-            assertTrue(
-                    "TestNGSuiteTestC was not executed first",
-                    getTestClass(report, 0).endsWith("TestNGSuiteTestC"));
+        // Validate order
 
-            assertTrue(
-                    "TestNGSuiteTestB was executed second",
-                    getTestClass(report, 1).endsWith("TestNGSuiteTestB"));
+        assertTrue(
+                "TestNGSuiteTestC was not executed first",
+                getTestClass(report, 0).endsWith("TestNGSuiteTestC"));
 
-            assertTrue(
-                    "TestNGSuiteTestA was executed last",
-                    getTestClass(report, 2).endsWith("TestNGSuiteTestA"));
-        }
+        assertTrue(
+                "TestNGSuiteTestB was executed second", getTestClass(report, 1).endsWith("TestNGSuiteTestB"));
+
+        assertTrue("TestNGSuiteTestA was executed last", getTestClass(report, 2).endsWith("TestNGSuiteTestA"));
     }
 
     private String getTestClass(List<ReportTestSuite> report, int i) {
