@@ -18,14 +18,14 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  * @author agudian
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1122">SUREFIRE-1122</a>
  */
-public class Surefire1122ParallelAndFlakyTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1122ParallelAndFlakyTestsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void nonParallelCreatesCorrectReport() {
         unpack("surefire-1122-parallel-and-flakyTests").executeTest().assertTestSuiteResults(2, 0, 0, 0, 1);

@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  *
  */
-public class JUnit47RedirectOutputIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47RedirectOutputIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testPrintSummaryTrueWithRedirect() {
         final OutputValidator clean =

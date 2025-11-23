@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import java.io.File;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ import static org.junit.Assume.assumeTrue;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
-public class LongWindowsPathIT extends SurefireJUnit4IntegrationTestCase {
+public class LongWindowsPathIT extends SurefireJUnitIntegrationTestCase {
     private static final String PROJECT_DIR = "long-windows-path";
 
     @Test

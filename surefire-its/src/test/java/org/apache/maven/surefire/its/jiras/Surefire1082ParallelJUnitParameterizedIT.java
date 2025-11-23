@@ -24,7 +24,7 @@ import java.util.TreeSet;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertThat;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1082">SUREFIRE-1082</a>
  * @since 2.18
  */
-public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnitIntegrationTestCase {
     private static Set<String> printOnlyTestLinesFromOutFile(OutputValidator validator) {
         TestFile report = validator.getSurefireReportsFile("jiras.surefire1082.Jira1082Test-output.txt");
         report.assertFileExists();
@@ -63,16 +63,16 @@ public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnit4Inte
         assertThat(log.size(), is(4));
 
         Set<String> expectedLogs1 = new TreeSet<>();
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-1");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-1");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-2");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-2");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 0 ForkJoinPool.*");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 0 ForkJoinPool.*");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
+        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 1 ForkJoinPool.*");
 
         Set<String> expectedLogs2 = new TreeSet<>();
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 1 pool-[\\d]+-thread-1");
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 1 pool-[\\d]+-thread-1");
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 0 pool-[\\d]+-thread-2");
-        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 0 pool-[\\d]+-thread-2");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 1 ForkJoinPool.*");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 0 ForkJoinPool.*");
+        expectedLogs2.add("class jiras.surefire1082.Jira1082Test b 0 ForkJoinPool.*");
 
         assertThat(log, anyOf(regex(expectedLogs1), regex(expectedLogs2)));
     }

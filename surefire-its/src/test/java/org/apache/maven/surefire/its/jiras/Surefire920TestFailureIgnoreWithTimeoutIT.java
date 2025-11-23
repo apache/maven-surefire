@@ -19,13 +19,13 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire920TestFailureIgnoreWithTimeoutIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire920TestFailureIgnoreWithTimeoutIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void timeoutInForkWithBuildFail() {
         OutputValidator validator = unpack("fork-timeout")

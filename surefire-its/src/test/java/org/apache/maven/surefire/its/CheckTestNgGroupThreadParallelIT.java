@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -27,12 +27,11 @@ import org.junit.Test;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CheckTestNgGroupThreadParallelIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgGroupThreadParallelIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testNgGroupThreadParallel() {
         unpack("testng-group-thread-parallel")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(3);
     }

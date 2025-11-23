@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import javax.xml.transform.Source;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.Test;
@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.equalTo;
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1787JUnit5IT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void bothEngines() {
@@ -91,7 +91,7 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
         unpack("junit-4-5")
                 .activateProfile("select-junit5")
                 .executeTest()
-                .verifyErrorFree(1)
+                .verifyErrorFree(2)
                 .verifyTextInLog("Running pkg.JUnit5Test")
                 .verifyTextInLog(
                         "Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
@@ -130,15 +130,6 @@ public class Surefire1787JUnit5IT extends SurefireJUnit4IntegrationTestCase {
                 .verifyTextInLog("Running pkg.TestNGTest")
                 .verifyTextInLog(
                         "Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
-    }
-
-    @Test
-    public void junit4Runner() {
-        unpack("junit5-runner")
-                .executeTest()
-                .verifyErrorFree(1)
-                .verifyTextInLog("Running pkg.JUnit5Tests")
-                .verifyTextInLog("Using auto detected provider org.apache.maven.surefire.junit4.JUnit4Provider");
     }
 
     @Test
