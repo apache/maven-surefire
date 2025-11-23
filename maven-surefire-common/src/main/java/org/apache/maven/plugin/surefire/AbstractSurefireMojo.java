@@ -1436,6 +1436,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         if (this.getParallel() != null) {
             getProperties().setProperty(ProviderParameterNames.PARALLEL_PROP, this.getParallel());
         }
+
+        Optional.ofNullable(getProperties().get("surefire.testng.verbose"))
+                .ifPresent(s -> getProperties().setProperty("testng.verbose", (String) s));
+
         convertGroupParameters();
 
         if (this.getThreadCount() > 0) {

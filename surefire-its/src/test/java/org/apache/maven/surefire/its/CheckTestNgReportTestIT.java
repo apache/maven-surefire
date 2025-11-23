@@ -47,16 +47,16 @@ public class CheckTestNgReportTestIT extends SurefireJUnitIntegrationTestCase {
                 .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFreeLog()
-                .assertThatLogLine(containsString("[Parser] Running:"), is(0));
+                .assertThatLogLine(containsString("===== Invoked methods"), is(0));
     }
 
     @Test
     public void shouldBeVerbose() throws Exception {
         unpack("/testng-simple")
                 .sysProp("testNgVersion", "6.14.3")
-                .sysProp("surefire.testng.verbose", "10")
+                .sysProp("surefire.testng.verbose", "15")
                 .executeTest()
                 .verifyErrorFreeLog()
-                .assertThatLogLine(containsString("[Parser] Running:"), is(1));
+                .assertThatLogLine(containsString("===== Invoked methods"), is(1));
     }
 }
