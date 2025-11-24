@@ -19,7 +19,6 @@
 package org.apache.maven.surefire.its;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
@@ -44,21 +43,16 @@ public class CheckTestNgExecuteErrorIT extends SurefireJUnitIntegrationTestCase 
                 .showErrorStackTraces()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("Cyclic graph of methods")
-                .verifyTextInLog("at org.apache.maven.surefire.testng.TestNGExecutor.run");
+                .verifyTextInLog("methods have cyclic dependencies")
+                .verifyTextInLog("TestEngine with ID 'testng' failed to discover tests");
 
         File reportDir = outputValidator.getSurefireReportsDirectory();
-        String[] dumpFiles = reportDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith("-jvmRun1.dump");
-            }
-        });
+        String[] dumpFiles = reportDir.list((dir, name) -> name.endsWith("-jvmRun1.dump"));
 
         assertThat(dumpFiles).isNotNull().isNotEmpty();
 
         for (String dump : requireNonNull(dumpFiles)) {
-            outputValidator.getSurefireReportsFile(dump).assertContainsText("Cyclic graph of methods");
+            outputValidator.getSurefireReportsFile(dump).assertContainsText("methods have cyclic dependencies");
         }
     }
 }
