@@ -115,6 +115,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.parameters = parameters;
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
+        setupRunOrder();
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
                 .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
@@ -151,6 +152,34 @@ public class JUnitPlatformProvider extends AbstractProvider {
         Optional.ofNullable(parameters.getProviderProperties().get("dataproviderthreadcount"))
                 .ifPresent(dataproviderthreadcount ->
                         getConfigurationParameters().put("testng.dataProviderThreadCount", dataproviderthreadcount));
+    }
+
+    private void setupRunOrder() {
+        String runOrder = parameters.getProviderProperties().get("runOrder");
+        if (runOrder != null) {
+            if (runOrder.equals("random")) {
+                getConfigurationParameters()
+                        .put("junit.jupiter.testmethod.order.default", "org.junit.jupiter.api.MethodOrderer$Random");
+                getConfigurationParameters()
+                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$Random");
+            } else if (runOrder.equals("alphabetical")) {
+                getConfigurationParameters()
+                        .put(
+                                "junit.jupiter.testmethod.order.default",
+                                "org.junit.jupiter.api.MethodOrderer$MethodName");
+                getConfigurationParameters()
+                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$ClassName");
+            } else if (runOrder.equals("reversealphabetical")) {
+                getConfigurationParameters()
+                        .put(
+                                "junit.jupiter.testmethod.order.default",
+                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder");
+                getConfigurationParameters()
+                        .put(
+                                "junit.jupiter.testclass.order.default",
+                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
+            }
+        }
     }
 
     @Override
