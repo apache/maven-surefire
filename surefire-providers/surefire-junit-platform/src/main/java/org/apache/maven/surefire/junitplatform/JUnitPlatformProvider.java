@@ -454,9 +454,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
             boolean hasCategoryClass = false, hasCategoryMethod = false;
             if (methodSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotation(
+                    hasCategoryMethod = hasCategoryAnnotationValue(
                                     methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotation(
+                            || hasCategoryAnnotationValue(
                                     methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
                 }
             }
@@ -467,7 +467,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .map(testSource -> (ClassSource) testSource);
             if (classSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotation(
+                    hasCategoryClass = hasCategoryAnnotationValue(
                             classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
                 }
             }
@@ -488,9 +488,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
             boolean hasCategoryClass = false, hasCategoryMethod = false;
             if (methodSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotation(
+                    hasCategoryMethod = hasCategoryAnnotationValue(
                                     methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotation(
+                            || hasCategoryAnnotationValue(
                                     methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
                 }
             }
@@ -501,7 +501,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .map(testSource -> (ClassSource) testSource);
             if (classSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotation(
+                    hasCategoryClass = hasCategoryAnnotationValue(
                             classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
                 }
             }
@@ -512,19 +512,17 @@ public class JUnitPlatformProvider extends AbstractProvider {
         };
     }
 
-    private boolean hasCategoryAnnotation(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
-        Optional<Annotation> anno = stream(clazz.getAnnotations())
-                .filter(annotation -> annotation.annotationType().equals(categoryClass))
-                .findFirst();
-        if (anno.isPresent()) {
-            List<String> catValue = getCategoryValue(of(anno.get()));
-            return catValue.stream().anyMatch(categories::contains);
-        }
-        return false;
+    private boolean hasCategoryAnnotationValue(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
+        return hasCategoryAnnotationValue(clazz.getAnnotations(), categoryClass, categories);
     }
 
-    private boolean hasCategoryAnnotation(Method method, Class<?> categoryClass, List<String> categories) {
-        Optional<Annotation> anno = stream(method.getAnnotations())
+    private boolean hasCategoryAnnotationValue(Method method, Class<?> categoryClass, List<String> categories) {
+        return hasCategoryAnnotationValue(method.getAnnotations(), categoryClass, categories);
+    }
+
+    private boolean hasCategoryAnnotationValue(
+            Annotation[] annotations, Class<?> categoryClass, List<String> categories) {
+        Optional<Annotation> anno = stream(annotations)
                 .filter(annotation -> annotation.annotationType().equals(categoryClass))
                 .findFirst();
         if (anno.isPresent()) {
