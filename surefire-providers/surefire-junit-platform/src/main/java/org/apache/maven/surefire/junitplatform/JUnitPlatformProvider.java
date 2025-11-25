@@ -526,8 +526,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .filter(annotation -> annotation.annotationType().equals(categoryClass))
                 .findFirst();
         if (anno.isPresent()) {
-            List<String> catValue = getCategoryValue(of(anno.get()));
-            return catValue.stream().anyMatch(categories::contains);
+            List<String> catValues = getCategoryValueClassName(of(anno.get()));
+            catValues.addAll(getCategoryValueClassSimpleName(of(anno.get())));
+            return catValues.stream().anyMatch(categories::contains);
         }
         return false;
     }
@@ -545,13 +546,27 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private List<String> getCategoryValue(Optional<Object> instance) {
+    private List<String> getCategoryValueClassName(Optional<Object> instance) {
         Optional<Class<?>> optionalClass = getCategoryClass();
         if (optionalClass.isPresent()) {
             try {
                 Class<?>[] classes =
                         (Class<?>[]) optionalClass.get().getMethod("value").invoke(instance.get());
                 return stream(classes).map(Class::getName).collect(Collectors.toList());
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private List<String> getCategoryValueClassSimpleName(Optional<Object> instance) {
+        Optional<Class<?>> optionalClass = getCategoryClass();
+        if (optionalClass.isPresent()) {
+            try {
+                Class<?>[] classes =
+                        (Class<?>[]) optionalClass.get().getMethod("value").invoke(instance.get());
+                return stream(classes).map(Class::getSimpleName).collect(Collectors.toList());
             } catch (Exception e) {
                 // ignore
             }
