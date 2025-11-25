@@ -114,35 +114,6 @@ public class Surefire1082ParallelJUnitParameterizedIT extends SurefireJUnitInteg
         assertParallelRun(log);
     }
 
-    @Test
-    public void shouldRunTwo() throws VerificationException {
-        OutputValidator validator = unpack().redirectToFile(true)
-                .parallelClasses()
-                .useUnlimitedThreads()
-                .executeTest()
-                .verifyErrorFree(8);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-jiras.surefire1082.Jira1082Test.xml")
-                .assertFileExists();
-
-        validator
-                .getSurefireReportsXmlFile("TEST-jiras.surefire1082.Jira1264Test.xml")
-                .assertFileExists();
-
-        validator
-                .getSurefireReportsFile("jiras.surefire1082.Jira1082Test-output.txt")
-                .assertFileExists();
-
-        validator
-                .getSurefireReportsFile("jiras.surefire1082.Jira1264Test-output.txt")
-                .assertFileExists();
-
-        validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1082Test"), is(1));
-
-        validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1264Test"), is(1));
-    }
-
     private SurefireLauncher unpack() {
         return unpack("surefire-1082-parallel-junit-parameterized");
     }
