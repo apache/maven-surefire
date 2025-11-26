@@ -19,7 +19,6 @@
 package org.apache.maven.surefire.api.util;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
@@ -92,9 +91,6 @@ public class DefaultRunOrderCalculator implements RunOrderCalculator {
             return getAlphabeticalComparator();
         } else if (RunOrder.REVERSE_ALPHABETICAL.equals(runOrder)) {
             return getReverseAlphabeticalComparator();
-        } else if (RunOrder.HOURLY.equals(runOrder)) {
-            final int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-            return ((hour % 2) == 0) ? getAlphabeticalComparator() : getReverseAlphabeticalComparator();
         } else {
             return null;
         }
