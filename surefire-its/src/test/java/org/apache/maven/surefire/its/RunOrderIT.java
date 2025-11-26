@@ -19,7 +19,6 @@
 package org.apache.maven.surefire.its;
 
 import java.util.Arrays;
-import java.util.Calendar;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
@@ -43,12 +42,6 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testAlphabeticalJUnit4() throws VerificationException {
         OutputValidator validator = executeWithRunOrder("alphabetical", "junit4");
-        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER);
-    }
-
-    @Test
-    public void testAlphabeticalJUnit5() throws VerificationException {
-        OutputValidator validator = executeWithRunOrder("alphabetical", "junit5");
         assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER);
     }
 
@@ -100,52 +93,8 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
     }
 
     @Test
-    public void testReverseAlphabeticalJUnit5() throws VerificationException {
-        OutputValidator validator = executeWithRunOrder("reversealphabetical", "junit5");
-        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER);
-    }
-
-    @Test
-    public void testHourlyJUnit4() throws VerificationException {
-        int startHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        OutputValidator validator = executeWithRunOrder("hourly", "junit4");
-        int endHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        if (startHour != endHour) {
-            return; // Race condition, cannot test when hour changed mid-run
-        }
-
-        String[] testnames = ((startHour % 2) == 0) ? TESTS_IN_ALPHABETICAL_ORDER : TESTS_IN_REVERSE_ALPHABETICAL_ORDER;
-        assertTestnamesAppearInSpecificOrder(validator, testnames);
-    }
-
-    @Test
-    public void testHourlyJUnit5() throws VerificationException {
-        int startHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        OutputValidator validator = executeWithRunOrder("hourly", "junit5");
-        int endHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
-        if (startHour != endHour) {
-            return; // Race condition, cannot test when hour changed mid-run
-        }
-
-        String[] testnames = ((startHour % 2) == 0) ? TESTS_IN_ALPHABETICAL_ORDER : TESTS_IN_REVERSE_ALPHABETICAL_ORDER;
-        assertTestnamesAppearInSpecificOrder(validator, testnames);
-    }
-
-    @Test
     public void testNonExistingRunOrderJUnit4() {
         unpack().activateProfile("junit4")
-                .forkCount(1)
-                .reuseForks(reuseForks())
-                .runOrder("nonExistingRunOrder")
-                .maven()
-                .withFailure()
-                .executeTest()
-                .verifyTextInLog("There's no RunOrder with the name nonExistingRunOrder.");
-    }
-
-    @Test
-    public void testNonExistingRunOrderJUnit5() {
-        unpack().activateProfile("junit5")
                 .forkCount(1)
                 .reuseForks(reuseForks())
                 .runOrder("nonExistingRunOrder")

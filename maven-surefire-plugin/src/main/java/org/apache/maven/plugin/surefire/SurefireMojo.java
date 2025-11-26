@@ -301,12 +301,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
 
     /**
      * Defines the order the tests will be run in. Supported values are {@code alphabetical},
-     * {@code reversealphabetical}, {@code random}, {@code hourly} (alphabetical on even hours, reverse alphabetical
-     * on odd hours), {@code failedfirst}, {@code balanced} and {@code filesystem}.
-     * <br>
-     * <br>
-     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
-     * multi-module build.
+     * {@code reversealphabetical}, {@code random}, {@code failedfirst}, {@code balanced} and {@code filesystem}.
      * <br>
      * <br>
      * Failed first will run tests that failed on previous run first, as well as new tests for this run.
