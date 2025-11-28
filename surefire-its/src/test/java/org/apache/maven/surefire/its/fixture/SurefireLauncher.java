@@ -310,7 +310,9 @@ public final class SurefireLauncher {
     }
 
     public SurefireLauncher setJUnitVersion(String version) {
-        mavenLauncher.sysProp("junit.version", version);
+        if (version != null) {
+            mavenLauncher.sysProp("junit.version", version);
+        }
         return this;
     }
 
