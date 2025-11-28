@@ -26,6 +26,8 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
+
 /**
  * Verifies the runOrder setting and its effect
  *
@@ -41,17 +43,17 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testAlphabeticalJUnit4() throws VerificationException {
-        OutputValidator validator = executeWithRunOrder("alphabetical", "junit4");
+        OutputValidator validator = executeWithRunOrder("alphabetical");
         assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER);
     }
 
     @Test
     public void testRandomJUnit4DifferentSeed() throws VerificationException {
         long seed = 0L;
-        OutputValidator validator = executeWithRandomOrder("junit4", seed);
+        OutputValidator validator = executeWithRandomOrder(seed);
         String[] expected = validator.getStringsOrderInLog(TESTS_IN_ALPHABETICAL_ORDER);
         for (long i = seed; i < 5 + seed; i++) {
-            OutputValidator validator2 = executeWithRandomOrder("junit4", i);
+            OutputValidator validator2 = executeWithRandomOrder(i);
             String[] observed = validator2.getStringsOrderInLog(TESTS_IN_ALPHABETICAL_ORDER);
             if (!Arrays.equals(expected, observed)) {
                 return;
@@ -63,10 +65,10 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testRandomJUnit4SameSeed() throws VerificationException {
         long seed = 0L;
-        OutputValidator validator = executeWithRandomOrder("junit4", seed);
+        OutputValidator validator = executeWithRandomOrder(seed);
         String[] expected = validator.getStringsOrderInLog(TESTS_IN_ALPHABETICAL_ORDER);
         for (long i = 0; i < 5; i++) {
-            OutputValidator validator2 = executeWithRandomOrder("junit4", seed);
+            OutputValidator validator2 = executeWithRandomOrder(seed);
             String[] observed = validator2.getStringsOrderInLog(TESTS_IN_ALPHABETICAL_ORDER);
             if (!Arrays.equals(expected, observed)) {
                 throw new VerificationException("Random orders with the same seed produced different orders");
@@ -76,26 +78,19 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void testRandomJUnit4PrintSeedWithGivenSeed() {
-        OutputValidator validator = executeWithRandomOrder("junit4", 0L);
-        validator.verifyTextInLog("To reproduce ordering use flag");
-    }
-
-    @Test
-    public void testRandomJUnit4PrintSeedWithNoGivenSeed() {
-        OutputValidator validator = executeWithRandomOrder("junit4");
+        OutputValidator validator = executeWithRandomOrder(0L);
         validator.verifyTextInLog("To reproduce ordering use flag");
     }
 
     @Test
     public void testReverseAlphabeticalJUnit4() throws VerificationException {
-        OutputValidator validator = executeWithRunOrder("reversealphabetical", "junit4");
+        OutputValidator validator = executeWithRunOrder("reversealphabetical");
         assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER);
     }
 
     @Test
     public void testNonExistingRunOrderJUnit4() {
-        unpack().activateProfile("junit4")
-                .forkCount(1)
+        unpack().forkCount(1)
                 .reuseForks(reuseForks())
                 .runOrder("nonExistingRunOrder")
                 .maven()
@@ -104,8 +99,41 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
                 .verifyTextInLog("There's no RunOrder with the name nonExistingRunOrder.");
     }
 
-    private OutputValidator executeWithRunOrder(String runOrder, String profile) {
-        return unpack().activateProfile(profile)
+    @Test
+    public void testReverseAlphabeticalJUnit5() throws VerificationException {
+        OutputValidator validator = executeWithRunOrder("reversealphabetical", "runOrder-junitX", "5.14.1");
+        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER);
+    }
+
+    @Test
+    public void testAlphabeticalJUnit5() throws VerificationException {
+        OutputValidator validator = executeWithRunOrder("alphabetical", "runOrder-junitX", "5.14.1");
+        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER);
+    }
+
+    @Test
+    public void testReverseAlphabeticalJUnit6() throws VerificationException {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
+        OutputValidator validator = executeWithRunOrder("reversealphabetical", "runOrder-junitX", "6.0.1");
+        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_REVERSE_ALPHABETICAL_ORDER);
+    }
+
+    @Test
+    public void testAlphabeticalJUnit6() throws VerificationException {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
+        OutputValidator validator = executeWithRunOrder("alphabetical", "runOrder-junitX", "6.0.1");
+        assertTestnamesAppearInSpecificOrder(validator, TESTS_IN_ALPHABETICAL_ORDER);
+    }
+
+    private OutputValidator executeWithRunOrder(String runOrder) {
+        return executeWithRunOrder(runOrder, "runOrder", null);
+    }
+
+    private OutputValidator executeWithRunOrder(String runOrder, String sourceName, String junitVersion) {
+        return unpack(sourceName)
+                .setJUnitVersion(junitVersion)
                 .forkCount(1)
                 .reuseForks(reuseForks())
                 .runOrder(runOrder)
@@ -113,18 +141,8 @@ public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
                 .verifyErrorFree(3);
     }
 
-    private OutputValidator executeWithRandomOrder(String profile) {
-        return unpack().activateProfile(profile)
-                .forkCount(1)
-                .reuseForks(reuseForks())
-                .runOrder("random")
-                .executeTest()
-                .verifyErrorFree(3);
-    }
-
-    private OutputValidator executeWithRandomOrder(String profile, long seed) {
-        return unpack().activateProfile(profile)
-                .forkCount(1)
+    private OutputValidator executeWithRandomOrder(long seed) {
+        return unpack().forkCount(1)
                 .reuseForks(reuseForks())
                 .runOrder("random")
                 .runOrderRandomSeed(String.valueOf(seed))
