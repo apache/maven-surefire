@@ -28,9 +28,9 @@
     </dependency>
   </dependencies>
   <properties>
-    <junit.jupiter.execution.parallel.config.dynamic.factor>0.8</junit.jupiter.execution.parallel.config.dynamic.factor>
+<!--    <junit.jupiter.execution.parallel.config.dynamic.factor>0.8</junit.jupiter.execution.parallel.config.dynamic.factor>-->
     <junit.jupiter.execution.parallel.config.fixed.parallelism>10</junit.jupiter.execution.parallel.config.fixed.parallelism>
-    <junit.jupiter.execution.parallel.config.strategy>dynamic</junit.jupiter.execution.parallel.config.strategy>
+    <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
     <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
     <junit.jupiter.execution.parallel.mode.classes.default>concurrent</junit.jupiter.execution.parallel.mode.classes.default>
     <junit.jupiter.execution.parallel.mode.default>same_thread</junit.jupiter.execution.parallel.mode.default>
@@ -53,7 +53,7 @@
                  junit.jupiter.execution.parallel.mode.classes.default=${junit.jupiter.execution.parallel.mode.classes.default}
                  junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
                  junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
-                 junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}
+                 #junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}
                  junit.jupiter.extensions.autodetection.enabled=${junit.jupiter.extensions.autodetection.enabled}</configurationParameters>
              </properties>
              <includes>
