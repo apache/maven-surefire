@@ -319,6 +319,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private LauncherDiscoveryRequestBuilder newRequest() {
+
         return request().filters(filters).configurationParameters(getConfigurationParameters());
     }
 

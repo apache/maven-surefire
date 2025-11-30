@@ -612,10 +612,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Use {@code classesAndMethods} instead.
      * <br>
      * <br>
-     * Since version 2.16 (JUnit 4.7 provider), additional vales are available:
-     * <br>
-     * {@code suites}, {@code suitesAndClasses}, {@code suitesAndMethods}, {@code classesAndMethods}, {@code all}.
-     * <br>
      * By default, Surefire does not execute tests in parallel. You can set the parameter {@code parallel} to
      * {@code none} to explicitly disable parallel execution (e.g. when disabling parallel execution in special Maven
      * profiles when executing coverage analysis).
@@ -1514,10 +1510,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             getProperties()
                     .setProperty("junit.vintage.execution.parallel.pool-size", Integer.toString(getThreadCount()));
         }
-        if ("classes".equals(parallel) || "both".equals(parallel)) {
+        if ("classes".equals(parallel) || "classesAndMethods".equals(parallel) || "both".equals(parallel)) {
             getProperties().setProperty("junit.vintage.execution.parallel.classes", "true");
         }
-        if ("methods".equals(parallel) || "both".equals(parallel)) {
+        if ("methods".equals(parallel) || "classesAndMethods".equals(parallel) || "both".equals(parallel)) {
             getProperties().setProperty("junit.vintage.execution.parallel.methods", "true");
         }
 
