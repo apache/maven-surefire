@@ -1509,7 +1509,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         if (this.getThreadCount() > 0) {
             getProperties()
                     .setProperty("junit.vintage.execution.parallel.pool-size", Integer.toString(getThreadCount()));
+        } else if (getThreadCountClasses() > 0 || getThreadCountMethods() > 0) {
+            getProperties()
+                    .setProperty(
+                            "junit.vintage.execution.parallel.pool-size",
+                            Integer.toString(Math.max(getThreadCountClasses(), getThreadCountMethods())));
         }
+
         if ("classes".equals(parallel) || "classesAndMethods".equals(parallel) || "both".equals(parallel)) {
             getProperties().setProperty("junit.vintage.execution.parallel.classes", "true");
         }
