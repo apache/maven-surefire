@@ -324,6 +324,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private boolean matchClassName(String className, String pattern) {
+        boolean reverse = pattern.startsWith("!");
+        if (reverse) {
+            pattern = pattern.substring(1);
+        }
         // pattern can be either fully qualified or simple class name or package + simple class name + #method
         int hashIndex = pattern.indexOf('#');
         // we receive only -Dtest=#method (weird but possible)
@@ -346,10 +350,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
             match = match || SelectorUtils.matchPath(pkgStylePattern, className);
         }
 
-        return match
+        boolean testMatch = match
                 || className.equals(pattern)
                 || className.endsWith("." + pattern)
                 || SelectorUtils.matchPath(pattern, className);
+        return reverse != testMatch;
     }
 
     private Filter<?>[] newFilters() {
