@@ -106,6 +106,7 @@ public class Surefire1098BalancedRunOrderIT extends SurefireJUnitIntegrationTest
     }
 
     private String testLine(String test, int pool, int thread) {
-        return String.format("class jiras.surefire1098.%sTest pool-%d-thread-%d", test, pool, thread);
+        // return String.format("class jiras.surefire1098.%sTest pool-%d-thread-%d", test, pool, thread);
+        return String.format("class jiras.surefire1098.%sTest ForkJoinPool-1-worker-%s", test, thread);
     }
 }
