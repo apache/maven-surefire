@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
@@ -32,6 +33,8 @@ import static org.hamcrest.Matchers.is;
 public class CheckTestNgReportTestIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testNgReport() {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         unpack("/testng-simple")
                 .sysProp("testNgVersion", "6.14.3")
                 .addSurefireReportGoal()
@@ -43,6 +46,8 @@ public class CheckTestNgReportTestIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void shouldNotBeVerbose() throws Exception {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         unpack("/testng-simple")
                 .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
@@ -52,6 +57,8 @@ public class CheckTestNgReportTestIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void shouldBeVerbose() throws Exception {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         unpack("/testng-simple")
                 .sysProp("testNgVersion", "6.14.3")
                 .sysProp("surefire.testng.verbose", "15")
