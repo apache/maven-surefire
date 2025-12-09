@@ -21,9 +21,6 @@ package org.apache.maven.plugins.surefire.report;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
 public final class ReportTestSuite {
     private final List<ReportTestCase> testCases = new ArrayList<>();
 

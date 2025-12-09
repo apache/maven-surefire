@@ -34,9 +34,6 @@ import org.xml.sax.SAXException;
 
 import static org.apache.maven.shared.utils.StringUtils.split;
 
-/**
- *
- */
 public final class SurefireReportParser {
     private static final String INCLUDES = "*.xml";
 
@@ -166,7 +163,7 @@ public final class SurefireReportParser {
      * Returns {@code true} if the specified directory contains at least one report file.
      *
      * @param directory the directory
-     * @return {@code true} if the specified directory contains at least one report file.
+     * @return {@code true} if the specified directory contains at least one report file
      */
     public static boolean hasReportFiles(File directory) {
         return directory != null

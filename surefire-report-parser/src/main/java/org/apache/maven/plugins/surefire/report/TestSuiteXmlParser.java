@@ -40,9 +40,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.shared.utils.StringUtils.isBlank;
 
-/**
- *
- */
 public final class TestSuiteXmlParser extends DefaultHandler {
     private final ConsoleLogger consoleLogger;
 

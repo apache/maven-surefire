@@ -51,7 +51,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
     /**
-     * will be used only if report entry have a sourceName other than that #currentTestSetStats will be used
+     * Will be used only if report entry have a sourceName other than that #currentTestSetStats will be used
      * it looks some provider doesn't provide enough information so we assume to use previous technique
      * class field (this is definitely hackish)
      */

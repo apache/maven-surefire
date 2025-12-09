@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.booter;
 
 /**
- * Constants used by the serializer/deserializer
+ * Constants used by the serializer/deserializer.
  *
  * @author Kristian Rosenvold
  */

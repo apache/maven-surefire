@@ -30,8 +30,8 @@ import org.junit.runner.notification.RunListener;
  * is called anyway in finally block.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
  * @see <a href="https://github.com/junit-team/junit/issues/1186">JUnit issue 1186</a>
+ * @since 2.19
  */
 class JUnitCore {
     private final Notifier notifier;

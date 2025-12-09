@@ -31,7 +31,7 @@ import org.apache.maven.surefire.api.stream.MalformedChannelException;
 import org.apache.maven.surefire.booter.stream.CommandDecoder;
 
 /**
- * magic number : opcode [: opcode specific data]*
+ * Magic number : opcode [: opcode specific data]*
  * <br>
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
