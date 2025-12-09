@@ -44,6 +44,18 @@ public class MethodSelectorTest extends TestCase {
         assertTrue(include);
     }
 
+    public void testInclusionOfInheritedMethod() {
+        MethodSelector selector = new MethodSelector();
+        DefaultMethodSelectorContext context = new DefaultMethodSelectorContext();
+        ITestNGMethod testngMethod = new FakeTestNGMethod(
+                BaseClassSample.class, "baseClassMethodToBeIncluded", new FakeTestClass(ChildClassSample.class));
+        TestListResolver resolver =
+                new TestListResolver(ChildClassSample.class.getName() + "#baseClassMethodToBeIncluded");
+        MethodSelector.setTestListResolver(resolver);
+        boolean include = selector.includeMethod(context, testngMethod, true);
+        assertTrue(include);
+    }
+
     public void testNoInclusionOfMethodFromBaseClass() {
         MethodSelector selector = new MethodSelector();
         DefaultMethodSelectorContext context = new DefaultMethodSelectorContext();
@@ -67,10 +79,16 @@ public class MethodSelectorTest extends TestCase {
     private static class FakeTestNGMethod implements ITestNGMethod {
         private final Class<?> clazz;
         private final String methodName;
+        private final ITestClass testClass;
 
         FakeTestNGMethod(Class<?> clazz, String methodName) {
+            this(clazz, methodName, new FakeTestClass(clazz));
+        }
+
+        FakeTestNGMethod(Class<?> clazz, String methodName, ITestClass testClass) {
             this.clazz = clazz;
             this.methodName = methodName;
+            this.testClass = testClass;
         }
 
         @Override
@@ -80,7 +98,7 @@ public class MethodSelectorTest extends TestCase {
 
         @Override
         public ITestClass getTestClass() {
-            return null;
+            return testClass;
         }
 
         @Override
@@ -311,6 +329,103 @@ public class MethodSelectorTest extends TestCase {
         @Override
         public int compareTo(Object o) {
             return 0;
+        }
+    }
+
+    private static class FakeTestClass implements ITestClass {
+
+        private final Class<?> realClass;
+
+        FakeTestClass(Class<?> realClass) {
+            this.realClass = realClass;
+        }
+
+        @Override
+        public String getName() {
+            return "";
+        }
+
+        @Override
+        public String getTestName() {
+            return "";
+        }
+
+        @Override
+        public Class getRealClass() {
+            return realClass;
+        }
+
+        @Override
+        public Object[] getInstances(boolean reuse) {
+            return new Object[0];
+        }
+
+        @Override
+        public long[] getInstanceHashCodes() {
+            return new long[0];
+        }
+
+        @Override
+        public void addInstance(Object instance) {}
+
+        @Override
+        public int getInstanceCount() {
+            return 0;
+        }
+
+        @Override
+        public ITestNGMethod[] getTestMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getBeforeTestMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getAfterTestMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getBeforeClassMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getAfterClassMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getBeforeSuiteMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getAfterSuiteMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getBeforeTestConfigurationMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getAfterTestConfigurationMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getBeforeGroupsMethods() {
+            return new ITestNGMethod[0];
+        }
+
+        @Override
+        public ITestNGMethod[] getAfterGroupsMethods() {
+            return new ITestNGMethod[0];
         }
     }
 }
