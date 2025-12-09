@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnicodeToUTF8;
@@ -27,7 +27,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.convertUnic
 /**
  *
  */
-public class Surefire975DefaultVMEncodingIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire975DefaultVMEncodingIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void runWithRussian1251() {

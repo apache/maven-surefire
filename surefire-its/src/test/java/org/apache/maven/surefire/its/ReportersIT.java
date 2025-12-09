@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -28,14 +28,17 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class ReportersIT extends SurefireJUnit4IntegrationTestCase {
+public class ReportersIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testRedirectOutputTestNg() {
         OutputValidator reporters =
                 unpack("reporters").redirectToFile(true).printSummary(true).executeTest();
 
-        reporters.getSurefireReportsFile("TestSuite-output.txt").assertFileExists();
-        reporters.getSurefireReportsXmlFile("TEST-TestSuite.xml").assertFileExists();
-        reporters.getSurefireReportsFile("TestSuite.txt").assertFileExists();
+        reporters.getSurefireReportsFile("TEST-reporters.Test1.xml").assertFileExists();
+        reporters.getSurefireReportsXmlFile("TEST-reporters.Test1.xml").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test1.txt").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test2.txt").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test1-output.txt").assertFileExists();
+        reporters.getSurefireReportsFile("reporters.Test2-output.txt").assertFileExists();
     }
 }

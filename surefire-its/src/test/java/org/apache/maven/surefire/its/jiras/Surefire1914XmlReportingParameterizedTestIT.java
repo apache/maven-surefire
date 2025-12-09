@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import java.util.Arrays;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -35,7 +35,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 @RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1914XmlReportingParameterizedTestIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1914XmlReportingParameterizedTestIT extends SurefireJUnitIntegrationTestCase {
     @Parameter
     @SuppressWarnings("checkstyle:visibilitymodifier")
     public String jupiterVersion;
