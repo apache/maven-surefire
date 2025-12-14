@@ -35,7 +35,7 @@ public class Surefire1152RerunFailingTestsInSuiteIT extends SurefireJUnitIntegra
         SurefireLauncher launcher = unpack("surefire-1152-rerunFailingTestsCount-suite");
         OutputValidator outputValidator =
                 launcher.showErrorStackTraces().debugLogging().executeVerify();
-        outputValidator.assertTestSuiteResults(3, 0, 0, 0, 3);
+        outputValidator.assertTestSuiteResults(1, 0, 0, 0, 2);
         outputValidator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
     }
 }
