@@ -94,7 +94,7 @@ public class ThreadedStreamConsumerTest {
 
         long t1 = System.currentTimeMillis();
 
-        Event event = new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "");
+        Event event = new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "", null);
         for (int i = 0; i < 5_000_000; i++) {
             streamConsumer.handleEvent(event);
         }
