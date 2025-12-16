@@ -20,11 +20,13 @@ package org.apache.maven.plugin.surefire.report;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicStampedReference;
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
@@ -55,6 +57,8 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
 
     private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
             new AtomicStampedReference<>(null, OPEN);
+
+    private final Map<String, FilterOutputStream> outputStreams = new ConcurrentHashMap<>();
 
     private volatile String reportEntryName;
 
@@ -91,31 +95,80 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
             // This method is called in single thread T1 per fork JVM (see ThreadedStreamConsumer).
             // The close() method is called in main Thread T2.
             int[] status = new int[1];
-            FilterOutputStream os = fileOutputStream.get(status);
-            if (status[0] != CLOSED) {
-                if (os == null) {
+            fileOutputStream.get(status);
+            if (status[0] == CLOSED) {
+                return;
+            }
+
+            // Determine the target class name based on stack trace or reportEntryName
+            String targetClassName = extractTestClassFromStack(reportEntry.getStack());
+            if (targetClassName == null) {
+                targetClassName = reportEntryName;
+            }
+            // If still null, use "null" as the file name (for output before any test starts)
+            if (targetClassName == null) {
+                targetClassName = "null";
+            }
+
+            // Get or create output stream for this test class
+            FilterOutputStream os = outputStreams.computeIfAbsent(targetClassName, className -> {
+                try {
                     if (!reportsDirectory.exists()) {
                         //noinspection ResultOfMethodCallIgnored
                         reportsDirectory.mkdirs();
                     }
-                    File file = getReportFile(reportsDirectory, reportEntryName, reportNameSuffix, "-output.txt");
-                    os = new BufferedOutputStream(new FileOutputStream(file), STREAM_BUFFER_SIZE);
-                    fileOutputStream.set(os, OPEN);
+                    File file = getReportFile(reportsDirectory, className, reportNameSuffix, "-output.txt");
+                    return new BufferedOutputStream(Files.newOutputStream(file.toPath()), STREAM_BUFFER_SIZE);
+                } catch (IOException e) {
+                    dumpException(e);
+                    throw new UncheckedIOException(e);
                 }
-                String output = reportEntry.getLog();
-                if (output == null) {
-                    output = "null";
-                }
-                Charset charset = Charset.forName(encoding);
-                os.write(output.getBytes(charset));
-                if (reportEntry.isNewLine()) {
-                    os.write(NL.getBytes(charset));
-                }
+            });
+
+            String output = reportEntry.getLog();
+            if (output == null) {
+                output = "null";
+            }
+            Charset charset = Charset.forName(encoding);
+            os.write(output.getBytes(charset));
+            if (reportEntry.isNewLine()) {
+                os.write(NL.getBytes(charset));
             }
         } catch (IOException e) {
             dumpException(e);
             throw new UncheckedIOException(e);
         }
+    }
+
+    /**
+     * Extracts the test class name from the stack trace.
+     * Stack format: className#method;className#method;...
+     * Returns the first class name that looks like a test class.
+     */
+    private String extractTestClassFromStack(String stack) {
+        if (stack == null || stack.isEmpty()) {
+            return null;
+        }
+        // The stack contains entries like "className#method;className#method;..."
+        // We look for the test class which typically is the first entry or an entry with "Test" in the name
+        String[] entries = stack.split(";");
+        for (String entry : entries) {
+            int hashIndex = entry.indexOf('#');
+            if (hashIndex > 0) {
+                String className = entry.substring(0, hashIndex);
+                // Skip JDK classes and known framework classes
+                if (!className.startsWith("java.")
+                        && !className.startsWith("sun.")
+                        && !className.startsWith("jdk.")
+                        && !className.startsWith("org.junit.")
+                        && !className.startsWith("junit.")
+                        && !className.startsWith("org.apache.maven.surefire.")
+                        && !className.startsWith("org.apache.maven.shadefire.")) {
+                    return className;
+                }
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("checkstyle:emptyblock")
@@ -147,6 +200,17 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
             fileOutputStream.set(null, closeReattempt ? CLOSED_TO_REOPEN : CLOSED);
             if (os != null && status[0] == OPEN) {
                 os.close();
+            }
+            // Close all output streams in the map
+            for (FilterOutputStream stream : outputStreams.values()) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    dumpException(e);
+                }
+            }
+            if (!closeReattempt) {
+                outputStreams.clear();
             }
         }
     }

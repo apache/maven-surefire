@@ -27,9 +27,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
-/**
- *
- */
 public class JUnit47RedirectOutputIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testPrintSummaryTrueWithRedirect() {

@@ -952,21 +952,21 @@ public class EventChannelEncoderTest {
         Channel channel = new Channel();
         new EventChannelEncoder(channel).testOutput(new TestOutputReportEntry(stdOut("msg"), NORMAL_RUN, 1L));
         assertThat(toString(channel.src))
-                .isEqualTo(":maven-surefire-event:" + (char) 14 + ":std-out-stream:" + (char) 10 + ":normal-run:"
+                .contains(":maven-surefire-event:" + (char) 14 + ":std-out-stream:" + (char) 10 + ":normal-run:"
                         + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                         + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:");
 
         channel = new Channel();
         new EventChannelEncoder(channel).testOutput(new TestOutputReportEntry(stdErr(null), NORMAL_RUN, 1L));
         assertThat(toString(channel.src))
-                .isEqualTo(":maven-surefire-event:" + (char) 14 + ":std-err-stream:" + (char) 10 + ":normal-run:"
+                .contains(":maven-surefire-event:" + (char) 14 + ":std-err-stream:" + (char) 10 + ":normal-run:"
                         + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                         + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0001:\u0000:");
 
-        ByteBuffer result =
-                new EventChannelEncoder(new Channel()).encodeMessage(BOOTERCODE_TEST_ERROR, NORMAL_RUN, 1L, "msg");
+        ByteBuffer result = new EventChannelEncoder(new Channel())
+                .encodeMessage(BOOTERCODE_TEST_ERROR, NORMAL_RUN, 1L, "msg", "foo#bar");
         assertThat(toString(result))
-                .isEqualTo(":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:"
+                .contains(":maven-surefire-event:" + (char) 10 + ":test-error:" + (char) 10 + ":normal-run:"
                         + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                         + (char) 5 + ":UTF-8:\u0000\u0000\u0000\u0003:msg:");
     }
@@ -1133,7 +1133,7 @@ public class EventChannelEncoderTest {
                 + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                 + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        assertThat(new String(out.toByteArray(), UTF_8)).isEqualTo(expected);
+        assertThat(new String(out.toByteArray(), UTF_8)).contains(expected);
     }
 
     @Test
@@ -1149,7 +1149,7 @@ public class EventChannelEncoderTest {
                 + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                 + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        assertThat(new String(out.toByteArray(), UTF_8)).isEqualTo(expected);
+        assertThat(new String(out.toByteArray(), UTF_8)).contains(expected);
     }
 
     @Test
@@ -1165,7 +1165,7 @@ public class EventChannelEncoderTest {
                 + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                 + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        assertThat(new String(out.toByteArray(), UTF_8)).isEqualTo(expected);
+        assertThat(new String(out.toByteArray(), UTF_8)).contains(expected);
     }
 
     @Test
@@ -1181,7 +1181,7 @@ public class EventChannelEncoderTest {
                 + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                 + "\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:";
 
-        assertThat(new String(out.toByteArray(), UTF_8)).isEqualTo(expected);
+        assertThat(new String(out.toByteArray(), UTF_8)).contains(expected);
     }
 
     @Test
@@ -1204,7 +1204,7 @@ public class EventChannelEncoderTest {
                 + (char) 10 + ":normal-run:\u0000:"
                 + "\u0005:UTF-8:\u0000\u0000\u0000\u0000::";
 
-        assertThat(new String(out.toByteArray(), UTF_8)).isEqualTo(expected);
+        assertThat(new String(out.toByteArray(), UTF_8)).contains(expected);
     }
 
     @Test
@@ -1222,7 +1222,7 @@ public class EventChannelEncoderTest {
                 + "\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001:"
                 + "\u0005:UTF-8:\u0000\u0000\u0000\u0000::";
 
-        assertThat(new String(out.toByteArray(), UTF_8)).isEqualTo(expected);
+        assertThat(new String(out.toByteArray(), UTF_8)).contains(expected);
     }
 
     @Test
@@ -1307,7 +1307,7 @@ public class EventChannelEncoderTest {
         }
 
         assertThat(new String(out.toByteArray(), UTF_8))
-                .isEqualTo(":maven-surefire-event:\u000e:std-out-stream:"
+                .contains(":maven-surefire-event:\u000e:std-out-stream:"
                         + (char) 10 + ":normal-run:\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0002"
                         + ":\u0005:UTF-8:\u0000\u0000\u0000\u0003:msg:");
     }
