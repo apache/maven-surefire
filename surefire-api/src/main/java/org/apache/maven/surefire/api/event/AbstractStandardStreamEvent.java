@@ -30,13 +30,15 @@ public abstract class AbstractStandardStreamEvent extends Event {
     private final RunMode runMode;
     private final Long testRunId;
     private final String message;
+    private final String stack;
 
     protected AbstractStandardStreamEvent(
-            ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message) {
+            ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message, String stack) {
         super(eventType);
         this.runMode = runMode;
         this.testRunId = testRunId;
         this.message = message;
+        this.stack = stack;
     }
 
     public RunMode getRunMode() {
@@ -49,6 +51,10 @@ public abstract class AbstractStandardStreamEvent extends Event {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getStack() {
+        return stack;
     }
 
     @Override
