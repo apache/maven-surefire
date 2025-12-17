@@ -54,7 +54,7 @@ public class LevelTest {
     @Test
     public void shouldBeSkipped() {
         Level level = resolveLevel(false, false, false, true, false);
-        assertThat(level).isEqualTo(Level.UNSTABLE);
+        assertThat(level).isEqualTo(Level.NO_COLOR);
     }
 
     @Test
