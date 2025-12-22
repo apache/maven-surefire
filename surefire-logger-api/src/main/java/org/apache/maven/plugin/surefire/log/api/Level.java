@@ -48,14 +48,18 @@ public enum Level {
 
     public static Level resolveLevel(
             boolean hasSuccessful, boolean hasFailure, boolean hasError, boolean hasSkipped, boolean hasFlake) {
-        boolean isRed = hasFailure | hasError;
-        if (isRed) {
+        if (hasFailure || hasError) {
             return FAILURE;
         }
-        boolean isYellow = hasSkipped | hasFlake;
-        if (isYellow) {
+        if (hasFlake) {
             return UNSTABLE;
         }
-        return hasSuccessful ? SUCCESS : NO_COLOR;
+        if (hasSkipped) {
+            return NO_COLOR;
+        }
+        if (hasSuccessful) {
+            return SUCCESS;
+        }
+        return NO_COLOR;
     }
 }
