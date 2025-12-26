@@ -27,10 +27,8 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicStampedReference;
 
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
-import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
@@ -55,9 +53,6 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
     private final Integer forkNumber;
     private final String encoding;
 
-    private final AtomicStampedReference<FilterOutputStream> fileOutputStream =
-            new AtomicStampedReference<>(null, OPEN);
-
     private final Map<String, FilterOutputStream> outputStreams = new ConcurrentHashMap<>();
 
     private volatile String reportEntryName;
@@ -76,29 +71,41 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
     }
 
     @Override
-    public synchronized void testSetStarting(TestSetReportEntry reportEntry) {
-        closeNullReportFile(reportEntry);
+    public void testSetStarting(TestSetReportEntry reportEntry) {
+        String className = usePhrasedFileName ? reportEntry.getSourceText() : reportEntry.getSourceName();
+        try {
+            File file = getReportFile(reportsDirectory, className, reportNameSuffix, "-output.txt");
+            if (!reportsDirectory.exists()) {
+                Files.createDirectories(reportsDirectory.toPath());
+            }
+            if (!Files.exists(file.toPath())) {
+                Files.createFile(file.toPath());
+            }
+            outputStreams.put(
+                    className, new BufferedOutputStream(Files.newOutputStream(file.toPath()), STREAM_BUFFER_SIZE));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void testSetCompleted(TestSetReportEntry report) {}
 
     @Override
-    public synchronized void close() {
-        // The close() method is called in main Thread T2.
-        closeReportFile();
+    public void close() {
+        // Close all output streams in the map
+        for (FilterOutputStream stream : outputStreams.values()) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                dumpException(e);
+            }
+        }
     }
 
     @Override
     public synchronized void writeTestOutput(TestOutputReportEntry reportEntry) {
         try {
-            // This method is called in single thread T1 per fork JVM (see ThreadedStreamConsumer).
-            // The close() method is called in main Thread T2.
-            int[] status = new int[1];
-            fileOutputStream.get(status);
-            if (status[0] == CLOSED) {
-                return;
-            }
 
             // Determine the target class name based on stack trace or reportEntryName
             String targetClassName = extractTestClassFromStack(reportEntry.getStack());
@@ -153,66 +160,30 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
         // We look for the test class which typically is the first entry or an entry with "Test" in the name
         String[] entries = stack.split(";");
         for (String entry : entries) {
+            //            int hashIndex = entry.indexOf('#');
+            //            if (hashIndex > 0) {
+            //                String className = entry.substring(0, hashIndex);
+            //                // Skip JDK classes and known framework classes
+            //                if (!className.startsWith("java.")
+            //                        && !className.startsWith("sun.")
+            //                        && !className.startsWith("jdk.")
+            //                        && !className.startsWith("org.junit.")
+            //                        && !className.startsWith("junit.")
+            //                        && !className.startsWith("org.apache.maven.surefire.")
+            //                        && !className.startsWith("org.apache.maven.shadefire.")) {
+            //                    return className;
+            //                }
+            //            }
+
             int hashIndex = entry.indexOf('#');
             if (hashIndex > 0) {
                 String className = entry.substring(0, hashIndex);
-                // Skip JDK classes and known framework classes
-                if (!className.startsWith("java.")
-                        && !className.startsWith("sun.")
-                        && !className.startsWith("jdk.")
-                        && !className.startsWith("org.junit.")
-                        && !className.startsWith("junit.")
-                        && !className.startsWith("org.apache.maven.surefire.")
-                        && !className.startsWith("org.apache.maven.shadefire.")) {
+                if (outputStreams.containsKey(className)) {
                     return className;
                 }
             }
         }
         return null;
-    }
-
-    @SuppressWarnings("checkstyle:emptyblock")
-    private void closeNullReportFile(ReportEntry reportEntry) {
-        try {
-            // close null-output.txt report file
-            close(true);
-        } catch (IOException e) {
-            dumpException(e);
-        } finally {
-            // prepare <class>-output.txt report file
-            reportEntryName = usePhrasedFileName ? reportEntry.getSourceText() : reportEntry.getSourceName();
-        }
-    }
-
-    @SuppressWarnings("checkstyle:emptyblock")
-    private void closeReportFile() {
-        try {
-            close(false);
-        } catch (IOException e) {
-            dumpException(e);
-        }
-    }
-
-    private void close(boolean closeReattempt) throws IOException {
-        int[] status = new int[1];
-        FilterOutputStream os = fileOutputStream.get(status);
-        if (status[0] != CLOSED) {
-            fileOutputStream.set(null, closeReattempt ? CLOSED_TO_REOPEN : CLOSED);
-            if (os != null && status[0] == OPEN) {
-                os.close();
-            }
-            // Close all output streams in the map
-            for (FilterOutputStream stream : outputStreams.values()) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    dumpException(e);
-                }
-            }
-            if (!closeReattempt) {
-                outputStreams.clear();
-            }
-        }
     }
 
     private void dumpException(IOException e) {
