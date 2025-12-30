@@ -43,9 +43,6 @@ import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
  */
 public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver {
     private static final int STREAM_BUFFER_SIZE = 64 * 1024;
-    private static final int OPEN = 0;
-    private static final int CLOSED_TO_REOPEN = 1;
-    private static final int CLOSED = 2;
 
     private final File reportsDirectory;
     private final String reportNameSuffix;
@@ -106,7 +103,6 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
     @Override
     public synchronized void writeTestOutput(TestOutputReportEntry reportEntry) {
         try {
-
             // Determine the target class name based on stack trace or reportEntryName
             String targetClassName = extractTestClassFromStack(reportEntry.getStack());
             if (targetClassName == null) {
@@ -160,21 +156,6 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
         // We look for the test class which typically is the first entry or an entry with "Test" in the name
         String[] entries = stack.split(";");
         for (String entry : entries) {
-            //            int hashIndex = entry.indexOf('#');
-            //            if (hashIndex > 0) {
-            //                String className = entry.substring(0, hashIndex);
-            //                // Skip JDK classes and known framework classes
-            //                if (!className.startsWith("java.")
-            //                        && !className.startsWith("sun.")
-            //                        && !className.startsWith("jdk.")
-            //                        && !className.startsWith("org.junit.")
-            //                        && !className.startsWith("junit.")
-            //                        && !className.startsWith("org.apache.maven.surefire.")
-            //                        && !className.startsWith("org.apache.maven.shadefire.")) {
-            //                    return className;
-            //                }
-            //            }
-
             int hashIndex = entry.indexOf('#');
             if (hashIndex > 0) {
                 String className = entry.substring(0, hashIndex);
