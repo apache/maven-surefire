@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.api.provider;
 
 /**
- * A provider base class that all providers should extend to shield themselves from interface changes
+ * A provider base class that all providers should extend to shield themselves from interface changes.
  *
  * @author Kristian Rosenvold
  */
