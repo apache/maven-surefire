@@ -18,20 +18,20 @@
  */
 package org.apache.maven.plugin.surefire.booterclient.output;
 
-import javax.annotation.Nonnull;
+import static java.lang.Thread.currentThread;
+import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
-
+import javax.annotation.Nonnull;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
-
-import static java.lang.Thread.currentThread;
-import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
+import org.slf4j.MDC;
 
 /**
  * Knows how to reconstruct *all* the state transmitted over Channel by the forked process.
@@ -57,9 +57,11 @@ public final class ThreadedStreamConsumer implements EventHandler<Event>, Closea
         private final EventHandler<Event> target;
 
         private final MultipleFailureException errors = new MultipleFailureException();
+        private final Map<String, String> parentThreadsMdcContextMap;
 
-        Pumper(EventHandler<Event> target) {
+        Pumper(EventHandler<Event> target, Map<String, String> mdcContextMap) {
             this.target = target;
+            this.parentThreadsMdcContextMap = mdcContextMap;
         }
 
         /**
@@ -75,6 +77,10 @@ public final class ThreadedStreamConsumer implements EventHandler<Event>, Closea
          */
         @Override
         public void run() {
+            // copy mdc context map from parent thread so that mvn
+            // tools that build in parallel can use it in there logging
+            // to make clear what module is producing the logs
+            MDC.setContextMap(parentThreadsMdcContextMap);
             while (!stop.get() || !synchronizer.isEmptyQueue()) {
                 try {
                     Event item = synchronizer.awaitNext();
@@ -104,7 +110,7 @@ public final class ThreadedStreamConsumer implements EventHandler<Event>, Closea
     }
 
     public ThreadedStreamConsumer(EventHandler<Event> target) {
-        pumper = new Pumper(target);
+        pumper = new Pumper(target, MDC.getCopyOfContextMap());
         Thread consumer = newDaemonThread(pumper, "ThreadedStreamConsumer");
         consumer.setUncaughtExceptionHandler((t, e) -> isAlive.set(false));
         consumer.start();
