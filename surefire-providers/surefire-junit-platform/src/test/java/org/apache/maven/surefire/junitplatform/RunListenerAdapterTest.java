@@ -30,7 +30,6 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -395,7 +394,7 @@ public class RunListenerAdapterTest {
         TestSkippedException t = new TestSkippedException("skipped");
         adapter.executionFinished(newClassIdentifier(), aborted(t));
         String source = MyTestClass.class.getName();
-        StackTraceWriter stw = new PojoStackTraceWriter(source, null, t);
+        StackTraceWriter stw = new DefaultStackTraceWriter(source, null, t);
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass(SimpleReportEntry.class);
         verify(listener).testSetCompleted(report.capture());
         assertThat(report.getValue().getSourceName()).isEqualTo(source);
