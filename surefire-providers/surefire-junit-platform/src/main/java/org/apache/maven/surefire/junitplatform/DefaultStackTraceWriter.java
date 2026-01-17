@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.report;
+package org.apache.maven.surefire.junitplatform;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -25,20 +25,21 @@ import java.util.Objects;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.util.internal.StringUtils;
+import org.apache.maven.surefire.report.SmartStackTraceParser;
 
 /**
  * Write the trace out for a POJO test.
  *
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
-public class PojoStackTraceWriter implements StackTraceWriter {
+public class DefaultStackTraceWriter implements StackTraceWriter {
     private final Throwable t;
 
     private final String testClass;
 
     private final String testMethod;
 
-    public PojoStackTraceWriter(String testClass, String testMethod, Throwable t) {
+    public DefaultStackTraceWriter(String testClass, String testMethod, Throwable t) {
         this.testClass = testClass;
         this.testMethod = testMethod;
         this.t = t;
@@ -103,7 +104,7 @@ public class PojoStackTraceWriter implements StackTraceWriter {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        PojoStackTraceWriter that = (PojoStackTraceWriter) o;
+        DefaultStackTraceWriter that = (DefaultStackTraceWriter) o;
         return Objects.equals(t, that.t)
                 && Objects.equals(testClass, that.testClass)
                 && Objects.equals(testMethod, that.testMethod);

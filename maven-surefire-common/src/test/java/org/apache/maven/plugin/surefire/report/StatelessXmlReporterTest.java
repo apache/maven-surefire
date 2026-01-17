@@ -147,11 +147,11 @@ public class StatelessXmlReporterTest extends TestCase {
             stdOutPrefix = "st]]>d-out";
         }
 
-        stdOut.write(stdOutPrefix + "<null>!\u0020\u0000\u001F", false);
+        stdOut.write(stdOutPrefix + "<null>!\u0020\u0000\u001F", false, null);
 
         Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream("fds");
 
-        stdErr.write(stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false);
+        stdErr.write(stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false, null);
         WrappedReportEntry t2 = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_TWO, null, stackTraceWriter, 13),
                 ReportEntryType.ERROR,
@@ -416,7 +416,7 @@ public class StatelessXmlReporterTest extends TestCase {
     public void testNoWritesOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         out.free();
-        out.write("a", false);
+        out.write("a", false, null);
         assertThat((boolean) getInternalState(out, "isDirty")).isFalse();
     }
 
@@ -443,11 +443,11 @@ public class StatelessXmlReporterTest extends TestCase {
     public void testWritesOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         for (int i = 0; i < 33_000; i++) {
-            out.write("A", false);
-            out.write("B", true);
+            out.write("A", false, null);
+            out.write("B", true, null);
         }
-        out.write(null, false);
-        out.write(null, true);
+        out.write(null, false, null);
+        out.write(null, true, null);
 
         assertThat(out.getByteCount()).isEqualTo(33_000 * (1 + 1 + NL.length()) + 4 + 4 + NL.length());
 
@@ -552,7 +552,7 @@ public class StatelessXmlReporterTest extends TestCase {
 
     private Utf8RecodingDeferredFileOutputStream createStdOutput(String content) throws IOException {
         Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream("fds2");
-        stdOut.write(content, false);
+        stdOut.write(content, false, null);
         return stdOut;
     }
 }
