@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:eolivelli@apache.org">Enrico Olivelli</a>
  */
-public class Surefire1602IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1602IT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void nonCanonicalPath() throws VerificationException {
         SurefireLauncher launcher = unpack("/surefire-1602");

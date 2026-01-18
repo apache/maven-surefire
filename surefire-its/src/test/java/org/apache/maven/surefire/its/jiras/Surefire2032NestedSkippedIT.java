@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import javax.xml.transform.Source;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableWithSize;
@@ -36,7 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * Integration Test for SUREFIRE-2032
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire2032NestedSkippedIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire2032NestedSkippedIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testXmlReport() {
         OutputValidator validator =

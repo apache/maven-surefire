@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,12 +26,16 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire697NiceSummaryIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire697NiceSummaryIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testBuildFailingWhenErrors() {
         unpack("/surefire-697-niceSummary")
-                .failNever()
+                .maven()
+                .withFailure()
                 .executeTest()
-                .verifyTextInLog("junit.surefire697.BasicTest#testShortMultiline RuntimeException A very short m");
+                .verifyTextInLog("junit.surefire697.BasicTest.testShortMultiline")
+                // testing multiline log would be more accurate but this approach avoids line ending issues
+                .verifyTextInLog("java.lang.RuntimeException:")
+                .verifyTextInLog("A very short m");
     }
 }

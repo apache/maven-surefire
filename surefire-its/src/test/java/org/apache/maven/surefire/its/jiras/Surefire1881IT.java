@@ -18,14 +18,14 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1881IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1881IT extends SurefireJUnitIntegrationTestCase {
 
     @Test(timeout = 60_000L)
     public void test() {

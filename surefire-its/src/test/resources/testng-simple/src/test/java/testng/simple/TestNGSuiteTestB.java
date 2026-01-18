@@ -6,8 +6,8 @@ import org.testng.annotations.Test;
 public class TestNGSuiteTestB {
 
 	@Test
-	public void doNothing()
+	public void doNothing() throws Exception
 	{
-		
+		Thread.sleep(1000);
 	}
 }

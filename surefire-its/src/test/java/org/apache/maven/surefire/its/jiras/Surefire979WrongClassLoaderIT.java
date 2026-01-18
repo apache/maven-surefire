@@ -19,13 +19,13 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire979WrongClassLoaderIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire979WrongClassLoaderIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void wrongClassloaderUSedInSmartStacktraceparser() {
         OutputValidator outputValidator = unpack("surefire-979-smartStackTrace-wrongClassloader")

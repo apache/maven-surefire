@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:stephenc@apache.org">Stephen Connolly</a>
  */
-public class WorkingDirectoryMissingIT extends SurefireJUnit4IntegrationTestCase {
+public class WorkingDirectoryMissingIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testWorkingDirectory() {
         unpack("working-directory-missing").executeTest().verifyErrorFreeLog();

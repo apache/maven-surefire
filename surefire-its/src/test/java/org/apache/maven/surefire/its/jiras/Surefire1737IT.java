@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import java.io.File;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Integration Tests for SUREFIRE-1737
  */
-public class Surefire1737IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1737IT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void selectJUnit5UsingConfiguredProviderWithPlatformRunner() {
         SurefireLauncher launcher = unpack("surefire-1737");

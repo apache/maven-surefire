@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.anyOf;
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertThat;
  *
  * @author Kristian Rosenvold
  */
-public class JUnit47ConcurrencyIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47ConcurrencyIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void test47() throws Exception {
         OutputValidator validator = unpack("junit47-concurrency").executeTest().verifyErrorFree(4);

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -36,7 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 @RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
-public class JUnitPlatformIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnitPlatformIT extends SurefireJUnitIntegrationTestCase {
     @Parameter
     @SuppressWarnings("checkstyle:visibilitymodifier")
     public String junit5Version;

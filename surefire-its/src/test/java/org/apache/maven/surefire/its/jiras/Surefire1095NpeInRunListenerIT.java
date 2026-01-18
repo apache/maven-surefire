@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -44,41 +44,16 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1095}"/>
  * @since 2.18
  */
-public final class Surefire1095NpeInRunListenerIT extends SurefireJUnit4IntegrationTestCase {
-
-    /**
-     * Method Request.classes( String, Class[] ); exists in JUnit 4.0 - 4.4
-     * See JUnit4Reflector.
-     */
-    @Test
-    public void testRunStartedWithJUnit40() {
-        unpack().setJUnitVersion("4.0")
-                .executeTest()
-                .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.0")
-                .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
-    }
-
-    /**
-     * Method Request.classes( Class[] ); Since of JUnit 4.5
-     * See JUnit4Reflector.
-     */
-    @Test
-    public void testRunStartedWithJUnit45() {
-        unpack().setJUnitVersion("4.5")
-                .executeTest()
-                .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.5")
-                .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
-    }
+public final class Surefire1095NpeInRunListenerIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
-    public void testRunStartedWithJUnit47() {
-        unpack().setJUnitVersion("4.7")
+    public void testRunStartedWithJUnit4() {
+        unpack().setJUnitVersion("4.12")
                 .executeTest()
                 .verifyErrorFree(1)
-                .verifyTextInLog("Running JUnit 4.7")
-                .verifyTextInLog("testRunStarted [jiras.surefire1095.SomeTest]");
+                .verifyTextInLog("Running JUnit 4.12")
+                .verifyTextInLog("testRunStarted jiras.surefire1095.SomeTest")
+                .verifyTextInLog("testRunFinished true");
     }
 
     private SurefireLauncher unpack() {

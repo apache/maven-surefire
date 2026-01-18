@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,12 +26,12 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire705ParallelForkTimeoutIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire705ParallelForkTimeoutIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testTimeoutForked() {
         unpack("/fork-timeout")
-                .setJUnitVersion("4.8.1")
-                .addGoal("-Djunit.version=4.8.1")
+                .setJUnitVersion("4.12")
+                .addGoal("-Djunit.version=4.12")
                 .addGoal("-Djunit.parallel=classes")
                 .addGoal("-DtimeOut=1")
                 .maven()

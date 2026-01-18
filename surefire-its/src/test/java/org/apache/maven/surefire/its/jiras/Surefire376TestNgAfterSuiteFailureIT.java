@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,13 +26,12 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class Surefire376TestNgAfterSuiteFailureIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire376TestNgAfterSuiteFailureIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testAfterSuiteFailure() {
         unpack("/testng-afterSuiteFailure")
                 .maven()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .withFailure()
                 .executeTest()
                 .assertTestSuiteResults(2, 0, 1, 0);

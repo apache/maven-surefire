@@ -956,7 +956,8 @@ public class ForkedProcessEventNotifierTest {
             this.newLine = newLine;
         }
 
-        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId) {
+        @Override
+        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId, String stack) {
             called.set(true);
 
             assertThat(runMode).isEqualTo(this.runMode);

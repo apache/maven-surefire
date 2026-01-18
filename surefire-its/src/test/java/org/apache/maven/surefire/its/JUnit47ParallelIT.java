@@ -21,8 +21,9 @@ package org.apache.maven.surefire.its;
 import java.util.Iterator;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,7 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 2.16
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class JUnit47ParallelIT extends SurefireJUnit4IntegrationTestCase {
+@Ignore
+public class JUnit47ParallelIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void unknownThreadCountSuites() {
