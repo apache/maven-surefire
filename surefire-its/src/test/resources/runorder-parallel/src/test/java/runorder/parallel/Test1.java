@@ -57,7 +57,7 @@ public class Test1
     public static void setUpBeforeClass()
         throws Exception
     {
-        System.out.println( Thread.currentThread().getName() + " beforeClass sleep 175 " + System.currentTimeMillis() );
+        System.out.println( Thread.currentThread().getName() + " beforeClass Test1 sleep 175 " + System.currentTimeMillis() );
         Thread.sleep( 175 );
     }
 
@@ -65,7 +65,7 @@ public class Test1
     public static void tearDownAfterClass()
         throws Exception
     {
-        System.out.println( Thread.currentThread().getName() + " afterClass sleep 175 " + System.currentTimeMillis() );
+        System.out.println( Thread.currentThread().getName() + " afterClass Test1 sleep 175 " + System.currentTimeMillis() );
         Thread.sleep( 175 );
     }
 
