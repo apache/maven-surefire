@@ -14,11 +14,13 @@ public class SuiteTest
 
             public int countTestCases()
             {
+                System.out.println( this.getClass().getName() + "#countTestCases" );
                 return 1;
             }
 
             public void run( TestResult result )
             {
+                System.out.println( this.getClass().getName() + "#run" );
                 result.startTest( this );
                 result.endTest( this );
                 
