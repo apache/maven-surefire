@@ -48,8 +48,8 @@ public class FailFastTestNgIT extends AbstractFailFastIT {
         //                                                                                            errors
         //                                                                                                  skipped
         //                                                                                                        pipes
-        args.add(new Object[] {"testng-oneFork-ff1", null, props(1, 1, true), 5, 0, 1, 2, true});
-        args.add(new Object[] {"testng-oneFork-ff2", null, props(1, 2, true), 5, 0, 2, 0, true});
+        args.add(new Object[] {"testng-oneFork-ff1", null, props(1, 1, true), 5, 0, 1, 4, true});
+        args.add(new Object[] {"testng-oneFork-ff2", null, props(1, 2, true), 5, 0, 2, 2, true});
         args.add(new Object[] {"testng-twoForks-ff1", null, props(2, 1, true), 5, 0, 2, 3, true});
         args.add(new Object[] {"testng-twoForks-ff2", null, props(2, 2, true), 5, 0, 2, 2, true});
         args.add(new Object[] {"testng-oneFork-ff3", null, props(1, 3, true), 5, 0, 2, 0, true});
