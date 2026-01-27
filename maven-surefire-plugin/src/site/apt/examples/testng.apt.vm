@@ -33,7 +33,7 @@ Using TestNG
   Starting with Surefire 3.6.0, TestNG tests are executed via the JUnit Platform using
   the TestNG JUnit Platform engine. This provides unified execution and reporting across all test frameworks.
 
-  <<Important:>> TestNG 6.14.3 is the minimum supported version.
+  <<Important>>: TestNG 6.14.3 is the minimum supported version.
 
 * Configuring TestNG
 
