@@ -18,38 +18,82 @@
  */
 package org.apache.maven.surefire.api.report;
 
-import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Util class for stack trace providing from Java 9 this will use StackWalker by reflection.
+ * Utility class for stack trace capture with filtering and truncation to reduce memory consumption.
+ * Filters out framework classes and limits to a maximum number of frames.
+ *
+ * @since 3.6.0
  */
 public class StackTraceProvider {
 
-    private static Object stackWalker;
+    // 15 frames is enough to capture the test class after surefire framework frames
+    // while still providing ~50% memory savings vs unbounded stacks (typically 25-30 frames)
+    private static final int MAX_FRAMES = 15;
 
-    static {
-        try {
-            Class<?> stackWalkerClass =
-                    Thread.currentThread().getContextClassLoader().loadClass("java.lang.StackWalker");
-            Method getInstanceMethod = stackWalkerClass.getMethod("getInstance");
-            stackWalker = getInstanceMethod.invoke(null);
-        } catch (Throwable t) {
-            // ignore
-            //            System.err.println("Unable to load StackWalker, using
-            // Thread.currentThread().getStackTrace()");
+    // Only filter JDK internal classes by default.
+    // Framework classes (junit, surefire, etc.) are NOT filtered by default because:
+    // 1. Test classes might be in framework packages (e.g., during framework's own tests)
+    // 2. The consumer (ConsoleOutputFileReporter) needs to find the test class in the stack
+    // Users can add additional prefixes via configuration if needed.
+    private static final Set<String> DEFAULT_FRAMEWORK_PREFIXES =
+            new HashSet<>(Arrays.asList("java.", "javax.", "sun.", "jdk."));
+
+    private static volatile Set<String> frameworkPrefixes = DEFAULT_FRAMEWORK_PREFIXES;
+
+    /**
+     * Configure framework prefixes to filter from stack traces.
+     * When specified, this REPLACES the default prefixes (does not add to them).
+     * To disable all filtering, pass an empty string.
+     * To use defaults, pass null.
+     *
+     * @param prefixes comma-separated list of package prefixes to filter, or empty to disable filtering
+     */
+    public static void configure(String prefixes) {
+        if (prefixes == null) {
+            // null means use defaults
+            frameworkPrefixes = DEFAULT_FRAMEWORK_PREFIXES;
+        } else if (prefixes.trim().isEmpty()) {
+            // empty string means no filtering
+            frameworkPrefixes = new HashSet<>();
+        } else {
+            // explicit prefixes replace defaults
+            Set<String> customPrefixes = new HashSet<>();
+            for (String prefix : prefixes.split(",")) {
+                String trimmed = prefix.trim();
+                if (!trimmed.isEmpty()) {
+                    customPrefixes.add(trimmed);
+                }
+            }
+            frameworkPrefixes = customPrefixes;
         }
     }
 
     /**
+     * Returns the stack trace as a list of "classname#methodname" strings.
+     * Filters out framework classes and limits to {@value #MAX_FRAMES} frames.
      *
-     * @return the stack trace as a list classname#methodname
+     * @return the filtered and truncated stack trace
      */
     static List<String> getStack() {
         return Arrays.stream(Thread.currentThread().getStackTrace())
-                .map(stackTraceElement -> stackTraceElement.getClassName() + "#" + stackTraceElement.getMethodName())
+                .filter(e -> !isFrameworkClass(e.getClassName()))
+                .limit(MAX_FRAMES)
+                .map(e -> e.getClassName() + "#" + e.getMethodName())
                 .collect(Collectors.toList());
+    }
+
+    private static boolean isFrameworkClass(String className) {
+        for (String prefix : frameworkPrefixes) {
+            if (className.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
