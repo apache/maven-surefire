@@ -26,10 +26,6 @@
     <input>
         <global>
             <glob>{*.java,*.xml,*.properties,*.mod,*.adoc}</glob>
-            <excludes>
-                <exclude>*Jenkinsfile*</exclude>
-                <exclude>./idea/*</exclude>
-            </excludes>
         </global>
         <plugins>
             <plugin groupId="org.apache.maven.plugins" artifactId="maven-surefire-plugin">
