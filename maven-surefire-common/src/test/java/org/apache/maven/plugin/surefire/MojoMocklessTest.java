@@ -57,7 +57,7 @@ public class MojoMocklessTest {
     public void testGetStartupReportConfiguration() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
         StartupReportConfiguration config =
-                invokeMethod(surefirePlugin, "getStartupReportConfiguration", "", false, mock(ProviderInfo.class));
+                invokeMethod(surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class));
 
         assertThat(config.getXmlReporter()).isNotNull().isInstanceOf(SurefireStatelessReporter.class);
 
@@ -77,7 +77,7 @@ public class MojoMocklessTest {
         setInternalState(surefirePlugin, "statelessTestsetInfoReporter", testsetInfoReporter);
 
         StartupReportConfiguration config =
-                invokeMethod(surefirePlugin, "getStartupReportConfiguration", "", false, mock(ProviderInfo.class));
+                invokeMethod(surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class));
 
         assertThat(config.getXmlReporter()).isNotNull().isSameAs(xmlReporter);
 
@@ -544,6 +544,14 @@ public class MojoMocklessTest {
 
         @Override
         public void setRunOrderRandomSeed(Long runOrderRandomSeed) {}
+
+        @Override
+        public String getRunOrderStatisticsFileChecksum() {
+            return "dummyStatistics";
+        }
+
+        @Override
+        public void setRunOrderStatisticsFileChecksum(String runOrderStatisticsFileChecksum) {}
 
         @Override
         public String[] getDependenciesToScan() {
