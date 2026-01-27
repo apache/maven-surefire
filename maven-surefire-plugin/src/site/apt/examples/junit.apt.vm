@@ -59,7 +59,7 @@ Using JUnit
 
   []
 
-  <<<Important:>>> JUnit 4.12 is the minimum supported version. Earlier versions of JUnit 4 and JUnit 3.x
+  <<Important>>: JUnit 4.12 is the minimum supported version. Earlier versions of JUnit 4 and JUnit 3.x
   are no longer supported. If you have JUnit 3 tests, they must be migrated to JUnit 4.12+ to run.
 
 * Provider Selection
@@ -75,7 +75,7 @@ if JUnit < 4.12 is present
     ERROR: JUnit 4.12 or later is required
 +---+
 
-    <<Note:>> If you have JUnit 3 or JUnit 4 (< 4.12) tests, you must upgrade your JUnit dependency to at least 4.12.
+    <<Note>>: If you have JUnit 3 or JUnit 4 (< 4.12) tests, you must upgrade your JUnit dependency to at least 4.12.
     JUnit 4.12+ tests can run unchanged via the Vintage Engine.
 
 ** Manual Engine Configuration
