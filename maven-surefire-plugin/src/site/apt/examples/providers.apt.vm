@@ -28,14 +28,35 @@
 
 Selecting Providers
 
-* Selecting a Provider
+* Unified Provider in Surefire 3.6.0+
 
-  Surefire normally automatically selects which test-framework provider to use based on the version of
-  TestNG/JUnit present in your project's classpath. In some cases it may be desirable to manually
-  override such a selection. This can be done by adding the required provider as a dependency to
-  the surefire-plugin.
+  Since version 3.6.0, Surefire uses a single provider <<<surefire-junit-platform>>> to run all tests:
 
-  The following example shows how to force usage of the JUnit 4.7 provider:
+  * <<JUnit 5 tests>> are executed via the Jupiter Engine
+
+  * <<JUnit 4 tests>> (4.12 or later) are executed via the Vintage Engine
+
+  * <<TestNG tests>> (6.14.3 or later) are executed via the TestNG JUnit Platform Engine
+
+  []
+
+  This unified approach simplifies configuration and provides consistent behavior across all test frameworks.
+  In most cases, no explicit provider configuration is needed - Surefire automatically detects and configures
+  the appropriate engines based on your project's test dependencies.
+
+* Legacy Provider Selection (Surefire < 3.6.0)
+
+  In earlier versions of Surefire, there were multiple providers:
+  <<<surefire-junit3>>>, <<<surefire-junit4>>>, <<<surefire-junit47>>>,
+  <<<surefire-junit-platform>>> and <<<surefire-testng>>>.
+
+  Surefire would automatically select which test-framework provider to use based on the version of
+  TestNG/JUnit present in your project's classpath.
+
+* Manual Engine Configuration
+
+  While explicit provider configuration is rarely needed in Surefire 3.6.0+, you can still add
+  specific JUnit Platform engines as plugin dependencies if needed:
 
 +---+
 <plugins>
@@ -46,9 +67,9 @@ Selecting Providers
     <version>${project.version}</version>
     <dependencies>
       <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-junit47</artifactId>
-        <version>${project.version}</version>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.9.1</version>
       </dependency>
     </dependencies>
   </plugin>
@@ -56,10 +77,5 @@ Selecting Providers
 </plugins>
 +---+
 
-  The providers supplied with Surefire are <<<surefire-junit3>>>, <<<surefire-junit4>>>, <<<surefire-junit47>>>,
-  <<<surefire-junit-platform>>> and <<<surefire-testng>>>.
-  Please note that forcing a provider still requires that the test framework is properly set up on your project classpath.
-
-  You can also specify multiple providers as dependencies, and they will all be run and produce a common report.
-  This may be especially handy with external providers, since there are few use cases for combining the included providers.
+  Please note that forcing an engine still requires that the test framework is properly set up on your project classpath.
 
