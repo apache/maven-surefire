@@ -44,7 +44,7 @@ Selecting Providers
   In most cases, no explicit provider configuration is needed - Surefire automatically detects and configures
   the appropriate engines based on your project's test dependencies.
 
-* Legacy Provider Selection (Surefire < 3.6.0)
+* Legacy Provider Selection (Surefire before 3.6.0)
 
   In earlier versions of Surefire, there were multiple providers:
   <<<surefire-junit3>>>, <<<surefire-junit4>>>, <<<surefire-junit47>>>,
