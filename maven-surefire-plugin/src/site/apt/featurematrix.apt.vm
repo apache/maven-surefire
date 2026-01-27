@@ -52,7 +52,7 @@ Feature Matrix
 
     Legend: "Y" means supported, "N" means not supported. "?" means not tested.
 
-    <<Note:>> JUnit 4 tests run via the JUnit Platform using the Vintage Engine. Features available
+    <<Note>>: JUnit 4 tests run via the JUnit Platform using the Vintage Engine. Features available
     for JUnit 4 depend on Vintage Engine support.
 
    (*1) The JUnit 5 Platform supports running multiple individual test methods in a single class, but there are some
