@@ -110,7 +110,7 @@ Fork Options and Parallel Test Execution
   <"These tests were executed in prior to the shutdown operation">, and
   <"These tests are incomplete"> if the running Threads were <<interrupted>>.
 
-  <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
+  <<Note>>: As designed by JUnit runners, the static methods annotated with e.g.
   <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
   For the sake of memory visibility between threads synchronize the methods.
   See the keywords: <volatile>, <synchronized>, <<immutable>> and <final> in
@@ -173,7 +173,7 @@ Fork Options and Parallel Test Execution
   This way you can isolate conflicting groups of tests and still run their
   individual tests in parallel.
 
-  <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
+  <<Note>>: As designed by JUnit runners, the static methods annotated with e.g.
   <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
   Assign classes to <<<@NotThreadSafe Suite>>> to prevent from this trouble. If you
   do not want to change the hierarchy of your test classes, you may synchronize such
