@@ -28,7 +28,7 @@
 
 Using JUnit 5 Platform
 
-  <<Note:>> Since Surefire 3.6.0, the JUnit Platform is the unified test execution mechanism for all test frameworks.
+  <<Note>>: Since Surefire 3.6.0, the JUnit Platform is the unified test execution mechanism for all test frameworks.
   JUnit 4 tests run via the Vintage Engine, and TestNG tests run via the TestNG JUnit Platform Engine.
 
 * Configuring JUnit Platform
@@ -454,7 +454,7 @@ if TestNG 6.14.3+ is present
     use junit-platform with TestNG engine
 +---+
 
-  <<Note:>> JUnit 4.12 is the minimum supported version. JUnit 3 and earlier JUnit 4 versions are no longer supported.
+  <<Note>>: JUnit 4.12 is the minimum supported version. JUnit 3 and earlier JUnit 4 versions are no longer supported.
   TestNG 6.14.3 is the minimum supported version.
 
 * Running Tests in Parallel
