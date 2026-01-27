@@ -43,11 +43,13 @@ import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.booter.ForkingReporterFactory;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
+import org.apache.maven.surefire.api.report.StackTraceProvider;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
@@ -108,6 +110,12 @@ public final class ForkedBooter {
         setSystemProperties(new File(tmpDir, effectiveSystemPropertiesFileName));
 
         providerConfiguration = booterDeserializer.deserialize();
+
+        // Configure StackTraceProvider with additional filter prefixes
+        String stackTraceFilterPrefixes =
+                providerConfiguration.getProviderProperties().get(ProviderParameterNames.STACK_TRACE_FILTER_PREFIXES);
+        StackTraceProvider.configure(stackTraceFilterPrefixes);
+
         DumpErrorSingleton.getSingleton()
                 .init(providerConfiguration.getReporterConfiguration().getReportsDirectory(), dumpFileName);
 
