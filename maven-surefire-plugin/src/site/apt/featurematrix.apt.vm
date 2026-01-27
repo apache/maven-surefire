@@ -24,43 +24,42 @@
 
 Feature Matrix
 
-    Not all features are supported for all test frameworks, and the following table gives a brief overview
-    of support status:
+    Since Surefire 3.6.0, all tests run via the JUnit Platform. JUnit 4 tests (4.12+) use the Vintage Engine,
+    and TestNG tests (6.14.3+) use the TestNG JUnit Platform Engine.
 
-*---------------------------------------------+-----------+-----------+------------+-----------+----------+----------------------+
-|| <<Feature>>                                ||<<JUnit3>>||<<JUnit4>>||<<JUnit47>>||<<TestNG>>||<<POJO>> ||<<JUnit 5 Platform>> |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| groups/category/tags support                |     N      |    N     |      Y     |    Y      |  N       |  Y                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| security manager support                    |     Y      |    N     |      N     |    N      |  N       |  N                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| runOrder support                            |     Y      |    Y     |      Y     |    ?      |  Y       |  Y                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| run >1 individual test method in a class    |     N      |    Y     |      Y     |    Y      |  N       |  ?(*1)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| parallel support                            |     N      |    N     |      Y     |    Y      |  N       |  N(*2)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| custom run-listener                         |     N      |    Y     |      Y     |    Y      |  -       |  N                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| re-run count                                |     N      |    Y     |      Y     |    N      |  N       |  Y(*3)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| skip after failure count                    |     N      |    Y     |      Y     |    Y      |  N       |  N                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| Surefire Extensions                         |     Y      |    Y     |      Y     |    Y      |  Y       |  Y(*4)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
+    The following table gives a brief overview of feature support:
+
+*---------------------------------------------+-----------+----------+----------------------+
+|| <<Feature>>                                ||<<TestNG>>||<<POJO>> ||<<JUnit Platform>>   |
+*---------------------------------------------+-----------+----------+----------------------+
+| groups/category/tags support                |    Y      |  N       |  Y                   |
+*---------------------------------------------+-----------+----------+----------------------+
+| runOrder support                            |    Y      |  Y       |  Y                   |
+*---------------------------------------------+-----------+----------+----------------------+
+| run >1 individual test method in a class    |    Y      |  N       |  Y(*1)               |
+*---------------------------------------------+-----------+----------+----------------------+
+| parallel support                            |    Y      |  N       |  N(*2)               |
+*---------------------------------------------+-----------+----------+----------------------+
+| custom run-listener                         |    Y      |  -       |  N                   |
+*---------------------------------------------+-----------+----------+----------------------+
+| re-run count                                |    N      |  N       |  Y(*3)               |
+*---------------------------------------------+-----------+----------+----------------------+
+| skip after failure count                    |    Y      |  N       |  N                   |
+*---------------------------------------------+-----------+----------+----------------------+
+| Surefire Extensions                         |    Y      |  Y       |  Y(*4)               |
+*---------------------------------------------+-----------+----------+----------------------+
 
 
     Legend: "Y" means supported, "N" means not supported. "?" means not tested.
 
-    If you would like to implement support for
-    a given provider with an "N" or a "?" (or create tests for it), you should create a patch and mark the issue as an
-    improvement. If there is something wrong with an implementation marked with "Y" that is considered a bug.
+    <<Note:>> JUnit 4 tests run via the JUnit Platform using the Vintage Engine. Features available
+    for JUnit 4 depend on Vintage Engine support.
 
    (*1) The JUnit 5 Platform supports running multiple individual test methods in a single class, but there are some
    corner cases that are not supported, yet: {{{https://github.com/junit-team/junit5/issues/1343}junit-team/junit5#1343}}
    and {{{https://github.com/junit-team/junit5/issues/1406}junit-team/junit5#1406)}}.
 
-   (*2) The test are executed in parallel but the report supports only a sequence of test events, see the issue
+   (*2) The tests are executed in parallel but the report supports only a sequence of test events, see the issue
    {{{https://issues.apache.org/jira/browse/SUREFIRE-1795}SUREFIRE-1795}}.
 
    (*3) Since 3.0.0-M4

@@ -28,9 +28,16 @@
 
 Using TestNG
 
+* TestNG via JUnit Platform (Since 3.6.0)
+
+  Starting with Surefire 3.6.0, TestNG tests are executed via the JUnit Platform using
+  the TestNG JUnit Platform engine. This provides unified execution and reporting across all test frameworks.
+
+  <<Important:>> TestNG 6.14.3 is the minimum supported version.
+
 * Configuring TestNG
 
-  To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
+  To get started with TestNG, include the following dependency in your project:
 
 +---+
 <dependencies>
@@ -38,7 +45,7 @@ Using TestNG
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.9.8</version>
+      <version>6.14.3</version>
       <scope>test</scope>
     </dependency>
   [...]
@@ -296,8 +303,8 @@ Using TestNG
 
 * Running TestNG and JUnit Tests
 
-  To run TestNG and JUnit 4.x in the current Maven project, you need
-  both TestNG and JUnit dependencies in the POM:
+  Since Surefire 3.6.0, both TestNG and JUnit tests run via the JUnit Platform, making it easy to have
+  both frameworks in the same project:
 
 +---+
 <dependencies>
@@ -305,7 +312,7 @@ Using TestNG
   <dependency>
     <groupId>org.testng</groupId>
     <artifactId>testng</artifactId>
-    <version>6.9.4</version>
+    <version>6.14.3</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -318,42 +325,7 @@ Using TestNG
 </dependencies>
 +---+
 
-  You may want to run two providers, e.g. <<<surefire-junit47>>> and <<<surefire-testng>>>, and avoid running JUnit
-  tests within <<<surefire-testng>>> provider by setting property <<<junit=false>>> (note that this property is not applicable if you configure the <<<suiteXmlFiles>>> parameter).
-
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          [...]
-          <properties>
-            <property>
-              <name>junit</name>
-              <value>false</value>
-            </property>
-          </properties>
-          <threadCount>1</threadCount>
-          [...]
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-junit47</artifactId>
-            <version>${project.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-testng</artifactId>
-            <version>${project.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-    [...]
-</plugins>
-+---+
+  With both dependencies present, Surefire will automatically run both TestNG and JUnit 4 tests using
+  their respective JUnit Platform engines.
 
 

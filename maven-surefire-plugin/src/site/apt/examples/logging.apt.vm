@@ -54,3 +54,38 @@ Configuring TestNG with: TestNGMapConfigurator
 +---+
 
 
+* Stack Trace Filtering (Since 3.6.0)
+
+  When capturing console output from tests, Surefire stores stack traces to associate output with the correct test class.
+  To reduce memory consumption, stack traces are truncated to 15 frames and JDK classes (<<<java.>>>, <<<javax.>>>,
+  <<<sun.>>>, <<<jdk.>>>) are filtered by default. This provides approximately 50% memory savings for console output capture.
+
+  You can customize the filtering with the <<<stackTraceFilterPrefixes>>> parameter:
+
++---+
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <stackTraceFilterPrefixes>
+            <prefix>org.springframework.</prefix>
+            <prefix>org.junit.</prefix>
+          </stackTraceFilterPrefixes>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
++---+
+
+  When specified, this <<replaces>> the default filters (does not add to them).
+
+  To disable all filtering, use an empty value via command line:
+
++---+
+mvn test -Dsurefire.stackTraceFilterPrefixes=""
++---+
+
+
