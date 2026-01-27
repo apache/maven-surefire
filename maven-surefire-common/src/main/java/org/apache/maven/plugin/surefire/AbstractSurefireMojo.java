@@ -386,6 +386,26 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private Properties properties;
 
     /**
+     * Package prefixes to filter from stack traces when capturing test output.
+     * When specified, this REPLACES the default prefixes (java., javax., sun., jdk.).
+     * <br>
+     * <ul>
+     *   <li>Not specified: uses defaults (java., javax., sun., jdk.)</li>
+     *   <li>Custom list: only those prefixes are filtered (replaces defaults)</li>
+     * </ul>
+     * <br>
+     * Example - filter only specific packages:
+     * <pre><code>{@literal <stackTraceFilterPrefixes>}
+     *     {@literal <prefix>org.springframework.</prefix>}
+     *     {@literal <prefix>org.junit.</prefix>}
+     * {@literal </stackTraceFilterPrefixes>}</code></pre>
+     *
+     * @since 3.6.0
+     */
+    @Parameter(property = "surefire.stackTraceFilterPrefixes")
+    private List<String> stackTraceFilterPrefixes;
+
+    /**
      * Map of plugin artifacts.
      */
     @Parameter(property = "plugin.artifactMap", required = true, readonly = true)
@@ -1768,6 +1788,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         DirectoryScannerParameters directoryScannerParameters = new DirectoryScannerParameters(
                 getTestClassesDirectory(), actualIncludes, actualExcludes, specificTests, getRunOrder());
+
+        // Configure stack trace filtering:
+        // - null or empty list: don't set property, use defaults (java., javax., sun., jdk.)
+        // - non-empty list: set to comma-separated values, replaces defaults
+        // Note: Maven initializes unspecified list parameters as empty lists, not null
+        if (stackTraceFilterPrefixes != null && !stackTraceFilterPrefixes.isEmpty()) {
+            getProperties()
+                    .setProperty(
+                            ProviderParameterNames.STACK_TRACE_FILTER_PREFIXES,
+                            String.join(",", stackTraceFilterPrefixes));
+        }
 
         Map<String, String> providerProperties = toStringProperties(getProperties());
 

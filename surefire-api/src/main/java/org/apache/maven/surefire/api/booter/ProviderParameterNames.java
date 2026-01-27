@@ -53,4 +53,10 @@ public class ProviderParameterNames {
     public static final String INCLUDES_SCAN_LIST = "junit.includes.scan.list";
 
     public static final String EXCLUDES_SCAN_LIST = "junit.excludes.scan.list";
+
+    /**
+     * Additional package prefixes to filter from stack traces.
+     * @since 3.6.0
+     */
+    public static final String STACK_TRACE_FILTER_PREFIXES = "stackTraceFilterPrefixes";
 }
