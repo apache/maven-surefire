@@ -39,7 +39,7 @@ public class CommandlineTest {
         cli = new Commandline(excluded);
         env = cli.getEnvironmentVariables();
 
-        assertThat(env).doesNotHaveDuplicates().allMatch(s -> s != null && !s.startsWith("JAVA_HOME"));
+        assertThat(env).doesNotHaveDuplicates().allMatch(s -> s != null && !s.startsWith("JAVA_HOME="));
     }
 
     @Test
