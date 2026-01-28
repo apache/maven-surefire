@@ -348,6 +348,15 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     private Long runOrderRandomSeed;
 
     /**
+     * Used to override the checksum in the name of the statistics file
+     * when {@code surefire.runOrder} is set to "balanced".
+     *
+     * @since 3.5.5
+     */
+    @Parameter(property = "surefire.runOrder.statisticsFile.checksum")
+    private String runOrderStatisticsFileChecksum;
+
+    /**
      * A file containing include patterns. Blank lines, or lines starting with # are ignored. If {@code includes} are
      * also specified, these patterns are appended. Example with path, simple and regex includes:
      * <pre><code>
@@ -849,6 +858,16 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     @Override
     public void setRunOrderRandomSeed(Long runOrderRandomSeed) {
         this.runOrderRandomSeed = runOrderRandomSeed;
+    }
+
+    @Override
+    public String getRunOrderStatisticsFileChecksum() {
+        return runOrderStatisticsFileChecksum;
+    }
+
+    @Override
+    public void setRunOrderStatisticsFileChecksum(String runOrderStatisticsFileChecksum) {
+        this.runOrderStatisticsFileChecksum = runOrderStatisticsFileChecksum;
     }
 
     @Override

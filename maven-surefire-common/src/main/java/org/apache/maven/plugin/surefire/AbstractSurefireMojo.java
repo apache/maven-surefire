@@ -898,6 +898,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     public abstract void setRunOrderRandomSeed(Long runOrderRandomSeed);
 
+    public abstract String getRunOrderStatisticsFileChecksum();
+
+    public abstract void setRunOrderStatisticsFileChecksum(String runOrderStatisticsFileChecksum);
+
     protected abstract void handleSummary(RunResult summary, Exception firstForkException)
             throws MojoExecutionException, MojoFailureException;
 
@@ -1296,7 +1300,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         ClassLoaderConfiguration classLoaderConfiguration = getClassLoaderConfiguration();
         provider.addProviderProperties();
         RunOrderParameters runOrderParameters =
-                new RunOrderParameters(getRunOrder(), getStatisticsFile(getConfigChecksum()), getRunOrderRandomSeed());
+                new RunOrderParameters(getRunOrder(), getStatisticsFile(), getRunOrderRandomSeed());
 
         if (isNotForking()) {
             Properties originalSystemProperties =
@@ -1824,8 +1828,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return h;
     }
 
-    private File getStatisticsFile(String configurationHash) {
-        return new File(getBasedir(), ".surefire-" + configurationHash);
+    private File getStatisticsFile() {
+        String checksum = getRunOrderStatisticsFileChecksum();
+        if (checksum == null || checksum.isEmpty()) {
+            checksum = getConfigChecksum();
+        }
+        return new File(getBasedir(), ".surefire-" + checksum);
     }
 
     private StartupConfiguration createStartupConfiguration(
@@ -2063,8 +2071,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return getPluginArtifactMap().get("org.apache.maven.surefire:surefire-shadefire");
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration(
-            String configChecksum, boolean isForking, ProviderInfo providerInfo) {
+    private StartupReportConfiguration getStartupReportConfiguration(boolean isForking, ProviderInfo providerInfo) {
         SurefireStatelessReporter xmlReporter =
                 statelessTestsetReporter == null ? new SurefireStatelessReporter() : statelessTestsetReporter;
 
@@ -2092,7 +2099,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 getReportsDirectory(),
                 isTrimStackTrace(),
                 getReportNameSuffix(),
-                getStatisticsFile(configChecksum),
+                getStatisticsFile(),
                 requiresRunHistory(),
                 getRerunFailingTestsCount(),
                 getReportSchemaLocation(),
@@ -2330,9 +2337,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 testClasspathWrapper,
                 platform,
                 resolvedJavaModularityResult);
-        String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration =
-                getStartupReportConfiguration(configChecksum, true, provider);
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(true, provider);
 
         ProviderConfiguration providerConfiguration = createProviderConfiguration(runOrderParameters);
         return new ForkStarter(
@@ -2360,9 +2365,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 testClasspathWrapper,
                 platform,
                 new ResolvePathResultWrapper(null, true));
-        String configChecksum = getConfigChecksum();
-        StartupReportConfiguration startupReportConfiguration =
-                getStartupReportConfiguration(configChecksum, false, provider);
+        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(false, provider);
         ProviderConfiguration providerConfiguration = createProviderConfiguration(runOrderParameters);
         return new InPluginVMSurefireStarter(
                 startupConfiguration, providerConfiguration, startupReportConfiguration, getConsoleLogger(), platform);

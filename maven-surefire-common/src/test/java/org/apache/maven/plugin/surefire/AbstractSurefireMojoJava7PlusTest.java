@@ -787,6 +787,14 @@ public class AbstractSurefireMojoJava7PlusTest {
         public void setRunOrderRandomSeed(Long runOrderRandomSeed) {}
 
         @Override
+        public String getRunOrderStatisticsFileChecksum() {
+            return null;
+        }
+
+        @Override
+        public void setRunOrderStatisticsFileChecksum(String runOrderStatisticsFileChecksum) {}
+
+        @Override
         protected void handleSummary(RunResult summary, Exception firstForkException) {}
 
         @Override
