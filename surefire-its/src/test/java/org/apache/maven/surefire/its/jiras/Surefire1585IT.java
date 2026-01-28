@@ -18,14 +18,14 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class Surefire1585IT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1585IT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void shouldRunWithJupiterApi() {
         unpack("surefire-1585-jupiter-api").debugLogging().executeTest().verifyErrorFree(1);

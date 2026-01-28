@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import java.util.ArrayList;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +41,7 @@ import static org.hamcrest.Matchers.equalTo;
  */
 @RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
-public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase {
+public class JUnit47RerunFailingTestWithCucumberIT extends SurefireJUnitIntegrationTestCase {
     private static final String LEGACY_FORK_NODE = "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
 
     private static final String SUREFIRE_FORK_NODE =

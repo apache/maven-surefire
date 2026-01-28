@@ -23,14 +23,14 @@ import java.io.FileNotFoundException;
 import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
  *
  */
-public class Surefire943ReportContentIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire943ReportContentIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     @SuppressWarnings("checkstyle:methodname")
@@ -52,7 +52,7 @@ public class Surefire943ReportContentIT extends SurefireJUnit4IntegrationTestCas
                 .withFailure()
                 .executeTest();
 
-        validator.assertTestSuiteResults(10, 1, 3, 3);
+        validator.assertTestSuiteResults(11, 1, 3, 4);
 
         validate(validator, "org.sample.module.My1Test", 1);
         validate(validator, "org.sample.module.My2Test", 1);
@@ -88,12 +88,13 @@ public class Surefire943ReportContentIT extends SurefireJUnit4IntegrationTestCas
     private void validateSkipped(OutputValidator validator, String className) throws FileNotFoundException {
         Xpp3Dom[] children = readTests(validator, className);
 
-        Assert.assertEquals(1, children.length);
+        Assert.assertEquals(2, children.length);
 
         Xpp3Dom child = children[0];
 
         Assert.assertEquals(className, child.getAttribute("classname"));
-        Assert.assertEquals("", child.getAttribute("name"));
+        Assert.assertEquals("alsoIgnored", child.getAttribute("name"));
+        Assert.assertEquals(1, child.getChildren("skipped").length);
 
         Assert.assertEquals(
                 "Expected skipped tag for ignored method for " + className, 1, child.getChildren("skipped").length);

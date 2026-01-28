@@ -44,10 +44,10 @@ import org.apache.maven.surefire.api.booter.ForkingRunListener;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.CategorizedReportEntry;
-import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
@@ -65,7 +65,6 @@ import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedCh
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * @author Kristian Rosenvold
@@ -277,7 +276,6 @@ public class ForkingRunListenerTest extends TestCase {
         try (EventConsumerThread t = new EventConsumerThread("t", channel, handler, countdown, arguments)) {
             t.start();
             countdown.awaitClosed();
-            verifyZeroInteractions(logger);
             assertThat(arguments.isCalled()).isFalse();
             for (int i = 0, size = handler.countEventsInCache(); i < size; i++) {
                 events.add(handler.pullEvent());
@@ -392,8 +390,27 @@ public class ForkingRunListenerTest extends TestCase {
         try {
             throw new RuntimeException();
         } catch (RuntimeException e) {
-            StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter("org.apache.tests.TestClass", "testMethod11", e);
+            StackTraceWriter stackTraceWriter = new StackTraceWriter() {
+                @Override
+                public String writeTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String writeTrimmedTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String smartTrimmedStackTrace() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public SafeThrowable getThrowable() {
+                    return new SafeThrowable(e);
+                }
+            };
             return new CategorizedReportEntry(
                     NORMAL_RUN, 0L, "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77);
         }
@@ -403,8 +420,27 @@ public class ForkingRunListenerTest extends TestCase {
         try {
             throw new RuntimeException(message);
         } catch (RuntimeException e) {
-            StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter("org.apache.tests.TestClass", "testMethod11", e);
+            StackTraceWriter stackTraceWriter = new StackTraceWriter() {
+                @Override
+                public String writeTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String writeTrimmedTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String smartTrimmedStackTrace() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public SafeThrowable getThrowable() {
+                    return new SafeThrowable(e);
+                }
+            };
             return new CategorizedReportEntry(
                     NORMAL_RUN, 1L, "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77);
         }

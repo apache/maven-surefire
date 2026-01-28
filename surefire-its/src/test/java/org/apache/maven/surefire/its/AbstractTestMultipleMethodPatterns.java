@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.Settings;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLU
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
-import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT47;
+import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT4;
 import static org.apache.maven.surefire.its.fixture.TestFramework.TestNG;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
@@ -37,7 +37,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Test project using multiple method patterns, including wildcards in class and method names.
  */
-public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4IntegrationTestCase {
+public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnitIntegrationTestCase {
     private static final String CSV_DELIMITER_SHORT = ",";
     private static final String CSV_DELIMITER_LONG = ", ";
     private static final String NOT_DELIMITER = "!";
@@ -102,7 +102,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void simpleNameTestAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT4), is(TestNG)));
         prepare("TestTwo")
                 .parallel("classes")
                 .useUnlimitedThreads()
@@ -326,7 +326,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT4), is(TestNG)));
         assumeThat(getSettings().getConfiguration(), is(TEST));
         String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2
@@ -356,7 +356,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsComplexAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT4), is(TestNG)));
         assumeThat(getSettings().getConfiguration(), is(TEST));
         String test = "**/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2

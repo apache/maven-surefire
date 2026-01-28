@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class Surefire500PuzzlingErrorIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire500PuzzlingErrorIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testBuildFailingWhenErrors() {
         OutputValidator outputValidator =

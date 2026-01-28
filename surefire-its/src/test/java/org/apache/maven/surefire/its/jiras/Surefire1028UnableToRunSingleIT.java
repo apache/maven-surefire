@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1028">SUREFIRE-1028</a>
  * @since 2.18
  */
-public class Surefire1028UnableToRunSingleIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1028UnableToRunSingleIT extends SurefireJUnitIntegrationTestCase {
 
     @Test
     public void methodFilteringParallelExecution() {

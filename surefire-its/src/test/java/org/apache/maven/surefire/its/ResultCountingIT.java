@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class ResultCountingIT extends SurefireJUnit4IntegrationTestCase {
+public class ResultCountingIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void testCountingWithJunit481ForkNever() {
         assertForkCount(0, true);

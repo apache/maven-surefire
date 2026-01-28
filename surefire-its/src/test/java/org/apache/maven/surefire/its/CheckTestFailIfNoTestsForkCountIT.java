@@ -18,8 +18,9 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 /**
@@ -28,7 +29,7 @@ import org.junit.Test;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void failIfNoTestsForkAlways() {
         unpack().forkAlways().failIfNoTests(true).maven().withFailure().executeTest();
@@ -46,17 +47,35 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4Integration
 
     @Test
     public void dontFailIfNoTestsForkAlways() {
-        doTest(unpack().forkAlways().failIfNoTests(false));
+        Assertions.assertThat(unpack().forkAlways()
+                        .failIfNoTests(false)
+                        .executeTest()
+                        .verifyErrorFreeLog()
+                        .getSurefireReportsDirectory()
+                        .listFiles())
+                .isNull();
     }
 
     @Test
     public void dontFailIfNoTestsForkNever() {
-        doTest(unpack().forkNever().failIfNoTests(false));
+        Assertions.assertThat(unpack().forkNever()
+                        .failIfNoTests(false)
+                        .executeTest()
+                        .verifyErrorFreeLog()
+                        .getSurefireReportsDirectory()
+                        .listFiles())
+                .isNull();
     }
 
     @Test
     public void dontFailIfNoTestsForkOnce() {
-        doTest(unpack().forkOnce().failIfNoTests(false));
+        Assertions.assertThat(unpack().forkOnce()
+                        .failIfNoTests(false)
+                        .executeTest()
+                        .verifyErrorFreeLog()
+                        .getSurefireReportsDirectory()
+                        .listFiles())
+                .isEmpty();
     }
 
     private void doTest(SurefireLauncher launcher) {

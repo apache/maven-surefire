@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -37,7 +37,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1080">SUREFIRE-1080</a>
  * @since 2.18
  */
-public class Surefire1080ParallelForkDoubleTestIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1080ParallelForkDoubleTestIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void test() {
         unpack().executeTest().assertTestSuiteResults(9);

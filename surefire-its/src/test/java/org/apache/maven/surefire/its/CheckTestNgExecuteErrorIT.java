@@ -19,10 +19,9 @@
 package org.apache.maven.surefire.its;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.junit.Test;
 
 import static java.util.Objects.requireNonNull;
@@ -35,31 +34,25 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class CheckTestNgExecuteErrorIT extends SurefireJUnit4IntegrationTestCase {
+public class CheckTestNgExecuteErrorIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void executionError() {
         OutputValidator outputValidator = unpack("/testng-execute-error")
                 .maven()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .showErrorStackTraces()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("Cyclic graph of methods")
-                .verifyTextInLog("at org.apache.maven.surefire.testng.TestNGExecutor.run");
+                .verifyTextInLog("methods have cyclic dependencies")
+                .verifyTextInLog("TestEngine with ID 'testng' failed to discover tests");
 
         File reportDir = outputValidator.getSurefireReportsDirectory();
-        String[] dumpFiles = reportDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith("-jvmRun1.dump");
-            }
-        });
+        String[] dumpFiles = reportDir.list((dir, name) -> name.endsWith("-jvmRun1.dump"));
 
         assertThat(dumpFiles).isNotNull().isNotEmpty();
 
         for (String dump : requireNonNull(dumpFiles)) {
-            outputValidator.getSurefireReportsFile(dump).assertContainsText("Cyclic graph of methods");
+            outputValidator.getSurefireReportsFile(dump).assertContainsText("methods have cyclic dependencies");
         }
     }
 }

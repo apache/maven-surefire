@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -40,7 +40,7 @@ import static org.hamcrest.Matchers.is;
  *
  * Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
  */
-public class Surefire1185DoNotSpawnTestsIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1185DoNotSpawnTestsIT extends SurefireJUnitIntegrationTestCase {
     @Test
     public void doNotSpawnUnwantedTests() throws VerificationException {
         unpack().setTestToRun("RunningTest#test")
