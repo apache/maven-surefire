@@ -49,7 +49,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             final String stageKey = "${os}-jdk${jdk}-maven${maven}"
 
             def mavenOpts = '-Xms64m -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
-            mavenOpts += (os == 'linux' ? ' -Xmx2g' : ' -Xmx512m')
+            mavenOpts += (os == 'linux' ? ' -Xmx8g' : ' -Xmx6g')
 
             if (label == null || jdkName == null || mvnName == null) {
                 println "Skipping ${stageKey} as unsupported by Jenkins Environment."
