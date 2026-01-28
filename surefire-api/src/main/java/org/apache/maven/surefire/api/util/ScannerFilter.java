@@ -23,10 +23,10 @@ package org.apache.maven.surefire.api.util;
  */
 public interface ScannerFilter {
     /**
-     * Indicates if the class should be accepted by the directory scanner
+     * Indicates if the class should be accepted by the directory scanner.
      *
-     * @param testClass The class in question
-     * @return true if the class should be part of the directory scan result.
+     * @param testClass the class in question
+     * @return true if the class should be part of the directory scan result
      */
     boolean accept(Class testClass);
 }

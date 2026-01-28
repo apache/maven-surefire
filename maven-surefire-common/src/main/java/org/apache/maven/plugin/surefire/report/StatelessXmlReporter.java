@@ -361,14 +361,14 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     }
 
     /**
-     * Clean testClassMethodRunHistoryMap
+     * Clean testClassMethodRunHistoryMap.
      */
     public void cleanTestHistoryMap() {
         testClassMethodRunHistoryMap.clear();
     }
 
     /**
-     * Get the result of a test from a list of its runs in WrappedReportEntry
+     * Get the result of a test from a list of its runs in WrappedReportEntry.
      *
      * @param methodEntryList the list of runs for a given test
      * @return the TestResultType for the given test
@@ -617,7 +617,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
      * Adds system properties to the XML report.
      * <br>
      *
-     * @param xmlWriter The test suite to report to
+     * @param xmlWriter the test suite to report to
      */
     private static void showProperties(XMLWriter xmlWriter, Map<String, String> systemProperties) throws IOException {
         xmlWriter.startElement("properties");
@@ -643,8 +643,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     /**
      * Handle stuff that may pop up in java that is not legal in xml.
      *
-     * @param message   The string
-     * @return The escaped string or returns itself if all characters are legal
+     * @param message   the string
+     * @return the escaped string or returns itself if all characters are legal
      */
     private static String extraEscapeAttribute(String message) {
         // Someday convert to xml 1.1 which handles everything but 0 inside string
@@ -654,7 +654,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     /**
      * Writes escaped string or the message within CDATA if all characters are legal.
      *
-     * @param message   The string
+     * @param message   the string
      */
     private static void extraEscapeElementValue(
             String message, OutputStreamWriter outputStreamWriter, XMLWriter xmlWriter, OutputStream fw)
@@ -747,11 +747,11 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     }
 
     /**
-     * escape for XML 1.0
+     * Escape for XML 1.0.
      *
-     * @param text      The string
+     * @param text      the string
      * @param attribute true if the escaped value is inside an attribute
-     * @return The escaped string
+     * @return the escaped string
      */
     private static String escapeXml(String text, boolean attribute) {
         StringBuilder sb = new StringBuilder(text.length() * 2);

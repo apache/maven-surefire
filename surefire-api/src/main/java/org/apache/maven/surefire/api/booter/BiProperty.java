@@ -22,9 +22,9 @@ package org.apache.maven.surefire.api.booter;
  * Internal generic wrapper.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.19
  * @param <P1> first property
  * @param <P2> second property
+ * @since 2.19
  */
 public final class BiProperty<P1, P2> {
     private final P1 p1;

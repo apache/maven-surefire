@@ -49,6 +49,7 @@ public class FailsafeOnlyReport extends AbstractSurefireReport {
     /**
      * If set to true the failsafe report will be generated even when there are no failsafe result files.
      * Defaults to {@code false} to preserve legacy behaviour pre 2.10.
+     *
      * @since 2.11
      */
     @Parameter(defaultValue = "false", property = "alwaysGenerateFailsafeReport")
@@ -56,6 +57,7 @@ public class FailsafeOnlyReport extends AbstractSurefireReport {
 
     /**
      * If set to true the failsafe report generation will be skipped.
+     *
      * @since 2.11
      */
     @Parameter(defaultValue = "false", property = "skipFailsafeReport")

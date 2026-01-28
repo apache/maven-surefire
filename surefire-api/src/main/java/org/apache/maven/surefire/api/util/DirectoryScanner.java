@@ -24,11 +24,11 @@ package org.apache.maven.surefire.api.util;
 @Deprecated
 public interface DirectoryScanner {
     /**
-     * Locates tests based on scanning directories
+     * Locates tests based on scanning directories.
      *
-     * @param classLoader   The classloader to use when loading classes
-     * @param scannerFilter The filter to include/exclude test classes
-     * @return The found classes that match the filter
+     * @param classLoader   the classloader to use when loading classes
+     * @param scannerFilter the filter to include/exclude test classes
+     * @return the found classes that match the filter
      */
     TestsToRun locateTestClasses(ClassLoader classLoader, ScannerFilter scannerFilter);
 }
