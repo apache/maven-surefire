@@ -3121,13 +3121,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
                     if (!hasDependencyPlatformEngine(providerArtifacts)) {
                         // TODO exclude transitive deps (hamcrest etc...)
-                        if (engineVersion != null) {
-                            consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
-                                    + engineVersion);
-                            addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
-                        } else {
-                            addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
-                        }
+                        consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"
+                                + engineVersion);
+                        addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
                     }
                     // add org.junit.vintage:junit-vintage-engine
                     addEngineByApi("org.junit.vintage", "junit-vintage-engine", engineVersion, providerArtifacts);
