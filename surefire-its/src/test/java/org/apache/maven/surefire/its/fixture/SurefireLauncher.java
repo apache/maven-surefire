@@ -197,6 +197,11 @@ public final class SurefireLauncher {
         return this;
     }
 
+    public SurefireLauncher runOrderStatisticsFileChecksum(String runOrderStatisticsFileChecksum) {
+        mavenLauncher.sysProp("surefire.runOrder.statisticsFile.checksum", runOrderStatisticsFileChecksum);
+        return this;
+    }
+
     public SurefireLauncher failIfNoTests(boolean fail) {
         mavenLauncher.sysProp("failIfNoTests", fail);
         return this;

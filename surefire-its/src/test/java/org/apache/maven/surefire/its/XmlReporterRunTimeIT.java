@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.its;
 
+import java.io.File;
+
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
@@ -28,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test reported runtime
@@ -38,12 +41,28 @@ import static org.hamcrest.Matchers.lessThan;
 public class XmlReporterRunTimeIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testForkAlways() {
-        // just generate .surefire-<hash> in order to apply runOrder
-        unpack("/runorder-parallel").executeTest().verifyErrorFree(9);
+        runTest("");
+    }
+
+    @Test
+    public void testForkAlwaysWithChecksumOverride() {
+        OutputValidator validator = runTest("foobar");
+        File statisticsFile = new File(validator.getBaseDir(), ".surefire-foobar");
+        assertTrue("Statistics file (" + statisticsFile.getAbsolutePath() + ") doesn't exist", statisticsFile.exists());
+    }
+
+    private OutputValidator runTest(String checksumOverride) {
+        // just generate .surefire-<checksumOverride> in order to apply runOrder
+        unpack("/runorder-parallel")
+                .runOrderStatisticsFileChecksum(checksumOverride)
+                .executeTest()
+                .verifyErrorFree(9);
 
         // now assert test results match expected values
-        OutputValidator outputValidator =
-                unpack("/runorder-parallel").executeTest().verifyErrorFree(9);
+        OutputValidator outputValidator = unpack("/runorder-parallel")
+                .runOrderStatisticsFileChecksum(checksumOverride)
+                .executeTest()
+                .verifyErrorFree(9);
 
         for (ReportTestSuite report : extractReports(outputValidator.getBaseDir())) {
             if ("runorder.parallel.Test1".equals(report.getFullClassName())) {
@@ -62,5 +81,7 @@ public class XmlReporterRunTimeIT extends SurefireJUnit4IntegrationTestCase {
                 System.out.println("report = " + report);
             }
         }
+
+        return outputValidator;
     }
 }
