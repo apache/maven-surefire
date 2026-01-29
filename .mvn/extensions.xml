@@ -22,6 +22,10 @@
     <artifactId>extension3</artifactId>
     <version>0.11.2</version>
   </extension>
+  <!--
+    cannot use the cache because of shaded artifact surefire-shared-utils
+    the primary artifact is in the cache but the shaded one is not replacing it
+   -->
 <!--  <extension>-->
 <!--    <groupId>org.apache.maven.extensions</groupId>-->
 <!--    <artifactId>maven-build-cache-extension</artifactId>-->
