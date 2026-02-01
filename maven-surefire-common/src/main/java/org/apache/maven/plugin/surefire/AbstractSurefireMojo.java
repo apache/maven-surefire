@@ -973,6 +973,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             handleSummary(noTestsRun(), null);
                             return;
                     }
+                } else {
+                    if (getConsoleLogger().isDebugEnabled()) {
+                        getConsoleLogger().debug("Tests to run: " + scan.getClasses());
+                    }
                 }
                 logReportsDirectory();
                 executeAfterPreconditionsChecked(scan, platform);
