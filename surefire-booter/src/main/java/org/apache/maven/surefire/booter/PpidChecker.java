@@ -70,9 +70,9 @@ final class PpidChecker {
             IS_OS_WINDOWS ? createWindowsCreationDateFormat() : null;
     private static final String WMIC_CREATION_DATE = "CreationDate";
     private static final String WINDOWS_SYSTEM_ROOT_ENV = "SystemRoot";
-    private static final String RELATIVE_PATH_TO_WMIC = "System32\\Wbem";
-    private static final String SYSTEM_PATH_TO_WMIC =
-            "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC + "\\";
+    private static final String RELATIVE_PATH_TO_POWERSHELL = "System32\\WindowsPowerShell\\v1.0";
+    private static final String SYSTEM_PATH_TO_POWERSHELL =
+            System.getenv(WINDOWS_SYSTEM_ROOT_ENV) + "\\" + RELATIVE_PATH_TO_POWERSHELL + "\\";
     private static final String PS_ETIME_HEADER = "ELAPSED";
     private static final String PS_PID_HEADER = "PID";
 
@@ -192,6 +192,7 @@ final class PpidChecker {
             @Nonnull
             ProcessInfo consumeLine(String line, ProcessInfo previousProcessInfo) throws Exception {
                 if (previousProcessInfo.isInvalid() && !line.isEmpty()) {
+                    // we still use WMIC output format even though we now use PowerShell to produce it
                     if (hasHeader) {
                         // now the line is CreationDate, e.g. 20180406142327.741074+120
                         if (line.length() != WMIC_CREATION_DATE_VALUE_LENGTH) {
@@ -210,13 +211,19 @@ final class PpidChecker {
                 return previousProcessInfo;
             }
         };
-        String wmicPath = hasWmicStandardSystemPath() ? SYSTEM_PATH_TO_WMIC : "";
-        return reader.execute(
-                "CMD",
-                "/A",
-                "/X",
-                "/C",
-                wmicPath + "wmic process where (ProcessId=" + ppid + ") get " + WMIC_CREATION_DATE);
+
+        String psPath = hasPowerShellStandardSystemPath() ? SYSTEM_PATH_TO_POWERSHELL : "";
+        // mimic output format of the original check:
+        // wmic process where (ProcessId=<ppid>) get CreationDate
+        String psCommand = String.format(
+                "Add-Type -AssemblyName System.Management; "
+                        + "$p = Get-CimInstance Win32_Process -Filter 'ProcessId=%2$s'; "
+                        + "if ($p) { "
+                        + "    Write-Output '%1$s'; "
+                        + "    [System.Management.ManagementDateTimeConverter]::ToDmtfDateTime($p.CreationDate) "
+                        + "}",
+                WMIC_CREATION_DATE, ppid);
+        return reader.execute(psPath + "powershell", "-NoProfile", "-NonInteractive", "-Command", psCommand);
     }
 
     void destroyActiveCommands() {
@@ -254,9 +261,10 @@ final class PpidChecker {
         }
     }
 
-    private static boolean hasWmicStandardSystemPath() {
+    private static boolean hasPowerShellStandardSystemPath() {
         String systemRoot = System.getenv(WINDOWS_SYSTEM_ROOT_ENV);
-        return isNotBlank(systemRoot) && new File(systemRoot, RELATIVE_PATH_TO_WMIC + "\\wmic.exe").isFile();
+        return isNotBlank(systemRoot)
+                && new File(systemRoot, RELATIVE_PATH_TO_POWERSHELL + "\\powershell.exe").isFile();
     }
 
     static long fromDays(Matcher matcher) {
