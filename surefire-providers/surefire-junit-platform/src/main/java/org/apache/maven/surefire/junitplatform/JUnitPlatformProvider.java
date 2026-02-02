@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -85,6 +86,7 @@ import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyW
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.match;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
@@ -338,7 +340,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
             pattern = pattern.substring(0, hashIndex);
         }
 
-        boolean match = className.endsWith("." + pattern) || SelectorUtils.matchPath(pattern, className);
+        boolean match = className.endsWith("." + pattern)
+                || SelectorUtils.matchPath(pattern, className)
+                || matchAntPathPattern(pattern, className, true);
 
         if (className.contains(".")) {
             String simpleName = className.substring(className.lastIndexOf('.') + 1);
@@ -400,7 +404,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 ClassNameFilter classNameFilter = clasName -> {
                     FilterResult result = includes.stream()
                             .map(pattern -> FilterResult.includedIf(
-                                    SelectorUtils.match(pattern, clasName) || matchClassName(clasName, pattern)))
+                                    match(pattern, clasName) || matchClassName(clasName, pattern)))
                             .filter(FilterResult::included)
                             .findAny()
                             .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
@@ -422,7 +426,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 ClassNameFilter classNameFilter = className -> {
                     FilterResult result = excludes.stream()
                             .map(pattern -> {
-                                boolean inclusive = SelectorUtils.match(pattern, className);
+                                boolean inclusive = match(pattern, className);
                                 return !inclusive
                                         ? FilterResult.included("Not excluded by pattern: " + pattern)
                                         : FilterResult.excluded("Excluded by pattern: " + pattern);
@@ -677,5 +681,125 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     + "However, the version of JUnit Platform on the runtime classpath does not support cancellation. "
                     + "Please update to 6.0.0 or later!");
         }
+    }
+
+    private static boolean matchAntPathPattern(String pattern, String str, boolean isCaseSensitive) {
+        if (str.startsWith("/") != pattern.startsWith("/")) {
+            return false;
+        }
+
+        List<String> patDirs = tokenizePath(pattern, "/");
+        List<String> strDirs = tokenizePath(str, "/");
+
+        int patIdxStart = 0;
+        int patIdxEnd = patDirs.size() - 1;
+        int strIdxStart = 0;
+        int strIdxEnd = strDirs.size() - 1;
+
+        // up to first '**'
+        while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
+            String patDir = patDirs.get(patIdxStart);
+            if ("**".equals(patDir)) {
+                break;
+            }
+            if (!match(patDir, strDirs.get(strIdxStart), isCaseSensitive)) {
+                return false;
+            }
+            patIdxStart++;
+            strIdxStart++;
+        }
+        if (strIdxStart > strIdxEnd) {
+            // String is exhausted
+            for (int i = patIdxStart; i <= patIdxEnd; i++) {
+                if (!"**".equals(patDirs.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            if (patIdxStart > patIdxEnd) {
+                // String not exhausted, but pattern is. Failure.
+                return false;
+            }
+        }
+
+        // up to last '**'
+        while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
+            String patDir = patDirs.get(patIdxEnd);
+            if ("**".equals(patDir)) {
+                break;
+            }
+            if (!match(patDir, strDirs.get(strIdxEnd), isCaseSensitive)) {
+                return false;
+            }
+            patIdxEnd--;
+            strIdxEnd--;
+        }
+        if (strIdxStart > strIdxEnd) {
+            // String is exhausted
+            for (int i = patIdxStart; i <= patIdxEnd; i++) {
+                if (!"**".equals(patDirs.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        while (patIdxStart != patIdxEnd && strIdxStart <= strIdxEnd) {
+            int patIdxTmp = -1;
+            for (int i = patIdxStart + 1; i <= patIdxEnd; i++) {
+                if ("**".equals(patDirs.get(i))) {
+                    patIdxTmp = i;
+                    break;
+                }
+            }
+            if (patIdxTmp == patIdxStart + 1) {
+                // '**/**' situation, so skip one
+                patIdxStart++;
+                continue;
+            }
+            // Find the pattern between padIdxStart & padIdxTmp in str between
+            // strIdxStart & strIdxEnd
+            int patLength = (patIdxTmp - patIdxStart - 1);
+            int strLength = (strIdxEnd - strIdxStart + 1);
+            int foundIdx = -1;
+            strLoop:
+            for (int i = 0; i <= strLength - patLength; i++) {
+                for (int j = 0; j < patLength; j++) {
+                    String subPat = patDirs.get(patIdxStart + j + 1);
+                    String subStr = strDirs.get(strIdxStart + i + j);
+                    if (!match(subPat, subStr, isCaseSensitive)) {
+                        continue strLoop;
+                    }
+                }
+
+                foundIdx = strIdxStart + i;
+                break;
+            }
+
+            if (foundIdx == -1) {
+                return false;
+            }
+
+            patIdxStart = patIdxTmp;
+            strIdxStart = foundIdx + patLength;
+        }
+
+        for (int i = patIdxStart; i <= patIdxEnd; i++) {
+            if (!"**".equals(patDirs.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static List<String> tokenizePath(String path, String separator) {
+        List<String> ret = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(path, separator);
+        while (st.hasMoreTokens()) {
+            ret.add(st.nextToken());
+        }
+        return ret;
     }
 }
