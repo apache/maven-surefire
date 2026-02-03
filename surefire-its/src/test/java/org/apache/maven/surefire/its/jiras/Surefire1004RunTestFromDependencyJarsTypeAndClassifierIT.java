@@ -30,7 +30,7 @@ import static org.junit.Assert.assertFalse;
 /**
  *
  */
-public class Surefire1004RunTestFromDependencyJarsTypeAndClassifierIT4 extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1004RunTestFromDependencyJarsTypeAndClassifierIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void shouldScanAndRunTestsInDependencyJars() throws Exception {
