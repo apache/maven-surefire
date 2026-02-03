@@ -37,7 +37,7 @@ import static org.junit.Assume.assumeThat;
 /**
  * Test project using multiple method patterns, including wildcards in class and method names.
  */
-public abstract class AbstractTestMultipleMethodPatterns4 extends SurefireJUnit4IntegrationTestCase {
+public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4IntegrationTestCase {
     private static final String CSV_DELIMITER_SHORT = ",";
     private static final String CSV_DELIMITER_LONG = ", ";
     private static final String NOT_DELIMITER = "!";
