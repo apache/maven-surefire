@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -34,7 +34,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class RunOrderIT extends SurefireJUnitIntegrationTestCase {
+public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
     private static final String[] TESTS_IN_ALPHABETICAL_ORDER = {"TA", "TB", "TC"};
 
     private static final String[] TESTS_IN_REVERSE_ALPHABETICAL_ORDER = {"TC", "TB", "TA"};

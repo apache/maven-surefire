@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author pgier
  */
-public class ClasspathFilteringIT extends SurefireJUnitIntegrationTestCase {
+public class ClasspathFilteringIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void additionalClasspath() {
         unpack("classpath-filtering").debugLogging().executeTest().verifyErrorFree(1);

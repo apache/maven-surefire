@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class WorkingDirectoryIsInvalidPropertyIT extends SurefireJUnitIntegrationTestCase {
+public class WorkingDirectoryIsInvalidPropertyIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testWorkingDirectory() {
         unpack("working-directory-is-invalid-property")

@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
-public class PlainOldJavaClasspathIT extends SurefireJUnitIntegrationTestCase {
+public class PlainOldJavaClasspathIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testPlainOldJavaClasspath() {
         executeErrorFreeTest("plain-old-java-classpath", 1);

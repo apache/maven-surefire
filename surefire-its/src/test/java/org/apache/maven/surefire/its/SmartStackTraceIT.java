@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
 /**
@@ -27,7 +27,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class SmartStackTraceIT extends SurefireJUnitIntegrationTestCase {
+public class SmartStackTraceIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void misg() {
