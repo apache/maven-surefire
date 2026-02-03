@@ -24,11 +24,14 @@ import java.util.Properties;
 
 import org.htmlunit.WebClient;
 import org.htmlunit.html.HtmlPage;
-import junit.framework.TestCase;
 
-public class BasicIT
-    extends TestCase
-{
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+public class BasicIT {
 
     private WebClient client;
 
@@ -36,28 +39,25 @@ public class BasicIT
 
     private final Properties properties = new Properties();
 
-    public void setUp()
-        throws IOException
-    {
+    @BeforeEach
+    public void setUp() throws IOException {
         client = new WebClient();
-        properties.load( getClass().getResourceAsStream( "/integration-test.properties" ) );
-        baseUrl = properties.getProperty( "baseUrl" );
+        properties.load(getClass().getResourceAsStream("/integration-test.properties"));
+        baseUrl = properties.getProperty("baseUrl");
     }
 
-    public void tearDown()
-    {
-        if ( client != null )
-        {
+    @AfterEach
+    public void tearDown() {
+        if (client != null) {
             client.close();
             client = null;
         }
     }
 
-    public void testSmokes()
-        throws Exception
-    {
-        client.getOptions().setThrowExceptionOnFailingStatusCode( false );
-        HtmlPage page = client.getPage( baseUrl + "index.html" );
-        assertFalse( page.asNormalizedText().contains( "Hello World" ) );
+    @Test
+    public void testSmokes() throws Exception {
+        client.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = client.getPage(baseUrl + "index.html");
+        assertFalse(page.asNormalizedText().contains("Hello World"));
     }
 }

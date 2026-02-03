@@ -17,13 +17,13 @@
  * under the License.
  */
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class MyAT
-    extends TestCase
-{
-    public void testSomething()
-    {
-        assertTrue( false );
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class MyAT {
+    @Test
+    public void testSomething() {
+        assertTrue(false);
     }
 }
