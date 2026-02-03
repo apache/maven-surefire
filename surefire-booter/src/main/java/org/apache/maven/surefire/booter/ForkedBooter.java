@@ -235,7 +235,7 @@ public final class ForkedBooter {
         ProcessCheckerType checkerType = startupConfiguration.getProcessChecker();
 
         if ((checkerType == ALL || checkerType == NATIVE) && pingMechanisms.processChecker != null) {
-            logger.debug(pingMechanisms.processChecker.toString());
+            logger.debug("pingMechanisms.processChecker:" + pingMechanisms.processChecker);
             if (pingMechanisms.processChecker.canUse()) {
                 Runnable checkerJob = processCheckerJob(pingMechanisms);
                 pingMechanisms.processCheckerScheduler.scheduleWithFixedDelay(checkerJob, 0L, 1L, SECONDS);
