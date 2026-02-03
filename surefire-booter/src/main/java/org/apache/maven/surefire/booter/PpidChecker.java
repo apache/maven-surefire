@@ -147,7 +147,7 @@ final class PpidChecker implements ProcessChecker {
 
     private void checkProcessInfo() {
         if (isStopped()) {
-            throw new IllegalStateException("error [STOPPED] to read process " + ppid);
+            throw new IllegalStateException("error [STOPPED] to read process " + this);
         }
 
         if (!parentProcessInfo.canUse()) {
