@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its;
 import javax.xml.transform.Source;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.collection.IsIterableWithSize;
 import org.junit.Before;
@@ -37,7 +37,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class CucumberIT extends SurefireJUnitIntegrationTestCase {
+public class CucumberIT extends SurefireJUnit4IntegrationTestCase {
 
     @Before
     public void setUp() {

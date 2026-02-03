@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Andreas Gudian
  */
-public class ForkCountMultiModuleIT extends SurefireJUnitIntegrationTestCase {
+public class ForkCountMultiModuleIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testForkCountOneNoReuse() {
         List<String> pids = doTest(unpack(getProject()).forkCount(1).reuseForks(false));
