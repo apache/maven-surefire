@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  * @author Kristian Rosenvold
  */
-public class ForkConsoleOutputIT extends SurefireJUnitIntegrationTestCase {
+public class ForkConsoleOutputIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void printSummaryTrueWithRedirect() {
         unpack().setForkJvm()

@@ -22,7 +22,7 @@ import java.io.File;
 
 import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class AggregateReportIT extends SurefireJUnitIntegrationTestCase {
+public class AggregateReportIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void aggregateReport() {

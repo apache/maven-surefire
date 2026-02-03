@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnitIntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-public class SiblingAggregatorIT extends SurefireJUnitIntegrationTestCase {
+public class SiblingAggregatorIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testSiblingAggregator() throws Exception {
