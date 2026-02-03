@@ -108,6 +108,16 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- dependencies for ITs, will be copied to local-repo as extra artifacts -->
+    <!-- without it, artifact will be downloaded from remote repository -->
+    <!-- add here to use artifact from project build reactor, not last installed to local repository -->
+    <dependency>
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-junit-platform</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -256,6 +266,11 @@
                 </goals>
                 <phase>pre-integration-test</phase>
                 <configuration>
+                  <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+                  <extraArtifacts>
+                    <artifact>org.apache.maven.surefire:surefire-junit-platform:${project.version}</artifact>
+                    <artifact>org.junit.jupiter:junit-jupiter-api:${versions.junit5}</artifact>
+                  </extraArtifacts>
                   <skipInstallation>${skipTests}</skipInstallation>
                 </configuration>
               </execution>
@@ -265,6 +280,7 @@
                   <goal>run</goal>
                 </goals>
                 <configuration>
+                  <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                   <projectsDirectory>src/it</projectsDirectory>
                   <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                   <goals>
