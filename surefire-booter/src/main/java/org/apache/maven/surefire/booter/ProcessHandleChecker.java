@@ -22,6 +22,10 @@ import javax.annotation.Nonnull;
 
 import java.lang.reflect.Method;
 
+import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
+import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
+
 /**
  * Checks if the parent process (Maven plugin) is alive using the ProcessHandle API via reflection.
  * <p>
@@ -37,8 +41,6 @@ import java.lang.reflect.Method;
  * @since ?
  */
 final class ProcessHandleChecker implements ParentProcessChecker {
-
-    // ============ Static reflection metadata ============
 
     /** Whether ProcessHandle API is available and reflection setup succeeded */
     private static final boolean AVAILABLE;
@@ -57,7 +59,13 @@ final class ProcessHandleChecker implements ParentProcessChecker {
     private static final Method OPTIONAL_OR_ELSE; // Optional.orElse(Object) -> Object
 
     static {
-        boolean available = false;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+        // Load classes using ReflectionUtils
+        Class<?> processHandleClass = tryLoadClass(classLoader, "java.lang.ProcessHandle");
+        Class<?> processHandleInfoClass = tryLoadClass(classLoader, "java.lang.ProcessHandle$Info");
+        Class<?> optionalClass = tryLoadClass(classLoader, "java.util.Optional");
+
         Method processHandleOf = null;
         Method processHandleIsAlive = null;
         Method processHandleInfo = null;
@@ -66,32 +74,30 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         Method optionalGet = null;
         Method optionalOrElse = null;
 
-        try {
-            // Load classes
-            Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");
-            Class<?> processHandleInfoClass = Class.forName("java.lang.ProcessHandle$Info");
-            Class<?> optionalClass = Class.forName("java.util.Optional");
-
+        if (processHandleClass != null && processHandleInfoClass != null && optionalClass != null) {
             // ProcessHandle methods
-            processHandleOf = processHandleClass.getMethod("of", long.class);
-            processHandleIsAlive = processHandleClass.getMethod("isAlive");
-            processHandleInfo = processHandleClass.getMethod("info");
+            processHandleOf = tryGetMethod(processHandleClass, "of", long.class);
+            processHandleIsAlive = tryGetMethod(processHandleClass, "isAlive");
+            processHandleInfo = tryGetMethod(processHandleClass, "info");
 
             // ProcessHandle.Info methods
-            infoStartInstant = processHandleInfoClass.getMethod("startInstant");
+            infoStartInstant = tryGetMethod(processHandleInfoClass, "startInstant");
 
             // Optional methods
-            optionalIsPresent = optionalClass.getMethod("isPresent");
-            optionalGet = optionalClass.getMethod("get");
-            optionalOrElse = optionalClass.getMethod("orElse", Object.class);
-
-            available = true;
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            // ProcessHandle not available (Java 8) or API changed
-            // Leave available = false, factory will use PpidChecker
+            optionalIsPresent = tryGetMethod(optionalClass, "isPresent");
+            optionalGet = tryGetMethod(optionalClass, "get");
+            optionalOrElse = tryGetMethod(optionalClass, "orElse", Object.class);
         }
 
-        AVAILABLE = available;
+        // All methods must be available for ProcessHandle API to be usable
+        AVAILABLE = processHandleOf != null
+                && processHandleIsAlive != null
+                && processHandleInfo != null
+                && infoStartInstant != null
+                && optionalIsPresent != null
+                && optionalGet != null
+                && optionalOrElse != null;
+
         PROCESS_HANDLE_OF = processHandleOf;
         PROCESS_HANDLE_IS_ALIVE = processHandleIsAlive;
         PROCESS_HANDLE_INFO = processHandleInfo;
@@ -100,8 +106,6 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         OPTIONAL_GET = optionalGet;
         OPTIONAL_OR_ELSE = optionalOrElse;
     }
-
-    // ============ Instance fields ============
 
     private final long ppid;
     private volatile Object parentProcessHandle; // ProcessHandle (stored as Object)
@@ -136,24 +140,24 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         if (parentProcessHandle == null) {
             try {
                 // ProcessHandle.of(ppid) returns Optional<ProcessHandle>
-                Object optionalHandle = PROCESS_HANDLE_OF.invoke(null, ppid);
+                Object optionalHandle = invokeMethodWithArray(null, PROCESS_HANDLE_OF, ppid);
 
                 // Check if Optional is present
-                boolean isPresent = (Boolean) OPTIONAL_IS_PRESENT.invoke(optionalHandle);
+                boolean isPresent = invokeMethodWithArray(optionalHandle, OPTIONAL_IS_PRESENT);
                 if (isPresent) {
                     // Get the ProcessHandle from Optional
-                    parentProcessHandle = OPTIONAL_GET.invoke(optionalHandle);
+                    parentProcessHandle = invokeMethodWithArray(optionalHandle, OPTIONAL_GET);
 
                     // Get info and start instant
                     // parentProcessHandle.info().startInstant().orElse(null)
-                    Object info = PROCESS_HANDLE_INFO.invoke(parentProcessHandle);
-                    Object optionalInstant = INFO_START_INSTANT.invoke(info);
-                    initialStartInstant = OPTIONAL_OR_ELSE.invoke(optionalInstant, (Object) null);
+                    Object info = invokeMethodWithArray(parentProcessHandle, PROCESS_HANDLE_INFO);
+                    Object optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
+                    initialStartInstant = invokeMethodWithArray(optionalInstant, OPTIONAL_OR_ELSE, (Object) null);
 
                     return true;
                 }
                 return false;
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 // Reflection failed - treat as unavailable
                 return false;
             }
@@ -175,7 +179,7 @@ final class ProcessHandleChecker implements ParentProcessChecker {
 
         try {
             // Check if process is still running: parentProcessHandle.isAlive()
-            boolean isAlive = (Boolean) PROCESS_HANDLE_IS_ALIVE.invoke(parentProcessHandle);
+            boolean isAlive = invokeMethodWithArray(parentProcessHandle, PROCESS_HANDLE_IS_ALIVE);
             if (!isAlive) {
                 return false;
             }
@@ -183,12 +187,12 @@ final class ProcessHandleChecker implements ParentProcessChecker {
             // Verify it's the same process (not a reused PID)
             if (initialStartInstant != null) {
                 // parentProcessHandle.info().startInstant()
-                Object info = PROCESS_HANDLE_INFO.invoke(parentProcessHandle);
-                Object optionalInstant = INFO_START_INSTANT.invoke(info);
+                Object info = invokeMethodWithArray(parentProcessHandle, PROCESS_HANDLE_INFO);
+                Object optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
 
-                boolean isPresent = (Boolean) OPTIONAL_IS_PRESENT.invoke(optionalInstant);
+                boolean isPresent = invokeMethodWithArray(optionalInstant, OPTIONAL_IS_PRESENT);
                 if (isPresent) {
-                    Object currentStartInstant = OPTIONAL_GET.invoke(optionalInstant);
+                    Object currentStartInstant = invokeMethodWithArray(optionalInstant, OPTIONAL_GET);
                     if (!currentStartInstant.equals(initialStartInstant)) {
                         // PID was reused for a different process
                         return false;
@@ -197,7 +201,7 @@ final class ProcessHandleChecker implements ParentProcessChecker {
             }
 
             return true;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             // Reflection failed during runtime - treat as process not alive
             return false;
         }
