@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @author Andreas Gudian
  */
-public class Surefire1041FailingJUnit4RunnerIT extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1041FailingJUnitRunnerIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void reportErrorInJUnitRunnerAsTestError() {
         unpack("surefire-1041-exception-in-junit-runner")

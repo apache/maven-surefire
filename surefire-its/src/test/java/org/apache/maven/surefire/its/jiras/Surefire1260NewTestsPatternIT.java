@@ -31,7 +31,7 @@ import org.junit.Test;
  * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1260">SUREFIRE-1260</a>
  * @since 2.20
  */
-public class Surefire1260NewTestsPattern4 extends SurefireJUnit4IntegrationTestCase {
+public class Surefire1260NewTestsPatternIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void defaultConfig() {
         unpack().executeTest().verifyErrorFree(5);

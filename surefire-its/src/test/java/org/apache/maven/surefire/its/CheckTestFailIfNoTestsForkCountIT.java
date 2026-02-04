@@ -71,7 +71,6 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4Integration
     public void dontFailIfNoTestsForkOnce() {
         Assertions.assertThat(unpack().forkOnce()
                         .failIfNoTests(false)
-                        .debugLogging()
                         .executeTest()
                         .verifyErrorFreeLog()
                         .getSurefireReportsDirectory()
