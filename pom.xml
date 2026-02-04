@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>44</version>
+    <version>47</version>
   </parent>
 
   <groupId>org.apache.maven.surefire</groupId>
@@ -107,6 +107,8 @@
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
     <project.build.outputTimestamp>2025-09-10T02:02:34Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
+
+    <versions.junit5>5.12.2</versions.junit5>
   </properties>
 
   <dependencyManagement>

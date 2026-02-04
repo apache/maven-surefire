@@ -105,9 +105,9 @@ public class TestNGMapConfigurator implements Configurator {
                 case THREADCOUNT_PROP:
                     val = convert(val, String.class);
                     break;
-                    // for TestNG 6.9.7 or higher
+                // for TestNG 6.9.7 or higher
                 case "suitethreadpoolsize":
-                    // for TestNG 5.10 or higher
+                // for TestNG 5.10 or higher
                 case "dataproviderthreadcount":
                     val = convert(val, Integer.class);
                     break;
