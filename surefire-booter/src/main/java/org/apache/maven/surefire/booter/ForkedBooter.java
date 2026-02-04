@@ -19,14 +19,13 @@
 package org.apache.maven.surefire.booter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -199,12 +198,9 @@ public final class ForkedBooter {
     private void cancelPingScheduler() {
         if (pingScheduler != null) {
             try {
-                AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    @Override
-                    public Object run() {
-                        pingScheduler.shutdown();
-                        return null;
-                    }
+                AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                    pingScheduler.shutdown();
+                    return null;
                 });
             } catch (AccessControlException e) {
                 // ignore
@@ -280,12 +276,7 @@ public final class ForkedBooter {
     }
 
     private CommandListener createPingHandler(final AtomicBoolean pingDone) {
-        return new CommandListener() {
-            @Override
-            public void update(Command command) {
-                pingDone.set(true);
-            }
-        };
+        return command -> pingDone.set(true);
     }
 
     private CommandListener createExitHandler(final ProcessChecker ppidChecker) {
@@ -371,12 +362,7 @@ public final class ForkedBooter {
     }
 
     private void acknowledgedExit() {
-        commandReader.addByeAckListener(new CommandListener() {
-            @Override
-            public void update(Command command) {
-                exitBarrier.release();
-            }
-        });
+        commandReader.addByeAckListener(command -> exitBarrier.release());
         eventChannel.bye();
         launchLastDitchDaemonShutdownThread(0);
         boolean byeAckReceived = acquireOnePermit(exitBarrier);
@@ -461,12 +447,7 @@ public final class ForkedBooter {
      * Necessary for the Surefire817SystemExitIT.
      */
     private void flushEventChannelOnExit() {
-        Runnable target = new Runnable() {
-            @Override
-            public void run() {
-                eventChannel.onJvmExit();
-            }
-        };
+        Runnable target = () -> eventChannel.onJvmExit();
         Thread t = new Thread(target);
         t.setDaemon(true);
         ShutdownHookUtils.addShutDownHook(t);
@@ -544,9 +525,9 @@ public final class ForkedBooter {
     }
 
     private static InputStream createSurefirePropertiesIfFileExists(String tmpDir, String propFileName)
-            throws FileNotFoundException {
+            throws IOException {
         File surefirePropertiesFile = new File(tmpDir, propFileName);
-        return surefirePropertiesFile.exists() ? new FileInputStream(surefirePropertiesFile) : null;
+        return surefirePropertiesFile.exists() ? Files.newInputStream(surefirePropertiesFile.toPath()) : null;
     }
 
     private static boolean isDebugging() {
