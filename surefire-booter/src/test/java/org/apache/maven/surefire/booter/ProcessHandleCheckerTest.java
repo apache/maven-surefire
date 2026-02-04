@@ -18,23 +18,35 @@
  */
 package org.apache.maven.surefire.booter;
 
+import java.lang.management.ManagementFactory;
+
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests for {@link ProcessHandleChecker}.
  * <p>
- * These tests require Java 9+ to run as they directly use the ProcessHandle API.
+ * These tests use reflection-based PID detection to work on both Java 8 and Java 9+.
  */
 public class ProcessHandleCheckerTest {
 
     @Test
+    public void shouldReportAvailableOnJava9Plus() {
+        // This test runs on modern JVMs, so isAvailable() should return true
+        assertThat(ProcessHandleChecker.isAvailable()).isTrue();
+    }
+
+    @Test
     public void shouldDetectCurrentProcessAsAlive() {
-        // Use current process PID - it's definitely alive
-        long currentPid = ProcessHandle.current().pid();
-        ProcessHandleChecker checker = new ProcessHandleChecker(String.valueOf(currentPid));
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
         assertThat(checker.canUse()).isTrue();
         assertThat(checker.isProcessAlive()).isTrue();
@@ -43,6 +55,8 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldDetectNonExistentProcessAsNotUsable() {
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
         // Use an invalid PID that's unlikely to exist
         ProcessHandleChecker checker = new ProcessHandleChecker("999999999");
 
@@ -51,6 +65,8 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldThrowWhenCallingIsProcessAliveWithoutCanUse() {
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
         // Use an invalid PID
         ProcessHandleChecker checker = new ProcessHandleChecker("999999999");
 
@@ -61,8 +77,12 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldStopChecker() {
-        long currentPid = ProcessHandle.current().pid();
-        ProcessHandleChecker checker = new ProcessHandleChecker(String.valueOf(currentPid));
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
         assertThat(checker.canUse()).isTrue();
         assertThat(checker.isStopped()).isFalse();
@@ -75,8 +95,12 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldDestroyActiveCommands() {
-        long currentPid = ProcessHandle.current().pid();
-        ProcessHandleChecker checker = new ProcessHandleChecker(String.valueOf(currentPid));
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
         assertThat(checker.canUse()).isTrue();
 
@@ -88,8 +112,12 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnMeaningfulToString() {
-        long currentPid = ProcessHandle.current().pid();
-        ProcessHandleChecker checker = new ProcessHandleChecker(String.valueOf(currentPid));
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
         String toString = checker.toString();
 
@@ -101,8 +129,12 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnToStringWithStartInstantAfterCanUse() {
-        long currentPid = ProcessHandle.current().pid();
-        ProcessHandleChecker checker = new ProcessHandleChecker(String.valueOf(currentPid));
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
         checker.canUse();
         String toString = checker.toString();
@@ -112,8 +144,12 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldCreateViaFactoryMethod() {
-        long currentPid = ProcessHandle.current().pid();
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(String.valueOf(currentPid));
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ParentProcessChecker checker = ParentProcessCheckerFactory.of(currentPid);
 
         assertThat(checker).isInstanceOf(ProcessHandleChecker.class);
         assertThat(checker.canUse()).isTrue();
@@ -130,5 +166,32 @@ public class ProcessHandleCheckerTest {
     @Test
     public void shouldThrowOnInvalidPpidFormat() {
         assertThatThrownBy(() -> new ProcessHandleChecker("not-a-number")).isInstanceOf(NumberFormatException.class);
+    }
+
+    /**
+     * Gets the current process PID using reflection (Java 8 compatible).
+     *
+     * @return the current process PID as a string, or null if it cannot be determined
+     */
+    private static String getCurrentPid() {
+        // Try ProcessHandle.current().pid() via reflection (Java 9+)
+        try {
+            Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");
+            Object currentHandle = processHandleClass.getMethod("current").invoke(null);
+            Long pid = (Long) processHandleClass.getMethod("pid").invoke(currentHandle);
+            return String.valueOf(pid);
+        } catch (Exception e) {
+            // Fall back to ManagementFactory (works on Java 8)
+            try {
+                String name = ManagementFactory.getRuntimeMXBean().getName();
+                int atIndex = name.indexOf('@');
+                if (atIndex > 0) {
+                    return name.substring(0, atIndex);
+                }
+            } catch (Exception ex) {
+                // Ignore
+            }
+        }
+        return null;
     }
 }

@@ -27,14 +27,9 @@ package org.apache.maven.surefire.booter;
  *   <li>On Java 8: Uses {@link PpidChecker} with native commands ({@code ps}/{@code wmic})</li>
  * </ul>
  *
- * @since 3.6.0
+ * @since 3.?
  */
 public final class ParentProcessCheckerFactory {
-
-    /**
-     * Indicates whether the {@code java.lang.ProcessHandle} API is available (Java 9+).
-     */
-    private static final boolean PROCESS_HANDLE_AVAILABLE = isProcessHandleAvailable();
 
     private ParentProcessCheckerFactory() {
         // utility class
@@ -53,32 +48,10 @@ public final class ParentProcessCheckerFactory {
         if (ppid == null) {
             return null;
         }
-        if (PROCESS_HANDLE_AVAILABLE) {
-            // Use reflection to avoid loading ProcessHandleChecker on Java 8
-            // (which would fail since it references ProcessHandle)
-            try {
-                return (ParentProcessChecker) Class.forName("org.apache.maven.surefire.booter.ProcessHandleChecker")
-                        .getConstructor(String.class)
-                        .newInstance(ppid);
-            } catch (ReflectiveOperationException e) {
-                // Fall back to PpidChecker if ProcessHandleChecker fails to load
-            }
+        if (ProcessHandleChecker.isAvailable()) {
+            return new ProcessHandleChecker(ppid);
         }
         return new PpidChecker(ppid);
-    }
-
-    /**
-     * Checks if the {@code java.lang.ProcessHandle} class is available at runtime.
-     *
-     * @return {@code true} if running on Java 9+ with ProcessHandle available
-     */
-    private static boolean isProcessHandleAvailable() {
-        try {
-            Class.forName("java.lang.ProcessHandle");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
     }
 
     /**
@@ -87,6 +60,6 @@ public final class ParentProcessCheckerFactory {
      * @return {@code true} if running on Java 9+ with ProcessHandle available
      */
     public static boolean isProcessHandleSupported() {
-        return PROCESS_HANDLE_AVAILABLE;
+        return ProcessHandleChecker.isAvailable();
     }
 }
