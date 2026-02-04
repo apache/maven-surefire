@@ -394,6 +394,7 @@
               <excludes combine.children="append">
                 <exclude>Jenkinsfile</exclude>
                 <exclude>README.md</exclude>
+                <exclude>CLAUDE.md</exclude>
                 <exclude>.editorconfig</exclude>
                 <exclude>.gitignore</exclude>
                 <exclude>.git/**/*</exclude>
