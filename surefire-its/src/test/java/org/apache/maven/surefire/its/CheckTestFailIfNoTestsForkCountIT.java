@@ -71,6 +71,7 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4Integration
     public void dontFailIfNoTestsForkOnce() {
         Assertions.assertThat(unpack().forkOnce()
                         .failIfNoTests(false)
+                        .argLine("-Djdk.net.URLClassPath.disableClassPathURLCheck=true")
                         .executeTest()
                         .verifyErrorFreeLog()
                         .getSurefireReportsDirectory()
