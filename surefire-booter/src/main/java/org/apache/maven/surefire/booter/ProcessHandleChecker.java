@@ -38,7 +38,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
  *   <li>The PID has been reused by the OS for a new process (start time differs from initial)</li>
  * </ol>
  *
- * @since ?
+ * @since 3.?
  */
 final class ProcessHandleChecker implements ParentProcessChecker {
 
