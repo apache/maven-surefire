@@ -128,8 +128,9 @@ final class PpidChecker implements ProcessChecker {
         final ProcessInfo previousInfo = parentProcessInfo;
         if (IS_OS_WINDOWS) {
             parentProcessInfo = windows();
-            checkProcessInfo();
-
+            if (!checkProcessInfo()) {
+                return false;
+            }
             // let's compare creation time, should be same unless killed or PID is reused by OS into another process
             return !parentProcessInfo.isInvalid()
                     && (previousInfo == null || parentProcessInfo.isTimeEqualTo(previousInfo));
@@ -145,15 +146,22 @@ final class PpidChecker implements ProcessChecker {
         throw new IllegalStateException("unknown platform or you did not call canUse() before isProcessAlive()");
     }
 
-    private void checkProcessInfo() {
+    /**
+     *
+     * @return true if process info is valid to use; false if this object has been {@link #destroyActiveCommands() destroyed}
+     * @throws IllegalStateException if process info cannot be used
+     */
+    private boolean checkProcessInfo() {
         if (isStopped()) {
-            throw new IllegalStateException("error [STOPPED] to read process " + this);
+            //            throw new IllegalStateException("error [STOPPED] to read process " + this);
+            return false;
         }
 
         if (!parentProcessInfo.canUse()) {
             throw new IllegalStateException(
                     "Cannot use PPID " + ppid + " process information. " + "Going to use NOOP events.");
         }
+        return true;
     }
 
     // https://www.freebsd.org/cgi/man.cgi?ps(1)
