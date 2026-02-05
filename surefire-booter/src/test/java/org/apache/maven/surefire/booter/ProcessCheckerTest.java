@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 
 /**
- * Testing {@link ProcessChecker} via {@link ProcessCheckerFactory}.
+ * Testing {@link ProcessChecker} via {@link ProcessChecker#of(String)}.
  *
  * @since 2.20.1
  */
@@ -45,7 +45,7 @@ public class ProcessCheckerTest {
         String expectedPid =
                 ManagementFactory.getRuntimeMXBean().getName().split("@")[0].trim();
 
-        ProcessChecker checker = ProcessCheckerFactory.of(expectedPid);
+        ProcessChecker checker = ProcessChecker.of(expectedPid);
 
         assertThat(checker).isNotNull();
 
@@ -61,7 +61,7 @@ public class ProcessCheckerTest {
 
     @Test
     public void shouldBeStopped() {
-        ProcessChecker checker = ProcessCheckerFactory.of("0");
+        ProcessChecker checker = ProcessChecker.of("0");
         checker.stop();
 
         assertThat(checker.canUse()).isFalse();
@@ -80,14 +80,14 @@ public class ProcessCheckerTest {
         // winddows java 8 must depends on wwmc something available
         double v = Double.parseDouble(System.getProperty("java.specification.version"));
         Assume.assumeTrue(v >= 9.0);
-        ProcessChecker checker = ProcessCheckerFactory.of(Long.toString(Integer.MAX_VALUE));
+        ProcessChecker checker = ProcessChecker.of(Long.toString(Integer.MAX_VALUE));
 
         assertThatThrownBy(checker::isProcessAlive).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     public void shouldReturnNullForNullPpid() {
-        ProcessChecker checker = ProcessCheckerFactory.of(null);
+        ProcessChecker checker = ProcessChecker.of(null);
         assertThat(checker).isNull();
     }
 

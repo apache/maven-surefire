@@ -215,7 +215,7 @@ public final class ForkedBooter {
     }
 
     private PingScheduler listenToShutdownCommands(String ppid) {
-        ProcessChecker ppidChecker = ProcessCheckerFactory.of(ppid);
+        ProcessChecker ppidChecker = ProcessChecker.of(ppid);
         commandReader.addShutdownListener(createExitHandler(ppidChecker));
         AtomicBoolean pingDone = new AtomicBoolean(true);
         commandReader.addNoopListener(createPingHandler(pingDone));
