@@ -19,7 +19,6 @@
 package org.apache.maven.surefire.booter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
