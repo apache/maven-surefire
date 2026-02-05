@@ -68,18 +68,6 @@ public class ProcessHandleCheckerTest {
     }
 
     @Test
-    public void shouldThrowWhenCallingIsProcessAliveWithoutCanUse() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
-
-        // Use an invalid PID
-        ProcessHandleChecker checker = new ProcessHandleChecker("999999999");
-
-        assertThatThrownBy(checker::isProcessAlive)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("irrelevant to call isProcessAlive()");
-    }
-
-    @Test
     public void shouldStopChecker() {
         assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
 
@@ -180,12 +168,6 @@ public class ProcessHandleCheckerTest {
         assumeTrue("Could not determine current PID", currentPid != null);
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
-
-        // processInfo() returns null before canUse() is called
-        assertThat(checker.processInfo()).isNull();
-
-        // Initialize the checker
-        assertThat(checker.canUse()).isTrue();
 
         // Now processInfo() should return valid info
         ProcessInfo processInfo = checker.processInfo();

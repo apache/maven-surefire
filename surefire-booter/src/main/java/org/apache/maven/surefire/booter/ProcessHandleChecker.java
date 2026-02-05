@@ -21,6 +21,7 @@ package org.apache.maven.surefire.booter;
 import javax.annotation.Nonnull;
 
 import java.lang.reflect.Method;
+import java.util.Optional;
 
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
@@ -52,11 +53,6 @@ final class ProcessHandleChecker implements ProcessChecker {
 
     // Method references for ProcessHandle.Info
     private static final Method INFO_START_INSTANT; // ProcessHandle.Info.startInstant() -> Optional<Instant>
-
-    // Method references for Optional
-    private static final Method OPTIONAL_IS_PRESENT; // Optional.isPresent() -> boolean
-    private static final Method OPTIONAL_GET; // Optional.get() -> Object
-    private static final Method OPTIONAL_OR_ELSE; // Optional.orElse(Object) -> Object
 
     // Method reference for Instant
     private static final Method INSTANT_TO_EPOCH_MILLI; // Instant.toEpochMilli() -> long
@@ -112,14 +108,11 @@ final class ProcessHandleChecker implements ProcessChecker {
         PROCESS_HANDLE_IS_ALIVE = processHandleIsAlive;
         PROCESS_HANDLE_INFO = processHandleInfo;
         INFO_START_INSTANT = infoStartInstant;
-        OPTIONAL_IS_PRESENT = optionalIsPresent;
-        OPTIONAL_GET = optionalGet;
-        OPTIONAL_OR_ELSE = optionalOrElse;
         INSTANT_TO_EPOCH_MILLI = instantToEpochMilli;
     }
 
     private final long pid;
-    private volatile Object processHandle; // ProcessHandle (stored as Object)
+    private final Object processHandle; // ProcessHandle (stored as Object)
     private volatile Object initialStartInstant; // Instant (stored as Object)
     private volatile boolean stopped;
 
@@ -131,6 +124,13 @@ final class ProcessHandleChecker implements ProcessChecker {
      */
     ProcessHandleChecker(@Nonnull String pid) {
         this.pid = Long.parseLong(pid);
+        try {
+            Optional<?> optionalObject = (Optional<?>) PROCESS_HANDLE_OF.invoke(null, this.pid);
+            processHandle = optionalObject.orElse(null);
+            initialStartInstant = getInitialStartInstant();
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to initialize ProcessHandleChecker for PID " + pid, e);
+        }
     }
 
     /**
@@ -145,35 +145,7 @@ final class ProcessHandleChecker implements ProcessChecker {
 
     @Override
     public boolean canUse() {
-        if (!AVAILABLE || stopped) {
-            return false;
-        }
-        if (processHandle == null) {
-            try {
-                // ProcessHandle.of(pid) returns Optional<ProcessHandle>
-                Object optionalHandle = invokeMethodWithArray(null, PROCESS_HANDLE_OF, pid);
-
-                // Check if Optional is present
-                boolean isPresent = invokeMethodWithArray(optionalHandle, OPTIONAL_IS_PRESENT);
-                if (isPresent) {
-                    // Get the ProcessHandle from Optional
-                    processHandle = invokeMethodWithArray(optionalHandle, OPTIONAL_GET);
-
-                    // Get info and start instant
-                    // processHandle.info().startInstant().orElse(null)
-                    Object info = invokeMethodWithArray(processHandle, PROCESS_HANDLE_INFO);
-                    Object optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
-                    initialStartInstant = invokeMethodWithArray(optionalInstant, OPTIONAL_OR_ELSE, (Object) null);
-
-                    return true;
-                }
-                return false;
-            } catch (RuntimeException e) {
-                // Reflection failed - treat as unavailable
-                return false;
-            }
-        }
-        return true;
+        return (AVAILABLE && !stopped) && processHandle != null;
     }
 
     /**
@@ -199,15 +171,12 @@ final class ProcessHandleChecker implements ProcessChecker {
             if (initialStartInstant != null) {
                 // processHandle.info().startInstant()
                 Object info = invokeMethodWithArray(processHandle, PROCESS_HANDLE_INFO);
-                Object optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
+                Optional<?> optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
 
-                boolean isPresent = invokeMethodWithArray(optionalInstant, OPTIONAL_IS_PRESENT);
-                if (isPresent) {
-                    Object currentStartInstant = invokeMethodWithArray(optionalInstant, OPTIONAL_GET);
-                    if (!currentStartInstant.equals(initialStartInstant)) {
-                        // PID was reused for a different process
-                        return false;
-                    }
+                if (optionalInstant.isPresent()) {
+                    Object currentStartInstant = optionalInstant.get();
+                    // PID was reused for a different process
+                    return currentStartInstant.equals(initialStartInstant);
                 }
             }
 
@@ -215,6 +184,16 @@ final class ProcessHandleChecker implements ProcessChecker {
         } catch (RuntimeException e) {
             // Reflection failed during runtime - treat as process not alive
             return false;
+        }
+    }
+
+    private Object getInitialStartInstant() {
+        try {
+            Object info = invokeMethodWithArray(processHandle, PROCESS_HANDLE_INFO);
+            Optional<?> optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
+            return optionalInstant.orElse(null);
+        } catch (RuntimeException e) {
+            return null;
         }
     }
 
@@ -236,11 +215,12 @@ final class ProcessHandleChecker implements ProcessChecker {
 
     @Override
     public ProcessInfo processInfo() {
-        if (initialStartInstant == null || INSTANT_TO_EPOCH_MILLI == null) {
+        Object startInstant = getInitialStartInstant();
+        if (startInstant == null || INSTANT_TO_EPOCH_MILLI == null) {
             return null;
         }
         try {
-            long startTimeMillis = invokeMethodWithArray(initialStartInstant, INSTANT_TO_EPOCH_MILLI);
+            long startTimeMillis = invokeMethodWithArray(startInstant, INSTANT_TO_EPOCH_MILLI);
             return ProcessInfo.processHandleInfo(String.valueOf(pid), startTimeMillis);
         } catch (RuntimeException e) {
             return null;
