@@ -65,8 +65,7 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  * @see ProcessChecker
- * @see ProcessCheckerFactory
- * @deprecated Use {@code ProcessHandleChecker} via {@link ProcessCheckerFactory#of(String)} instead
+ * @deprecated Use {@code ProcessHandleChecker} via {@link ProcessChecker#of(String)} instead
  */
 @Deprecated
 final class PpidChecker implements ProcessChecker {

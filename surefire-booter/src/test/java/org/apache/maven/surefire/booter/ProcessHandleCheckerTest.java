@@ -141,7 +141,7 @@ public class ProcessHandleCheckerTest {
         String currentPid = getCurrentPid();
         assumeTrue("Could not determine current PID", currentPid != null);
 
-        ProcessChecker checker = ProcessCheckerFactory.of(currentPid);
+        ProcessChecker checker = ProcessChecker.of(currentPid);
 
         assertThat(checker).isInstanceOf(ProcessHandleChecker.class);
         assertThat(checker.canUse()).isTrue();
@@ -150,7 +150,7 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnNullFromFactoryForNullPpid() {
-        ProcessChecker checker = ProcessCheckerFactory.of(null);
+        ProcessChecker checker = ProcessChecker.of(null);
 
         assertThat(checker).isNull();
     }

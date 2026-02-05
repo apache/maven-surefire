@@ -29,6 +29,34 @@ package org.apache.maven.surefire.booter;
 public interface ProcessChecker {
 
     /**
+     * Creates the appropriate {@link ProcessChecker} implementation for the given parent PID.
+     * <p>
+     * On Java 9+, uses {@code ProcessHandleChecker} which leverages the {@code ProcessHandle} API.
+     * On Java 8, falls back to {@link PpidChecker} which uses native commands.
+     *
+     * @param ppid the parent process ID as a string, or {@code null}
+     * @return a new checker instance, or {@code null} if ppid is {@code null}
+     */
+    static ProcessChecker of(String ppid) {
+        if (ppid == null) {
+            return null;
+        }
+        if (ProcessHandleChecker.isAvailable()) {
+            return new ProcessHandleChecker(ppid);
+        }
+        return new PpidChecker(ppid);
+    }
+
+    /**
+     * Returns whether the ProcessHandle API is available in the current JVM.
+     *
+     * @return {@code true} if running on Java 9+ with ProcessHandle available
+     */
+    static boolean isProcessHandleSupported() {
+        return ProcessHandleChecker.isAvailable();
+    }
+
+    /**
      * Checks whether this checker can be used to monitor the process.
      * <p>
      * This method must return {@code true} before {@link #isProcessAlive()} can be called.
