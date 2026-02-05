@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
 
 /**
@@ -74,16 +75,14 @@ public class ProcessCheckerTest {
     }
 
     @Test
-    public void shouldNotBeAlive() {
+    public void exceptionCallIsProcessAlive() {
         // FIXME DisabledOnJre when we migrate to junit5 and run on unix too
         // winddows java 8 must depends on wwmc something available
         double v = Double.parseDouble(System.getProperty("java.specification.version"));
         Assume.assumeTrue(v >= 9.0);
         ProcessChecker checker = ProcessCheckerFactory.of(Long.toString(Integer.MAX_VALUE));
 
-        assertThat(checker.canUse()).isTrue();
-
-        assertThat(checker.isProcessAlive()).isFalse();
+        assertThatThrownBy(checker::isProcessAlive).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
