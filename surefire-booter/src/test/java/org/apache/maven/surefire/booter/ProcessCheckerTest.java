@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
 
 import java.lang.management.ManagementFactory;
 
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -74,9 +75,15 @@ public class ProcessCheckerTest {
 
     @Test
     public void shouldNotBeAlive() {
+        // FIXME DisabledOnJre when we migrate to junit5 and run on unix too
+        // winddows java 8 must depends on wwmc something available
+        double v = Double.parseDouble(System.getProperty("java.specification.version"));
+        Assume.assumeTrue(v >= 9.0);
         ProcessChecker checker = ProcessCheckerFactory.of(Long.toString(Integer.MAX_VALUE));
 
-        assertThat(checker.canUse()).isFalse();
+        assertThat(checker.canUse()).isTrue();
+
+        assertThat(checker.isProcessAlive()).isFalse();
     }
 
     @Test
