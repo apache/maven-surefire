@@ -20,6 +20,7 @@ package org.apache.maven.surefire.booter;
 
 import java.lang.management.ManagementFactory;
 
+import org.junit.Assume;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +37,9 @@ public class ProcessHandleCheckerTest {
     @Test
     public void shouldReportAvailableOnJava9Plus() {
         // This test runs on modern JVMs, so isAvailable() should return true
+        // FIXME DisabledOnJre when we migrate to junit5
+        double v = Double.parseDouble(System.getProperty("java.specification.version"));
+        Assume.assumeTrue(v >= 9.0);
         assertThat(ProcessHandleChecker.isAvailable()).isTrue();
     }
 
