@@ -29,6 +29,7 @@ import java.util.regex.Matcher;
 
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -165,9 +166,14 @@ public class PpidCheckerTest {
 
     @Test
     public void shouldBeStoppedCheckerWithError() throws Exception {
+        // FIXME DisabledOnJre when we migrate to junit5
+        double v = Double.parseDouble(System.getProperty("java.specification.version"));
+        Assume.assumeTrue(v >= 9.0);
         String expectedPid =
                 ManagementFactory.getRuntimeMXBean().getName().split("@")[0].trim();
         DumpErrorSingleton.getSingleton().init(reportsDir, dumpFileName);
+
+        ParentProcessCheckerFactory.of(expectedPid);
 
         PpidChecker checker = new PpidChecker(expectedPid);
         checker.stop();
@@ -182,6 +188,10 @@ public class PpidCheckerTest {
 
     @Test
     public void shouldBeEmptyDump() throws Exception {
+
+        // FIXME DisabledOnJre when we migrate to junit5
+        double v = Double.parseDouble(System.getProperty("java.specification.version"));
+        Assume.assumeTrue(v >= 9.0);
         String expectedPid =
                 ManagementFactory.getRuntimeMXBean().getName().split("@")[0].trim();
         DumpErrorSingleton.getSingleton().init(reportsDir, dumpFileName);
