@@ -18,6 +18,9 @@
  */
 package org.apache.maven.surefire.its;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.assertj.core.api.Assertions;
@@ -69,13 +72,19 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4Integration
 
     @Test
     public void dontFailIfNoTestsForkOnce() {
-        Assertions.assertThat(unpack().forkOnce()
-                        .failIfNoTests(false)
-                        .argLine("-Djdk.net.URLClassPath.disableClassPathURLCheck=true")
-                        .executeTest()
-                        .verifyErrorFreeLog()
-                        .getSurefireReportsDirectory()
-                        .listFiles())
+        Assertions.assertThat(Arrays.stream(Objects.requireNonNull(unpack().forkOnce()
+                                .failIfNoTests(false)
+                                .argLine("-Djdk.net.URLClassPath.disableClassPathURLCheck=true")
+                                .executeTest()
+                                .verifyErrorFreeLog()
+                                .getSurefireReportsDirectory()
+                                .listFiles()))
+                        //  we may have some files containing
+                        //            Boot Manifest-JAR contains absolute paths in classpath
+                        // 'D:\a\maven-surefire\maven-surefire\surefire-its\target\CheckTestFailIfNoTestsForkCountIT_dontFailIfNoTestsForkOnce\target\test-classes'
+                        //        Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                        //            'other' has different root
+                        .filter(file -> !file.getName().endsWith(".dumpstream")))
                 .isEmpty();
     }
 
