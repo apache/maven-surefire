@@ -24,9 +24,8 @@ Contributing to [Apache Maven Surefire](https://maven.apache.org/surefire/)
 [![Apache License, Version 2.0, January 2004](https://img.shields.io/github/license/apache/maven.svg?label=License&style=for-the-badge)][license]
 
 [![CI](https://img.shields.io/badge/CI-Jenkins-blue.svg?style=for-the-badge)](https://jenkins-ci.org/)
-[![Jenkins Status](https://img.shields.io/jenkins/s/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][build]
-[![Jenkins tests](https://img.shields.io/jenkins/t/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge)][test-results]
-[![Jenkins JaCoCo](https://img.shields.io/jenkins/coverage/jacoco/https/ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master.svg?style=for-the-badge&color=green)](https://ci-maven.apache.org/job/Maven/job/maven-box/job/maven-surefire/job/master/lastBuild/jacoco/)
+[![Jenkins Build](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Fci-maven.apache.org%2Fjob%2FMaven%2Fjob%2Fmaven-box%2Fjob%2Fmaven-surefire%2Fjob%2Fmaster%2F&style=for-the-badge)][build]
+[![Jenkins Tests](https://img.shields.io/jenkins/tests?jobUrl=https%3A%2F%2Fci-maven.apache.org%2Fjob%2FMaven%2Fjob%2Fmaven-box%2Fjob%2Fmaven-surefire%2Fjob%2Fmaster%2F&style=for-the-badge)][test-results]
 
 [![Verify](https://github.com/apache/maven-surefire/actions/workflows/maven-verify.yml/badge.svg)](https://github.com/apache/maven-surefire/actions/workflows/maven-verify.yml)
 [![Reproducible Builds](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/jvm-repo-rebuild/reproducible-central/master/content/org/apache/maven/surefire/badge.json)](https://github.com/jvm-repo-rebuild/reproducible-central/blob/master/content/org/apache/maven/surefire/README.md)
