@@ -172,6 +172,28 @@ public class ProcessHandleCheckerTest {
         assertThatThrownBy(() -> new ProcessHandleChecker("not-a-number")).isInstanceOf(NumberFormatException.class);
     }
 
+    @Test
+    public void shouldReturnProcessInfoAfterCanUse() {
+        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+
+        String currentPid = getCurrentPid();
+        assumeTrue("Could not determine current PID", currentPid != null);
+
+        ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
+
+        // processInfo() returns null before canUse() is called
+        assertThat(checker.processInfo()).isNull();
+
+        // Initialize the checker
+        assertThat(checker.canUse()).isTrue();
+
+        // Now processInfo() should return valid info
+        ProcessInfo processInfo = checker.processInfo();
+        assertThat(processInfo).isNotNull();
+        assertThat(processInfo.getPID()).isEqualTo(currentPid);
+        assertThat(processInfo.getTime()).isGreaterThan(0L);
+    }
+
     /**
      * Gets the current process PID using reflection (Java 8 compatible).
      *
