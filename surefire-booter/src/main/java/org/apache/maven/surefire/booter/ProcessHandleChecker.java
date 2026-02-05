@@ -27,20 +27,20 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
 
 /**
- * Checks if the parent process (Maven plugin) is alive using the ProcessHandle API via reflection.
+ * Checks if a process is alive using the ProcessHandle API via reflection.
  * <p>
  * This implementation uses reflection to access the Java 9+ {@code ProcessHandle} API,
  * allowing the class to compile on Java 8 while functioning on Java 9+.
  * <p>
- * The checker detects two scenarios indicating the parent is no longer available:
+ * The checker detects two scenarios indicating the process is no longer available:
  * <ol>
- *   <li>The parent process has terminated ({@code ProcessHandle.isAlive()} returns {@code false})</li>
+ *   <li>The process has terminated ({@code ProcessHandle.isAlive()} returns {@code false})</li>
  *   <li>The PID has been reused by the OS for a new process (start time differs from initial)</li>
  * </ol>
  *
  * @since 3.?
  */
-final class ProcessHandleChecker implements ParentProcessChecker {
+final class ProcessHandleChecker implements ProcessChecker {
 
     /** Whether ProcessHandle API is available and reflection setup succeeded */
     private static final boolean AVAILABLE;
@@ -58,6 +58,9 @@ final class ProcessHandleChecker implements ParentProcessChecker {
     private static final Method OPTIONAL_GET; // Optional.get() -> Object
     private static final Method OPTIONAL_OR_ELSE; // Optional.orElse(Object) -> Object
 
+    // Method reference for Instant
+    private static final Method INSTANT_TO_EPOCH_MILLI; // Instant.toEpochMilli() -> long
+
     static {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -65,6 +68,7 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         Class<?> processHandleClass = tryLoadClass(classLoader, "java.lang.ProcessHandle");
         Class<?> processHandleInfoClass = tryLoadClass(classLoader, "java.lang.ProcessHandle$Info");
         Class<?> optionalClass = tryLoadClass(classLoader, "java.util.Optional");
+        Class<?> instantClass = tryLoadClass(classLoader, "java.time.Instant");
 
         Method processHandleOf = null;
         Method processHandleIsAlive = null;
@@ -73,6 +77,7 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         Method optionalIsPresent = null;
         Method optionalGet = null;
         Method optionalOrElse = null;
+        Method instantToEpochMilli = null;
 
         if (processHandleClass != null && processHandleInfoClass != null && optionalClass != null) {
             // ProcessHandle methods
@@ -87,6 +92,11 @@ final class ProcessHandleChecker implements ParentProcessChecker {
             optionalIsPresent = tryGetMethod(optionalClass, "isPresent");
             optionalGet = tryGetMethod(optionalClass, "get");
             optionalOrElse = tryGetMethod(optionalClass, "orElse", Object.class);
+
+            // Instant methods (for processInfo)
+            if (instantClass != null) {
+                instantToEpochMilli = tryGetMethod(instantClass, "toEpochMilli");
+            }
         }
 
         // All methods must be available for ProcessHandle API to be usable
@@ -105,21 +115,22 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         OPTIONAL_IS_PRESENT = optionalIsPresent;
         OPTIONAL_GET = optionalGet;
         OPTIONAL_OR_ELSE = optionalOrElse;
+        INSTANT_TO_EPOCH_MILLI = instantToEpochMilli;
     }
 
-    private final long ppid;
-    private volatile Object parentProcessHandle; // ProcessHandle (stored as Object)
+    private final long pid;
+    private volatile Object processHandle; // ProcessHandle (stored as Object)
     private volatile Object initialStartInstant; // Instant (stored as Object)
     private volatile boolean stopped;
 
     /**
-     * Creates a new checker for the given parent process ID.
+     * Creates a new checker for the given process ID.
      *
-     * @param ppid the parent process ID as a string
-     * @throws NumberFormatException if ppid is not a valid long
+     * @param pid the process ID as a string
+     * @throws NumberFormatException if pid is not a valid long
      */
-    ProcessHandleChecker(@Nonnull String ppid) {
-        this.ppid = Long.parseLong(ppid);
+    ProcessHandleChecker(@Nonnull String pid) {
+        this.pid = Long.parseLong(pid);
     }
 
     /**
@@ -137,20 +148,20 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         if (!AVAILABLE || stopped) {
             return false;
         }
-        if (parentProcessHandle == null) {
+        if (processHandle == null) {
             try {
-                // ProcessHandle.of(ppid) returns Optional<ProcessHandle>
-                Object optionalHandle = invokeMethodWithArray(null, PROCESS_HANDLE_OF, ppid);
+                // ProcessHandle.of(pid) returns Optional<ProcessHandle>
+                Object optionalHandle = invokeMethodWithArray(null, PROCESS_HANDLE_OF, pid);
 
                 // Check if Optional is present
                 boolean isPresent = invokeMethodWithArray(optionalHandle, OPTIONAL_IS_PRESENT);
                 if (isPresent) {
                     // Get the ProcessHandle from Optional
-                    parentProcessHandle = invokeMethodWithArray(optionalHandle, OPTIONAL_GET);
+                    processHandle = invokeMethodWithArray(optionalHandle, OPTIONAL_GET);
 
                     // Get info and start instant
-                    // parentProcessHandle.info().startInstant().orElse(null)
-                    Object info = invokeMethodWithArray(parentProcessHandle, PROCESS_HANDLE_INFO);
+                    // processHandle.info().startInstant().orElse(null)
+                    Object info = invokeMethodWithArray(processHandle, PROCESS_HANDLE_INFO);
                     Object optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
                     initialStartInstant = invokeMethodWithArray(optionalInstant, OPTIONAL_OR_ELSE, (Object) null);
 
@@ -178,16 +189,16 @@ final class ProcessHandleChecker implements ParentProcessChecker {
         }
 
         try {
-            // Check if process is still running: parentProcessHandle.isAlive()
-            boolean isAlive = invokeMethodWithArray(parentProcessHandle, PROCESS_HANDLE_IS_ALIVE);
+            // Check if process is still running: processHandle.isAlive()
+            boolean isAlive = invokeMethodWithArray(processHandle, PROCESS_HANDLE_IS_ALIVE);
             if (!isAlive) {
                 return false;
             }
 
             // Verify it's the same process (not a reused PID)
             if (initialStartInstant != null) {
-                // parentProcessHandle.info().startInstant()
-                Object info = invokeMethodWithArray(parentProcessHandle, PROCESS_HANDLE_INFO);
+                // processHandle.info().startInstant()
+                Object info = invokeMethodWithArray(processHandle, PROCESS_HANDLE_INFO);
                 Object optionalInstant = invokeMethodWithArray(info, INFO_START_INSTANT);
 
                 boolean isPresent = invokeMethodWithArray(optionalInstant, OPTIONAL_IS_PRESENT);
@@ -224,8 +235,21 @@ final class ProcessHandleChecker implements ParentProcessChecker {
     }
 
     @Override
+    public ProcessInfo processInfo() {
+        if (initialStartInstant == null || INSTANT_TO_EPOCH_MILLI == null) {
+            return null;
+        }
+        try {
+            long startTimeMillis = invokeMethodWithArray(initialStartInstant, INSTANT_TO_EPOCH_MILLI);
+            return ProcessInfo.processHandleInfo(String.valueOf(pid), startTimeMillis);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    @Override
     public String toString() {
-        String args = "ppid=" + ppid + ", stopped=" + stopped + ", hasHandle=" + (parentProcessHandle != null);
+        String args = "pid=" + pid + ", stopped=" + stopped + ", hasHandle=" + (processHandle != null);
         if (initialStartInstant != null) {
             args += ", startInstant=" + initialStartInstant;
         }

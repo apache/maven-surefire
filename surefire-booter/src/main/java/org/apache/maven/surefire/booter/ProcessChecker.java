@@ -19,30 +19,30 @@
 package org.apache.maven.surefire.booter;
 
 /**
- * Interface for checking if the parent process (Maven plugin) is still alive.
+ * Interface for checking if a process (typically the parent Maven plugin) is still alive.
  * <p>
  * Implementations allow the forked JVM to detect when its parent Maven process
  * has terminated, enabling cleanup and preventing orphaned processes.
  *
  * @since 3.?
  */
-public interface ParentProcessChecker {
+public interface ProcessChecker {
 
     /**
-     * Checks whether this checker can be used to monitor the parent process.
+     * Checks whether this checker can be used to monitor the process.
      * <p>
      * This method must return {@code true} before {@link #isProcessAlive()} can be called.
      *
-     * @return {@code true} if the checker is operational and can monitor the parent process
+     * @return {@code true} if the checker is operational and can monitor the process
      */
     boolean canUse();
 
     /**
-     * Checks if the parent process is still alive.
+     * Checks if the process is still alive.
      * <p>
      * This method can only be called after {@link #canUse()} has returned {@code true}.
      *
-     * @return {@code true} if the parent process is still running; {@code false} if it has terminated
+     * @return {@code true} if the process is still running; {@code false} if it has terminated
      *         or if the PID has been reused by a different process
      * @throws IllegalStateException if {@link #canUse()} returns {@code false} or if the checker
      *                               has been stopped
@@ -69,4 +69,11 @@ public interface ParentProcessChecker {
      * @return {@code true} if {@link #stop()} or {@link #destroyActiveCommands()} has been called
      */
     boolean isStopped();
+
+    /**
+     * Returns information about the process being checked.
+     *
+     * @return the process information, or {@code null} if not yet initialized
+     */
+    ProcessInfo processInfo();
 }
