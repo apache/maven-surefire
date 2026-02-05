@@ -127,7 +127,7 @@ public class ProcessHandleCheckerTest {
 
         assertThat(toString)
                 .contains("ProcessHandleChecker")
-                .contains("ppid=" + currentPid)
+                .contains("pid=" + currentPid)
                 .contains("stopped=false");
     }
 
@@ -153,7 +153,7 @@ public class ProcessHandleCheckerTest {
         String currentPid = getCurrentPid();
         assumeTrue("Could not determine current PID", currentPid != null);
 
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(currentPid);
+        ProcessChecker checker = ProcessCheckerFactory.of(currentPid);
 
         assertThat(checker).isInstanceOf(ProcessHandleChecker.class);
         assertThat(checker.canUse()).isTrue();
@@ -162,7 +162,7 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnNullFromFactoryForNullPpid() {
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(null);
+        ProcessChecker checker = ProcessCheckerFactory.of(null);
 
         assertThat(checker).isNull();
     }

@@ -23,13 +23,13 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests for {@link ParentProcessCheckerFactory}.
+ * Tests for {@link ProcessCheckerFactory}.
  */
-public class ParentProcessCheckerFactoryTest {
+public class ProcessCheckerFactoryTest {
 
     @Test
     public void shouldReturnNullForNullPpid() {
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(null);
+        ProcessChecker checker = ProcessCheckerFactory.of(null);
         assertThat(checker).isNull();
     }
 
@@ -42,7 +42,7 @@ public class ParentProcessCheckerFactoryTest {
             return;
         }
 
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(currentPid);
+        ProcessChecker checker = ProcessCheckerFactory.of(currentPid);
 
         assertThat(checker).isNotNull();
         assertThat(checker.canUse()).isTrue();
@@ -52,7 +52,7 @@ public class ParentProcessCheckerFactoryTest {
 
     @Test
     public void shouldSelectProcessHandleCheckerOnJava9Plus() {
-        if (!ParentProcessCheckerFactory.isProcessHandleSupported()) {
+        if (!ProcessCheckerFactory.isProcessHandleSupported()) {
             // Skip test if ProcessHandle is not available (Java 8)
             return;
         }
@@ -62,7 +62,7 @@ public class ParentProcessCheckerFactoryTest {
             return;
         }
 
-        // ParentProcessChecker checker = ParentProcessCheckerFactory.of(currentPid);
+        // ProcessChecker checker = ProcessCheckerFactory.of(currentPid);
         // FIXME for some reason the cannot find classes from multi-release (java9) jar in surefire plugin
         //        assertThat(checker.getClass().getSimpleName()).isEqualTo("ProcessHandleChecker");
     }
@@ -74,7 +74,7 @@ public class ParentProcessCheckerFactoryTest {
             return;
         }
 
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(currentPid);
+        ProcessChecker checker = ProcessCheckerFactory.of(currentPid);
 
         assertThat(checker.canUse()).isTrue();
         assertThat(checker.isStopped()).isFalse();
@@ -92,7 +92,7 @@ public class ParentProcessCheckerFactoryTest {
             return;
         }
 
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of(currentPid);
+        ProcessChecker checker = ProcessCheckerFactory.of(currentPid);
         assertThat(checker.canUse()).isTrue();
 
         checker.destroyActiveCommands();
@@ -104,7 +104,7 @@ public class ParentProcessCheckerFactoryTest {
     @Test
     public void shouldHandleNonExistentProcess() {
         // Use an invalid PID that's unlikely to exist
-        ParentProcessChecker checker = ParentProcessCheckerFactory.of("999999999");
+        ProcessChecker checker = ProcessCheckerFactory.of("999999999");
 
         assertThat(checker).isNotNull();
         // canUse() returns false for non-existent process

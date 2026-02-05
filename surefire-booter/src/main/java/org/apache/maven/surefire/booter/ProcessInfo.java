@@ -48,6 +48,17 @@ final class ProcessInfo {
         return new ProcessInfo(pid, startTimestamp);
     }
 
+    /**
+     * Creates process info from ProcessHandle API data.
+     *
+     * @param pid the process ID
+     * @param startTimeMillis the process start time in epoch milliseconds
+     * @return a new ProcessInfo instance
+     */
+    static @Nonnull ProcessInfo processHandleInfo(String pid, long startTimeMillis) {
+        return new ProcessInfo(pid, startTimeMillis);
+    }
+
     private final String pid;
     private final long time;
 

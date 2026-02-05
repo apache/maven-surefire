@@ -64,12 +64,12 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
- * @see ParentProcessChecker
- * @see ParentProcessCheckerFactory
- * @deprecated Use {@code ProcessHandleChecker} via {@link ParentProcessCheckerFactory#of(String)} instead
+ * @see ProcessChecker
+ * @see ProcessCheckerFactory
+ * @deprecated Use {@code ProcessHandleChecker} via {@link ProcessCheckerFactory#of(String)} instead
  */
 @Deprecated
-final class PpidChecker implements ParentProcessChecker {
+final class PpidChecker implements ProcessChecker {
     private static final long MINUTES_TO_MILLIS = 60L * 1000L;
     // 25 chars https://superuser.com/questions/937380/get-creation-time-of-file-in-milliseconds/937401#937401
     private static final int WMIC_CREATION_DATE_VALUE_LENGTH = 25;
@@ -340,6 +340,11 @@ final class PpidChecker implements ParentProcessChecker {
     @Override
     public void stop() {
         stopped = true;
+    }
+
+    @Override
+    public ProcessInfo processInfo() {
+        return parentProcessInfo;
     }
 
     /**
