@@ -48,22 +48,22 @@ public interface SurefireProvider {
      * Called when forkmode is different from "never" or "always", allows the provider to define
      * how to behave for the fork.
      *
-     * @return An iterator that will trigger one fork per item
+     * @return an iterator that will trigger one fork per item
      */
     Iterable<Class<?>> getSuites();
 
     /**
-     * Runs a forked test
+     * Runs a forked test.
      *
-     * @param forkTestSet An item from the iterator in #getSuites. Will be null for forkmode never or always.
+     * @param forkTestSet an item from the iterator in #getSuites. Will be null for forkmode never or always.
      *                    When this is non-null, the forked process will run only that test
      *                    and probably not scan the classpath
-     * @return A result of the invocation
+     * @return a result of the invocation
+     * @throws InvocationTargetException fails in {@code ProviderFactory}
      * @throws ReporterException
      *          When reporting fails
      * @throws TestSetFailedException
      *          When testset fails
-     * @throws InvocationTargetException fails in {@code ProviderFactory}
      */
     @SuppressWarnings("checkstyle:redundantthrows")
     RunResult invoke(Object forkTestSet) throws TestSetFailedException, ReporterException, InvocationTargetException;

@@ -21,14 +21,13 @@ package org.apache.maven.surefire.api.report;
 import javax.annotation.Nonnull;
 
 /**
- * Describes a single entry for a test report
- *
+ * Describes a single entry for a test report.
  */
 public interface ReportEntry {
     /**
-     * The class name of the test
+     * The class name of the test.
      *
-     * @return A string with the class name
+     * @return a string with the class name
      */
     String getSourceName();
 
@@ -40,9 +39,9 @@ public interface ReportEntry {
     String getSourceText();
 
     /**
-     * The name of the test case
+     * The name of the test case.
      *
-     * @return A string describing the test case
+     * @return a string describing the test case
      */
     String getName();
 
@@ -54,14 +53,14 @@ public interface ReportEntry {
     String getNameText();
 
     /**
-     * The group/category of the testcase
+     * The group/category of the testcase.
      *
-     * @return A string
+     * @return a string
      */
     String getGroup();
 
     /**
-     * The group/category of the testcase
+     * The group/category of the testcase.
      *
      * @return stack trace object
      */
@@ -71,6 +70,7 @@ public interface ReportEntry {
      * Gets the runtime for the item. Optional parameter. If the value is not set, it will be determined within
      * the reporting subsystem. Some providers like to calculate this value themselves, and it gets the
      * most accurate value.
+     *
      * @return duration of a test in milliseconds
      */
     Integer getElapsed();
@@ -86,23 +86,23 @@ public interface ReportEntry {
 
     /**
      * A message relating to a non-successful termination.
-     * May be the "message" from an exception or the reason for a test being ignored
+     * May be the "message" from an exception or the reason for a test being ignored.
      *
-     * @return A string that explains an anomaly
+     * @return a string that explains an anomaly
      */
     String getMessage();
 
     /**
      * A source name of the test case together with the group or category (if any exists).
      *
-     * @return A string with the test case name and group/category, or just the name.
+     * @return a string with the test case name and group/category, or just the name
      */
     String getNameWithGroup();
 
     /**
      * A source text of the test case together with the group or category (if any exists).
      *
-     * @return A string with the test case text and group/category, or just the source text. If no
+     * @return a string with the test case text and group/category, or just the source text. If no
      * source text is provided, then this will return null.
      */
     String getReportNameWithGroup();
@@ -110,7 +110,7 @@ public interface ReportEntry {
     /**
      * Run mode.
      *
-     * @return a normal run, or re-run.
+     * @return a normal run, or re-run
      */
     @Nonnull
     RunMode getRunMode();

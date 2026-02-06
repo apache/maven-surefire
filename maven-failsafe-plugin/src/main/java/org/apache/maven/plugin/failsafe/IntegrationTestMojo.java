@@ -135,7 +135,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * "true".
      *
      * @since 2.12
-     * @deprecated Since 3.0.0-M8, use "failsafe.failIfNoSpecifiedTests" instead.
+     * @deprecated since 3.0.0-M8, use "failsafe.failIfNoSpecifiedTests" instead
      */
     @Deprecated
     @Parameter(property = "it.failIfNoSpecifiedTests", defaultValue = "true")
@@ -676,7 +676,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     }
 
     /**
-     * @return Output directory, or artifact file if artifact type is "jar". If not forking the JVM, parameter
+     * @return output directory, or artifact file if artifact type is "jar". If not forking the JVM, parameter
      * {@link #useSystemClassLoader} is ignored and the {@link org.apache.maven.surefire.booter.IsolatedClassLoader} is
      * used instead. See the resolution of {@link #getClassLoaderConfiguration() ClassLoaderConfiguration}.
      */

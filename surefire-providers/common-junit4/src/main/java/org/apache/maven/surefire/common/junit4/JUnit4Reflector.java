@@ -29,8 +29,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWit
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryGetMethod;
 
 /**
- * JUnit4 reflection helper
- *
+ * JUnit4 reflection helper.
  */
 public final class JUnit4Reflector {
     private static final Class<?>[] PARAMS = {Class.class};

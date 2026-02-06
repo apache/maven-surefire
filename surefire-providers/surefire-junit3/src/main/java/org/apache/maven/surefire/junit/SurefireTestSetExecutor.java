@@ -21,8 +21,7 @@ package org.apache.maven.surefire.junit;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 
 /**
- * Describes a single test set
- *
+ * Describes a single test set.
  */
 public interface SurefireTestSetExecutor {
     void execute(Class<?> testClass, ClassLoader loader) throws TestSetFailedException;
