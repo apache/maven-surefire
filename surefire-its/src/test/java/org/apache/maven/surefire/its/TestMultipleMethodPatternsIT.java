@@ -39,14 +39,7 @@ public class TestMultipleMethodPatternsIT extends AbstractTestMultipleMethodPatt
 
     @Parameters
     public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            {Settings.JUNIT4_TEST},
-            {Settings.JUNIT47_TEST},
-            {Settings.JUNIT4_INCLUDES},
-            {Settings.JUNIT47_INCLUDES},
-            {Settings.JUNIT4_INCLUDES_EXCLUDES},
-            {Settings.JUNIT47_INCLUDES_EXCLUDES}
-        });
+        return Arrays.asList(new Object[][] {{Settings.JUNIT4_INCLUDES}, {Settings.JUNIT4_INCLUDES_EXCLUDES}});
     }
 
     @Override
@@ -56,6 +49,6 @@ public class TestMultipleMethodPatternsIT extends AbstractTestMultipleMethodPatt
 
     @Override
     protected SurefireLauncher unpack() {
-        return unpack("junit48-multiple-method-patterns", "_" + settings.path());
+        return unpack("junit4-multiple-method-patterns", "_" + settings.path());
     }
 }

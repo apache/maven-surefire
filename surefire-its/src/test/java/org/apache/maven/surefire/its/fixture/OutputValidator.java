@@ -31,6 +31,7 @@ import org.apache.maven.shared.verifier.Verifier;
 import org.hamcrest.Matcher;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.maven.shared.verifier.Verifier.stripAnsi;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -55,6 +56,23 @@ public class OutputValidator {
             throw new SurefireVerifierException(e);
         }
         return this;
+    }
+
+    public OutputValidator verifyTextNotInLog(String text) throws VerificationException {
+        List<String> lines = verifier.loadFile(this.getBasedir(), verifier.getLogFileName(), false);
+        boolean result = false;
+
+        for (String line : lines) {
+            if (stripAnsi(line).contains(text)) {
+                result = true;
+                break;
+            }
+        }
+
+        if (!result) {
+            return this;
+        }
+        throw new SurefireVerifierException(new Exception(text + " found in logs"));
     }
 
     public OutputValidator verifyErrorFreeLog() {

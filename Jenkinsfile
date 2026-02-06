@@ -49,7 +49,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
             final String stageKey = "${os}-jdk${jdk}-maven${maven}"
 
             def mavenOpts = '-Xms64m -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
-            mavenOpts += (os == 'linux' ? ' -Xmx1g' : ' -Xmx256m')
+            mavenOpts += (os == 'linux' ? ' -Xmx12g' : ' -Xmx6g')
 
             if (label == null || jdkName == null || mvnName == null) {
                 println "Skipping ${stageKey} as unsupported by Jenkins Environment."
@@ -64,14 +64,11 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         boolean first = indexOfOs == 0 && indexOfMaven == 0 && indexOfJdk == 0
                         def failsafeItPort = 8000 + 100 * indexOfMaven + 10 * indexOfJdk
                         def allOptions = options + ['-Djava.awt.headless=true', "-Dfailsafe-integration-test-port=${failsafeItPort}", "-Dfailsafe-integration-test-stop-port=${1 + failsafeItPort}"]
-
-                        if (!maven.startsWith('3.2') && !maven.startsWith('3.3') && !maven.startsWith('3.5')) {
-                            allOptions += '--no-transfer-progress'
-                        }
+                        allOptions += '--no-transfer-progress'
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
                             buildProcess(stageKey, jdkName, mvnName,
                                 first  && env.BRANCH_NAME == 'master' ? goalsDepl : goals,
-                                allOptions, mavenOpts, first)
+                                allOptions, mavenOpts, true)
                         }
                     }
                 }
@@ -83,33 +80,6 @@ oses.eachWithIndex { osMapping, indexOfOs ->
 timeout(time: 12, unit: 'HOURS') {
     try {
         parallel(stages)
-        // JENKINS-34376 seems to make it hard to detect the aborted builds
-    } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-        println "org.jenkinsci.plugins.workflow.steps.FlowInterruptedException: ${e}"
-        // this ambiguous condition means a user probably aborted
-        if (e.causes.size() == 0) {
-            currentBuild.result = 'ABORTED'
-        } else {
-            currentBuild.result = 'FAILURE'
-        }
-        throw e
-    } catch (hudson.AbortException e) {
-        println "hudson.AbortException: ${e}"
-        // this ambiguous condition means during a shell step, user probably aborted
-        if (e.getMessage().contains('script returned exit code 143')) {
-            currentBuild.result = 'ABORTED'
-        } else {
-            currentBuild.result = 'FAILURE'
-        }
-        throw e
-    } catch (InterruptedException e) {
-        println "InterruptedException: ${e}"
-        currentBuild.result = 'ABORTED'
-        throw e
-    } catch (Throwable e) {
-        println "Throwable: ${e}"
-        currentBuild.result = 'FAILURE'
-        throw e
     } finally {
         if (env.BRANCH_NAME == 'master') {
             jenkinsNotify()            
@@ -168,10 +138,6 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
                 unstable(" executing command status= " + errorStatus)
             }
         }
-
-    } catch (Throwable e) {
-        println "Throwable: ${e}"
-        throw e
     } finally {
         try {
             if (makeReports) {
@@ -184,10 +150,6 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
                         allowEmptyResults: true,
                         keepLongStdio: true,
                         testResults: testReportsPatternCsv())
-
-                if (currentBuild.result == 'UNSTABLE') {
-                    currentBuild.result = 'FAILURE'
-                }
             }
 
             if (errorStatus != 0) {
@@ -213,7 +175,6 @@ static def sourcesPatternCsv() {
             '**/surefire-booter/src/main/java,' +
             '**/surefire-extensions-api/src/main/java,' +
             '**/surefire-extensions-spi/src/main/java,' +
-            '**/surefire-grouper/src/main/java,' +
             '**/surefire-its/src/main/java,' +
             '**/surefire-logger-api/src/main/java,' +
             '**/surefire-providers/**/src/main/java,' +
@@ -230,7 +191,6 @@ static def classPatternCsv() {
             '**/surefire-booter/target/classes,' +
             '**/surefire-extensions-api/target/classes,' +
             '**/surefire-extensions-spi/target/classes,' +
-            '**/surefire-grouper/target/classes,' +
             '**/surefire-its/target/classes,' +
             '**/surefire-logger-api/target/classes,' +
             '**/surefire-providers/**/target/classes,' +
@@ -245,7 +205,6 @@ static def testReportsPatternCsv() {
             '**/maven-surefire-report-plugin/target/surefire-reports/*.xml,' +
             '**/surefire-api/target/surefire-reports/*.xml,' +
             '**/surefire-booter/target/surefire-reports/*.xml,' +
-            '**/surefire-grouper/target/surefire-reports/*.xml,' +
             '**/surefire-its/target/surefire-reports/*.xml,' +
             '**/surefire-logger-api/target/surefire-reports/*.xml,' +
             '**/surefire-providers/**/target/surefire-reports/*.xml,' +

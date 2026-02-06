@@ -38,7 +38,6 @@ import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
@@ -289,7 +288,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private StackTraceWriter toStackTraceWriter(String realClassName, String realMethodName, Throwable throwable) {
-        return new PojoStackTraceWriter(realClassName, realMethodName, throwable);
+        return new DefaultStackTraceWriter(realClassName, realMethodName, throwable);
     }
 
     private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
