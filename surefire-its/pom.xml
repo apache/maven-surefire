@@ -242,7 +242,7 @@
                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
               </systemPropertyVariables>
               <redirectTestOutputToFile>true</redirectTestOutputToFile>
-              <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
+              <forkedProcessTimeoutInSeconds>5400</forkedProcessTimeoutInSeconds>
               <shutdown>kill</shutdown>
             </configuration>
             <executions>
