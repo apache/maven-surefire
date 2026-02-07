@@ -365,15 +365,15 @@ public class PpidCheckerTest {
     }
 
     @Test
-    public void shouldHaveSystemPathToWmicOnWindows() throws Exception {
+    public void shouldHaveSystemPathToPowerShellOnWindows() throws Exception {
         assumeTrue(IS_OS_WINDOWS);
         assumeThat(System.getenv("SystemRoot"), is(notNullValue()));
         assumeThat(System.getenv("SystemRoot"), is(not("")));
-        assumeTrue(new File(System.getenv("SystemRoot"), "System32\\Wbem").isDirectory());
-        assumeTrue(new File(System.getenv("SystemRoot"), "System32\\Wbem\\wmic.exe").isFile());
-        assertThat((Boolean) invokeMethod(PpidChecker.class, "hasWmicStandardSystemPath"))
+        assumeTrue(new File(System.getenv("SystemRoot"), "System32\\WindowsPowerShell\\v1.0").isDirectory());
+        assumeTrue(new File(System.getenv("SystemRoot"), "System32\\WindowsPowerShell\\v1.0\\powershell.exe").isFile());
+        assertThat((Boolean) invokeMethod(PpidChecker.class, "hasPowerShellStandardSystemPath"))
                 .isTrue();
-        assertThat(new File(System.getenv("SystemRoot"), "System32\\Wbem\\wmic.exe"))
+        assertThat(new File(System.getenv("SystemRoot"), "System32\\WindowsPowerShell\\v1.0\\powershell.exe"))
                 .isFile();
     }
 

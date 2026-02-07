@@ -49,4 +49,4 @@ jobs:
         !**/hs_err_pid*
         !surefire-its/target/ConsoleOutputIT_*/target/surefire-reports/*-jvmRun*-events.bin
       timeout-minutes: 600
-      os-matrix: '[ "ubuntu-latest", "windows-2022", "macos-latest" ]'
+      os-matrix: '[ "ubuntu-latest", "windows-latest", "macos-latest" ]'
