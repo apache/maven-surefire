@@ -54,4 +54,9 @@ jobs:
       matrix-exclude: >
         [ 
           {"jdk": "8", "os": "windows-latest"}
-        ]      
+        ]
+      matrix-include: >
+        [
+          {"jdk": "8", "os": "windows-2022", "distribution": "zulu", "maven": "3.9.12"},
+          {"jdk": "21", "os": "windows-2022", "distribution": "zulu", "maven": "3.9.12"}
+        ]        
