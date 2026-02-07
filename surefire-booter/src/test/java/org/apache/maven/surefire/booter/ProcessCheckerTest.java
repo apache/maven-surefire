@@ -169,9 +169,8 @@ public class ProcessCheckerTest {
             return;
         }
 
-        // ProcessChecker checker = ProcessChecker.of(currentPid);
-        // FIXME for some reason the cannot find classes from multi-release (java9) jar in surefire plugin
-        //        assertThat(checker.getClass().getSimpleName()).isEqualTo("ProcessHandleChecker");
+        ProcessChecker checker = ProcessChecker.of(currentPid);
+        assertThat(checker.getClass().getSimpleName()).isEqualTo("ProcessHandleChecker");
     }
 
     @Test
@@ -215,8 +214,7 @@ public class ProcessCheckerTest {
 
         assertThat(checker).isNotNull();
         // canUse() returns false for non-existent process
-        // FIXME for some reason the cannot find classes from multi-release (java9) jar in surefire plugin
-        // assertThat(checker.canUse()).isFalse();
+        assertThat(checker.canUse()).isFalse();
     }
 
     /**
