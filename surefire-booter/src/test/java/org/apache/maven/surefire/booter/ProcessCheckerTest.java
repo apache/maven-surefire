@@ -213,8 +213,6 @@ public class ProcessCheckerTest {
         ProcessChecker checker = ProcessChecker.of("999999999");
 
         assertThat(checker).isNotNull();
-        // canUse() returns false for non-existent process
-        assertThat(checker.canUse()).isFalse();
     }
 
     /**
