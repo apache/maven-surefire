@@ -49,7 +49,7 @@ jobs:
         !**/hs_err_pid*
         !surefire-its/target/ConsoleOutputIT_*/target/surefire-reports/*-jvmRun*-events.bin
       timeout-minutes: 600
-      os-matrix: '[ "ubuntu-latest", "windows-2022", "windows-latest", "macos-latest" ]'
+      os-matrix: '[ "ubuntu-latest", "windows-latest", "macos-latest" ]'
       # exclude jkd 8 on windows-latest wmc process not here anymore and jdk8 not supporting processhandle
       matrix-exclude: >
         [ 
