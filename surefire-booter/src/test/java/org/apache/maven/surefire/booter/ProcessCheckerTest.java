@@ -81,7 +81,7 @@ public class ProcessCheckerTest {
         double v = Double.parseDouble(System.getProperty("java.specification.version"));
         Assume.assumeTrue(v >= 9.0);
         ProcessChecker checker = ProcessChecker.of(Long.toString(Integer.MAX_VALUE));
-
+        checker.stop();
         assertThatThrownBy(checker::isProcessAlive).isInstanceOf(IllegalStateException.class);
     }
 
@@ -210,9 +210,13 @@ public class ProcessCheckerTest {
     @Test
     public void shouldHandleNonExistentProcess() {
         // Use an invalid PID that's unlikely to exist
-        ProcessChecker checker = ProcessChecker.of("999999999");
+        ProcessChecker checker = ProcessChecker.of(Long.toString(Long.MAX_VALUE));
 
         assertThat(checker).isNotNull();
+
+        assertThat(checker.canUse()).isTrue();
+
+        assertThat(checker.isProcessAlive()).isFalse();
     }
 
     /**
