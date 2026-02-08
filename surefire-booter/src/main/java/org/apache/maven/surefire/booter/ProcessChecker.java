@@ -60,9 +60,10 @@ public interface ProcessChecker {
      * Checks whether this checker can be used to monitor the process.
      * <p>
      * This method must return {@code true} before {@link #isProcessAlive()} can be called.
-     *
+     * @deprecated with using ProcessHandleChecker on Java 9+, this method will always return {@code true} and can be removed in a future release.
      * @return {@code true} if the checker is operational and can monitor the process
      */
+    @Deprecated
     boolean canUse();
 
     /**
