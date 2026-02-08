@@ -296,6 +296,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      *
      * @since 2.2
      */
+    @Deprecated
     @Parameter(property = "surefire.suiteXmlFiles")
     private File[] suiteXmlFiles;
 
