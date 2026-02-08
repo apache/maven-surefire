@@ -919,6 +919,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     protected abstract ForkNodeFactory getForkNode();
 
+    protected boolean isProviderDeprecationWarning() {
+        return false;
+    }
+
     /**
      * This plugin MOJO artifact.
      *
@@ -1097,6 +1101,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             if (jvmToUse != null) {
                 getConsoleLogger().warning("Toolchains are ignored, 'jvm' parameter is set to " + jvmToUse);
             }
+        }
+
+        if (hasSuiteXmlFiles()) {
+            providerDeprecationWarning("suiteXmlFiles for TestNG, will be removed in future versions of plugin.");
         }
 
         if (!getTestClassesDirectory().exists()
@@ -2967,6 +2975,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         public void addProviderProperties() throws MojoExecutionException {
             convertTestNGParameters();
+            providerDeprecationWarning("TestNG provider is deprecated, will be removed in future versions of plugin.");
         }
 
         @Nonnull
@@ -2998,7 +3007,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         @Override
-        public void addProviderProperties() {}
+        public void addProviderProperties() {
+            providerDeprecationWarning("JUnit3 provider is deprecated, will be removed in future versions of plugin.");
+        }
 
         @Nonnull
         @Override
@@ -3039,7 +3050,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         @Override
-        public void addProviderProperties() {}
+        public void addProviderProperties() {
+            providerDeprecationWarning("JUnit4 provider is deprecated, will be removed in future versions of plugin.");
+        }
 
         @Nonnull
         @Override
@@ -3290,6 +3303,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             convertJunitCoreParameters();
             convertGroupParameters();
             convertJunitEngineParameters();
+            providerDeprecationWarning("JUnit4 provider is deprecated, will be removed in future versions of plugin.");
         }
 
         @Nonnull
@@ -3778,6 +3792,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     public void setTempDir(String tempDir) {
         this.tempDir = tempDir;
+    }
+
+    private void providerDeprecationWarning(String message) {
+        if (isProviderDeprecationWarning()) {
+            getConsoleLogger().warning(message);
+            getConsoleLogger()
+                    .warning("Refer to the documentation for more details: https://maven.apache.org/surefire/maven-"
+                            + getPluginName() + "-plugin/migration355.html");
+        }
     }
 
     private static final class ClasspathCache {

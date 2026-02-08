@@ -558,6 +558,21 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     @Parameter(property = "failsafe.excludeJUnit5Engines")
     private String[] excludeJUnit5Engines;
 
+    /**
+     * Warning about deprecated providers and features planed to remove in <code>3.6.x</code> plugin version.
+     * <br>
+     *
+     * Set to <code>false</code> to disable the warning if you want to stay on the <code>3.5.x</code> plugin version.
+     * <br>
+     *
+     * See the documentation for more details:<br>
+     * <a href="https://maven.apache.org/surefire/maven-failsafe-plugin/migration355.html">Migration to 3.5.5 version</a>
+     *
+     * @since 3.5.5
+     */
+    @Parameter(property = "failsafe.providerDeprecationWarning", defaultValue = "true")
+    private boolean providerDeprecationWarning;
+
     @Override
     protected int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
@@ -1014,5 +1029,10 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     @SuppressWarnings("UnusedDeclaration")
     public void setExcludeJUnit5Engines(String[] excludeJUnit5Engines) {
         this.excludeJUnit5Engines = excludeJUnit5Engines;
+    }
+
+    @Override
+    protected boolean isProviderDeprecationWarning() {
+        return providerDeprecationWarning;
     }
 }

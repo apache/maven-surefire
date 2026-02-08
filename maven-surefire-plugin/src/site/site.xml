@@ -35,6 +35,7 @@
       <item name="License" href="http://www.apache.org/licenses/"/>
       <item name="History" href="history.html"/>
       <item name="Download" href="../download.html"/>
+      <item name="Migration to 3.5.5" href="migration355.html"/>
     </menu>
     <menu name="Examples">
       <item name="Java Modularity (JPMS) in Tests" href="examples/jpms.html"/>

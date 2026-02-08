@@ -1,0 +1,72 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+Migration to 3.5.5 version
+==========================
+
+In the `3.6.x` version of ${thisPlugin} plugin, the removal of providers for `JUnit 3, 4` and `TestNG` is planned,
+so these providers are deprecated in the `3.5.5` version.
+
+If you want to stay on the `3.5.x` version, you can continue to use the `JUnit 3, 4` and `TestNG` providers without any changes,
+but you should be aware that these providers will be removed in the `3.6.x` version.
+
+In the `3.5.5` version of ${thisPlugin} plugin, a warning message will be emitted if you are using the `JUnit 3, 4` or `TestNG` providers.
+You can suppress this warning by setting the parameter `providerDeprecationWarning` to `false`.
+
+You should consider migrating your tests to `JUnit 5`, but if you want to continue using `JUnit 3, 4` or `TestNG`,
+Preparing for next version you can try the instructions below.
+
+**NOTE**: The JUnit engine will be automatically added to your project with `3.6.x` version of ${thisPlugin} plugin,
+so you don't need to add it manually.
+
+JUnit 3 and 4
+-------------
+
+You need to upgrade your `junit` dependencies to version `4.12` or higher (the recommended version is `4.13.2`), and add the `junit-vintage-engine` dependency to your project:
+
+```xml
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+</dependency>
+<dependency>
+    <groupId>org.junit.vintage</groupId>
+    <artifactId>junit-vintage-engine</artifactId>
+    <version>5.14.2</version>
+    <scope>test</scope>
+</dependency>
+```
+Please refer to the documentation for more details [Migrating from JUnit 4](https://docs.junit.org/5.14.2/migrating-from-junit4.html)
+
+TestNG
+------
+
+You need to use a [TestNG Engine for the JUnit Platform](https://github.com/junit-team/testng-engine), so add the `testng-engine` dependency to your project:
+
+```xml
+<dependency>
+    <groupId>org.junit.support</groupId>
+    <artifactId>testng-engine</artifactId>
+    <version>1.1.0</version>
+    <scope>test</scope>
+</dependency>
+```
+
+Refer to the `TestNG Engine` documentation for more details about the supported features and limitations of this engine.
