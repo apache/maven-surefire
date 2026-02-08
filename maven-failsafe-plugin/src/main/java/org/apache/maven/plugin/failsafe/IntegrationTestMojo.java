@@ -318,6 +318,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * @since 2.2
      */
     @Parameter(property = "failsafe.suiteXmlFiles")
+    @Deprecated
     private File[] suiteXmlFiles;
 
     /**
