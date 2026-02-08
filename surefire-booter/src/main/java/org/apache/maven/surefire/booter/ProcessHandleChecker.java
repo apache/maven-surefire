@@ -145,7 +145,7 @@ final class ProcessHandleChecker implements ProcessChecker {
 
     @Override
     public boolean canUse() {
-        return (AVAILABLE && !stopped) && processHandle != null;
+        return (AVAILABLE && !stopped);
     }
 
     /**

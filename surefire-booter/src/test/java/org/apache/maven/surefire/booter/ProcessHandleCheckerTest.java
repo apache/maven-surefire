@@ -64,7 +64,7 @@ public class ProcessHandleCheckerTest {
         // Use an invalid PID that's unlikely to exist
         ProcessHandleChecker checker = new ProcessHandleChecker("999999999");
 
-        assertThat(checker.canUse()).isFalse();
+        assertThat(checker.canUse()).isTrue();
     }
 
     @Test
