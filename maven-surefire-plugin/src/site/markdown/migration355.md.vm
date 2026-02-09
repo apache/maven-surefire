@@ -29,8 +29,10 @@ but you should be aware that these providers will be removed in the `3.6.x` vers
 In the `3.5.5` version of ${thisPlugin} plugin, a warning message will be emitted if you are using the `JUnit 3, 4` or `TestNG` providers.
 You can suppress this warning by setting the parameter `providerDeprecationWarning` to `false`.
 
-You should consider migrating your tests to `JUnit 5`, but if you want to continue using `JUnit 3, 4` or `TestNG`,
-Preparing for next version you can try the instructions below.
+You should consider migrating your tests to JUnit 5, but if you want to continue using `JUnit 3, 4` or `TestNG`,
+you can try using the `JUnit Platform` with the appropriate engines for these testing frameworks.
+
+Below are instructions for using the  `JUnit 3, 4` and `TestNG` with `JUnit Platform`.
 
 **NOTE**: The JUnit engine will be automatically added to your project with `3.6.x` version of ${thisPlugin} plugin,
 so you don't need to add it manually.
@@ -58,7 +60,7 @@ Please refer to the documentation for more details [Migrating from JUnit 4](http
 TestNG
 ------
 
-You need to use a [TestNG Engine for the JUnit Platform](https://github.com/junit-team/testng-engine), so add the `testng-engine` dependency to your project:
+You need to use the [TestNG Engine for the JUnit Platform](https://github.com/junit-team/testng-engine), so add the `testng-engine` dependency to your project:
 
 ```xml
 <dependency>

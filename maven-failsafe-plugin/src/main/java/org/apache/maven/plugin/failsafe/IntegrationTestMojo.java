@@ -559,7 +559,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     private String[] excludeJUnit5Engines;
 
     /**
-     * Warning about deprecated providers and features planed to remove in <code>3.6.x</code> plugin version.
+     * Warning about deprecated providers and features planned to be removed in <code>3.6.x</code> plugin version.
      * <br>
      *
      * Set to <code>false</code> to disable the warning if you want to stay on the <code>3.5.x</code> plugin version.
