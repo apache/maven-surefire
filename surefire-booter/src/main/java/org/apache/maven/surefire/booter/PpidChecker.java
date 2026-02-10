@@ -58,7 +58,7 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 /**
  * Recognizes PID of Plugin process and determines lifetime.
  * <p>
- * This implementation uses native commands ({@code ps} on Unix, {@code wmic} on Windows)
+ * This implementation uses native commands ({@code ps} on Unix, {@code powershell} on Windows)
  * to check the parent process status. On Java 9+, consider using {@code ProcessHandleChecker}
  * instead, which uses the Java {@code ProcessHandle} API and doesn't require spawning external processes.
  *
