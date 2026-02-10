@@ -24,7 +24,7 @@ package org.apache.maven.surefire.booter;
  * Implementations allow the forked JVM to detect when its parent Maven process
  * has terminated, enabling cleanup and preventing orphaned processes.
  *
- * @since 3.?
+ * @since 3.5.5
  */
 public interface ProcessChecker {
 
