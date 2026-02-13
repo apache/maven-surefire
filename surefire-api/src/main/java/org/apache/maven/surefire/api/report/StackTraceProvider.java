@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.api.report;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,9 @@ public class StackTraceProvider {
 
     // 15 frames is enough to capture the test class after surefire framework frames
     // while still providing ~50% memory savings vs unbounded stacks (typically 25-30 frames)
-    private static final int MAX_FRAMES = 15;
+    public static final int DEFAULT_MAX_FRAMES = 15;
+
+    private static volatile int maxFrames = DEFAULT_MAX_FRAMES;
 
     // Only filter JDK internal classes by default.
     // Framework classes (junit, surefire, etc.) are NOT filtered by default because:
@@ -55,6 +58,17 @@ public class StackTraceProvider {
      * @param prefixes comma-separated list of package prefixes to filter, or empty to disable filtering
      */
     public static void configure(String prefixes) {
+        configure(prefixes, DEFAULT_MAX_FRAMES);
+    }
+
+    /**
+     * Configure framework prefixes and maximum frame count for stack traces.
+     *
+     * @param prefixes comma-separated list of package prefixes to filter, or empty to disable filtering, or null
+     *                 for defaults
+     * @param maxFrameCount maximum number of stack trace frames to capture; 0 or negative disables stack trace capture
+     */
+    public static void configure(String prefixes, int maxFrameCount) {
         if (prefixes == null) {
             // null means use defaults
             frameworkPrefixes = DEFAULT_FRAMEWORK_PREFIXES;
@@ -72,18 +86,23 @@ public class StackTraceProvider {
             }
             frameworkPrefixes = customPrefixes;
         }
+        maxFrames = maxFrameCount;
     }
 
     /**
      * Returns the stack trace as a list of "classname#methodname" strings.
-     * Filters out framework classes and limits to {@value #MAX_FRAMES} frames.
+     * Filters out framework classes and limits to {@value #DEFAULT_MAX_FRAMES} frames by default.
+     * Returns an empty list if max frames is set to 0 or negative.
      *
      * @return the filtered and truncated stack trace
      */
     static List<String> getStack() {
+        if (maxFrames <= 0) {
+            return Collections.emptyList();
+        }
         return Arrays.stream(Thread.currentThread().getStackTrace())
                 .filter(e -> !isFrameworkClass(e.getClassName()))
-                .limit(MAX_FRAMES)
+                .limit(maxFrames)
                 .map(e -> e.getClassName() + "#" + e.getMethodName())
                 .collect(Collectors.toList());
     }

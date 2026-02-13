@@ -59,4 +59,10 @@ public class ProviderParameterNames {
      * @since 3.6.0
      */
     public static final String STACK_TRACE_FILTER_PREFIXES = "stackTraceFilterPrefixes";
+
+    /**
+     * Maximum number of stack trace frames to capture.
+     * @since 3.6.0
+     */
+    public static final String STACK_TRACE_MAX_FRAMES = "stackTraceMaxFrames";
 }

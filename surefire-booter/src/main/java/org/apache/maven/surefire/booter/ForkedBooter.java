@@ -59,6 +59,7 @@ import static java.lang.Thread.currentThread;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.report.StackTraceProvider.DEFAULT_MAX_FRAMES;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
@@ -110,10 +111,14 @@ public final class ForkedBooter {
 
         providerConfiguration = booterDeserializer.deserialize();
 
-        // Configure StackTraceProvider with additional filter prefixes
+        // Configure StackTraceProvider with additional filter prefixes and max frames
         String stackTraceFilterPrefixes =
                 providerConfiguration.getProviderProperties().get(ProviderParameterNames.STACK_TRACE_FILTER_PREFIXES);
-        StackTraceProvider.configure(stackTraceFilterPrefixes);
+        String stackTraceMaxFramesStr =
+                providerConfiguration.getProviderProperties().get(ProviderParameterNames.STACK_TRACE_MAX_FRAMES);
+        int stackTraceMaxFrames =
+                stackTraceMaxFramesStr != null ? Integer.parseInt(stackTraceMaxFramesStr) : DEFAULT_MAX_FRAMES;
+        StackTraceProvider.configure(stackTraceFilterPrefixes, stackTraceMaxFrames);
 
         DumpErrorSingleton.getSingleton()
                 .init(providerConfiguration.getReporterConfiguration().getReportsDirectory(), dumpFileName);

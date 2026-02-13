@@ -406,6 +406,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private List<String> stackTraceFilterPrefixes;
 
     /**
+     * Maximum number of stack trace frames to capture when associating console output with test classes.
+     * Default is 15. For performance reason this could be set to 0 or a negative value to disable stack trace capture entirely.
+     * In the case of low value, Surefire will capture only the top frames of the stack trace, which might miss the test class
+     * and so confuse stack trace in case of parallel test execution.
+     * In the case of high value, Surefire will capture more frames, which might have a negative impact on performance and memory usage.
+     * @since 3.6.0
+     */
+    @Parameter(property = "surefire.stackTraceMaxFrames", defaultValue = "15")
+    private int stackTraceMaxFrames;
+
+    /**
      * Map of plugin artifacts.
      */
     @Parameter(property = "plugin.artifactMap", required = true, readonly = true)
@@ -1803,6 +1814,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                             ProviderParameterNames.STACK_TRACE_FILTER_PREFIXES,
                             String.join(",", stackTraceFilterPrefixes));
         }
+
+        getProperties().setProperty(ProviderParameterNames.STACK_TRACE_MAX_FRAMES, String.valueOf(stackTraceMaxFrames));
 
         Map<String, String> providerProperties = toStringProperties(getProperties());
 
