@@ -109,7 +109,8 @@ public class JUnit5Xml30StatelessReporter extends SurefireStatelessReporter {
                 getUsePhrasedTestCaseClassName(),
                 getUsePhrasedTestCaseMethodName(),
                 configuration.isEnableOutErrElements(),
-                configuration.isEnablePropertiesElement());
+                configuration.isEnablePropertiesElement(),
+                configuration.isReportTestTimestamp());
     }
 
     @Override

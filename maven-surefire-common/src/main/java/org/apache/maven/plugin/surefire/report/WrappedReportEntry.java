@@ -44,6 +44,8 @@ public class WrappedReportEntry implements TestSetReportEntry {
 
     private final ReportEntryType reportEntryType;
 
+    private final long startTime;
+
     private final Integer elapsed;
 
     private final Utf8RecodingDeferredFileOutputStream stdout;
@@ -63,12 +65,14 @@ public class WrappedReportEntry implements TestSetReportEntry {
     public WrappedReportEntry(
             ReportEntry original,
             ReportEntryType reportEntryType,
+            long startTime,
             Integer estimatedElapsed,
             Utf8RecodingDeferredFileOutputStream stdout,
             Utf8RecodingDeferredFileOutputStream stdErr,
             Map<String, String> systemProperties) {
         this.original = original;
         this.reportEntryType = reportEntryType;
+        this.startTime = startTime;
         this.elapsed = estimatedElapsed;
         this.stdout = stdout;
         this.stdErr = stdErr;
@@ -78,10 +82,15 @@ public class WrappedReportEntry implements TestSetReportEntry {
     public WrappedReportEntry(
             ReportEntry original,
             ReportEntryType reportEntryType,
+            long startTime,
             Integer estimatedElapsed,
             Utf8RecodingDeferredFileOutputStream stdout,
             Utf8RecodingDeferredFileOutputStream stdErr) {
-        this(original, reportEntryType, estimatedElapsed, stdout, stdErr, Collections.emptyMap());
+        this(original, reportEntryType, startTime, estimatedElapsed, stdout, stdErr, Collections.emptyMap());
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 
     @Override

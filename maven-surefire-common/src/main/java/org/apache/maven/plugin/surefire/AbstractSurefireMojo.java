@@ -746,6 +746,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean enablePropertiesElement;
 
     /**
+     * Flag for including/excluding the event start timestamp of {@code <testsuite />} and {@code <testcase />} elements in XML reports.
+     *
+     * @since 3.5.5
+     */
+    @Parameter(property = "reportTestTimestamp", defaultValue = "false")
+    private boolean reportTestTimestamp;
+
+    /**
      * The current build session instance.
      */
     @Parameter(defaultValue = "${session}", required = true, readonly = true)
@@ -2107,6 +2115,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 isForking,
                 isEnableOutErrElements(),
                 isEnablePropertiesElement(),
+                isReportTestTimestamp(),
                 xmlReporter,
                 outReporter,
                 testsetReporter,
@@ -3646,6 +3655,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     public boolean isEnablePropertiesElement() {
         return enablePropertiesElement;
+    }
+
+    public boolean isReportTestTimestamp() {
+        return reportTestTimestamp;
     }
 
     @SuppressWarnings("UnusedDeclaration")

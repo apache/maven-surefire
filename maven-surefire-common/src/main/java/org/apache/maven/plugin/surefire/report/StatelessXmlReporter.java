@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
@@ -120,6 +121,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     private final boolean enablePropertiesElement;
 
+    private final boolean reportTestTimestamp;
+
     @Deprecated
     public StatelessXmlReporter(
             File reportsDirectory,
@@ -134,7 +137,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             boolean phrasedClassName,
             boolean phrasedMethodName,
             boolean enableOutErrElements,
-            boolean enablePropertiesElement) {
+            boolean enablePropertiesElement,
+            boolean reportTestTimestamp) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
@@ -148,6 +152,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         this.phrasedMethodName = phrasedMethodName;
         this.enableOutErrElements = enableOutErrElements;
         this.enablePropertiesElement = enablePropertiesElement;
+        this.reportTestTimestamp = reportTestTimestamp;
     }
 
     @Override
@@ -464,6 +469,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         if (report.getElapsed() != null) {
             ppw.addAttribute("time", String.valueOf(report.getElapsed() / ONE_SECOND));
         }
+
+        if (reportTestTimestamp && report.getStartTime() > 0L) {
+            ppw.addAttribute("timestamp", toIsoInstant(report.getStartTime()));
+        }
     }
 
     private void createTestSuiteElement(
@@ -488,6 +497,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
         if (report.getElapsed() != null) {
             ppw.addAttribute("time", String.valueOf(report.getElapsed() / ONE_SECOND));
+        }
+
+        if (reportTestTimestamp && report.getStartTime() > 0L) {
+            ppw.addAttribute("timestamp", toIsoInstant(report.getStartTime()));
         }
 
         // Count actual unique test methods and their final results from classMethodStatistics (accumulated across
@@ -638,6 +651,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             xmlWriter.endElement();
         }
         xmlWriter.endElement();
+    }
+
+    private static String toIsoInstant(long epochMillis) {
+        return Instant.ofEpochMilli(epochMillis).toString();
     }
 
     /**
