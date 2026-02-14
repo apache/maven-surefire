@@ -45,6 +45,7 @@ public class DefaultStatelessReportMojoConfiguration extends StatelessReportMojo
             String xsdSchemaLocation,
             boolean enableOutErrElements,
             boolean enablePropertiesElement,
+            boolean reportTestTimestamp,
             Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory) {
         super(
                 reportsDirectory,
@@ -53,7 +54,8 @@ public class DefaultStatelessReportMojoConfiguration extends StatelessReportMojo
                 rerunFailingTestsCount,
                 xsdSchemaLocation,
                 enableOutErrElements,
-                enablePropertiesElement);
+                enablePropertiesElement,
+                reportTestTimestamp);
         this.testClassMethodRunHistory = testClassMethodRunHistory;
     }
 

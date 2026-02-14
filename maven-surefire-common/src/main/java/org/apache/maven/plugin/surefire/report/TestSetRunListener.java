@@ -288,21 +288,26 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     private WrappedReportEntry wrap(ReportEntry other, ReportEntryType reportEntryType) {
         int estimatedElapsed = 0;
+        // Skipped tests don't call testStart, and thus fallback on current time
+        long startTimestamp = System.currentTimeMillis();
+        TestSetStats testSetStats = getTestSetStats(other);
+
         if (reportEntryType != SKIPPED) {
             Integer etime = other.getElapsed();
-            estimatedElapsed = etime == null ? getTestSetStats(other).getElapsedSinceLastStart() : etime;
+            estimatedElapsed = etime == null ? testSetStats.getElapsedSinceLastStart() : etime;
+            startTimestamp = testSetStats.getTestStartAt();
         }
 
-        return new WrappedReportEntry(other, reportEntryType, estimatedElapsed, testStdOut, testStdErr);
+        return new WrappedReportEntry(other, reportEntryType, startTimestamp, estimatedElapsed, testStdOut, testStdErr);
     }
 
     private WrappedReportEntry wrapTestSet(TestSetReportEntry other) {
+        TestSetStats testSetStats = getTestSetStats(other);
         return new WrappedReportEntry(
                 other,
                 null,
-                other.getElapsed() != null
-                        ? other.getElapsed()
-                        : getTestSetStats(other).getElapsedSinceTestSetStart(),
+                testSetStats.getTestSetStartAt(),
+                other.getElapsed() != null ? other.getElapsed() : testSetStats.getElapsedSinceTestSetStart(),
                 testStdOut,
                 testStdErr,
                 other.getSystemProperties());

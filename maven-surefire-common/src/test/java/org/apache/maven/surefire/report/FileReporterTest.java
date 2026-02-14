@@ -47,7 +47,7 @@ public class FileReporterTest extends TestCase {
         File reportDir = new File("target");
         reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, getClass().getName(), null, TEST_NAME, null);
         WrappedReportEntry wrappedReportEntry =
-                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 12, null, null);
+                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null);
         reporter = new FileReporter(reportDir, null, Charset.defaultCharset(), false, false, false);
         reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
 
@@ -68,7 +68,7 @@ public class FileReporterTest extends TestCase {
         String suffixText = "sampleSuffixText";
         reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, getClass().getName(), null, TEST_NAME, null);
         WrappedReportEntry wrappedReportEntry =
-                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 12, null, null);
+                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null);
         reporter = new FileReporter(reportDir, suffixText, Charset.defaultCharset(), false, false, false);
         reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
 

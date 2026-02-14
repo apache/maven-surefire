@@ -111,13 +111,14 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 true,
-                true);
+                true,
+                false);
         reporter.cleanTestHistoryMap();
 
         ReportEntry reportEntry = new SimpleReportEntry(
                 NORMAL_RUN, 0L, getClass().getName(), null, getClass().getName(), null, 12);
-        WrappedReportEntry testSetReportEntry =
-                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps());
+        WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
+                reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null, systemProps());
         stats.testSucceeded(testSetReportEntry);
         reporter.testSetCompleted(testSetReportEntry, stats);
 
@@ -131,7 +132,7 @@ public class StatelessXmlReporterTest extends TestCase {
         ReportEntry reportEntry =
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, 12);
         WrappedReportEntry testSetReportEntry =
-                new WrappedReportEntry(reportEntry, SUCCESS, 12, null, null, systemProps());
+                new WrappedReportEntry(reportEntry, SUCCESS, 1771085631L, 12, null, null, systemProps());
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
 
         stats.testSucceeded(testSetReportEntry);
@@ -155,6 +156,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry t2 = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_TWO, null, stackTraceWriter, 13),
                 ReportEntryType.ERROR,
+                1771085631L,
                 13,
                 stdOut,
                 stdErr);
@@ -173,7 +175,8 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 true,
-                true);
+                true,
+                false);
         reporter.testSetCompleted(testSetReportEntry, stats);
 
         FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
@@ -213,6 +216,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, 12),
                 ReportEntryType.SUCCESS,
+                1771085631L,
                 12,
                 null,
                 null,
@@ -233,6 +237,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testTwoFirstError = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, cls, null, TEST_TWO, null, stackTraceWriterOne, 5),
                 ReportEntryType.ERROR,
+                1771085631L,
                 5,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -240,6 +245,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testTwoSecondError = new WrappedReportEntry(
                 new SimpleReportEntry(RERUN_TEST_AFTER_FAILURE, 1L, cls, null, TEST_TWO, null, stackTraceWriterTwo, 13),
                 ReportEntryType.ERROR,
+                1771085631L,
                 13,
                 createStdOutput(secondRunOut),
                 createStdOutput(secondRunErr));
@@ -247,6 +253,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testThreeFirstRun = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 2L, cls, null, TEST_THREE, null, stackTraceWriterOne, 13),
                 ReportEntryType.FAILURE,
+                1771085631L,
                 13,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -255,6 +262,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 new SimpleReportEntry(
                         RERUN_TEST_AFTER_FAILURE, 3L, cls, null, TEST_THREE, null, stackTraceWriterTwo, 2),
                 ReportEntryType.SUCCESS,
+                1771085631L,
                 2,
                 createStdOutput(secondRunOut),
                 createStdOutput(secondRunErr));
@@ -277,7 +285,8 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 true,
-                true);
+                true,
+                false);
 
         reporter.testSetCompleted(testSetReportEntry, stats);
         reporter.testSetCompleted(testSetReportEntry, rerunStats);
@@ -352,6 +361,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 new SimpleReportEntry(
                         NORMAL_RUN, 1L, getClass().getName(), null, TEST_TWO, null, stackTraceWriterOne, 5),
                 ERROR,
+                1771085631L,
                 5,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -369,6 +379,7 @@ public class StatelessXmlReporterTest extends TestCase {
                         stackTraceWriterTwo,
                         13),
                 SKIPPED,
+                1771085631L,
                 13,
                 createStdOutput(secondRunOut),
                 createStdOutput(secondRunErr));
@@ -376,12 +387,26 @@ public class StatelessXmlReporterTest extends TestCase {
         rerunStats.testSucceeded(testTwoSecondError);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.2", false, false, false, false, true, true);
+                reportDir,
+                null,
+                false,
+                1,
+                new HashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
 
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(
                         RERUN_TEST_AFTER_FAILURE, 1L, getClass().getName(), null, null, null, stackTraceWriterOne, 5),
                 ERROR,
+                1771085631L,
                 20,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -535,12 +560,26 @@ public class StatelessXmlReporterTest extends TestCase {
                 new SimpleReportEntry(
                         NORMAL_RUN, 1L, getClass().getName(), null, "a test name", null, stackTraceWriterOne, 5),
                 ERROR,
+                1771085631L,
                 5,
                 null,
                 null);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.2", false, false, false, false, true, true);
+                reportDir,
+                null,
+                false,
+                1,
+                new HashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
 
         reporter.testSetCompleted(testReport, stats);
     }

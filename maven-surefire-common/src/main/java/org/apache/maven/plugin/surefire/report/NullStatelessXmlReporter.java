@@ -29,7 +29,7 @@ class NullStatelessXmlReporter extends StatelessXmlReporter {
     static final NullStatelessXmlReporter INSTANCE = new NullStatelessXmlReporter();
 
     private NullStatelessXmlReporter() {
-        super(null, null, false, 0, null, null, null, false, false, false, false, true, true);
+        super(null, null, false, 0, null, null, null, false, false, false, false, true, true, false);
     }
 
     @Override
