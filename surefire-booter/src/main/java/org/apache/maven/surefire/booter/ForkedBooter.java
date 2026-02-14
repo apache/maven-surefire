@@ -215,7 +215,7 @@ public final class ForkedBooter {
     }
 
     private PingScheduler listenToShutdownCommands(String ppid) {
-        ProcessChecker ppidChecker = ProcessChecker.of(ppid);
+        PpidChecker ppidChecker = ppid == null ? null : new PpidChecker(ppid);
         commandReader.addShutdownListener(createExitHandler(ppidChecker));
         AtomicBoolean pingDone = new AtomicBoolean(true);
         commandReader.addNoopListener(createPingHandler(pingDone));
@@ -280,7 +280,7 @@ public final class ForkedBooter {
         };
     }
 
-    private CommandListener createExitHandler(final ProcessChecker ppidChecker) {
+    private CommandListener createExitHandler(final PpidChecker ppidChecker) {
         return new CommandListener() {
             @Override
             public void update(Command command) {
@@ -325,7 +325,7 @@ public final class ForkedBooter {
         };
     }
 
-    private Runnable createPingJob(final AtomicBoolean pingDone, final ProcessChecker pluginProcessChecker) {
+    private Runnable createPingJob(final AtomicBoolean pingDone, final PpidChecker pluginProcessChecker) {
         return new Runnable() {
             @Override
             public void run() {
@@ -515,7 +515,7 @@ public final class ForkedBooter {
         }
     }
 
-    private static boolean canUseNewPingMechanism(ProcessChecker pluginProcessChecker) {
+    private static boolean canUseNewPingMechanism(PpidChecker pluginProcessChecker) {
         return pluginProcessChecker != null && pluginProcessChecker.canUse();
     }
 
@@ -553,12 +553,12 @@ public final class ForkedBooter {
     private static class PingScheduler {
         private final ScheduledExecutorService pingScheduler;
         private final ScheduledExecutorService processCheckerScheduler;
-        private final ProcessChecker processChecker;
+        private final PpidChecker processChecker;
 
         PingScheduler(
                 ScheduledExecutorService pingScheduler,
                 ScheduledExecutorService processCheckerScheduler,
-                ProcessChecker processChecker) {
+                PpidChecker processChecker) {
             this.pingScheduler = pingScheduler;
             this.processCheckerScheduler = processCheckerScheduler;
             this.processChecker = processChecker;

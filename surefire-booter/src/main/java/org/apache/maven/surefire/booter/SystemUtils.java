@@ -172,7 +172,6 @@ public final class SystemUtils {
         return null;
     }
 
-    // TODO simplify or remove when Java 8 support is dropped
     public static Long pid() {
         if (isBuiltInJava9AtLeast()) {
             Long pid = pidOnJava9();
