@@ -25,7 +25,7 @@ import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 
 /**
- * A stream-like object that preserves ordering between stdout/stderr
+ * A stream-like object that preserves ordering between stdout/stderr.
  */
 @Deprecated // remove this class after StatelessXmlReporter is capable of parallel test sets processing
 final class LogicalStream {

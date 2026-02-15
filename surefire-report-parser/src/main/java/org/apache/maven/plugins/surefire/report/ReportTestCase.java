@@ -24,9 +24,6 @@ import java.util.List;
 
 import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
 
-/**
- *
- */
 public final class ReportTestCase {
     private String fullClassName;
 

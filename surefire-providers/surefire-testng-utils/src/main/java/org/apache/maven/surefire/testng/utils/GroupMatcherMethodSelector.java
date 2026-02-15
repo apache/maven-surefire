@@ -33,7 +33,6 @@ import org.testng.ITestNGMethod;
 
 /**
  * Method selector delegating to {@link GroupMatcher} to decide if a method is included or not.
- *
  */
 public class GroupMatcherMethodSelector implements IMethodSelector {
 

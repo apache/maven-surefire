@@ -38,7 +38,7 @@ public class Commandline extends org.apache.maven.surefire.shared.utils.cli.Comm
     private final Set<String> addedEnvironmentVariables;
 
     /**
-     * for testing purposes only
+     * For testing purposes only.
      */
     public Commandline() {
         this(new String[0]);
