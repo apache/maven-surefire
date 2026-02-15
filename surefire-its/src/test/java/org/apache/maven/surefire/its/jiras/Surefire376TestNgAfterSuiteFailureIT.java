@@ -31,8 +31,7 @@ public class Surefire376TestNgAfterSuiteFailureIT extends SurefireJUnit4Integrat
     public void testAfterSuiteFailure() {
         unpack("/testng-afterSuiteFailure")
                 .maven()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .withFailure()
                 .executeTest()
                 .assertTestSuiteResults(2, 0, 1, 0);

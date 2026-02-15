@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.runners.Parameterized.Parameter;
@@ -109,6 +110,8 @@ public abstract class AbstractFailFastIT extends SurefireJUnit4IntegrationTestCa
 
     @Test
     public void test() throws Exception {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         String cls = useProcessPipes ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
         OutputValidator validator = prepare(description, profile, properties);
         validator

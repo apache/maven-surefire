@@ -30,41 +30,6 @@ import org.junit.Test;
  * @since 2.20.1
  */
 public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTestCase {
-    @Test
-    public void junit3Forked() {
-        SurefireLauncher launcher = unpack("surefire-1364");
-        OutputValidator validator = launcher.setForkJvm()
-                .activateProfile("junit3")
-                .forkOnce()
-                .executeTest()
-                .verifyErrorFree(2);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-
-        validator
-                .getSurefireReportsXmlFile("TEST-SecondTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-    }
-
-    @Test
-    public void junit3InProcess() {
-        SurefireLauncher launcher = unpack("surefire-1364");
-        OutputValidator validator = launcher.setForkJvm()
-                .activateProfile("junit3")
-                .forkNever()
-                .executeTest()
-                .verifyErrorFree(2);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-
-        validator
-                .getSurefireReportsXmlFile("TEST-SecondTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-    }
 
     @Test
     public void junit4Forked() {
@@ -97,84 +62,6 @@ public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTes
     }
 
     @Test
-    public void junit47Forked() {
-        SurefireLauncher launcher = unpack("surefire-1364");
-        OutputValidator validator = launcher.setForkJvm()
-                .activateProfile("junit47")
-                .forkOnce()
-                .executeTest()
-                .verifyErrorFree(2);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-
-        validator
-                .getSurefireReportsXmlFile("TEST-SecondTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-    }
-
-    @Test
-    public void junit47InProcess() {
-        SurefireLauncher launcher = unpack("surefire-1364");
-        OutputValidator validator = launcher.setForkJvm()
-                .activateProfile("junit47")
-                .forkNever()
-                .executeTest()
-                .verifyErrorFree(2);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-
-        validator
-                .getSurefireReportsXmlFile("TEST-SecondTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-    }
-
-    @Test
-    public void junit47ForkedParallel() {
-        SurefireLauncher launcher = unpack("surefire-1364");
-        OutputValidator validator = launcher.setForkJvm()
-                .activateProfile("junit47")
-                .forkOnce()
-                .parallelClasses()
-                .threadCount(2)
-                .disablePerCoreThreadCount()
-                .executeTest()
-                .verifyErrorFree(2);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-
-        validator
-                .getSurefireReportsXmlFile("TEST-SecondTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-    }
-
-    @Test
-    public void junit47InProcessParallel() {
-        SurefireLauncher launcher = unpack("surefire-1364");
-        OutputValidator validator = launcher.setForkJvm()
-                .activateProfile("junit47")
-                .forkNever()
-                .parallelClasses()
-                .threadCount(2)
-                .disablePerCoreThreadCount()
-                .executeTest()
-                .verifyErrorFree(2);
-
-        validator
-                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-
-        validator
-                .getSurefireReportsXmlFile("TEST-SecondTest.xml")
-                .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
-    }
-
-    @Test
     public void testNg() {
         SurefireLauncher launcher = unpack("surefire-1364");
         OutputValidator validator = launcher.setForkJvm()
@@ -184,7 +71,7 @@ public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTes
                 .verifyErrorFree(3);
 
         validator
-                .getSurefireReportsXmlFile("TEST-TestSuite.xml")
+                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
                 .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
     }
 
@@ -198,7 +85,7 @@ public class Surefire1364SystemPropertiesIT extends SurefireJUnit4IntegrationTes
                 .verifyErrorFree(3);
 
         validator
-                .getSurefireReportsXmlFile("TEST-TestSuite.xml")
+                .getSurefireReportsXmlFile("TEST-FirstTest.xml")
                 .assertContainsText("<property name=\"forkedProp\" value=\"forkedValue1\"/>");
     }
 }

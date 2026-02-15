@@ -54,7 +54,7 @@ public class CheckTestFailIfNoTestsIT extends SurefireJUnit4IntegrationTestCase 
     public void jUnit48CategoriesFailWhenNoTests() {
         unpack().failIfNoTests(false)
                 .activateProfile("junit47")
-                .setJUnitVersion("4.8.1")
+                .setJUnitVersion("4.12")
                 .executeTest()
                 .verifyErrorFreeLog();
     }

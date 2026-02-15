@@ -18,15 +18,12 @@
  */
 package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
-
-import org.apache.maven.surefire.shared.utils.cli.CommandLineUtils;
-
-import static java.util.Collections.addAll;
 
 /**
  * A {@link org.apache.maven.surefire.shared.utils.cli.Commandline} implementation.
@@ -46,8 +43,8 @@ public class Commandline extends org.apache.maven.surefire.shared.utils.cli.Comm
 
     public Commandline(String[] excludedEnvironmentVariables) {
         this.excludedEnvironmentVariables = new ConcurrentLinkedDeque<>();
-        addedEnvironmentVariables = new HashSet<>();
-        addAll(this.excludedEnvironmentVariables, excludedEnvironmentVariables);
+        this.addedEnvironmentVariables = new HashSet<>();
+        Collections.addAll(this.excludedEnvironmentVariables, excludedEnvironmentVariables);
     }
 
     @Override
@@ -57,13 +54,18 @@ public class Commandline extends org.apache.maven.surefire.shared.utils.cli.Comm
     }
 
     @Override
-    public final void addSystemEnvironment() {
-        Properties systemEnvVars = CommandLineUtils.getSystemEnvVars();
-
-        for (String key : systemEnvVars.stringPropertyNames()) {
-            if (!addedEnvironmentVariables.contains(key) && !excludedEnvironmentVariables.contains(key)) {
-                addEnvironment(key, systemEnvVars.getProperty(key));
-            }
-        }
+    public String[] getEnvironmentVariables() {
+        String[] envs = super.getEnvironmentVariables();
+        Set<String> result = new HashSet<>(Arrays.asList(envs));
+        result.addAll(addedEnvironmentVariables);
+        return excludedEnvironmentVariables.isEmpty()
+                ? result.toArray(new String[0])
+                : result.stream()
+                        .filter(env -> {
+                            String varName =
+                                    env != null && env.contains("=") ? env.substring(0, env.indexOf('=')) : env;
+                            return !excludedEnvironmentVariables.contains(varName);
+                        })
+                        .toArray(String[]::new);
     }
 }
