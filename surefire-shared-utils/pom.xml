@@ -75,6 +75,7 @@
                 <excludes>
                   <!-- with rebuild old shaded artifact is used -->
                   <exclude>${project.groupId}:${project.artifactId}</exclude>
+                  <exclude>org.slf4j:*</exclude>
                 </excludes>
               </artifactSet>
               <filters>
