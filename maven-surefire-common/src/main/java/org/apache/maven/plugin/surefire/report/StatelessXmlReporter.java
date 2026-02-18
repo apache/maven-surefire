@@ -456,7 +456,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
         String className = phrasedClassName
                 ? report.getReportSourceName(reportNameSuffix)
-                : report.getSourceText() != null ? report.getSourceText() : report.getSourceName(reportNameSuffix);
+                : report.getSourceName(reportNameSuffix);
+
         if (className != null) {
             ppw.addAttribute("classname", extraEscapeAttribute(className));
         }
