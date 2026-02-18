@@ -39,9 +39,6 @@ import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.TEST_SET_FINISHED;
 
-/**
- *
- */
 public class CommandEncoder extends AbstractStreamEncoder<MasterProcessCommand> implements AutoCloseable {
     private final WritableByteChannel out;
 

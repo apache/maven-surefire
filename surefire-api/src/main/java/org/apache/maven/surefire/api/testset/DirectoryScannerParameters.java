@@ -75,7 +75,7 @@ public class DirectoryScannerParameters {
     /**
      * Returns the directory of the compiled classes, normally ${project.build.testOutputDirectory}
      *
-     * @return A directory that can be scanned for .class files
+     * @return a directory that can be scanned for .class files
      */
     public File getTestClassesDirectory() {
         return testClassesDirectory;
@@ -84,7 +84,7 @@ public class DirectoryScannerParameters {
     /**
      * The includes pattern list, as specified on the plugin includes parameter.
      *
-     * @return A list of patterns. May contain both source file designators and .class extensions.
+     * @return a list of patterns. May contain both source file designators and .class extensions.
      */
     @Deprecated
     public List<String> getIncludes() {
@@ -94,7 +94,7 @@ public class DirectoryScannerParameters {
     /**
      * The excludes pattern list, as specified on the plugin includes parameter.
      *
-     * @return A list of patterns. May contain both source file designators and .class extensions.
+     * @return a list of patterns. May contain both source file designators and .class extensions.
      */
     @Deprecated
     public List<String> getExcludes() {

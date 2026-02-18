@@ -45,7 +45,7 @@ final class LazyTestsToRun extends TestsToRun {
     private final CommandReader commandReader;
 
     /**
-     * C'tor
+     * C'tor.
      *
      * @param eventChannel the output stream to use when requesting new new tests
      */
@@ -76,7 +76,7 @@ final class LazyTestsToRun extends TestsToRun {
     }
 
     /**
-     * @return test classes which have been retrieved by {@link LazyTestsToRun#iterator()}.
+     * @return test classes which have been retrieved by {@link LazyTestsToRun#iterator()}
      */
     @Override
     public Iterator<Class<?>> iterated() {
@@ -86,8 +86,9 @@ final class LazyTestsToRun extends TestsToRun {
     /**
      * The iterator can be used only in one Thread.
      * {@inheritDoc}
+     *
      * @see TestsToRun#iterator()
-     * */
+     */
     @Override
     public Iterator<Class<?>> iterator() {
         return new BlockingIterator();

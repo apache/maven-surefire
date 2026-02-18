@@ -25,8 +25,7 @@ import org.testng.TestNG;
 import org.testng.xml.XmlSuite;
 
 /**
- * Configurator for passing configuration properties to TestNG
- *
+ * Configurator for passing configuration properties to TestNG.
  */
 public interface Configurator {
     void configure(TestNG testng, Map<String, String> options) throws TestSetFailedException;

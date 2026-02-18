@@ -82,7 +82,6 @@ public class DependencyScanner {
     }
 
     /**
-     *
      * @param artifacts a list to filter
      * @param artifactPatterns a list of strings in the form
      *                         <pre>groupId[:artifactId[:type[:classifier][:version]]]</pre>

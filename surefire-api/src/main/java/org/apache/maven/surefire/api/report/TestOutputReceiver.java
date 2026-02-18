@@ -27,7 +27,7 @@ package org.apache.maven.surefire.api.report;
 public interface TestOutputReceiver<T extends OutputReportEntry> {
 
     /**
-     * Forwards process output from the running test-case into the reporting system
+     * Forwards process output from the running test-case into the reporting system.
      *
      * @param reportEntry wraps test output with descriptive information of the output
      */

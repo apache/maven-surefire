@@ -37,8 +37,8 @@ public class Priority {
     /**
      * Returns a priority that applies to a new testclass (that has never been run/recorded)
      *
-     * @param className The class name
-     * @return A priority
+     * @param className the class name
+     * @return a priority
      */
     public static Priority newTestClassPriority(String className) {
         Priority priority1 = new Priority(className);

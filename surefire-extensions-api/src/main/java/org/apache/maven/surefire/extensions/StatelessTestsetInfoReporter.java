@@ -29,9 +29,9 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
  * Signatures can be changed between major, minor versions or milestones.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 3.0.0-M4
  * @param <R> report entry type, see <em>WrappedReportEntry</em> from module the <em>maven-surefire-common</em>
  * @param <S> test-set statistics, see <em>TestSetStats</em> from module the <em>maven-surefire-common</em>
+ * @since 3.0.0-M4
  */
 public abstract class StatelessTestsetInfoReporter<R extends TestSetReportEntry, S> {
     private boolean disable;

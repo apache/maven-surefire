@@ -24,8 +24,8 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 /**
  * The base class of an event of test control.
  *
- * @since 3.0.0-M5
  * @param <T> TestSetReportEntry or ReportEntry
+ * @since 3.0.0-M5
  */
 public abstract class AbstractTestControlEvent<T extends ReportEntry> extends Event {
     private final T reportEntry;

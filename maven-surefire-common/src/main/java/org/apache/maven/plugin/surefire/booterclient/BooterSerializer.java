@@ -97,7 +97,7 @@ class BooterSerializer {
     }
 
     /**
-     * Does not modify sourceProperties
+     * Does not modify sourceProperties.
      */
     File serialize(
             KeyValueSource sourceProperties,

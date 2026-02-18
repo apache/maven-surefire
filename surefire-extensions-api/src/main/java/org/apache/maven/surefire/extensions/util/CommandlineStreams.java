@@ -31,9 +31,6 @@ import java.nio.channels.WritableByteChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 
-/**
- *
- */
 public final class CommandlineStreams implements Closeable {
     private final ReadableByteChannel stdOutChannel;
     private final ReadableByteChannel stdErrChannel;

@@ -48,6 +48,7 @@ public class SurefireReport extends AbstractSurefireReport {
     /**
      * If set to true, the surefire report will be generated even when there are no surefire result files.
      * Defaults to {@code true} to preserve legacy behaviour pre 2.10.
+     *
      * @since 2.11
      */
     @Parameter(defaultValue = "true", property = "alwaysGenerateSurefireReport")
@@ -55,6 +56,7 @@ public class SurefireReport extends AbstractSurefireReport {
 
     /**
      * If set to true, the surefire report generation will be skipped.
+     *
      * @since 2.11
      */
     @Parameter(defaultValue = "false", property = "skipSurefireReport")

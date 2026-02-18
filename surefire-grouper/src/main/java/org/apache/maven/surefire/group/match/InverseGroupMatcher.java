@@ -19,8 +19,7 @@
 package org.apache.maven.surefire.group.match;
 
 /**
- * Inverse group matcher
- *
+ * Inverse group matcher.
  */
 public class InverseGroupMatcher implements GroupMatcher {
 

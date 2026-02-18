@@ -203,7 +203,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * This old parameter is just like {@code skipTests}, but bound to the old property "maven.test.skip.exec".
      *
      * @since 2.3
-     * @deprecated Use skipTests instead.
+     * @deprecated use skipTests instead
      */
     @Deprecated
     @Parameter(property = "maven.test.skip.exec")
@@ -249,6 +249,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * The matching algorithm is described in detail in <a href="https://maven.apache.org/plugins/maven-assembly-plugin/advanced-descriptor-topics.html#advanced-artifact-matching-in-includes-and-excludes">Advanced Artifact-Matching</a> for the maven-assembly-plugin. This parameter behaves the same as the {@code excludes} pattern described there.
      * The dependency matching is applied to the project dependency IDs (including transitive ones) <i>after resolving</i>, i.e. excluding
      * one dependency will not exclude its transitive dependencies!
+     *
      * @since 2.6
      */
     @Parameter(property = "maven.test.dependency.excludes")
@@ -313,8 +314,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * List of System properties to pass to a provider.
      *
-     * @deprecated Use {@link #systemPropertyVariables} instead.
      * @see #systemPropertyVariables {@code systemPropertyVariables} for how the effective provider properties are calculated
+     * @deprecated use {@link #systemPropertyVariables} instead
      */
     @Deprecated
     @Parameter
@@ -342,8 +343,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * <li>{@code line.separator}</li>
      * </ul>
      *
-     * @since 2.5
      * @see #systemProperties
+     * @since 2.5
      */
     @Parameter
     Map<String, String> systemPropertyVariables;
@@ -352,8 +353,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * If set to {@code true} will also pass all user properties exposed via {@link MavenSession#getUserProperties()} as system properties to a provider.
      * Those always take precedence over same named system properties set via any other means.
      *
-     * @since 3.4.0
      * @see #systemPropertyVariables
+     * @since 3.4.0
      */
     @Parameter(defaultValue = "true")
     boolean promoteUserPropertiesToSystemProperties;
@@ -376,6 +377,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      *         {@literal <value>methods</value>}
      *     {@literal </property>}
      * {@literal </properties>}</code></pre>
+     *
      * @since 2.4
      */
     @Parameter
@@ -711,8 +713,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Flag to disable the generation of report files in xml format.
      * Deprecated since 3.0.0-M4.
-     * @deprecated Instead use <em>disable</em> within {@code statelessTestsetReporter} since of 3.0.0-M6.
+     *
      * @since 2.2
+     * @deprecated instead use <em>disable</em> within {@code statelessTestsetReporter} since of 3.0.0-M6
      */
     @Deprecated // todo make readonly to handle system property
     @Parameter(property = "disableXmlReport")
@@ -769,6 +772,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     /**
      * Read-only parameter with value of Maven property <i>project.build.directory</i>.
+     *
      * @since 2.20
      */
     @Parameter(defaultValue = "${project.build.directory}", readonly = true, required = true)
@@ -841,9 +845,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @Parameter
     private Map<String, String> jdkToolchain;
 
-    /**
-     *
-     */
     @Component
     private ToolchainManager toolchainManager;
 
@@ -880,7 +881,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     protected abstract List<File> suiteXmlFiles();
 
     /**
-     * @return {@code true} if {@link #getSuiteXmlFiles() suite-xml files array} is not empty.
+     * @return {@code true} if {@link #getSuiteXmlFiles() suite-xml files array} is not empty
      */
     protected abstract boolean hasSuiteXmlFiles();
 
@@ -1940,6 +1941,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     /**
      * For testing purposes - Mockito.
+     *
      * @return plexus component
      */
     private LocationManager getLocationManager() {
@@ -2153,6 +2155,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Computes a merge list of test exclusions.
      * Used only in {@link #getExcludeList()} and {@link #getExcludedScanList()}.
+     *
      * @param asScanList true if dependency or directory scanner
      * @return list of patterns
      * @throws MojoFailureException if the excludes breaks a pattern format
@@ -2195,6 +2198,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Computes a merge list of test inclusions.
      * Used only in {@link #getIncludeList()} and {@link #getIncludedScanList()}.
+     *
      * @param asScanList true if dependency or directory scanner
      * @return list of patterns
      * @throws MojoFailureException if the includes breaks a pattern format
@@ -2553,9 +2557,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     /**
-     * Where surefire stores its own temp files
+     * Where surefire stores its own temp files.
      *
-     * @return A file pointing to the location of surefire's own temp files
+     * @return a file pointing to the location of surefire's own temp files
      */
     File getSurefireTempDir() {
         File result = IS_OS_WINDOWS ? createSurefireBootDirectoryInTemp() : createSurefireBootDirectoryInBuild();
@@ -2574,7 +2578,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Operates on raw plugin parameters, not the "effective" values.
      *
-     * @return The checksum
+     * @return the checksum
      */
     private String getConfigChecksum() {
         ChecksumCalculator checksum = new ChecksumCalculator();
@@ -2763,9 +2767,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Return a new set containing only the artifacts not accepted by the given filter.
      *
-     * @param artifacts The unfiltered artifacts
-     * @param filter    The excludes filter to apply
-     * @return The filtered result
+     * @param artifacts the unfiltered artifacts
+     * @param filter    the excludes filter to apply
+     * @return the filtered result
      */
     private static Set<Artifact> filterArtifacts(Set<Artifact> artifacts, ArtifactFilter filter) {
         Set<Artifact> filteredArtifacts = new LinkedHashSet<>();

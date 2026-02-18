@@ -21,7 +21,7 @@ package org.apache.maven.surefire.booter;
 import java.util.Map;
 
 /**
- * A key-value source obeying the geneal constrains of java.util.Properties
+ * A key-value source obeying the geneal constrains of java.util.Properties.
  */
 public interface KeyValueSource {
     void copyTo(Map<Object, Object> target);

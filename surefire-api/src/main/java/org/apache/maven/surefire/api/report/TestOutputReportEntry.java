@@ -34,7 +34,7 @@ public final class TestOutputReportEntry implements OutputReportEntry {
      * Wraps the output from the running test-case.
      *
      * @param log stdout/sterr output from running tests
-     * @param isStdOut Indicates if this is stdout
+     * @param isStdOut indicates if this is stdout
      * @param newLine print on new line
      * @param runMode the phase of testset
      * @param testRunId unique id of the test run pointing to the test description
@@ -51,7 +51,7 @@ public final class TestOutputReportEntry implements OutputReportEntry {
      * Wraps the output from the running test-case.
      *
      * @param log stdout/sterr output from running tests
-     * @param isStdOut Indicates if this is stdout
+     * @param isStdOut indicates if this is stdout
      * @param newLine print on new line
      */
     private TestOutputReportEntry(String log, boolean isStdOut, boolean newLine) {

@@ -48,6 +48,7 @@ public final class DaemonThreadFactory implements ThreadFactory {
 
     /**
      * Should be used by thread pools.
+     *
      * @return new instance of {@link ThreadFactory} where each {@link Thread thread} is daemon
      */
     public static ThreadFactory newDaemonThreadFactory() {

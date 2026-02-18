@@ -18,7 +18,4 @@
  */
 package org.apache.maven.surefire.api.stream;
 
-/**
- *
- */
 public class MalformedChannelException extends Exception {}

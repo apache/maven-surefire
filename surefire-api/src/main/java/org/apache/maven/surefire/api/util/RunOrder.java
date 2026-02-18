@@ -45,7 +45,7 @@ public class RunOrder {
     public static final RunOrder[] DEFAULT = new RunOrder[] {FILESYSTEM};
 
     /**
-     * Returns the specified RunOrder
+     * Returns the specified RunOrder.
      *
      * @param values the runorder string value
      * @return an array of RunOrder objects, never null

@@ -26,8 +26,7 @@ import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 
 /**
- * Filter for test class files
- *
+ * Filter for test class files.
  */
 public class SpecificTestClassFilter implements ScannerFilter {
 

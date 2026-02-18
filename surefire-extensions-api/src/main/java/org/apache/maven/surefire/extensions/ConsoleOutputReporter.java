@@ -32,7 +32,7 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
  */
 public abstract class ConsoleOutputReporter {
     /**
-     * {@code false} by default
+     * {@code false} by default.
      */
     private boolean disable;
 

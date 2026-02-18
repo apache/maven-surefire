@@ -133,7 +133,7 @@ public final class CommandReader implements CommandChainReader {
 
     /**
      * @return test classes which have been retrieved by
-     * {@link CommandReader#getIterableClasses(MasterProcessChannelEncoder)}.
+     * {@link CommandReader#getIterableClasses(MasterProcessChannelEncoder)}
      */
     Iterator<String> iterated() {
         return testClasses.subList(0, iteratedCount).iterator();
@@ -144,7 +144,7 @@ public final class CommandReader implements CommandChainReader {
      * Two simultaneous instances are not allowed for sake of only one {@link #nextCommandNotifier}.
      *
      * @param eventChannel original stream in current JVM process
-     * @return Iterator with test classes lazily loaded as commands from the main process
+     * @return iterator with test classes lazily loaded as commands from the main process
      */
     Iterable<String> getIterableClasses(MasterProcessChannelEncoder eventChannel) {
         return new ClassesIterable(eventChannel);
@@ -164,7 +164,7 @@ public final class CommandReader implements CommandChainReader {
     }
 
     /**
-     * @return {@code true} if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}.
+     * @return {@code true} if {@link #LAST_TEST_SYMBOL} found at the last index in {@link #testClasses}
      */
     private boolean isQueueFull() {
         // The problem with COWAL is that such collection doe not have operation getLast, however it has get(int)

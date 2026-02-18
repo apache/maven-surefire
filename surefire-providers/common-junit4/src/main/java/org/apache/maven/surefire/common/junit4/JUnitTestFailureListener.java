@@ -25,7 +25,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunListener;
 
 /**
- * Test listener to record all the failures during one run
+ * Test listener to record all the failures during one run.
  *
  * @author Qingzhou Luo
  */

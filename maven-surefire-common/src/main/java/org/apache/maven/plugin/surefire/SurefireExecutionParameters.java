@@ -22,7 +22,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * This interface contains all the common parameters that have different implementations in Surefire vs IntegrationTest
+ * This interface contains all the common parameters that have different implementations in Surefire vs IntegrationTest.
  *
  * @author Stephen Connolly
  */

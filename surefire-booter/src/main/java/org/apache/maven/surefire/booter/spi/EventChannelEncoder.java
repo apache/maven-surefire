@@ -66,7 +66,7 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_TEST_SUCCEEDED;
 
 /**
- * magic number : opcode : run mode [: opcode specific data]*
+ * Magic number : opcode : run mode [: opcode specific data]*
  * <br>
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

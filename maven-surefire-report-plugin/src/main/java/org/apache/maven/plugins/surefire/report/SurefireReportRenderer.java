@@ -79,8 +79,8 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     }
 
     /**
-     * @param key The key.
-     * @return The translated string.
+     * @param key the key
+     * @return the translated string
      */
     private String getI18nString(String key) {
         return getI18nString(getI18nSection(), key);
@@ -91,19 +91,19 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     }
 
     /**
-     * @param section The section.
-     * @param key The key to translate.
-     * @return the translated key.
+     * @param section the section
+     * @param key the key to translate
+     * @return the translated key
      */
     private String getI18nString(String section, String key) {
         return i18n.getString("surefire-report", locale, "report." + section + '.' + key);
     }
 
     /**
-     * @param section The section.
-     * @param key The key to translate.
-     * @param args The args to pass to translated string.
-     * @return the translated key.
+     * @param section the section
+     * @param key the key to translate
+     * @param args the args to pass to translated string
+     * @return the translated key
      */
     private String formatI18nString(String section, String key, Object... args) {
         return i18n.format("surefire-report", locale, "report." + section + '.' + key, args);

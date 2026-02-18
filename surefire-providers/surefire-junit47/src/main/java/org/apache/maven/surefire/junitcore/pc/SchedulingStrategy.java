@@ -62,7 +62,7 @@ public abstract class SchedulingStrategy implements Destroyable {
      *
      * @return {@code true} if successfully stopped the scheduler, else
      *         {@code false} if already stopped (a <b>shared</b> thread
-     *         pool was shutdown externally).
+     *         pool was shutdown externally)
      * @throws InterruptedException if interrupted while waiting
      *                              for scheduled tasks to finish
      * @see org.junit.runners.model.RunnerScheduler#finished()
@@ -75,7 +75,7 @@ public abstract class SchedulingStrategy implements Destroyable {
      *
      * @return {@code true} if successfully stopped the scheduler, else
      *         {@code false} if already stopped (a <b>shared</b> thread
-     *         pool was shutdown externally).
+     *         pool was shutdown externally)
      * @see java.util.concurrent.ExecutorService#shutdown()
      */
     protected abstract boolean stop();
@@ -89,7 +89,7 @@ public abstract class SchedulingStrategy implements Destroyable {
      *
      * @return {@code true} if successfully stopped the scheduler, else
      *         {@code false} if already stopped (a <b>shared</b> thread
-     *         pool was shutdown externally).
+     *         pool was shutdown externally)
      * @see java.util.concurrent.ExecutorService#shutdownNow()
      */
     protected boolean stopNow() {
@@ -99,7 +99,8 @@ public abstract class SchedulingStrategy implements Destroyable {
     /**
      * Persistently disables this strategy. Atomically ignores {@link Balancer} to acquire a new permit.<br>
      * The method {@link #canSchedule()} atomically returns {@code false}.
-     * @return {@code true} if {@link #canSchedule()} has return {@code true} on the beginning of this method call.
+     *
+     * @return {@code true} if {@link #canSchedule()} has return {@code true} on the beginning of this method call
      */
     protected boolean disable() {
         return canSchedule.getAndSet(false);
@@ -109,12 +110,12 @@ public abstract class SchedulingStrategy implements Destroyable {
 
     /**
      * @return {@code true} if a thread pool associated with this strategy
-     *         can be shared with other strategies.
+     *         can be shared with other strategies
      */
     protected abstract boolean hasSharedThreadPool();
 
     /**
-     * @return {@code true} unless stopped, finished or disabled.
+     * @return {@code true} unless stopped, finished or disabled
      */
     protected boolean canSchedule() {
         return canSchedule.get();

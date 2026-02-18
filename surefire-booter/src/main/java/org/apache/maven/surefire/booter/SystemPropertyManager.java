@@ -35,11 +35,11 @@ import org.apache.maven.surefire.api.util.TempFileManager;
 public class SystemPropertyManager {
 
     /**
-     * Loads the properties, closes the stream
+     * Loads the properties, closes the stream.
      *
-     * @param inStream The stream to read from, will be closed
-     * @return The properties
-     * @throws java.io.IOException If something bad happens
+     * @param inStream the stream to read from, will be closed
+     * @return the properties
+     * @throws java.io.IOException if something bad happens
      */
     public static PropertiesWrapper loadProperties(InputStream inStream) throws IOException {
         try (InputStream stream = inStream) {

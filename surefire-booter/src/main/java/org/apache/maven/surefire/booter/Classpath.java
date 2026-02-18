@@ -36,7 +36,7 @@ import static java.io.File.pathSeparatorChar;
  *
  * A Classpath is immutable and thread safe.
  *
- * Immutable and thread safe
+ * Immutable and thread safe.
  *
  * @author Kristian Rosenvold
  */

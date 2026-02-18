@@ -26,8 +26,7 @@ import java.lang.reflect.Modifier;
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 /**
- * Reflection facade for JUnit3 classes
- *
+ * Reflection facade for JUnit3 classes.
  */
 public final class JUnit3Reflector {
     private static final String TEST_CASE = "junit.framework.Test";

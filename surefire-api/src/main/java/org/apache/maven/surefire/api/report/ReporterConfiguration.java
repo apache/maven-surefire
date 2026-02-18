@@ -23,7 +23,7 @@ import java.io.File;
 /**
  * Bits and pieces of reporting configuration that seem to be necessary on the provider side.
  * <br>
- * Todo: Consider moving these fields elsewhere, this concept does not smell too good
+ * Todo: Consider moving these fields elsewhere, this concept does not smell too good.
  *
  * @author Kristian Rosenvold
  */
@@ -37,9 +37,9 @@ public class ReporterConfiguration {
     }
 
     /**
-     * The directory where reports will be created, normally ${project.build.directory}/surefire-reports
+     * The directory where reports will be created, normally ${project.build.directory}/surefire-reports.
      *
-     * @return A file pointing at the specified directory
+     * @return a file pointing at the specified directory
      */
     public File getReportsDirectory() {
         return reportsDirectory;

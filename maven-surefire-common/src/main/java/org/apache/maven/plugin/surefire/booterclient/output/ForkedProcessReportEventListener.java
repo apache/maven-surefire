@@ -22,8 +22,8 @@ import org.apache.maven.surefire.api.report.ReportEntry;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 3.0.0-M4
  * @param <T> report entry type
+ * @since 3.0.0-M4
  */
 public interface ForkedProcessReportEventListener<T extends ReportEntry> {
     void handle(T reportEntry);

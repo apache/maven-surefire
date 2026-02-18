@@ -30,7 +30,7 @@ public class SurefireReflectionException extends RuntimeException {
      * Create a {@link SurefireReflectionException} with the specified cause. The method {@link #getMessage} of this
      * exception object will return {@code cause == null ? "" : cause.toString()}.
      *
-     * @param cause The cause of this exception
+     * @param cause the cause of this exception
      */
     public SurefireReflectionException(Throwable cause) {
         super(cause == null ? "" : cause.toString(), cause);

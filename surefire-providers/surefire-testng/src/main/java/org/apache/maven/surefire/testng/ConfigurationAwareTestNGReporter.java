@@ -23,7 +23,7 @@ import org.apache.maven.surefire.api.report.TestReportListener;
 import org.testng.internal.IResultListener;
 
 /**
- * Just like TestNGReporter, but explicitly implements IResultListener; this interface is new in TestNG 5.5
+ * Just like TestNGReporter, but explicitly implements IResultListener; this interface is new in TestNG 5.5.
  *
  * @author Dan Fabulich
  */

@@ -44,60 +44,60 @@ import org.apache.maven.surefire.api.util.ScanResult;
 public interface ProviderParameters {
     /**
      * Provides a directory scanner that enforces the includes/excludes parameters that were passed to surefire.
-     * See #getDirectoryScannerParameters for details
+     * See #getDirectoryScannerParameters for details.
      *
-     * @return The directory scanner
-     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
+     * @return the directory scanner
+     * @deprecated use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      */
     @Deprecated
     DirectoryScanner getDirectoryScanner();
 
     /**
-     * Provides the result of the directory scan performed in the plugin
+     * Provides the result of the directory scan performed in the plugin.
      *
-     * @return The scan result
+     * @return the scan result
      */
     ScanResult getScanResult();
 
     /**
      * Provides a service to calculate run order of tests. Applied after directory scanning.
      *
-     * @return A RunOrderCalculator
+     * @return a RunOrderCalculator
      */
     RunOrderCalculator getRunOrderCalculator();
 
     /**
-     * Provides features for creating reporting objects
+     * Provides features for creating reporting objects.
      *
-     * @return A ReporterFactory that allows the creation of one or more ReporterManagers
+     * @return a ReporterFactory that allows the creation of one or more ReporterManagers
      */
     ReporterFactory getReporterFactory();
 
     /**
-     * The raw parameters used in creating the directory scanner
+     * The raw parameters used in creating the directory scanner.
      *
-     * @return The parameters
-     * @deprecated Use scanresult instead, as of version 2.12.2. Will be removed in next major version.
+     * @return the parameters
+     * @deprecated use scanresult instead, as of version 2.12.2. Will be removed in next major version.
      */
     @Deprecated
     DirectoryScannerParameters getDirectoryScannerParameters();
 
     /**
-     * The raw parameters used in creating the ReporterManagerFactory
+     * The raw parameters used in creating the ReporterManagerFactory.
      *
-     * @return The reporter configuration
+     * @return the reporter configuration
      */
     ReporterConfiguration getReporterConfiguration();
 
     /**
      * Contains information about requested test suites or individual tests from the command line.
      *
-     * @return The testRequest
+     * @return the testRequest
      */
     TestRequest getTestRequest();
 
     /**
-     * The class loader for the tests
+     * The class loader for the tests.
      *
      * @return the classloader
      */
@@ -111,22 +111,22 @@ public interface ProviderParameters {
     Map<String, String> getProviderProperties();
 
     /**
-     * Artifact info about the artifact used to autodetect provider
+     * Artifact info about the artifact used to autodetect provider.
      *
-     * @return The artifactinfo, or null if autodetect was not used.
+     * @return the artifactinfo, or null if autodetect was not used
      */
     TestArtifactInfo getTestArtifactInfo();
 
     List<CommandLineOption> getMainCliOptions();
 
     /**
-     * @return Defaults to 0. Configured with parameter {@code skipAfterFailureCount} in POM.
+     * @return defaults to 0. Configured with parameter {@code skipAfterFailureCount} in POM.
      */
     int getSkipAfterFailureCount();
 
     /**
      * @return {@code true} if test provider appears in forked jvm; Otherwise {@code false} means
-     * in-plugin provider.
+     * in-plugin provider
      */
     boolean isInsideFork();
 

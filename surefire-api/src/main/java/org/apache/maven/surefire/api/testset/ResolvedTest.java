@@ -33,6 +33,7 @@ import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.matchPath;
 
 /**
  * Single pattern test filter resolved from multi pattern filter -Dtest=MyTest#test,AnotherTest#otherTest.
+ *
  * @deprecated will be renamed to ResolvedTestPattern
  */
 // will be renamed to ResolvedTestPattern
@@ -125,7 +126,7 @@ public final class ResolvedTest {
      * Other examples: org&#47;animals&#47;Cat*, org&#47;animals&#47;Ca?.class, %regex[Cat.class|Dog.*]<br>
      * <br>
      * '*' means zero or more characters<br>
-     * '?' means one and only one character
+     * '?' means one and only one character.
      *
      * @return class pattern or regex
      */
@@ -142,7 +143,7 @@ public final class ResolvedTest {
      * Other examples: test* or testSomethin? or %regex[testOne|testTwo] or %ant[testOne|testTwo]<br>
      * <br>
      * '*' means zero or more characters<br>
-     * '?' means one and only one character
+     * '?' means one and only one character.
      *
      * @return method pattern or regex
      */
