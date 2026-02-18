@@ -174,6 +174,11 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         testCase.setError(attributes.getValue("message"), attributes.getValue("type"));
                         currentSuite.incrementNumberOfErrors();
                         break;
+                    case "system-out":
+                    case "system-err":
+                        currentElement = new StringBuilder();
+                        parseContent = true;
+                        break;
                     case "skipped":
                         String message = attributes.getValue("message");
                         testCase.setSkipped(message != null ? message : "skipped");
@@ -222,6 +227,12 @@ public final class TestSuiteXmlParser extends DefaultHandler {
             case "error":
                 testCase.setFailureDetail(currentElement.toString())
                         .setFailureErrorLine(parseErrorLine(currentElement, testCase.getFullClassName()));
+                break;
+            case "system-out":
+                testCase.setSystemOut(currentElement.toString());
+                break;
+            case "system-err":
+                testCase.setSystemErr(currentElement.toString());
                 break;
             case "time":
                 try {
