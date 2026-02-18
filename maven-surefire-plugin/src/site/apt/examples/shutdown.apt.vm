@@ -55,9 +55,13 @@ Shutdown of Forked JVM
 
    []
 
+   If Java9 is available, the start time of the process is determined by <<< ProcessHandle.current().info().startInstant() >>>.
+
    On Unix like systems the process' uptime is determined by native command <<< (/usr)/bin/ps -o etime= -p [PID] >>>.
 
-   On Windows the start time is determined using <<< wmic process where (ProcessId=[PID]) get CreationDate >>>
+   On Windows the start time is determined using <<< powershell -command "... Get-CimInstance Win32_Process ..." >>>.
+
+   []
    in the forked JVM.
 
 
