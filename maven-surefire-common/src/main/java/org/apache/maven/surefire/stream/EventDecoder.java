@@ -205,7 +205,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
             case BOOTERCODE_STDOUT_NEW_LINE:
             case BOOTERCODE_STDERR:
             case BOOTERCODE_STDERR_NEW_LINE:
-                return EVENT_WITH_RUNMODE_TID_AND_ONE_STRING;
+                return EVENT_WITH_RUNMODE_TID_AND_TWO_STRINGS;
             case BOOTERCODE_SYSPROPS:
                 return EVENT_WITH_RUNMODE_TID_AND_TWO_STRINGS;
             case BOOTERCODE_TESTSET_STARTING:
@@ -252,19 +252,21 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                 checkArguments(memento, 1);
                 return new ConsoleWarningEvent((String) memento.getData().get(0));
             case BOOTERCODE_STDOUT:
-                checkArguments(memento, 3);
-                return new StandardStreamOutEvent(memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2));
+                checkArguments(memento, 4);
+                return new StandardStreamOutEvent(
+                        memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2), memento.ofDataAt(3));
             case BOOTERCODE_STDOUT_NEW_LINE:
-                checkArguments(memento, 3);
+                checkArguments(memento, 4);
                 return new StandardStreamOutWithNewLineEvent(
-                        memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2));
+                        memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2), memento.ofDataAt(3));
             case BOOTERCODE_STDERR:
-                checkArguments(memento, 3);
-                return new StandardStreamErrEvent(memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2));
+                checkArguments(memento, 4);
+                return new StandardStreamErrEvent(
+                        memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2), memento.ofDataAt(3));
             case BOOTERCODE_STDERR_NEW_LINE:
-                checkArguments(memento, 3);
+                checkArguments(memento, 4);
                 return new StandardStreamErrWithNewLineEvent(
-                        memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2));
+                        memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2), memento.ofDataAt(3));
             case BOOTERCODE_SYSPROPS:
                 checkArguments(memento, 4);
                 return new SystemPropertyEvent(

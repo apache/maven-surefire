@@ -24,6 +24,8 @@ import java.util.List;
 public final class ReportTestSuite {
     private final List<ReportTestCase> testCases = new ArrayList<>();
 
+    private long lastModified;
+
     private int numberOfErrors;
 
     private int numberOfFailures;
@@ -155,6 +157,15 @@ public final class ReportTestSuite {
     ReportTestSuite setTestCases(List<ReportTestCase> testCases) {
         this.testCases.clear();
         this.testCases.addAll(testCases);
+        return this;
+    }
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public ReportTestSuite lastModified(long lastModified) {
+        this.lastModified = lastModified;
         return this;
     }
 

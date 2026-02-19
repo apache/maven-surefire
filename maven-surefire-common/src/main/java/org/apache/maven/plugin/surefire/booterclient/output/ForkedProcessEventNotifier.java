@@ -178,7 +178,8 @@ public final class ForkedProcessEventNotifier {
                         standardStreamEvent.getMessage(),
                         newLine,
                         standardStreamEvent.getRunMode(),
-                        standardStreamEvent.getTestRunId());
+                        standardStreamEvent.getTestRunId(),
+                        standardStreamEvent.getStack());
             }
         } else if (event.isSysPropCategory()) {
             SystemPropertyEvent systemPropertyEvent = (SystemPropertyEvent) event;

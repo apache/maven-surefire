@@ -175,7 +175,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         try {
             synchronized (lock) {
                 Utf8RecodingDeferredFileOutputStream stream = reportEntry.isStdOut() ? testStdOut : testStdErr;
-                stream.write(reportEntry.getLog(), reportEntry.isNewLine());
+                stream.write(reportEntry.getLog(), reportEntry.isNewLine(), reportEntry.getStack());
                 testOutputReceiver.writeTestOutput(reportEntry);
             }
         } catch (IOException e) {

@@ -38,7 +38,7 @@ import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 /**
  * A deferred file output stream decorator that encodes the string from the VM to UTF-8.
  * <br>
- * The deferred file is temporary file, and it is created at the first {@link #write(String, boolean) write}.
+ * The deferred file is temporary file, and it is created at the first {@link #write(String, boolean, String) write}.
  * The {@link #writeTo(OutputStream) reads} can be called anytime.
  * It is highly recommended to {@link #commit() commit} the cache which would close the file stream
  * and subsequent reads may continue.
@@ -62,7 +62,7 @@ final class Utf8RecodingDeferredFileOutputStream {
         this.channel = requireNonNull(channel);
     }
 
-    public synchronized void write(String output, boolean newLine) throws IOException {
+    public synchronized void write(String output, boolean newLine, String stack) throws IOException {
         if (closed) {
             return;
         }
@@ -91,7 +91,7 @@ final class Utf8RecodingDeferredFileOutputStream {
                 cache.put(NL_BYTES);
             }
         } else {
-            ((Buffer) cache).flip();
+            cache.flip();
             int minLength = cache.remaining() + decodedString.length + NL_BYTES.length;
             byte[] buffer = getLargeCache(minLength);
             int bufferLength = 0;

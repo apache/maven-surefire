@@ -20,8 +20,6 @@ package org.apache.maven.plugin.failsafe;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -86,13 +84,12 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <code>**{@literal /}${it.test}.java</code>, so you can just type {@code -Dit.test=MyIT} to run
      * a single test file called "foo/MyIT.java". The test patterns prefixed with a <em>!</em> will be excluded.
      * <br>
-     * This parameter overrides the parameter {@code includes} and {@code excludes}, and the TestNG parameter
-     * {@code suiteXmlFiles}.
+     * This parameter overrides the parameter {@code includes} and {@code excludes}.
      * <br>
      * Since 2.7.3 You can execute a limited number of methods in the test with adding <i>#myMethod</i> or
      * <i>#my*ethod</i>. E.g. type {@code -Dit.test=MyIT#myMethod} <b>supported for junit 4.x and TestNg.</b>
      * <br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>"-Dit.test=???IT, !Unstable*, pkg{@literal /}**{@literal /}Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest"</code></pre>
      * or e.g.
      * <br>
@@ -231,7 +228,6 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
      * </code></pre>
      * <br>
-     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.<br>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
      * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
@@ -251,8 +247,6 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * {@literal </excludes>}
      * </code></pre>
      * (which excludes all inner classes).
-     * <br>
-     * This parameter is ignored if the TestNG {@code suiteXmlFiles} parameter is specified.
      * <br>
      * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
      * {@literal <exclude>} entries.<br>
@@ -314,6 +308,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     private int rerunFailingTestsCount;
 
     /**
+     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
      * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
      * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
      * {@code includes} and {@code excludes}.<br>
@@ -323,17 +318,12 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * @since 2.2
      */
     @Parameter(property = "failsafe.suiteXmlFiles")
+    @Deprecated
     private File[] suiteXmlFiles;
 
     /**
      * Defines the order the tests will be run in. Supported values are {@code alphabetical},
-     * {@code reversealphabetical}, {@code random}, {@code hourly} (alphabetical on even hours, reverse alphabetical
-     * on odd hours), {@code failedfirst}, {@code balanced} and {@code filesystem}.
-     * <br>
-     * <br>
-     * Odd/Even for hourly is determined at the time the of scanning the classpath, meaning it could change during a
-     * multi-module build.
-     * <br>
+     * {@code reversealphabetical}, {@code random}, {@code failedfirst}, {@code balanced} and {@code filesystem}.
      * <br>
      * Failed first will run tests that failed on previous run first, as well as new tests for this run.
      * <br>
@@ -908,17 +898,6 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     }
 
     @Override
-    public File[] getSuiteXmlFiles() {
-        return suiteXmlFiles.clone();
-    }
-
-    @Override
-    @SuppressWarnings("UnusedDeclaration")
-    public void setSuiteXmlFiles(File[] suiteXmlFiles) {
-        this.suiteXmlFiles = suiteXmlFiles.clone();
-    }
-
-    @Override
     public String getRunOrder() {
         return runOrder;
     }
@@ -967,16 +946,6 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     @Override
     protected void setUseModulePath(boolean useModulePath) {
         this.useModulePath = useModulePath;
-    }
-
-    @Override
-    protected final List<File> suiteXmlFiles() {
-        return hasSuiteXmlFiles() ? Arrays.asList(suiteXmlFiles) : Collections.<File>emptyList();
-    }
-
-    @Override
-    protected final boolean hasSuiteXmlFiles() {
-        return suiteXmlFiles != null && suiteXmlFiles.length != 0;
     }
 
     @Override

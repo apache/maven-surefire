@@ -19,14 +19,13 @@
 package org.apache.maven.surefire.booter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -43,11 +42,13 @@ import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.booter.ForkingReporterFactory;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.provider.CommandListener;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
+import org.apache.maven.surefire.api.report.StackTraceProvider;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
@@ -58,6 +59,7 @@ import static java.lang.Thread.currentThread;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
+import static org.apache.maven.surefire.api.report.StackTraceProvider.DEFAULT_MAX_FRAMES;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.instantiateOneArg;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
@@ -108,6 +110,16 @@ public final class ForkedBooter {
         setSystemProperties(new File(tmpDir, effectiveSystemPropertiesFileName));
 
         providerConfiguration = booterDeserializer.deserialize();
+
+        // Configure StackTraceProvider with additional filter prefixes and max frames
+        String stackTraceFilterPrefixes =
+                providerConfiguration.getProviderProperties().get(ProviderParameterNames.STACK_TRACE_FILTER_PREFIXES);
+        String stackTraceMaxFramesStr =
+                providerConfiguration.getProviderProperties().get(ProviderParameterNames.STACK_TRACE_MAX_FRAMES);
+        int stackTraceMaxFrames =
+                stackTraceMaxFramesStr != null ? Integer.parseInt(stackTraceMaxFramesStr) : DEFAULT_MAX_FRAMES;
+        StackTraceProvider.configure(stackTraceFilterPrefixes, stackTraceMaxFrames);
+
         DumpErrorSingleton.getSingleton()
                 .init(providerConfiguration.getReporterConfiguration().getReportsDirectory(), dumpFileName);
 
@@ -191,12 +203,9 @@ public final class ForkedBooter {
     private void cancelPingScheduler() {
         if (pingScheduler != null) {
             try {
-                AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    @Override
-                    public Object run() {
-                        pingScheduler.shutdown();
-                        return null;
-                    }
+                AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+                    pingScheduler.shutdown();
+                    return null;
                 });
             } catch (AccessControlException e) {
                 // ignore
@@ -227,7 +236,7 @@ public final class ForkedBooter {
         ProcessCheckerType checkerType = startupConfiguration.getProcessChecker();
 
         if ((checkerType == ALL || checkerType == NATIVE) && pingMechanisms.processChecker != null) {
-            logger.debug(pingMechanisms.processChecker.toString());
+            logger.debug("pingMechanisms.processChecker:" + pingMechanisms.processChecker);
             if (pingMechanisms.processChecker.canUse()) {
                 Runnable checkerJob = processCheckerJob(pingMechanisms);
                 pingMechanisms.processCheckerScheduler.scheduleWithFixedDelay(checkerJob, 0L, 1L, SECONDS);
@@ -272,12 +281,7 @@ public final class ForkedBooter {
     }
 
     private CommandListener createPingHandler(final AtomicBoolean pingDone) {
-        return new CommandListener() {
-            @Override
-            public void update(Command command) {
-                pingDone.set(true);
-            }
-        };
+        return command -> pingDone.set(true);
     }
 
     private CommandListener createExitHandler(final ProcessChecker ppidChecker) {
@@ -363,12 +367,7 @@ public final class ForkedBooter {
     }
 
     private void acknowledgedExit() {
-        commandReader.addByeAckListener(new CommandListener() {
-            @Override
-            public void update(Command command) {
-                exitBarrier.release();
-            }
-        });
+        commandReader.addByeAckListener(command -> exitBarrier.release());
         eventChannel.bye();
         launchLastDitchDaemonShutdownThread(0);
         boolean byeAckReceived = acquireOnePermit(exitBarrier);
@@ -453,12 +452,7 @@ public final class ForkedBooter {
      * Necessary for the Surefire817SystemExitIT.
      */
     private void flushEventChannelOnExit() {
-        Runnable target = new Runnable() {
-            @Override
-            public void run() {
-                eventChannel.onJvmExit();
-            }
-        };
+        Runnable target = () -> eventChannel.onJvmExit();
         Thread t = new Thread(target);
         t.setDaemon(true);
         ShutdownHookUtils.addShutDownHook(t);
@@ -536,9 +530,9 @@ public final class ForkedBooter {
     }
 
     private static InputStream createSurefirePropertiesIfFileExists(String tmpDir, String propFileName)
-            throws FileNotFoundException {
+            throws IOException {
         File surefirePropertiesFile = new File(tmpDir, propFileName);
-        return surefirePropertiesFile.exists() ? new FileInputStream(surefirePropertiesFile) : null;
+        return surefirePropertiesFile.exists() ? Files.newInputStream(surefirePropertiesFile.toPath()) : null;
     }
 
     private static boolean isDebugging() {

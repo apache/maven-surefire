@@ -24,7 +24,6 @@ import javax.annotation.Nonnull;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
@@ -124,8 +123,8 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         int readCount = readByte(memento) & 0xff;
         read(memento, readCount + DELIMITER_LENGTH);
         ByteBuffer bb = memento.getByteBuffer();
-        Segment segment = new Segment(bb.array(), bb.arrayOffset() + ((Buffer) bb).position(), readCount);
-        ((Buffer) bb).position(((Buffer) bb).position() + readCount);
+        Segment segment = new Segment(bb.array(), bb.arrayOffset() + bb.position(), readCount);
+        bb.position(bb.position() + readCount);
         checkDelimiter(memento);
         return segment;
     }
@@ -137,8 +136,8 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         read(memento, length + DELIMITER_LENGTH);
         ByteBuffer bb = memento.getByteBuffer();
         byte[] array = bb.array();
-        int offset = bb.arrayOffset() + ((Buffer) bb).position();
-        ((Buffer) bb).position(((Buffer) bb).position() + length);
+        int offset = bb.arrayOffset() + bb.position();
+        bb.position(bb.position() + length);
         boolean isDefaultEncoding = false;
         if (length == DEFAULT_STREAM_ENCODING_BYTES.length) {
             isDefaultEncoding = true;
@@ -155,16 +154,16 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             checkDelimiter(memento);
             return charset;
         } catch (IllegalArgumentException e) {
-            throw new MalformedFrameException(memento.getLine().getPositionByteBuffer(), ((Buffer) bb).position());
+            throw new MalformedFrameException(memento.getLine().getPositionByteBuffer(), bb.position());
         }
     }
 
     protected String readString(@Nonnull Memento memento) throws IOException, MalformedFrameException {
-        ((Buffer) memento.getCharBuffer()).clear();
+        (memento.getCharBuffer()).clear();
         int readCount = readInt(memento);
         if (readCount < 0) {
             throw new MalformedFrameException(
-                    memento.getLine().getPositionByteBuffer(), ((Buffer) memento.getByteBuffer()).position());
+                    memento.getLine().getPositionByteBuffer(), (memento.getByteBuffer()).position());
         }
         read(memento, readCount + DELIMITER_LENGTH);
 
@@ -230,7 +229,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
     protected final void checkDelimiter(Memento memento) throws MalformedFrameException {
         ByteBuffer bb = memento.bb;
         if ((0xff & bb.get()) != ':') {
-            throw new MalformedFrameException(memento.getLine().getPositionByteBuffer(), ((Buffer) bb).position());
+            throw new MalformedFrameException(memento.getLine().getPositionByteBuffer(), bb.position());
         }
     }
 
@@ -243,16 +242,13 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         try {
             byte[] header = getEncodedMagicNumber();
             byte[] bbArray = bb.array();
-            for (int start = bb.arrayOffset() + ((Buffer) bb).position(), length = header.length;
-                    shift < length;
-                    shift++) {
+            for (int start = bb.arrayOffset() + bb.position(), length = header.length; shift < length; shift++) {
                 if (bbArray[shift + start] != header[shift]) {
-                    throw new MalformedFrameException(
-                            memento.getLine().getPositionByteBuffer(), ((Buffer) bb).position() + shift);
+                    throw new MalformedFrameException(memento.getLine().getPositionByteBuffer(), bb.position() + shift);
                 }
             }
         } finally {
-            ((Buffer) bb).position(((Buffer) bb).position() + shift);
+            bb.position(bb.position() + shift);
         }
 
         checkDelimiter(memento);
@@ -261,7 +257,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
     protected void checkArguments(Memento memento, int expectedDataElements) throws MalformedFrameException {
         if (memento.getData().size() != expectedDataElements) {
             throw new MalformedFrameException(
-                    memento.getLine().getPositionByteBuffer(), ((Buffer) memento.getByteBuffer()).position());
+                    memento.getLine().getPositionByteBuffer(), (memento.getByteBuffer()).position());
         }
     }
 
@@ -269,7 +265,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             throws IOException, MalformedFrameException {
         memento.getDecoder().reset();
         final CharBuffer output = memento.getCharBuffer();
-        ((Buffer) output).clear();
+        (output).clear();
         final ByteBuffer input = memento.getByteBuffer();
         final List<String> strings = new ArrayList<>();
         int countDecodedBytes = 0;
@@ -293,12 +289,12 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
                 countDecodedBytes += readInputBytes;
             } while (isLastChunk && bytesToDecode > 0 && output.hasRemaining());
 
-            strings.add(((Buffer) output).flip().toString());
-            ((Buffer) output).clear();
+            strings.add((output).flip().toString());
+            (output).clear();
         }
 
         memento.getDecoder().reset();
-        ((Buffer) output).clear();
+        (output).clear();
 
         return toString(strings);
     }
@@ -311,16 +307,16 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
             boolean endOfInput,
             @Nonnegative int errorStreamFrom)
             throws MalformedFrameException {
-        int limit = ((Buffer) input).limit();
-        ((Buffer) input).limit(((Buffer) input).position() + bytesToDecode);
+        int limit = (input).limit();
+        (input).limit((input).position() + bytesToDecode);
 
         CoderResult result = decoder.decode(input, output, endOfInput);
         if (result.isError() || result.isMalformed()) {
-            throw new MalformedFrameException(errorStreamFrom, ((Buffer) input).position());
+            throw new MalformedFrameException(errorStreamFrom, (input).position());
         }
 
         int decodedBytes = bytesToDecode - input.remaining();
-        ((Buffer) input).limit(limit);
+        (input).limit(limit);
         return decodedBytes;
     }
 
@@ -339,8 +335,8 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         ByteBuffer bb = memento.getByteBuffer();
         if (bb.hasRemaining()) {
             int bytesToWrite = bb.remaining();
-            memento.getLine().write(bb, ((Buffer) bb).position(), bytesToWrite);
-            ((Buffer) bb).position(((Buffer) bb).position() + bytesToWrite);
+            memento.getLine().write(bb, bb.position(), bytesToWrite);
+            bb.position(bb.position() + bytesToWrite);
         }
     }
 
@@ -402,17 +398,16 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
 
     protected @Nonnull StreamReadStatus read(@Nonnull Memento memento, int recommendedCount) throws IOException {
         ByteBuffer buffer = memento.getByteBuffer();
-        if (buffer.remaining() >= recommendedCount && ((Buffer) buffer).limit() != 0) {
+        if (buffer.remaining() >= recommendedCount && buffer.limit() != 0) {
             return OVERFLOW;
         } else {
-            if (((Buffer) buffer).position() != 0
-                    && recommendedCount > buffer.capacity() - ((Buffer) buffer).position()) {
-                ((Buffer) buffer.compact()).flip();
+            if (buffer.position() != 0 && recommendedCount > buffer.capacity() - buffer.position()) {
+                (buffer.compact()).flip();
                 memento.getLine().setPositionByteBuffer(0);
             }
-            int mark = ((Buffer) buffer).position();
-            ((Buffer) buffer).position(((Buffer) buffer).limit());
-            ((Buffer) buffer).limit(min(((Buffer) buffer).position() + recommendedCount, buffer.capacity()));
+            int mark = buffer.position();
+            buffer.position(buffer.limit());
+            buffer.limit(min(buffer.position() + recommendedCount, buffer.capacity()));
             return read(buffer, mark, recommendedCount);
         }
     }
@@ -421,18 +416,16 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
         StreamReadStatus readStatus = null;
         boolean isEnd = false;
         try {
-            while (!isEnd
-                    && ((Buffer) buffer).position() - oldPosition < recommendedCount
-                    && ((Buffer) buffer).position() < ((Buffer) buffer).limit()) {
+            while (!isEnd && buffer.position() - oldPosition < recommendedCount && buffer.position() < buffer.limit()) {
                 isEnd = channel.read(buffer) == -1;
             }
         } finally {
-            ((Buffer) buffer).limit(((Buffer) buffer).position());
-            ((Buffer) buffer).position(oldPosition);
+            buffer.limit(buffer.position());
+            buffer.position(oldPosition);
             int readBytes = buffer.remaining();
             boolean readComplete = readBytes >= recommendedCount;
             if (!isEnd || readComplete) {
-                debugStream(buffer.array(), buffer.arrayOffset() + ((Buffer) buffer).position(), buffer.remaining());
+                debugStream(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
                 readStatus = readComplete ? OVERFLOW : UNDERFLOW;
             }
         }
@@ -457,7 +450,7 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
                     .newDecoder()
                     .onMalformedInput(REPLACE)
                     .onUnmappableCharacter(REPLACE);
-            ((Buffer) bb).limit(0);
+            bb.limit(0);
         }
 
         public void reset() {
