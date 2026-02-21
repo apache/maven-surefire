@@ -371,7 +371,7 @@ public class PpidCheckerTest {
         assumeThat(System.getenv("SystemRoot"), is(not("")));
         assumeTrue(new File(System.getenv("SystemRoot"), "System32\\Wbem").isDirectory());
         assumeTrue(new File(System.getenv("SystemRoot"), "System32\\Wbem\\wmic.exe").isFile());
-        assertThat((Boolean) invokeMethod(PpidChecker.class, "hasWmicStandardSystemPath"))
+        assertThat((Boolean) invokeMethod(PpidChecker.class, "hasWmicStandardSystemPath32"))
                 .isTrue();
         assertThat(new File(System.getenv("SystemRoot"), "System32\\Wbem\\wmic.exe"))
                 .isFile();

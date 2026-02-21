@@ -34,6 +34,7 @@ import javax.annotation.Nonnull;
 final class ProcessInfo {
     static final ProcessInfo INVALID_PROCESS_INFO = new ProcessInfo(null, 0);
     static final ProcessInfo ERR_PROCESS_INFO = new ProcessInfo(null, 0);
+    static final ProcessInfo ERR_CMD_NOT_FOUND = new ProcessInfo(null, 0);
 
     /**
      * On Unix we do not get PID due to the command is interested only to etime of PPID:
@@ -65,7 +66,7 @@ final class ProcessInfo {
     }
 
     boolean isError() {
-        return this == ERR_PROCESS_INFO;
+        return this == ERR_PROCESS_INFO || this == ERR_CMD_NOT_FOUND;
     }
 
     String getPID() {

@@ -23,6 +23,7 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Queue;
@@ -62,17 +63,23 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
  * @since 2.20.1
  */
 final class PpidChecker {
+    private static final BigDecimal THOUSAND = new BigDecimal(1000);
     private static final long MINUTES_TO_MILLIS = 60L * 1000L;
     // 25 chars https://superuser.com/questions/937380/get-creation-time-of-file-in-milliseconds/937401#937401
     private static final int WMIC_CREATION_DATE_VALUE_LENGTH = 25;
     private static final int WMIC_CREATION_DATE_TIMESTAMP_LENGTH = 18;
     private static final SimpleDateFormat WMIC_CREATION_DATE_FORMAT =
             IS_OS_WINDOWS ? createWindowsCreationDateFormat() : null;
+    private static final Pattern POWERSHELL_CPU_PATTERN = Pattern.compile("^\\d+(\\.\\d+)?$");
     private static final String WMIC_CREATION_DATE = "CreationDate";
+    private static final String POWERSHELL_CMD_HEADER = "CPU";
     private static final String WINDOWS_SYSTEM_ROOT_ENV = "SystemRoot";
-    private static final String RELATIVE_PATH_TO_WMIC = "System32\\Wbem";
-    private static final String SYSTEM_PATH_TO_WMIC =
-            "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC + "\\";
+    private static final String RELATIVE_PATH_TO_WMIC32 = "System32\\Wbem";
+    private static final String RELATIVE_PATH_TO_WMIC64 = "SysWOW64\\Wbem";
+    private static final String SYSTEM_PATH_TO_WMIC32 =
+            "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC32 + "\\";
+    private static final String SYSTEM_PATH_TO_WMIC64 =
+        "%" + WINDOWS_SYSTEM_ROOT_ENV + "%\\" + RELATIVE_PATH_TO_WMIC64 + "\\";
     private static final String PS_ETIME_HEADER = "ELAPSED";
     private static final String PS_PID_HEADER = "PID";
 
@@ -159,7 +166,7 @@ final class PpidChecker {
         ProcessInfoConsumer reader = new ProcessInfoConsumer(charset) {
             @Override
             @Nonnull
-            ProcessInfo consumeLine(String line, ProcessInfo previousOutputLine) {
+            protected ProcessInfo consumeLine(String line, ProcessInfo previousOutputLine) {
                 if (previousOutputLine.isInvalid()) {
                     if (hasHeader) {
                         Matcher matcher = UNIX_CMD_OUT_PATTERN.matcher(line);
@@ -187,36 +194,61 @@ final class PpidChecker {
     }
 
     ProcessInfo windows() {
-        ProcessInfoConsumer reader = new ProcessInfoConsumer("US-ASCII") {
+        class WindowsProcessInfoConsumer extends ProcessInfoConsumer {
+            private boolean isPowershell;
+
+            WindowsProcessInfoConsumer() {
+                super("US-ASCII");
+            }
+
             @Override
             @Nonnull
-            ProcessInfo consumeLine(String line, ProcessInfo previousProcessInfo) throws Exception {
+            protected ProcessInfo consumeLine(String line, ProcessInfo previousProcessInfo) throws Exception {
                 if (previousProcessInfo.isInvalid() && !line.isEmpty()) {
                     if (hasHeader) {
-                        // now the line is CreationDate, e.g. 20180406142327.741074+120
-                        if (line.length() != WMIC_CREATION_DATE_VALUE_LENGTH) {
-                            throw new IllegalStateException("WMIC CreationDate should have 25 characters " + line);
+                        if (isPowershell) {
+                            if (POWERSHELL_CPU_PATTERN.matcher(line).matches()) {
+                                long etime = new BigDecimal(line).multiply(THOUSAND).longValue();
+                                return windowsProcessInfo(ppid, etime);
+                            }
+                        } else {
+                            // now the line is CreationDate, e.g. 20180406142327.741074+120
+                            if (line.length() != WMIC_CREATION_DATE_VALUE_LENGTH) {
+                                throw new IllegalStateException("WMIC CreationDate should have 25 characters " + line);
+                            }
+                            String startTimestamp = line.substring(0, WMIC_CREATION_DATE_TIMESTAMP_LENGTH);
+                            int indexOfTimeZone = WMIC_CREATION_DATE_VALUE_LENGTH - 4;
+                            long startTimestampMillisUTC = WMIC_CREATION_DATE_FORMAT.parse(startTimestamp).getTime()
+                                - parseInt(line.substring(indexOfTimeZone)) * MINUTES_TO_MILLIS;
+                            return windowsProcessInfo(ppid, startTimestampMillisUTC);
                         }
-                        String startTimestamp = line.substring(0, WMIC_CREATION_DATE_TIMESTAMP_LENGTH);
-                        int indexOfTimeZone = WMIC_CREATION_DATE_VALUE_LENGTH - 4;
-                        long startTimestampMillisUTC =
-                                WMIC_CREATION_DATE_FORMAT.parse(startTimestamp).getTime()
-                                        - parseInt(line.substring(indexOfTimeZone)) * MINUTES_TO_MILLIS;
-                        return windowsProcessInfo(ppid, startTimestampMillisUTC);
                     } else {
-                        hasHeader = WMIC_CREATION_DATE.equals(line);
+                        hasHeader = WMIC_CREATION_DATE.equals(line) || POWERSHELL_CMD_HEADER.equals(line);
                     }
                 }
                 return previousProcessInfo;
             }
-        };
-        String wmicPath = hasWmicStandardSystemPath() ? SYSTEM_PATH_TO_WMIC : "";
-        return reader.execute(
-                "CMD",
-                "/A",
-                "/X",
-                "/C",
-                wmicPath + "wmic process where (ProcessId=" + ppid + ") get " + WMIC_CREATION_DATE);
+
+            ProcessInfo checkPpid() {
+                if (hasWmicStandardSystemPath64()) {
+                    return execute("CMD", "/A", "/X", "/C",
+                        SYSTEM_PATH_TO_WMIC64
+                            + "wmic process where (ProcessId=" + ppid + ") get " + WMIC_CREATION_DATE);
+                } else if (hasWmicStandardSystemPath32()) {
+                    return execute("CMD", "/A", "/X", "/C",
+                        SYSTEM_PATH_TO_WMIC32
+                            + "wmic process where (ProcessId=" + ppid + ") get " + WMIC_CREATION_DATE);
+                } else {
+                    isPowershell = true;
+                    return execute("CMD", "/A", "/X", "/C",
+                        "powershell", " \"Get-Process -Id " + ppid + " | Select-Object -Property CPU" + "\"");
+                }
+            }
+        }
+
+        WindowsProcessInfoConsumer reader = new WindowsProcessInfoConsumer();
+        return reader.checkPpid();
+
     }
 
     void destroyActiveCommands() {
@@ -254,9 +286,14 @@ final class PpidChecker {
         }
     }
 
-    private static boolean hasWmicStandardSystemPath() {
+    private static boolean hasWmicStandardSystemPath32() {
         String systemRoot = System.getenv(WINDOWS_SYSTEM_ROOT_ENV);
-        return isNotBlank(systemRoot) && new File(systemRoot, RELATIVE_PATH_TO_WMIC + "\\wmic.exe").isFile();
+        return isNotBlank(systemRoot) && new File(systemRoot, RELATIVE_PATH_TO_WMIC32 + "\\wmic.exe").isFile();
+    }
+
+    private static boolean hasWmicStandardSystemPath64() {
+        String systemRoot = System.getenv(WINDOWS_SYSTEM_ROOT_ENV);
+        return isNotBlank(systemRoot) && new File(systemRoot, RELATIVE_PATH_TO_WMIC64 + "\\wmic.exe").isFile();
     }
 
     static long fromDays(Matcher matcher) {
@@ -337,7 +374,8 @@ final class PpidChecker {
             this.charset = charset;
         }
 
-        abstract @Nonnull ProcessInfo consumeLine(String line, ProcessInfo previousProcessInfo) throws Exception;
+        protected abstract @Nonnull ProcessInfo consumeLine(String line, ProcessInfo previousProcessInfo)
+            throws Exception;
 
         ProcessInfo execute(String... command) {
             ProcessBuilder processBuilder = new ProcessBuilder(command);
