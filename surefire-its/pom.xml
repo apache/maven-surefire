@@ -229,7 +229,7 @@
               <forkCount>${its.forkCount}</forkCount>
               <threadCount>${its.threadCount}</threadCount>
               <perCoreThreadCount>false</perCoreThreadCount>
-              <argLine>-Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+              <argLine>-Xmx128m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
               <!-- Pass current surefire version to the main suite so that it -->
               <!-- can forward to all integration test projects. SUREFIRE-513 -->
               <systemPropertyVariables>
