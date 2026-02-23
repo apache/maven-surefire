@@ -82,7 +82,9 @@ public final class ThreadedStreamConsumer implements EventHandler<Event>, Closea
             // copy mdc context map from parent thread so that mvn
             // tools that build in parallel can use it in there logging
             // to make clear what module is producing the logs
-            MDC.setContextMap(parentThreadsMdcContextMap);
+            if (parentThreadsMdcContextMap != null) {
+                MDC.setContextMap(parentThreadsMdcContextMap);
+            }
             while (!stop.get() || !synchronizer.isEmptyQueue()) {
                 try {
                     Event item = synchronizer.awaitNext();
