@@ -123,6 +123,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     private final boolean reportTestTimestamp;
 
+    /**
+     * @deprecated Prefer adding a new constructor that accepts a configuration object, e.g.
+     *             {@link org.apache.maven.surefire.extensions.StatelessReportMojoConfiguration}.
+     */
     @Deprecated
     public StatelessXmlReporter(
             File reportsDirectory,
@@ -471,7 +475,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         }
 
         if (reportTestTimestamp && report.getStartTime() > 0L) {
-            ppw.addAttribute("timestamp", toIsoInstant(report.getStartTime()));
+            ppw.addAttribute(
+                    "timestamp", Instant.ofEpochMilli(report.getStartTime()).toString());
         }
     }
 
@@ -500,7 +505,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         }
 
         if (reportTestTimestamp && report.getStartTime() > 0L) {
-            ppw.addAttribute("timestamp", toIsoInstant(report.getStartTime()));
+            ppw.addAttribute(
+                    "timestamp", Instant.ofEpochMilli(report.getStartTime()).toString());
         }
 
         // Count actual unique test methods and their final results from classMethodStatistics (accumulated across
@@ -651,10 +657,6 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             xmlWriter.endElement();
         }
         xmlWriter.endElement();
-    }
-
-    private static String toIsoInstant(long epochMillis) {
-        return Instant.ofEpochMilli(epochMillis).toString();
     }
 
     /**
