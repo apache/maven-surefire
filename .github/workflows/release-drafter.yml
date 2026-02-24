@@ -14,14 +14,16 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-   
+
 name: Release Drafter
 on:
   push:
     branches:
-      - master
+      - surefire-3.5.x
   workflow_dispatch:
 
 jobs:
    update_release_draft:
       uses: apache/maven-gh-actions-shared/.github/workflows/release-drafter.yml@v4
+      with:
+        config-name: 'release-drafter-3.x.yml'
