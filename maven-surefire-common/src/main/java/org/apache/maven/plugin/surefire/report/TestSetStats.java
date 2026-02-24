@@ -82,7 +82,7 @@ public class TestSetStats {
         lastStartAt = testSetStartAt;
     }
 
-    public long getTestSetStartAt() {
+    long getTestSetStartAt() {
         return testSetStartAt;
     }
 
@@ -91,7 +91,7 @@ public class TestSetStats {
         lastStartAt = testStartAt;
     }
 
-    public long getTestStartAt() {
+    long getTestStartAt() {
         return testStartAt;
     }
 
