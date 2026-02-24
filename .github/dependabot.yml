@@ -17,6 +17,7 @@
 version: 2
 updates:
 - package-ecosystem: "maven"
+  target-branch: "master"
   directory: "/"
   schedule:
     interval: "daily"
@@ -24,6 +25,20 @@ updates:
     # Ignore Maven Core updates
     - dependency-name: "org.apache.maven:*"
 - package-ecosystem: "github-actions"
+  target-branch: "master"
+  directory: "/"
+  schedule:
+    interval: "daily"
+- package-ecosystem: "maven"
+  target-branch: "surefire-3.5.x"
+  directory: "/"
+  schedule:
+    interval: "daily"
+  ignore:
+    # Ignore Maven Core updates
+    - dependency-name: "org.apache.maven:*"
+- package-ecosystem: "github-actions"
+  target-branch: "surefire-3.5.x"
   directory: "/"
   schedule:
     interval: "daily"
