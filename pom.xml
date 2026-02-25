@@ -106,7 +106,7 @@
     <jvm9ArgsTests />
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
     <project.build.outputTimestamp>2026-02-18T05:18:14Z</project.build.outputTimestamp>
-    <slf4jVersion>1.7.36</slf4jVersion>
+    <slf4jVersion>2.0.17</slf4jVersion>
 
     <versions.junit5>5.12.2</versions.junit5>
   </properties>
