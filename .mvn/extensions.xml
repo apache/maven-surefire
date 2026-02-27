@@ -31,9 +31,10 @@
 <!--    <artifactId>maven-build-cache-extension</artifactId>-->
 <!--    <version>1.2.2</version>-->
 <!--  </extension>-->
-  <extension>
-    <groupId>eu.maveniverse.maven.turbo-builder</groupId>
-    <artifactId>maven-turbo-builder</artifactId>
-    <version>0.13</version>
-  </extension>
+  <!-- disable until we get the multi thread build working better -->
+<!--  <extension>-->
+<!--    <groupId>eu.maveniverse.maven.turbo-builder</groupId>-->
+<!--    <artifactId>maven-turbo-builder</artifactId>-->
+<!--    <version>0.13</version>-->
+<!--  </extension>-->
 </extensions>
