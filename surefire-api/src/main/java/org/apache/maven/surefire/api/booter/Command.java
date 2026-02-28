@@ -48,7 +48,7 @@ public final class Command {
     }
 
     public static Command toShutdown(Shutdown shutdownType) {
-        return new Command(MasterProcessCommand.SHUTDOWN, shutdownType.name());
+        return new Command(MasterProcessCommand.SHUTDOWN, shutdownType.getParam());
     }
 
     public static Command toRunClass(String runClass) {
@@ -65,13 +65,12 @@ public final class Command {
 
     /**
      * @return {@link Shutdown} or {@link Shutdown#DEFAULT} if {@link #getData()} is null or blank string
-     * @throws IllegalArgumentException if string data {@link #getData()} is not applicable to enum {@link Shutdown}
      */
     public Shutdown toShutdownData() {
         if (command != MasterProcessCommand.SHUTDOWN) {
             throw new IllegalStateException("expected MasterProcessCommand.SHUTDOWN");
         }
-        return isBlank(data) ? Shutdown.DEFAULT : Shutdown.valueOf(data);
+        return isBlank(data) ? Shutdown.DEFAULT : Shutdown.parameterOf(data);
     }
 
     @Override
