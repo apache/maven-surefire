@@ -72,7 +72,7 @@ public class TestLessInputStreamBuilderTest {
 
         builder.getCachableCommands().shutdown(KILL);
         assertTrue(iterator.hasNext());
-        assertThat(iterator.next(), is(new Command(SHUTDOWN, "KILL")));
+        assertThat(iterator.next(), is(new Command(SHUTDOWN, KILL.getParam())));
 
         builder.removeStream(is);
     }
@@ -178,7 +178,7 @@ public class TestLessInputStreamBuilderTest {
         Command bye = decoder.decode();
         assertThat(bye, is(notNullValue()));
         assertThat(bye.getCommandType(), is(SHUTDOWN));
-        assertThat(bye.getData(), is(KILL.name()));
+        assertThat(bye.getData(), is(KILL.getParam()));
         Command noop = decoder.decode();
         assertThat(noop, is(notNullValue()));
         assertThat(noop.getCommandType(), is(NOOP));
