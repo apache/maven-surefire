@@ -89,7 +89,7 @@
   <properties>
     <javaVersion>8</javaVersion>
     <mavenVersion>3.6.3</mavenVersion>
-    <resolverVersion>1.4.1</resolverVersion>
+    <resolverVersion>2.0.0</resolverVersion>
     <commonsLang3Version>3.20.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
     <commonsIoVersion>2.21.0</commonsIoVersion>
