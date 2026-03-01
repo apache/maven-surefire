@@ -112,6 +112,7 @@ public class JUnitCoreTester {
                 false,
                 true,
                 true,
+                false,
                 new SurefireStatelessReporter(),
                 new SurefireConsoleOutputReporter(),
                 new SurefireStatelessTestsetInfoReporter(),

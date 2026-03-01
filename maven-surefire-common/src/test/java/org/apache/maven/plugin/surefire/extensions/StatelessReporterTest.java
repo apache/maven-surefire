@@ -66,7 +66,7 @@ public class StatelessReporterTest {
         String schema = "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new HashMap<>();
         DefaultStatelessReportMojoConfiguration config = new DefaultStatelessReportMojoConfiguration(
-                reportsDirectory, reportNameSuffix, true, 5, schema, true, true, testClassMethodRunHistory);
+                reportsDirectory, reportNameSuffix, true, 5, schema, true, true, false, testClassMethodRunHistory);
         SurefireStatelessReporter extension = new SurefireStatelessReporter();
 
         assertThat(extension.getVersion()).isEqualTo("3.0.2");
@@ -141,7 +141,7 @@ public class StatelessReporterTest {
         String schema = "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory = new HashMap<>();
         DefaultStatelessReportMojoConfiguration config = new DefaultStatelessReportMojoConfiguration(
-                reportsDirectory, reportNameSuffix, true, 5, schema, true, true, testClassMethodRunHistory);
+                reportsDirectory, reportNameSuffix, true, 5, schema, true, true, false, testClassMethodRunHistory);
         JUnit5Xml30StatelessReporter extension = new JUnit5Xml30StatelessReporter();
 
         assertThat(extension.getVersion()).isEqualTo("3.0.2");
