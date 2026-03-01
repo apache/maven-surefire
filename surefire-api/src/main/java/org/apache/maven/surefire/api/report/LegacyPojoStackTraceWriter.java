@@ -21,8 +21,6 @@ package org.apache.maven.surefire.api.report;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.apache.maven.surefire.api.util.internal.StringUtils;
-
 import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
 
 /**
@@ -54,7 +52,7 @@ public class LegacyPojoStackTraceWriter implements StackTraceWriter {
             if (isMultiLineExceptionMessage(t)) {
                 // SUREFIRE-986
                 String exc = t.getClass().getName() + ": ";
-                if (StringUtils.startsWith(builder, exc)) {
+                if (builder.indexOf(exc) == 0) {
                     builder.insert(exc.length(), '\n');
                 }
             }
@@ -105,7 +103,7 @@ public class LegacyPojoStackTraceWriter implements StackTraceWriter {
 
         String marker = "at " + testClass + "." + testMethod;
 
-        String[] lines = StringUtils.split(text, "\n");
+        String[] lines = text.split("\n");
         int lastLine = lines.length - 1;
         int causedByLine = -1;
         // skip first
