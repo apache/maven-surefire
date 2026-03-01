@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>3.5.6-SNAPSHOT</version>
+    <version>3.6.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>surefire-its</artifactId>
@@ -39,6 +39,10 @@
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
+    <junit.vintage.execution.parallel.enabled>false</junit.vintage.execution.parallel.enabled>
+    <junit.vintage.execution.parallel.classes>false</junit.vintage.execution.parallel.classes>
+    <junit.vintage.execution.parallel.methods>false</junit.vintage.execution.parallel.methods>
+    <junit.vintage.execution.parallel.pool>5</junit.vintage.execution.parallel.pool>
   </properties>
 
   <dependencies>
@@ -46,13 +50,13 @@
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-report-parser</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-logger-api</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -159,6 +163,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
@@ -172,7 +177,7 @@
             <groupId>org.apache.maven.surefire</groupId>
             <artifactId>surefire-shadefire</artifactId>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-            <version>3.5.2</version>
+            <version>3.5.4</version>
           </dependency>
         </dependencies>
       </plugin>
@@ -203,19 +208,28 @@
   <profiles>
     <profile>
       <id>run-its</id>
+      <properties>
+        <verifier.forkMode>forked</verifier.forkMode>
+      </properties>
       <build>
         <plugins>
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.4</version>
             <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
             <configuration>
+              <properties>
+                <configurationParameters>junit.vintage.execution.parallel.enabled=${junit.vintage.execution.parallel.enabled}
+                  junit.vintage.execution.parallel.classes=${junit.vintage.execution.parallel.classes}
+                  junit.vintage.execution.parallel.methods=${junit.vintage.execution.parallel.methods}
+                  junit.vintage.execution.parallel.pool-size=${junit.vintage.execution.parallel.pool}</configurationParameters>
+              </properties>
               <skipTests>${skipTests}</skipTests>
               <runOrder>alphabetical</runOrder>
               <forkCount>${its.forkCount}</forkCount>
               <threadCount>${its.threadCount}</threadCount>
               <perCoreThreadCount>false</perCoreThreadCount>
-              <argLine>-server -Xmx64m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+              <argLine>-Xmx128m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
               <!-- Pass current surefire version to the main suite so that it -->
               <!-- can forward to all integration test projects. SUREFIRE-513 -->
               <systemPropertyVariables>
@@ -224,10 +238,11 @@
                 <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
-                <verifier.forkMode>forked</verifier.forkMode>
+                <verifier.forkMode>${verifier.forkMode}</verifier.forkMode>
                 <jacoco.agent>${jacoco-it.agent}</jacoco.agent>
               </systemPropertyVariables>
               <redirectTestOutputToFile>true</redirectTestOutputToFile>
+              <forkedProcessTimeoutInSeconds>5400</forkedProcessTimeoutInSeconds>
               <shutdown>kill</shutdown>
             </configuration>
             <executions>
@@ -239,15 +254,35 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <configuration>
+              <localRepositoryPath>${settings.localRepository}</localRepositoryPath>
+            </configuration>
+            <executions>
+              <execution>
+                <id>install-dependencies</id>
+                <goals>
+                  <goal>install</goal>
+                </goals>
+                <phase>pre-integration-test</phase>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
     <profile>
       <id>apache.ci</id>
       <properties>
-        <its.forkCount>0.4C</its.forkCount>
+        <its.forkCount>1</its.forkCount>
         <its.threadCount>1</its.threadCount>
         <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
+        <junit.vintage.execution.parallel.enabled>true</junit.vintage.execution.parallel.enabled>
+        <junit.vintage.execution.parallel.classes>true</junit.vintage.execution.parallel.classes>
+        <junit.vintage.execution.parallel.methods>false</junit.vintage.execution.parallel.methods>
+        <junit.vintage.execution.parallel.pool>5</junit.vintage.execution.parallel.pool>
       </properties>
     </profile>
     <profile>

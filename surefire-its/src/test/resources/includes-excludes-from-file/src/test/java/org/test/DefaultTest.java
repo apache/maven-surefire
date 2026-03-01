@@ -1,9 +1,11 @@
 package org.test;
 
 import java.io.FileOutputStream;
+import org.junit.Test;
 
 public class DefaultTest
 {
+    @Test
     public void testRun()
         throws Exception
     {

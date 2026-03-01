@@ -49,49 +49,39 @@ Using JUnit
   This is the only step that is required to get started - you can now create tests in your test source directory
   (e.g., <<<src/test/java>>>).
 
-* Different Generations of JUnit support
+* JUnit Support in Surefire 3.6.0+
 
-  Surefire supports three different generations of JUnit: JUnit 3.8.x, JUnit 4.x (serial provider) and JUnit 4.7 (junit-core provider
-  with parallel support). The provider is selected based on the JUnit version in your project and the configuration parameters (for parallel).
+  Since version 3.6.0, Surefire runs all JUnit tests via the JUnit Platform:
 
-* Upgrade Check for JUnit 4.x
+  * <<JUnit 5 tests>> are executed via the Jupiter Engine
 
-  As of Surefire version 2.7, the algorithm for choosing which tests to run
-  has changed. From 2.7 and on, only valid JUnit tests are run for all versions of JUnit, where older versions
-  of the plugin would also run invalid tests that satisfied the naming convention.
+  * <<JUnit 4 tests>> (4.12 or later) are executed via the Vintage Engine
 
-  When upgrading from a Surefire version prior to 2.7, the build can be run with
-  the flag <<<-Dsurefire.junit4.upgradecheck>>>. This will perform a check and notify you of any invalid tests that
-  will not be run with this version of Surefire (and the build fails). This is only meant to be used as a tool
-  when upgrading to check that all expected tests will be run. It is a transitional
-  feature that will be removed in a future version of surefire.
+  []
+
+  <<Important:>> JUnit 4.12 is the minimum supported version. Earlier versions of JUnit 4 and JUnit 3.x
+  are no longer supported. If you have JUnit 3 tests, they must be migrated to JUnit 4.12+ to run.
 
 * Provider Selection
 
-   If nothing is configured, Surefire detects which JUnit version to use by the following algorithm:
+   Since Surefire 3.6.0, all tests run via the JUnit Platform provider (<<<surefire-junit-platform>>>):
 
 +---+
-if the JUnit 5 Platform Engine is present in the project
-    use junit-platform
-if the JUnit version in the project >= 4.7 and the <<<parallel>>> configuration parameter has ANY value
-    use junit47 provider
-if JUnit >= 4.0 is present
-    use junit4 provider
-else
-    use junit3.8.1
+if JUnit 5 Platform artifacts are present
+    use junit-platform with Jupiter engine
+if JUnit 4.12+ is present
+    use junit-platform with Vintage engine
+if JUnit < 4.12 is present
+    ERROR: JUnit 4.12 or later is required
 +---+
 
-    Please note that the "else" part of this algorithm is also a FAQ response:
+    <<Note:>> If you have JUnit 3 or JUnit 4 (before 4.12) tests, you must upgrade your JUnit dependency to at least 4.12.
+    JUnit 4.12+ tests can run unchanged via the Vintage Engine.
 
-    You depend on the appropriate version of JUnit being present in the project dependencies, or Surefire may choose the wrong
-    provider. If, for instance, one of your dependencies pulls in JUnit 3.8.1 you risk that surefire chooses the
-    3.8.1 provider, which will not support annotations or any of the 4.x features.
+** Manual Engine Configuration
 
-    Use <<<mvn dependency:tree>>>, POM dependency ordering and/or exclusion of transitive dependencies to fix this problem.
-
-** Manually Specifying a Provider
-
-   You can also manually force a specific provider by adding it as a dependency to ${thisPlugin} itself:
+   Since Surefire 3.6.0, explicit provider configuration is rarely needed. However, you can add
+   specific JUnit Platform engines as plugin dependencies if needed:
 
 +---+
 <plugins>
@@ -102,9 +92,9 @@ else
     <version>${project.version}</version>
     <dependencies>
       <dependency>
-        <groupId>org.apache.maven.surefire</groupId>
-        <artifactId>surefire-junit47</artifactId>
-        <version>${project.version}</version>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>5.9.1</version>
       </dependency>
     </dependencies>
   </plugin>
@@ -112,14 +102,12 @@ else
 </plugins>
 +---+
 
-  When using this technique there  is no check that the proper test-frameworks are present on your project's
+  When using this technique there is no check that the proper test-frameworks are present on your project's
   classpath. Failing to add the proper test-frameworks will result in a build failure.
 
 * Running Tests in Parallel
 
-  From JUnit 4.7 onwards you can run your tests in parallel. To do this, you must set the
-  <<<parallel>>> parameter, and may change the <<<threadCount>>> or <<<useUnlimitedThreads>>> attribute.
-  For example:
+  You can run your tests in parallel using the <<<parallel>>> parameter:
 
 +---+
 <plugins>
@@ -137,23 +125,17 @@ else
 </plugins>
 +---+
 
-
-  If your tests specify any value for the <<<parallel>>> attribute and your project uses JUnit 4.7+, your request will be routed to
-  the concurrent JUnit provider, which uses the JUnit JUnitCore test runner.
-
   This is particularly useful for slow tests that can have high concurrency.
 
-  As of Surefire 2.7, no additional dependencies are needed to use the full set of options with parallel.
-  As of Surefire 2.16, new thread-count attributes are introduced, namely <<<threadCountSuites>>>, <<<threadCountClasses>>> and
-  <<<threadCountMethods>>>. Additionally, the new attributes <<<parallelTestsTimeoutInSeconds>>> and
-  <<<parallelTestsTimeoutForcedInSeconds>>> are used to shut down the parallel execution after an elapsed timeout, and
-  the attribute <<<parallel>>> specifies new values.
-  
+  Additional thread-count attributes are available: <<<threadCountSuites>>>, <<<threadCountClasses>>> and
+  <<<threadCountMethods>>>. The attributes <<<parallelTestsTimeoutInSeconds>>> and
+  <<<parallelTestsTimeoutForcedInSeconds>>> can be used to shut down the parallel execution after an elapsed timeout.
+
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 
 * Using Custom Listeners and Reporters
 
-  The junit4 and junit47 providers provide support for attaching custom <<<RunListeners>>> to your tests.
+  When running JUnit 4 tests via the Vintage Engine, you can attach custom JUnit 4 <<<RunListeners>>> to your tests.
 
   You can configure multiple custom listeners like this:
 
@@ -198,36 +180,6 @@ else
   Since JUnit 4.12 thread safe listener class should be annotated by
   <<<org.junit.runner.notification.RunListener.ThreadSafe>>> which avoids unnecessary locks in JUnit.
 
-
-* Using a Security Manager (JUnit3 only)
-
-   As long as <<<forkCount>>> is not 0 and you use JUnit3, you can run your tests with a Java security manager enabled.
-   The class name of the security manager must be sent as a system property variable to the JUnit3 provider.
-
-   The JDK 17 deprecated the class <<<java.lang.SecurityManager>>> and the security manager is not fully supported
-   since JDK 18. The JUnit3 provider fails with enabled system property <<surefire.security.manager>>> in JDK 18+.
-
-   JUnit4 uses mechanisms internally that are not compatible with the tested
-   security managers and thus this means of configuring a security manager with JUnit4 is not supported
-   by Surefire.
-
-+---+
-<plugins>
-[...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <systemPropertyVariables>
-            <surefire.security.manager>java.lang.SecurityManager</surefire.security.manager>
-          </systemPropertyVariables>
-        </configuration>
-      </plugin>
-[...]
-</plugins>
-+---+
-
 * Using a Security Manager (All providers)
 
     Alternatively you can define a policy file that allows all providers to run with Surefire
@@ -253,9 +205,8 @@ else
 
 * Using JUnit Categories
 
-    JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<<groups>>> parameter. As long as 
-    the JUnit version in the project is 4.8 or higher, the presence of the "groups" parameter will automatically make Surefire select
-    the junit47 provider, which supports groups.
+    JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<<groups>>> parameter.
+    Since Surefire 3.6.0, JUnit 4 categories work via the Vintage Engine.
 
 +---+
 <plugins>

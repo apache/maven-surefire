@@ -28,7 +28,7 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
  * @since 3.0.0-M5
  */
 public final class StandardStreamErrWithNewLineEvent extends AbstractStandardStreamEvent {
-    public StandardStreamErrWithNewLineEvent(RunMode runMode, Long testRunId, String message) {
-        super(BOOTERCODE_STDERR_NEW_LINE, runMode, testRunId, message);
+    public StandardStreamErrWithNewLineEvent(RunMode runMode, Long testRunId, String message, String stack) {
+        super(BOOTERCODE_STDERR_NEW_LINE, runMode, testRunId, message, stack);
     }
 }

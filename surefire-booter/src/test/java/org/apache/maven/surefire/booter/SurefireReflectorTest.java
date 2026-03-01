@@ -73,7 +73,7 @@ public class SurefireReflectorTest extends TestCase {
         Object foo = getFoo();
 
         DirectoryScannerParameters directoryScannerParameters = new DirectoryScannerParameters(
-                new File("ABC"), new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), "hourly");
+                new File("ABC"), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), null);
         surefireReflector.setDirectoryScannerParameters(foo, directoryScannerParameters);
         assertTrue(isCalled(foo));
         assertNotNull(((Foo) foo).getDirectoryScannerParameters());
@@ -93,7 +93,7 @@ public class SurefireReflectorTest extends TestCase {
         Object foo = getFoo();
 
         DirectoryScannerParameters directoryScannerParameters = new DirectoryScannerParameters(
-                new File("ABC"), new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), "hourly");
+                new File("ABC"), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), null);
         surefireReflector.setIfDirScannerAware(foo, directoryScannerParameters);
         assertTrue(isCalled(foo));
     }
@@ -138,10 +138,8 @@ public class SurefireReflectorTest extends TestCase {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
 
-        TestRequest testSuiteDefinition = new TestRequest(
-                asList(new File("file1"), new File("file2")),
-                new File("TestSOurce"),
-                new TestListResolver("aUserRequestedTest#aMethodRequested"));
+        TestRequest testSuiteDefinition =
+                new TestRequest(new File("TestSOurce"), new TestListResolver("aUserRequestedTest#aMethodRequested"), 0);
         surefireReflector.setTestSuiteDefinition(foo, testSuiteDefinition);
         assertTrue(isCalled(foo));
         assertNotNull(((Foo) foo).getTestRequest());
@@ -316,20 +314,6 @@ public class SurefireReflectorTest extends TestCase {
         assertNull(booterParams.getSystemExitTimeout());
         reflector.setSystemExitTimeout(booterParams, 60);
         assertEquals(booterParams.getSystemExitTimeout(), (Integer) 60);
-    }
-
-    public void testSetTestSuiteDefinitionAware() {
-        SurefireReflector reflector =
-                new SurefireReflector(Thread.currentThread().getContextClassLoader());
-        Foo booterParams = (Foo) getFoo();
-        TestRequest request = new TestRequest(Collections.emptyList(), null, null);
-        reflector.setTestSuiteDefinitionAware(booterParams, request);
-        assertTrue(booterParams.isCalled());
-        assertNotNull(booterParams.getTestRequest());
-        assertTrue(booterParams.getTestRequest().getSuiteXmlFiles().isEmpty());
-        assertNull(booterParams.getTestRequest().getTestSourceDirectory());
-        assertNull(booterParams.getTestRequest().getTestListResolver());
-        assertEquals(booterParams.getTestRequest().getRerunFailingTestsCount(), 0);
     }
 
     public void testSetProviderPropertiesAware() {

@@ -19,7 +19,6 @@
 package org.apache.maven.surefire.booter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -99,8 +98,6 @@ public class ForkedBooterTest {
                     "createSurefirePropertiesIfFileExists",
                     tmpDir.getCanonicalPath(),
                     "surefire.properties")) {
-                assertThat(is2).isNotNull().isInstanceOf(FileInputStream.class);
-
                 byte[] propsContent = new byte[20];
                 int length = is2.read(propsContent);
 

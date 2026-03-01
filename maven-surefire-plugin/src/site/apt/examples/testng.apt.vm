@@ -28,9 +28,16 @@
 
 Using TestNG
 
+* TestNG via JUnit Platform (Since 3.6.0)
+
+  Starting with Surefire 3.6.0, TestNG tests are executed via the JUnit Platform using
+  the TestNG JUnit Platform engine. This provides unified execution and reporting across all test frameworks.
+
+  <<Important>>: TestNG 6.14.3 is the minimum supported version.
+
 * Configuring TestNG
 
-  To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
+  To get started with TestNG, include the following dependency in your project:
 
 +---+
 <dependencies>
@@ -38,7 +45,7 @@ Using TestNG
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.9.8</version>
+      <version>6.14.3</version>
       <scope>test</scope>
     </dependency>
   [...]
@@ -58,30 +65,6 @@ Using TestNG
 
   If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
   {{{./inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
-
-* Using Suite XML Files
-
-  Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
-  These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
-
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <suiteXmlFiles>
-            <suiteXmlFile>testng.xml</suiteXmlFile>
-          </suiteXmlFiles>
-        </configuration>
-      </plugin>
-    [...]
-</plugins>
-+---+
-
-  This configuration will override the includes and excludes patterns and run all tests in the suite files.
 
 * Specifying Test Parameters
 
@@ -177,32 +160,7 @@ Using TestNG
     [...]
 </plugins>
 +---+
-  
-  You can run suites in parallel.
-  
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          <suiteXmlFiles>
-            <file>src/test/resources/testng1.xml</file>
-            <file>src/test/resources/testng2.xml</file>
-          </suiteXmlFiles>
-          <properties>
-            <property>
-              <name>suitethreadpoolsize</name>
-              <value>2</value>
-            </property>
-          </properties>
-        </configuration>
-      </plugin>
-    [...]
-</plugins>
-+---+
+
 
   See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
 
@@ -343,66 +301,10 @@ Using TestNG
 </plugins>
 +---+
 
-* Running 'testnames' in test tag
-
-  Only tests defined in a <<<test>>> tag matching one of these names will be run.
-  In this example two tests run out of 7; namely <InstallTest> and <ATest>.
-  The test <a-t3> does not match any test in <suite.xml>.
-  
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          [...]
-          <suiteXmlFiles>
-            <file>src/test/resources/suite.xml</file>
-          </suiteXmlFiles>
-          <properties>
-            <property>
-              <name>testnames</name>
-              <value>a-t1,a-t3</value>
-            </property>
-          </properties>
-          [...]
-        </configuration>
-      </plugin>
-    [...]
-</plugins>
-+---+
-
-
-  The test suite 'suite.xml' :
-
-+---+
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="Component Tests" verbose="2" annotations="JDK">
-  <test name="a-t1" preserve-order="true" >
-    <classes>
-      <class name="server.InstallTest" />
-      <class name="server.ATest" />
-    </classes>
-  </test>
-  <test name="a-t2" preserve-order="true" >
-    <classes>
-      <class name="server.SCHTest" />
-      <class name="server.PRGTest" />
-      <class name="server.SIBBTest" />
-      <class name="server.EDNTest" />
-      <class name="server.PPVTest" />
-    </classes>
-  </test>
-</suite>
-+---+
-
-
 * Running TestNG and JUnit Tests
 
-  To run TestNG and JUnit 4.x in the current Maven project, you need
-  both TestNG and JUnit dependencies in the POM:
+  Since Surefire 3.6.0, both TestNG and JUnit tests run via the JUnit Platform, making it easy to have
+  both frameworks in the same project:
 
 +---+
 <dependencies>
@@ -410,7 +312,7 @@ Using TestNG
   <dependency>
     <groupId>org.testng</groupId>
     <artifactId>testng</artifactId>
-    <version>6.9.4</version>
+    <version>6.14.3</version>
     <scope>test</scope>
   </dependency>
   <dependency>
@@ -423,42 +325,7 @@ Using TestNG
 </dependencies>
 +---+
 
-  You may want to run two providers, e.g. <<<surefire-junit47>>> and <<<surefire-testng>>>, and avoid running JUnit
-  tests within <<<surefire-testng>>> provider by setting property <<<junit=false>>> (note that this property is not applicable if you configure the <<<suiteXmlFiles>>> parameter).
-
-+---+
-<plugins>
-    [...]
-      <plugin>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>${project.artifactId}</artifactId>
-        <version>${project.version}</version>
-        <configuration>
-          [...]
-          <properties>
-            <property>
-              <name>junit</name>
-              <value>false</value>
-            </property>
-          </properties>
-          <threadCount>1</threadCount>
-          [...]
-        </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-junit47</artifactId>
-            <version>${project.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-testng</artifactId>
-            <version>${project.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin>
-    [...]
-</plugins>
-+---+
+  With both dependencies present, Surefire will automatically run both TestNG and JUnit 4 tests using
+  their respective JUnit Platform engines.
 
 

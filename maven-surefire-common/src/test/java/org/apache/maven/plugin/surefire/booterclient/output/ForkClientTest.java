@@ -384,7 +384,7 @@ public class ForkClientTest {
         when(factory.createTestReportListener()).thenReturn(receiver);
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
-        client.handleEvent(new StandardStreamOutEvent(NORMAL_RUN, 1L, "msg"));
+        client.handleEvent(new StandardStreamOutEvent(NORMAL_RUN, 1L, "msg", null));
         verifyZeroInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
@@ -410,7 +410,7 @@ public class ForkClientTest {
         when(factory.createTestReportListener()).thenReturn(receiver);
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
-        client.handleEvent(new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "msg"));
+        client.handleEvent(new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "msg", null));
         verifyZeroInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
@@ -436,7 +436,7 @@ public class ForkClientTest {
         when(factory.createTestReportListener()).thenReturn(receiver);
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
-        client.handleEvent(new StandardStreamErrEvent(NORMAL_RUN, 1L, "msg"));
+        client.handleEvent(new StandardStreamErrEvent(NORMAL_RUN, 1L, "msg", null));
         verifyZeroInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
@@ -462,7 +462,7 @@ public class ForkClientTest {
         when(factory.createTestReportListener()).thenReturn(receiver);
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
-        client.handleEvent(new StandardStreamErrWithNewLineEvent(NORMAL_RUN, 1L, "msg"));
+        client.handleEvent(new StandardStreamErrWithNewLineEvent(NORMAL_RUN, 1L, "msg", null));
         verifyZeroInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);

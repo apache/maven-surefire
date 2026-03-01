@@ -30,8 +30,12 @@ public class Surefire697NiceSummaryIT extends SurefireJUnit4IntegrationTestCase 
     @Test
     public void testBuildFailingWhenErrors() {
         unpack("/surefire-697-niceSummary")
-                .failNever()
+                .maven()
+                .withFailure()
                 .executeTest()
-                .verifyTextInLog("junit.surefire697.BasicTest#testShortMultiline RuntimeException A very short m");
+                .verifyTextInLog("junit.surefire697.BasicTest.testShortMultiline")
+                // testing multiline log would be more accurate but this approach avoids line ending issues
+                .verifyTextInLog("java.lang.RuntimeException:")
+                .verifyTextInLog("A very short m");
     }
 }

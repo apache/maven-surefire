@@ -40,32 +40,9 @@ public class AbstractSurefireMojoProvidersInfoTest {
     private AbstractSurefireMojo mojo;
 
     @Test
-    public void defaultProviderAreAlwaysAvailable() {
-        ProviderInfo providerInfo = mojo.new JUnit3ProviderInfo();
-        assertThat(providerInfo.isApplicable()).isTrue();
-    }
-
-    @Test
     public void dynamicProviderAreAlwaysApplicable() {
         ProviderInfo providerInfo = mojo.new DynamicProviderInfo("test");
         assertThat(providerInfo.isApplicable()).isTrue();
-    }
-
-    @Test
-    public void testNgProviderApplicable() {
-        Artifact testNg = mock(Artifact.class);
-        ProviderInfo providerInfo = mojo.new TestNgProviderInfo(testNg);
-
-        assertThat(providerInfo.isApplicable()).isTrue();
-
-        // no interaction with artifact only reference are checked
-        verifyNoMoreInteractions(testNg);
-    }
-
-    @Test
-    public void testNgProviderNotApplicable() {
-        ProviderInfo providerInfo = mojo.new TestNgProviderInfo(null);
-        assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     // surefire-junit-platform
@@ -73,7 +50,9 @@ public class AbstractSurefireMojoProvidersInfoTest {
     @Test
     public void jUnitPlatformProviderApplicable() {
         Artifact junitPlatform = mock(Artifact.class);
-        ProviderInfo providerInfo = mojo.new JUnitPlatformProviderInfo(null, junitPlatform, aTestClassPath());
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, junitPlatform, aTestClassPath(), null, null, null, null, null, null, null, null, null);
 
         assertThat(providerInfo.isApplicable()).isTrue();
 
@@ -83,7 +62,9 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnitPlatformProviderNotApplicable() {
-        ProviderInfo providerInfo = mojo.new JUnitPlatformProviderInfo(null, null, aTestClassPath());
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), null, null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
@@ -91,8 +72,20 @@ public class AbstractSurefireMojoProvidersInfoTest {
     public void jUnitPlatformProviderNotApplicableForPlatformRunner() {
         // not applicable if junit-platform-runner is on classpath
         Artifact junitPlatformRunnerArtifact = mock(Artifact.class);
-        ProviderInfo providerInfo =
-                mojo.new JUnitPlatformProviderInfo(junitPlatformRunnerArtifact, null, aTestClassPath());
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                junitPlatformRunnerArtifact,
+                null,
+                aTestClassPath(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
         assertThat(providerInfo.isApplicable()).isFalse();
 
         // no interaction with artifact only reference are checked
@@ -103,54 +96,45 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnit4ProviderNullArtifacts() {
-        ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(null, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), null, null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
-    }
-
-    @Test
-    public void jUnit4ProviderOnlyJunitDepArtifact() {
-        Artifact junitDep = mock(Artifact.class);
-        ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(null, junitDep);
-
-        assertThat(providerInfo.isApplicable()).isTrue();
-
-        // no interaction with artifact only reference are checked
-        verifyNoMoreInteractions(junitDep);
-    }
-
-    @Test
-    public void jUnit4ProviderJunit3WithJDepArtifact() {
-        Artifact junit = aArtifact("3.8.1");
-        Artifact junitDep = mock(Artifact.class);
-
-        ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, junitDep);
-
-        // ??? only existing for junitDep in any version is checked
-        assertThat(providerInfo.isApplicable()).isTrue();
-
-        // no interaction with artifact only reference are checked
-        verifyNoMoreInteractions(junitDep);
     }
 
     @Test
     public void jUnit4ProviderJunit3AsDependencyArtifact() {
         Artifact junit = aArtifact("3.8.1");
-        ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, null);
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
     public void jUnit4ProviderJunit45AsDependencyArtifact() {
-        Artifact junit = aArtifact("4.5");
-        ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, null);
-        assertThat(providerInfo.isApplicable()).isTrue();
+        Artifact junit = aArtifact("3.8.1");
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
+        assertThat(providerInfo.isApplicable()).isFalse();
     }
 
     @Test
     public void jUnit4ProviderJunit47AsDependencyArtifact() {
-        Artifact junit = aArtifact("4.7");
-        ProviderInfo providerInfo = mojo.new JUnit4ProviderInfo(junit, null);
-        // ??? it is ok for 4.7 ???
+        Artifact junit = aArtifact("3.8.1");
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
+        assertThat(providerInfo.isApplicable()).isFalse();
+    }
+
+    @Test
+    public void jUnit4ProviderJunit413AsDependencyArtifact() {
+        Artifact junit = aArtifact("4.13");
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isTrue();
     }
 

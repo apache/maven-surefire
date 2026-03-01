@@ -28,66 +28,40 @@
   <version>1.0-SNAPSHOT</version>
   <name>TestNG simple test</name>
 
-  <profiles>
-    <profile>
-      <id>testng-old</id>
-      <activation>
-        <property><name>testNgClassifier</name></property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <version>${testNgVersion}</version>
-          <classifier>${testNgClassifier}</classifier>
-          <exclusions>
-            <exclusion>
-              <!-- NOTE: Deliberaty excluding junit to enforce TestNG only tests, cf. SUREFIRE-642 -->
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>testng-new</id>
-      <activation>
-        <property><name>!testNgClassifier</name></property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <version>${testNgVersion}</version>
-          <exclusions>
-            <exclusion>
-              <!-- NOTE: Deliberaty excluding junit to enforce TestNG only tests, cf. SUREFIRE-642 -->
-              <groupId>junit</groupId>
-              <artifactId>junit</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
-
   <properties>
     <surefire.testng.verbose>0</surefire.testng.verbose>
     <argLine/>
-    <jacoco.agent/>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
   </properties>
-
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>6.0.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>${testNgVersion}</version>
+      <exclusions>
+        <exclusion>
+          <!-- NOTE: Deliberaty excluding junit to enforce TestNG only tests, cf. SUREFIRE-642 -->
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
   <build>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${surefire.version}</version>
         <configuration>
-          <argLine>${argLine} "${jacoco.agent}"</argLine>
+          <argLine>${argLine}</argLine>
           <runOrder>reversealphabetical</runOrder>
           <properties>
             <property>

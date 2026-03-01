@@ -201,15 +201,15 @@ public final class ForkClient implements EventHandler<Event> {
 
     private final class StdOutListener implements ForkedProcessStandardOutErrEventListener {
         @Override
-        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId) {
-            writeTestOutput(output, true, newLine, runMode, testRunId);
+        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId, String stack) {
+            writeTestOutput(output, true, newLine, runMode, testRunId, stack);
         }
     }
 
     private final class StdErrListener implements ForkedProcessStandardOutErrEventListener {
         @Override
-        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId) {
-            writeTestOutput(output, false, newLine, runMode, testRunId);
+        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId, String stack) {
+            writeTestOutput(output, false, newLine, runMode, testRunId, stack);
         }
     }
 
@@ -336,9 +336,10 @@ public final class ForkClient implements EventHandler<Event> {
         util.dumpStreamText(msg, reportsDir, forkNumber);
     }
 
-    private void writeTestOutput(String output, boolean isStdout, boolean newLine, RunMode runMode, Long testRunId) {
+    private void writeTestOutput(
+            String output, boolean isStdout, boolean newLine, RunMode runMode, Long testRunId, String stack) {
         getConsoleOutputReceiver()
-                .writeTestOutput(new TestOutputReportEntry(output, isStdout, newLine, runMode, testRunId));
+                .writeTestOutput(new TestOutputReportEntry(output, isStdout, newLine, runMode, testRunId, stack));
     }
 
     public Map<String, String> getTestVmSystemProperties() {

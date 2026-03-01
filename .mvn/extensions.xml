@@ -1,0 +1,40 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<extensions>
+  <extension>
+    <groupId>eu.maveniverse.maven.mimir</groupId>
+    <artifactId>extension3</artifactId>
+    <version>0.11.2</version>
+  </extension>
+  <!--
+    cannot use the cache because of shaded artifact surefire-shared-utils
+    the primary artifact is in the cache but the shaded one is not replacing it
+   -->
+<!--  <extension>-->
+<!--    <groupId>org.apache.maven.extensions</groupId>-->
+<!--    <artifactId>maven-build-cache-extension</artifactId>-->
+<!--    <version>1.2.2</version>-->
+<!--  </extension>-->
+  <!-- disable until we get the multi thread build working better -->
+<!--  <extension>-->
+<!--    <groupId>eu.maveniverse.maven.turbo-builder</groupId>-->
+<!--    <artifactId>maven-turbo-builder</artifactId>-->
+<!--    <version>0.13</version>-->
+<!--  </extension>-->
+</extensions>

@@ -11,7 +11,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
+      <version>4.13.2</version>
     </dependency>
   </dependencies>
 
@@ -29,8 +29,8 @@
         <configuration>
           <runOrder>balanced</runOrder>
           <parallel>classesAndMethods</parallel>
-          <threadCountClasses>2</threadCountClasses>
-          <threadCountMethods>6</threadCountMethods>
+          <threadCountClasses>3</threadCountClasses>
+          <threadCountMethods>9</threadCountMethods>
           <perCoreThreadCount>false</perCoreThreadCount>
           <includes>
             <include>**/Test*.java</include>

@@ -22,9 +22,9 @@ package org.apache.maven.surefire.api.booter;
  * @author Kristian Rosenvold
  */
 public class ProviderParameterNames {
-    public static final String TESTNG_EXCLUDEDGROUPS_PROP = "excludegroups";
+    public static final String EXCLUDEDGROUPS_PROP = "excludegroups";
 
-    public static final String TESTNG_GROUPS_PROP = "groups";
+    public static final String GROUPS_PROP = "groups";
 
     public static final String INCLUDE_JUNIT5_ENGINES_PROP = "includejunit5engines";
 
@@ -48,5 +48,21 @@ public class ProviderParameterNames {
 
     public static final String ENABLE_OUT_ERR_ELEMENTS_PROP = "enableouterrelements";
 
-    public static final String ENABLE_PROPERTIES_ELEMENT_PROP = "enablepropertieselement";
+    public static final String JUNIT_VINTAGE_DETECTED = "junit.vintage.engine.detected";
+
+    public static final String INCLUDES_SCAN_LIST = "junit.includes.scan.list";
+
+    public static final String EXCLUDES_SCAN_LIST = "junit.excludes.scan.list";
+
+    /**
+     * Additional package prefixes to filter from stack traces.
+     * @since 3.6.0
+     */
+    public static final String STACK_TRACE_FILTER_PREFIXES = "stackTraceFilterPrefixes";
+
+    /**
+     * Maximum number of stack trace frames to capture.
+     * @since 3.6.0
+     */
+    public static final String STACK_TRACE_MAX_FRAMES = "stackTraceMaxFrames";
 }

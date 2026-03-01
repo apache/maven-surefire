@@ -15,7 +15,18 @@ public class TestNGSuccessPercentFailingTest
     {
         int value = counter.addAndGet( 1 );
         assertTrue( isOdd( value ), "is odd: " + value );
+        System.out.println( "testFailure passing" );
     }
+
+//    int testRuns;
+//
+//    @Test(successPercentage = 75, invocationCount = 4)
+//    public void test() {
+//        testRuns++;
+//        if (testRuns < 3) {
+//            fail("boom");
+//        }
+//    }
 
     private boolean isOdd( int number )
     {

@@ -1,0 +1,88 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one
+  ~ or more contributor license agreements.  See the NOTICE file
+  ~ distributed with this work for additional information
+  ~ regarding copyright ownership.  The ASF licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+<cache xmlns="http://maven.apache.org/BUILD-CACHE-CONFIG/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.0.0 https://maven.apache.org/xsd/build-cache-config-1.0.0.xsd">
+    <configuration>
+        <enabled>true</enabled>
+        <!-- activated via cli -->
+        <!-- to disable it just use -Dmaven.build.cache.enabled=false -->
+    </configuration>
+    <input>
+        <global>
+            <glob>{*.java,*.xml,*.properties,*.mod,*.adoc}</glob>
+        </global>
+        <plugins>
+            <plugin groupId="org.apache.maven.plugins" artifactId="maven-surefire-plugin">
+                <effectivePom>
+                    <excludeProperties>
+                        <excludeProperty>systemPropertyVariables</excludeProperty>
+                    </excludeProperties>
+                </effectivePom>
+            </plugin>
+        </plugins>
+    </input>
+    <executionControl>
+        <runAlways>
+            <goalsLists>
+                <goalsList artifactId="maven-install-plugin">
+                    <goals>
+                        <goal>install</goal>
+                    </goals>
+                </goalsList>
+                <goalsList artifactId="maven-deploy-plugin">
+                    <goals>
+                        <goal>deploy</goal>
+                    </goals>
+                </goalsList>
+                <goalsList artifactId="docker-maven-plugin">
+                    <goals>
+                        <goal>build</goal>
+                        <goal>push</goal>
+                    </goals>
+                </goalsList>
+            </goalsLists>
+        </runAlways>
+        <reconcile>
+            <plugins>
+                <plugin artifactId="maven-surefire-plugin" goal="test">
+                    <reconciles>
+                      <reconcile propertyName="skip" skipValue="true"/>
+                      <reconcile propertyName="skipExec" skipValue="true"/>
+                      <reconcile propertyName="skipTests" skipValue="true"/>
+                      <reconcile propertyName="test" skipValue="true"/>
+                    </reconciles>
+                    <nologs>
+                        <nolog propertyName="systemPropertyVariables"/>
+                    </nologs>
+                </plugin>
+              <plugin artifactId="maven-failsafe-plugin" goal="integration-test">
+                <reconciles>
+                  <reconcile propertyName="skip" skipValue="true"/>
+                  <reconcile propertyName="skipExec" skipValue="true"/>
+                  <reconcile propertyName="skipTests" skipValue="true"/>
+                  <reconcile propertyName="test" skipValue="true"/>
+                </reconciles>
+                <nologs>
+                  <nolog propertyName="systemPropertyVariables"/>
+                </nologs>
+              </plugin>
+            </plugins>
+        </reconcile>
+    </executionControl>
+</cache>

@@ -165,11 +165,12 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         ForkedProcessEventType event = stdout
                 ? (newLine ? BOOTERCODE_STDOUT_NEW_LINE : BOOTERCODE_STDOUT)
                 : (newLine ? BOOTERCODE_STDERR_NEW_LINE : BOOTERCODE_STDERR);
-        setOutErr(event, reportEntry.getRunMode(), reportEntry.getTestRunId(), msg);
+        setOutErr(event, reportEntry.getRunMode(), reportEntry.getTestRunId(), msg, reportEntry.getStack());
     }
 
-    private void setOutErr(ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message) {
-        ByteBuffer result = encodeMessage(eventType, runMode, testRunId, message);
+    private void setOutErr(
+            ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message, String stackTrace) {
+        ByteBuffer result = encodeMessage(eventType, runMode, testRunId, message, stackTrace);
         write(result, false);
     }
 
@@ -371,11 +372,13 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
         return result;
     }
 
-    ByteBuffer encodeMessage(ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message) {
+    ByteBuffer encodeMessage(
+            ForkedProcessEventType eventType, RunMode runMode, Long testRunId, String message, String stackCall) {
         CharsetEncoder encoder = newCharsetEncoder();
-        int bufferMaxLength = estimateBufferLength(eventType.getOpcode().length(), runMode, encoder, 0, 1, message);
+        int bufferMaxLength =
+                estimateBufferLength(eventType.getOpcode().length(), runMode, encoder, 0, 1, message, stackCall);
         ByteBuffer result = ByteBuffer.allocate(bufferMaxLength);
-        encode(encoder, result, eventType, runMode, testRunId, message);
+        encode(encoder, result, eventType, runMode, testRunId, message, stackCall);
         return result;
     }
 

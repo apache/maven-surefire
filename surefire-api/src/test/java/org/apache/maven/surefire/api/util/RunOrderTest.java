@@ -24,9 +24,6 @@ import junit.framework.TestCase;
  *
  */
 public class RunOrderTest extends TestCase {
-    public void testShouldReturnRunOrderForLowerCaseName() {
-        assertEquals(RunOrder.HOURLY, RunOrder.valueOfMulti("hourly")[0]);
-    }
 
     public void testMultiValue() {
         final RunOrder[] hourlies = RunOrder.valueOfMulti("failedfirst,balanced");
@@ -37,10 +34,6 @@ public class RunOrderTest extends TestCase {
     public void testAsString() {
         RunOrder[] orders = new RunOrder[] {RunOrder.FAILEDFIRST, RunOrder.ALPHABETICAL};
         assertEquals("failedfirst,alphabetical", RunOrder.asString(orders));
-    }
-
-    public void testShouldReturnRunOrderForUpperCaseName() {
-        assertEquals(RunOrder.HOURLY, RunOrder.valueOfMulti("HOURLY")[0]);
     }
 
     public void testShouldReturnNullForNullName() {

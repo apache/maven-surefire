@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.fail;
 
-public class FlakyTest extends FlakyParent
+public class FlakyTest
 {
     private static int n;
 

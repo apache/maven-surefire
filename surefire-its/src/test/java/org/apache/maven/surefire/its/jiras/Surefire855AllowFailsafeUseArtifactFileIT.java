@@ -29,7 +29,11 @@ import org.junit.Test;
 public class Surefire855AllowFailsafeUseArtifactFileIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void warShouldUseClasses() {
-        unpack("surefire-855-failsafe-use-war").maven().executeVerify().verifyErrorFree(2);
+        unpack("surefire-855-failsafe-use-war")
+                .setForkJvm()
+                .maven()
+                .executeVerify()
+                .verifyErrorFree(2);
     }
 
     @Test

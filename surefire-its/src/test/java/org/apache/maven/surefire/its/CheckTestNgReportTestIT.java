@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.Test;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
@@ -32,9 +33,10 @@ import static org.hamcrest.Matchers.is;
 public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testNgReport() {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         unpack("/testng-simple")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .addSurefireReportGoal()
                 .executeCurrentGoals()
                 .verifyErrorFree(3)
@@ -44,22 +46,24 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void shouldNotBeVerbose() throws Exception {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         unpack("/testng-simple")
-                .sysProp("testNgVersion", "5.10")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFreeLog()
-                .assertThatLogLine(containsString("[Parser] Running:"), is(0));
+                .assertThatLogLine(containsString("===== Invoked methods"), is(0));
     }
 
     @Test
     public void shouldBeVerbose() throws Exception {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         unpack("/testng-simple")
-                .sysProp("testNgVersion", "5.10")
-                .sysProp("testNgClassifier", "jdk15")
-                .sysProp("surefire.testng.verbose", "10")
+                .sysProp("testNgVersion", "6.14.3")
+                .sysProp("surefire.testng.verbose", "15")
                 .executeTest()
                 .verifyErrorFreeLog()
-                .assertThatLogLine(containsString("[Parser] Running:"), is(1));
+                .assertThatLogLine(containsString("===== Invoked methods"), is(1));
     }
 }

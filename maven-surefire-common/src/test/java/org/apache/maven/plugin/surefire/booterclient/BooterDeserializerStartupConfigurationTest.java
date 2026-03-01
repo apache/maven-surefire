@@ -175,13 +175,11 @@ public class BooterDeserializerStartupConfigurationTest extends TestCase {
 
     private ProviderConfiguration getProviderConfiguration() {
         File cwd = new File(".");
-        DirectoryScannerParameters directoryScannerParameters = new DirectoryScannerParameters(
-                cwd, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), "hourly");
+        DirectoryScannerParameters directoryScannerParameters =
+                new DirectoryScannerParameters(cwd, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), null);
         ReporterConfiguration reporterConfiguration = new ReporterConfiguration(cwd, true);
         TestRequest testSuiteDefinition = new TestRequest(
-                Arrays.asList(getSuiteXmlFileStrings()),
-                getTestSourceDirectory(),
-                new TestListResolver("aUserRequestedTest#aUserRequestedTestMethod"));
+                getTestSourceDirectory(), new TestListResolver("aUserRequestedTest#aUserRequestedTestMethod"), 0);
 
         RunOrderParameters runOrderParameters = new RunOrderParameters(RunOrder.DEFAULT, null);
         return new ProviderConfiguration(

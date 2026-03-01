@@ -22,9 +22,15 @@ import java.util.Arrays;
 
 import org.apache.maven.surefire.its.fixture.Settings;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * TestNG test project using multiple method patterns, including wildcards in class and method names.
@@ -52,5 +58,20 @@ public class TestMultipleMethodPatternsTestNGIT extends AbstractTestMultipleMeth
     @Override
     protected SurefireLauncher unpack() {
         return unpack("testng-multiple-method-patterns", "_" + settings.path());
+    }
+
+    @Override
+    @Test
+    @Ignore("TestNG does not support regex method patterns")
+    public void regexClassAndMethod() {
+        super.regexClassAndMethod();
+    }
+
+    @Override
+    @Test
+    @Ignore("TestNG does not support regex method patterns")
+    public void testRegexSuccessTwo() {
+        assumeThat(getSettings().getConfiguration(), is(TEST));
+        super.regexClassAndMethod();
     }
 }

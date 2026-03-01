@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaMaxVersion;
 import static org.junit.runners.Parameterized.Parameter;
 import static org.junit.runners.Parameterized.Parameters;
 
@@ -43,32 +42,6 @@ public class CheckTestNgListenerReporterIT extends SurefireJUnit4IntegrationTest
     @Parameters(name = "{index}: TestNG {0}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            {"5.6", "jdk15"}, // First TestNG version with reporter support
-            {"5.7", "jdk15"}, // default version from pom of the test case
-            {"5.10", "jdk15"},
-            {"5.13", null}, // "reporterslist" param becomes String instead of List<ReporterConfig>
-            // "listener" param becomes String instead of List<Class>
-
-            // configure(Map) in 5.14.1 and 5.14.2 is transforming List<Class> into a String with a space as separator.
-            // Then configure(CommandLineArgs) splits this String into a List<String> with , or ; as separator => fail.
-            // If we used configure(CommandLineArgs), we would not have the problem with white spaces.
-            // { "5.14.1", null, "1.5" }, // "listener" param becomes List instead of String
-            // Fails: Issue with 5.14.1 and 5.14.2 => join with <space>, split with ","
-            // TODO will work with "configure(CommandLineArgs)"
-            // { "5.14.2", null, "1.5" }, // ReporterConfig is not available
-
-            // { "5.14.3", null, "1.5" }, // TestNG uses "reporter" instead of "reporterslist"
-            // Both String or List are possible for "listener"
-            // Fails: not able to test due to system dependency org.testng:guice missed the path and use to break CI
-            // ClassNotFoundException: com.beust.jcommander.ParameterException
-
-            // { "5.14.4", null, "1.5" }, { "5.14.5", null, "1.5" }, // Fails: not able to test due to system dependency
-            // org.testng:guice missed the path and use to break CI
-            // ClassNotFoundException: com.beust.jcommander.ParameterException
-
-            {"5.14.6", null}, // Usage of org.testng:guice removed
-            {"5.14.9", null}, // Latest 5.14.x TestNG version
-            {"6.0", null},
             {"6.14.3", null},
             {"7.0.0", null} // Currently latest TestNG version
         });
@@ -84,18 +57,9 @@ public class CheckTestNgListenerReporterIT extends SurefireJUnit4IntegrationTest
 
     @Test
     public void testNgListenerReporter() {
-        if (version.equals("5.13")) {
-            // only 5.13 uses Google Guice, reflection which breaks jdk 16+
-            // module java.base does not "opens java.lang" to unnamed module @209c0b14
-            assumeJavaMaxVersion(15);
-        }
 
         final SurefireLauncher launcher =
                 unpack("testng-listener-reporter", "_" + version).sysProp("testNgVersion", version);
-
-        if (classifier != null) {
-            launcher.sysProp("testNgClassifier", "jdk15");
-        }
 
         launcher.executeTest()
                 .assertTestSuiteResults(1, 0, 0, 0)

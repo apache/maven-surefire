@@ -9,7 +9,6 @@
 	<name>surefire-943-report-content</name>
 
 	<properties>
-		<surefire.version>2.13</surefire.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
@@ -21,13 +20,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${surefire.version}</version>
-					<dependencies>
-						<dependency>
-							<groupId>org.apache.maven.surefire</groupId>
-							<artifactId>surefire-junit47</artifactId>
-							<version>${surefire.version}</version>
-						</dependency>
-					</dependencies>
 				</plugin>
     </plugins>
   </pluginManagement>
@@ -38,7 +30,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-			<version>4.11</version>
+			<version>4.12</version>
 		</dependency>
 	</dependencies>
 </project>

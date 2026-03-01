@@ -102,16 +102,24 @@ mvn verify
 
   Tests in your test source directory can be any combination of the following:
 
-   * TestNG
+   * TestNG (6.14.3 or later)
 
-   * JUnit (3.8, 4.x or 5.x)
+   * JUnit (4.12+ or 5.x)
 
    * POJO
 
-  Which providers are available is controlled simply by the inclusion of the
-  appropriate dependencies (i.e., <<<junit:junit>>> or <<<junit:junit-dep>>> for JUnit4, <<junit-jupiter-engine>> or
-  <<junit-vintage-engine>> for JUnit5 and <<<org.testng:testng>>> 4.7+ for TestNG). Since this is required to compile the test
-  classes anyway, no additional configuration is required.
+  Since Surefire 3.6.0, all tests run via the JUnit Platform. The appropriate engine is automatically selected
+  based on your dependencies:
+
+   * <<<junit:junit>>> (4.12+) - runs via Vintage Engine
+
+   * <<<junit-jupiter-engine>>> - runs via Jupiter Engine
+
+   * <<<org.testng:testng>>> (6.14.3+) - runs via TestNG JUnit Platform Engine
+
+  []
+
+  Since the test framework dependency is required to compile the test classes anyway, no additional configuration is required.
 
   Note that any normal Surefire integration works identically no matter which
   providers are in use - so you can still produce a Cobertura report and a

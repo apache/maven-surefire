@@ -24,15 +24,10 @@ package org.apache.maven.surefire.its.fixture;
  */
 public enum Settings {
     JUNIT4_TEST(TestFramework.JUNIT4, Configuration.TEST),
-    JUNIT47_TEST(TestFramework.JUNIT47, Configuration.TEST),
     JUNIT4_INCLUDES(TestFramework.JUNIT4, Configuration.INCLUDES),
-    JUNIT47_INCLUDES(TestFramework.JUNIT47, Configuration.INCLUDES),
     JUNIT4_INCLUDES_EXCLUDES(TestFramework.JUNIT4, Configuration.INCLUDES_EXCLUDES),
-    JUNIT47_INCLUDES_EXCLUDES(TestFramework.JUNIT47, Configuration.INCLUDES_EXCLUDES),
     JUNIT4_INCLUDES_FILE(TestFramework.JUNIT4, Configuration.INCLUDES_FILE),
-    JUNIT47_INCLUDES_FILE(TestFramework.JUNIT47, Configuration.INCLUDES_FILE),
     JUNIT4_INCLUDES_EXCLUDES_FILE(TestFramework.JUNIT4, Configuration.INCLUDES_EXCLUDES_FILE),
-    JUNIT47_INCLUDES_EXCLUDES_FILE(TestFramework.JUNIT47, Configuration.INCLUDES_EXCLUDES_FILE),
     TestNG_TEST(TestFramework.TestNG, Configuration.TEST),
     TestNG_INCLUDES(TestFramework.TestNG, Configuration.INCLUDES),
     TestNG_INCLUDES_EXCLUDES(TestFramework.TestNG, Configuration.INCLUDES_EXCLUDES),

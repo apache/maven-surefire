@@ -30,15 +30,15 @@ public class Surefire832ProviderSelectionIT extends SurefireJUnit4IntegrationTes
     @Test
     public void testJUnitRunCategoryAB() {
         OutputValidator validator =
-                unpackJUnit().groups("junit4.CategoryA AND junit4.CategoryB").executeTest();
+                unpackJUnit().groups("junit4.CategoryA,junit4.CategoryB").executeTest();
         validator.verifyErrorFreeLog();
-        validator.assertTestSuiteResults(2, 0, 0, 0);
-        validator.verifyTextInLog("catA: 1");
-        validator.verifyTextInLog("catB: 1");
+        validator.assertTestSuiteResults(6, 0, 0, 0);
+        validator.verifyTextInLog("catA: 2");
+        validator.verifyTextInLog("catB: 2");
         validator.verifyTextInLog("catC: 0");
         validator.verifyTextInLog("catNone: 0");
-        validator.verifyTextInLog("mA: 1");
-        validator.verifyTextInLog("mB: 1");
+        validator.verifyTextInLog("mA: 2");
+        validator.verifyTextInLog("mB: 2");
         validator.verifyTextInLog("mC: 0");
     }
 

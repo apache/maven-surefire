@@ -30,7 +30,7 @@
 
 
   <properties>
-    <junit.version>4.8.1</junit.version>
+    <junit.version>4.12</junit.version>
     <groups>junit4.CategoryA,junit4.CategoryB</groups>
     <excludedGroups></excludedGroups>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -56,13 +56,6 @@
           <groups>${groups}</groups>
           <excludedGroups>${excludedGroups}</excludedGroups>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-junit47</artifactId>
-            <version>${surefire.version}</version>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>

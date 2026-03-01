@@ -35,4 +35,14 @@ public class Surefire979WrongClassLoaderIT extends SurefireJUnit4IntegrationTest
         outputValidator.verifyTextInLog(
                 "java.lang.NoClassDefFoundError: org/apache/commons/io/input/AutoCloseInputStream");
     }
+
+    @Test
+    public void wrongClassloaderUSedInSmartStacktraceparserJunit5() {
+        OutputValidator outputValidator = unpack("surefire-979-smartStackTrace-wrongClassloader-junit5")
+                .failNever()
+                .executeTest();
+
+        outputValidator.verifyTextInLog(
+                "java.lang.NoClassDefFoundError: org/apache/commons/io/input/AutoCloseInputStream");
+    }
 }

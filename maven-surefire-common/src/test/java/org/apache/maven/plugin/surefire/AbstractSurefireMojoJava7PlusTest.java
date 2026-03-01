@@ -452,22 +452,6 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(providerInfo.getProviderName()).isEqualTo("custom.Provider");
         assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
 
-        providerInfo = mojo.newJUnit3ProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junit.JUnit3Provider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
-        providerInfo = mojo.newJUnit4ProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junit4.JUnit4Provider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
-        providerInfo = mojo.newJUnit47ProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.junitcore.JUnitCoreProvider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
-        providerInfo = mojo.newTestNgProviderInfo();
-        assertThat(providerInfo.getProviderName()).isEqualTo("org.apache.maven.surefire.testng.TestNGProvider");
-        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
-
         providerInfo = mojo.newJUnitPlatformProviderInfo();
         assertThat(providerInfo.getProviderName())
                 .isEqualTo("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
@@ -521,24 +505,9 @@ public class AbstractSurefireMojoJava7PlusTest {
             return new DynamicProviderInfo("custom.Provider");
         }
 
-        ProviderInfo newJUnit3ProviderInfo() {
-            return new JUnit3ProviderInfo();
-        }
-
-        ProviderInfo newJUnit4ProviderInfo() {
-            return new JUnit4ProviderInfo(null, null);
-        }
-
-        ProviderInfo newJUnit47ProviderInfo() {
-            return new JUnitCoreProviderInfo(null, null);
-        }
-
-        ProviderInfo newTestNgProviderInfo() {
-            return new TestNgProviderInfo(null);
-        }
-
         ProviderInfo newJUnitPlatformProviderInfo() {
-            return new JUnitPlatformProviderInfo(null, null, null);
+            return new JUnitPlatformProviderInfo(
+                    null, null, null, null, null, null, null, null, null, null, null, null);
         }
 
         @Override
@@ -748,27 +717,9 @@ public class AbstractSurefireMojoJava7PlusTest {
         }
 
         @Override
-        protected List<File> suiteXmlFiles() {
-            return null;
-        }
-
-        @Override
-        protected boolean hasSuiteXmlFiles() {
-            return false;
-        }
-
-        @Override
         protected String[] getExcludedEnvironmentVariables() {
             return new String[0];
         }
-
-        @Override
-        public File[] getSuiteXmlFiles() {
-            return new File[0];
-        }
-
-        @Override
-        public void setSuiteXmlFiles(File[] suiteXmlFiles) {}
 
         @Override
         public String getRunOrder() {

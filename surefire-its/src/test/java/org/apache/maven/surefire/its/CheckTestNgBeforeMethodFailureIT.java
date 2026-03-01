@@ -33,8 +33,7 @@ public class CheckTestNgBeforeMethodFailureIT extends SurefireJUnit4IntegrationT
     public void testNgBeforeMethodFailure() {
         unpack("/testng-beforeMethodFailure")
                 .maven()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .withFailure()
                 .executeTest()
                 .assertTestSuiteResults(2, 0, 1, 1);

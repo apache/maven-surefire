@@ -85,25 +85,14 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
-    public void testJUnit44() throws Exception {
-        runMethodPattern("junit44-method-pattern", Collections.emptyMap());
+    public void testJUnit4() throws Exception {
+        runMethodPattern("junit4-method-pattern", Collections.emptyMap());
     }
 
     @Test
-    public void testJUnit48Provider4() throws Exception {
-        runMethodPattern("junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit4");
-    }
-
-    @Test
-    public void testJUnit48Provider47() throws Exception {
-        runMethodPattern("junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit47")
-                .verifyTextInLog(RUNNING_WITH_PROVIDER47);
-    }
-
-    @Test
-    public void testJUnit48WithCategoryFilter() throws Exception {
+    public void testJUnit4WithCategoryFilter() throws Exception {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        SurefireLauncher launcher = unpack("junit48-method-pattern", profileId == null ? "" : "-" + profileId);
+        SurefireLauncher launcher = unpack("junit4-method-pattern", profileId == null ? "" : "-" + profileId);
 
         if (profileId != null) {
             launcher.activateProfile(profileId);
@@ -119,16 +108,14 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTestNgMethodBefore() throws Exception {
         Map<String, String> props = new HashMap<>();
-        props.put("testNgVersion", "5.7");
-        props.put("testNgClassifier", "jdk15");
+        props.put("testNgVersion", "6.14.3");
         runMethodPattern("testng-method-pattern-before", props);
     }
 
     @Test
     public void testTestNGMethodPattern() throws Exception {
         Map<String, String> props = new HashMap<>();
-        props.put("testNgVersion", "5.7");
-        props.put("testNgClassifier", "jdk15");
+        props.put("testNgVersion", "6.14.3");
         runMethodPattern("/testng-method-pattern", props);
     }
 
@@ -142,8 +129,7 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
         }
 
         launcher.debugLogging()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(2)
                 .verifyTextInLog("Called tearDown")
