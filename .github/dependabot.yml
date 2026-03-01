@@ -19,7 +19,8 @@ updates:
 - package-ecosystem: "maven"
   target-branch: "master"
   labels:
-    - master
+    - "master"
+    - "dependencies"
   directory: "/"
   schedule:
     interval: "daily"
@@ -38,7 +39,7 @@ updates:
 - package-ecosystem: "github-actions"
   target-branch: "master"
   labels:
-    - master
+    - "master"
   commit-message:
     prefix: "[Master]"
   directory: "/"
@@ -48,6 +49,7 @@ updates:
   target-branch: "surefire-3.5.x"
   labels:
     - "[3.5.x]"
+    - "dependencies"
   directory: "/"
   schedule:
     interval: "daily"
