@@ -361,6 +361,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return reverse != testMatch;
     }
 
+    // TODO this could be simplified/optimized
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
