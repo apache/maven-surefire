@@ -18,8 +18,8 @@ version: 2
 updates:
 - package-ecosystem: "maven"
   target-branch: "master"
-  commit-message:
-    prefix: "[Master]"
+  labels:
+    - master
   directory: "/"
   schedule:
     interval: "daily"
@@ -37,6 +37,8 @@ updates:
       versions: [ ">5.0"]
 - package-ecosystem: "github-actions"
   target-branch: "master"
+  labels:
+    - master
   commit-message:
     prefix: "[Master]"
   directory: "/"
@@ -44,8 +46,8 @@ updates:
     interval: "daily"
 - package-ecosystem: "maven"
   target-branch: "surefire-3.5.x"
-  commit-message:
-    prefix: "[3.5.x]"
+  labels:
+    - "[3.5.x]"
   directory: "/"
   schedule:
     interval: "daily"
@@ -63,8 +65,8 @@ updates:
 
 - package-ecosystem: "github-actions"
   target-branch: "surefire-3.5.x"
-  commit-message:
-    prefix: "[3.5.x]"
+  labels:
+    - "[3.5.x]"
   directory: "/"
   schedule:
     interval: "daily"
