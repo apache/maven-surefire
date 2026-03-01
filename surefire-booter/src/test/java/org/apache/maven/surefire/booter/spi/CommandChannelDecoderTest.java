@@ -144,7 +144,7 @@ public class CommandChannelDecoderTest {
         CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
         Command command = decoder.decode();
         assertThat(command.getCommandType()).isSameAs(SHUTDOWN);
-        assertThat(command.getData()).isEqualTo(shutdownType.name());
+        assertThat(command.getData()).isEqualTo(shutdownType.getParam());
     }
 
     @Test
@@ -159,7 +159,7 @@ public class CommandChannelDecoderTest {
         CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
         Command command = decoder.decode();
         assertThat(command.getCommandType()).isSameAs(SHUTDOWN);
-        assertThat(command.getData()).isEqualTo(shutdownType.name());
+        assertThat(command.getData()).isEqualTo(shutdownType.getParam());
     }
 
     @Test
@@ -174,7 +174,7 @@ public class CommandChannelDecoderTest {
         CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
         Command command = decoder.decode();
         assertThat(command.getCommandType()).isSameAs(SHUTDOWN);
-        assertThat(command.getData()).isEqualTo(shutdownType.name());
+        assertThat(command.getData()).isEqualTo(shutdownType.getParam());
     }
 
     @Test
