@@ -70,7 +70,7 @@ oses.eachWithIndex { osMapping, indexOfOs ->
                         }
                         ws(dir: "${os == 'windows' ? "${TEMP}\\${BUILD_TAG}" : pwd()}") {
                             buildProcess(stageKey, jdkName, mvnName,
-                                first  && env.BRANCH_NAME == 'master' ? goalsDepl : goals,
+                                first  && env.BRANCH_NAME == 'surefire-3.5.x' ? goalsDepl : goals,
                                 allOptions, mavenOpts, first)
                         }
                     }
