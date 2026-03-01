@@ -18,27 +18,61 @@ version: 2
 updates:
 - package-ecosystem: "maven"
   target-branch: "master"
+  labels:
+    - "master"
+    - "dependencies"
   directory: "/"
   schedule:
     interval: "daily"
   ignore:
     # Ignore Maven Core updates
     - dependency-name: "org.apache.maven:*"
+    # to remove when depending on core 4.x
+    - dependency-name: "org.slf4j:*"
+      versions: [ ">2.0"]
+    - dependency-name: "junit:junit"
+    # to remove when depending on core 4.x
+    - dependency-name: "org.apache.maven.resolver:*"
+      versions: [ ">2.0"]
+    - dependency-name: "org.mockito:*"
+      versions: [ ">5.0"]
 - package-ecosystem: "github-actions"
   target-branch: "master"
+  labels:
+    - "master"
+    - "dependencies"
+    - "github_actions"
+  commit-message:
+    prefix: "[Master]"
   directory: "/"
   schedule:
     interval: "daily"
 - package-ecosystem: "maven"
   target-branch: "surefire-3.5.x"
+  labels:
+    - "[3.5.x]"
+    - "dependencies"
   directory: "/"
   schedule:
     interval: "daily"
   ignore:
     # Ignore Maven Core updates
     - dependency-name: "org.apache.maven:*"
+    - dependency-name: "org.slf4j:*"
+      versions: [ ">2.0"]
+    - dependency-name: "junit:junit"
+    # TODO this already needs some update to be on 1.9.x
+    - dependency-name: "org.apache.maven.resolver:*"
+      versions: [ ">2.0"]
+    - dependency-name: "org.mockito:*"
+      versions: [ ">5.0"]
+
 - package-ecosystem: "github-actions"
   target-branch: "surefire-3.5.x"
+  labels:
+    - "[3.5.x]"
+    - "dependencies"
+    - "github_actions"
   directory: "/"
   schedule:
     interval: "daily"
