@@ -40,6 +40,8 @@ updates:
   target-branch: "master"
   labels:
     - "master"
+    - "dependencies"
+    - "github_actions"
   commit-message:
     prefix: "[Master]"
   directory: "/"
@@ -69,6 +71,8 @@ updates:
   target-branch: "surefire-3.5.x"
   labels:
     - "[3.5.x]"
+    - "dependencies"
+    - "github_actions"
   directory: "/"
   schedule:
     interval: "daily"
