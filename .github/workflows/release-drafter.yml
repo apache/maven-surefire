@@ -26,4 +26,4 @@ jobs:
    update_release_draft:
       uses: apache/maven-gh-actions-shared/.github/workflows/release-drafter.yml@v4
       with:
-        config-name: 'release-drafter-3.x.yml'
+        initial-commits-since: '2026-02-18T06:18:00Z' # start date of commits which will be included in the release notes
