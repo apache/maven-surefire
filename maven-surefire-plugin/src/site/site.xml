@@ -38,7 +38,6 @@
     </menu>
     <menu name="Examples">
       <item name="Java Modularity (JPMS) in Tests" href="examples/jpms.html"/>
-      <item name="TCP/IP Communication between Forks" href="examples/process-communication.html"/>
       <item name="Using TestNG" href="examples/testng.html"/>
       <item name="Using JUnit" href="examples/junit.html"/>
       <item name="Using JUnit 5 Platform" href="examples/junit-platform.html"/>
@@ -51,19 +50,22 @@
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
       <item name="Re-run Failing Tests" href="examples/rerun-failing-tests.html"/>
-      <item name="Class Loading and Forking" href="examples/class-loading.html"/>
       <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="Using System Properties" href="examples/system-properties.html"/>
       <item name="Configuring the Classpath" href="examples/configuring-classpath.html"/>
       <item name="Selecting Providers" href="examples/providers.html"/>
       <item name="New Error Summary" href="newerrorsummary.html"/>
       <item name="Multi-lined Exception Messages" href="multilineexceptions.html"/>
-      <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
       <item name="Using Console Logs" href="examples/logging.html"/>
-      <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
       <item name="Run tests in Docker" href="docker.html"/>
       <item name="Run tests in a different JVM using toolchains" href="examples/toolchains.html"/>
+    </menu>
+    <menu name="Forking">
+      <item name="TCP/IP Communication between Forks" href="examples/process-communication.html"/>
+      <item name="Class Loading and Forking" href="examples/class-loading.html"/>
+      <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
+      <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
     </menu>
   </body>
 </site>
