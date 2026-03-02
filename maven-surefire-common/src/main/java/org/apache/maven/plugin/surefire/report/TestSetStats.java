@@ -82,9 +82,17 @@ public class TestSetStats {
         lastStartAt = testSetStartAt;
     }
 
+    long getTestSetStartAt() {
+        return testSetStartAt;
+    }
+
     public void testStart() {
         testStartAt = System.currentTimeMillis();
         lastStartAt = testStartAt;
+    }
+
+    long getTestStartAt() {
+        return testStartAt;
     }
 
     private void finishTest(WrappedReportEntry reportEntry) {
