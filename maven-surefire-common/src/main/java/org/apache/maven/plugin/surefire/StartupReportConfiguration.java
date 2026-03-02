@@ -90,6 +90,8 @@ public final class StartupReportConfiguration {
 
     private final boolean enablePropertiesElement;
 
+    private final boolean reportTestTimestamp;
+
     private final SurefireStatelessReporter xmlReporter;
 
     private final SurefireConsoleOutputReporter consoleOutputReporter;
@@ -120,6 +122,7 @@ public final class StartupReportConfiguration {
             boolean isForking,
             boolean enableOutErrElements,
             boolean enablePropertiesElement,
+            boolean reportTestTimestamp,
             SurefireStatelessReporter xmlReporter,
             SurefireConsoleOutputReporter consoleOutputReporter,
             SurefireStatelessTestsetInfoReporter testsetReporter,
@@ -142,6 +145,7 @@ public final class StartupReportConfiguration {
         this.isForking = isForking;
         this.enableOutErrElements = enableOutErrElements;
         this.enablePropertiesElement = enablePropertiesElement;
+        this.reportTestTimestamp = reportTestTimestamp;
         this.xmlReporter = xmlReporter;
         this.consoleOutputReporter = consoleOutputReporter;
         this.testsetReporter = testsetReporter;
@@ -183,6 +187,7 @@ public final class StartupReportConfiguration {
                 isForking,
                 true,
                 true,
+                false,
                 xmlReporter,
                 consoleOutputReporter,
                 testsetReporter,
@@ -236,6 +241,7 @@ public final class StartupReportConfiguration {
                 xsdSchemaLocation,
                 enableOutErrElements,
                 enablePropertiesElement,
+                reportTestTimestamp,
                 testClassMethodRunHistory);
 
         return xmlReporter.isDisable() ? null : xmlReporter.createListener(xmlReporterConfig);
@@ -304,6 +310,10 @@ public final class StartupReportConfiguration {
 
     public boolean isEnablePropertiesElement() {
         return enablePropertiesElement;
+    }
+
+    public boolean isReportTestTimestamp() {
+        return reportTestTimestamp;
     }
 
     private File resolveReportsDirectory(Integer forkNumber) {

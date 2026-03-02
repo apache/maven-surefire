@@ -72,7 +72,8 @@ public class SurefireStatelessReporter
                 false,
                 false,
                 configuration.isEnableOutErrElements(),
-                configuration.isEnablePropertiesElement());
+                configuration.isEnablePropertiesElement(),
+                configuration.isReportTestTimestamp());
     }
 
     @Override
