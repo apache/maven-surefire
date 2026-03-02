@@ -32,8 +32,6 @@ public class RunOrder {
 
     public static final RunOrder FILESYSTEM = new RunOrder("filesystem");
 
-    public static final RunOrder HOURLY = new RunOrder("hourly");
-
     public static final RunOrder RANDOM = new RunOrder("random");
 
     public static final RunOrder REVERSE_ALPHABETICAL = new RunOrder("reversealphabetical");
@@ -92,7 +90,7 @@ public class RunOrder {
     }
 
     private static RunOrder[] values() {
-        return new RunOrder[] {ALPHABETICAL, FILESYSTEM, HOURLY, RANDOM, REVERSE_ALPHABETICAL, BALANCED, FAILEDFIRST};
+        return new RunOrder[] {ALPHABETICAL, FILESYSTEM, RANDOM, REVERSE_ALPHABETICAL, BALANCED, FAILEDFIRST};
     }
 
     public static String asString(RunOrder[] runOrder) {

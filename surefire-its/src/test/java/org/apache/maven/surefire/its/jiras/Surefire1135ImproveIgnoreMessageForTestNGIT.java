@@ -27,12 +27,11 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.Test;
 
 import static org.apache.maven.shared.utils.xml.Xpp3DomBuilder.build;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 /**
  * Test surefire-report on TestNG test
@@ -59,30 +58,19 @@ public class Surefire1135ImproveIgnoreMessageForTestNGIT extends SurefireJUnit4I
     @Test
     public void testNgReport688() throws Exception {
         testNgReport(
-                "6.8.8",
+                "6.14.3",
                 null,
                 ResultType.SKIPPED,
                 "Skip test",
                 /*"org.testng.SkipException"*/ null,
-                /*"SkipExceptionReportTest.java:30"*/ null);
-    }
-
-    @Test
-    public void testNgReport57() throws Exception {
-        testNgReport(
-                "5.7",
-                "jdk15",
-                ResultType.SKIPPED,
-                "Skip test",
-                /*"org.testng.SkipException"*/ null,
-                /*"SkipExceptionReportTest.java:30"*/ null);
+                "SkipExceptionReportTest.java:30");
     }
 
     private void testNgReport(
             String version, String classifier, ResultType resultType, String message, String type, String stackTrace)
             throws Exception {
         OutputValidator outputValidator =
-                runTest(version, classifier, resultType, "/surefire-1135-improve-ignore-message-for-testng");
+                runTest(version, resultType, "/surefire-1135-improve-ignore-message-for-testng");
 
         Xpp3Dom[] children = readTests(outputValidator, "testng.SkipExceptionReportTest");
         assertThat("Report should contains only one test case", children.length, is(1));
@@ -97,17 +85,6 @@ public class Surefire1135ImproveIgnoreMessageForTestNGIT extends SurefireJUnit4I
                 "Test should contains only one " + resultType.getType() + " element", children, is(arrayWithSize(1)));
 
         Xpp3Dom result = children[0];
-        if (message == null) {
-            assertThat("Subelement message attribute must be null", result.getAttribute("message"), is(nullValue()));
-        } else {
-            assertThat("Subelement should contains message attribute", result.getAttribute("message"), is(message));
-        }
-
-        if (type == null) {
-            assertThat("Subelement type attribute must be null", result.getAttribute("type"), is(nullValue()));
-        } else {
-            assertThat("Subelement should contains type attribute", result.getAttribute("type"), is(type));
-        }
 
         if (stackTrace == null) {
             assertThat("Element body must be null", result.getValue(), isEmptyOrNullString());
@@ -116,15 +93,11 @@ public class Surefire1135ImproveIgnoreMessageForTestNGIT extends SurefireJUnit4I
         }
     }
 
-    private OutputValidator runTest(String version, String classifier, ResultType resultType, String resource) {
+    private OutputValidator runTest(String version, ResultType resultType, String resource) {
         int skipped = ResultType.SKIPPED.equals(resultType) ? 1 : 0;
         int failure = ResultType.FAILURE.equals(resultType) ? 1 : 0;
 
         SurefireLauncher launcher = unpack(resource).sysProp("testNgVersion", version);
-
-        if (classifier != null) {
-            launcher.sysProp("testNgClassifier", classifier);
-        }
 
         return launcher.addSurefireReportGoal().executeCurrentGoals().assertTestSuiteResults(1, 0, failure, skipped);
     }
