@@ -40,6 +40,9 @@ public class StatelessReportMojoConfiguration {
 
     private final boolean enablePropertiesElement;
 
+    private final boolean reportTestTimestamp;
+
+    @SuppressWarnings("checkstyle:parameternumber")
     public StatelessReportMojoConfiguration(
             File reportsDirectory,
             String reportNameSuffix,
@@ -47,7 +50,8 @@ public class StatelessReportMojoConfiguration {
             int rerunFailingTestsCount,
             String xsdSchemaLocation,
             boolean enableOutErrElements,
-            boolean enablePropertiesElement) {
+            boolean enablePropertiesElement,
+            boolean reportTestTimestamp) {
         this.reportsDirectory = reportsDirectory;
         this.reportNameSuffix = reportNameSuffix;
         this.trimStackTrace = trimStackTrace;
@@ -55,6 +59,7 @@ public class StatelessReportMojoConfiguration {
         this.xsdSchemaLocation = xsdSchemaLocation;
         this.enableOutErrElements = enableOutErrElements;
         this.enablePropertiesElement = enablePropertiesElement;
+        this.reportTestTimestamp = reportTestTimestamp;
     }
 
     public File getReportsDirectory() {
@@ -83,5 +88,9 @@ public class StatelessReportMojoConfiguration {
 
     public boolean isEnablePropertiesElement() {
         return enablePropertiesElement;
+    }
+
+    public boolean isReportTestTimestamp() {
+        return reportTestTimestamp;
     }
 }
