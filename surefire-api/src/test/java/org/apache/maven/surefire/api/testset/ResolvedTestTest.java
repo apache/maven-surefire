@@ -18,16 +18,21 @@
  */
 package org.apache.maven.surefire.api.testset;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.METHOD;
 import static org.apache.maven.surefire.api.testset.ResolvedTest.fromFullyQualifiedClass;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public class ResolvedTestTest extends TestCase {
+public class ResolvedTestTest {
+    @Test
     public void testEmptyClassRegex() {
         ResolvedTest test = new ResolvedTest(CLASS, "  ", true);
         assertNull(test.getTestClassPattern());
@@ -39,6 +44,7 @@ public class ResolvedTestTest extends TestCase {
         assertTrue(test.isEmpty());
     }
 
+    @Test
     public void testEmptyMethodRegex() {
         ResolvedTest test = new ResolvedTest(METHOD, "  ", true);
         assertNull(test.getTestClassPattern());
@@ -50,6 +56,7 @@ public class ResolvedTestTest extends TestCase {
         assertTrue(test.isEmpty());
     }
 
+    @Test
     public void testFromFullyQualifiedClass() {
         String classFileName = fromFullyQualifiedClass("my.package.MyTest");
         assertEquals("my/package/MyTest", classFileName);

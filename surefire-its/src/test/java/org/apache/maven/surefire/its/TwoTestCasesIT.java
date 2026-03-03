@@ -27,10 +27,10 @@ import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test running two test cases; confirms reporting works correctly
@@ -68,7 +68,7 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
         Set<String> classNames = extractClassNames(reports);
         assertContains(classNames, "twoTestCaseSuite.BasicTest");
         assertContains(classNames, "twoTestCaseSuite.Junit4TestTwo");
-        assertEquals("wrong number of classes", 2, classNames.size());
+        assertEquals(2, classNames.size(), "wrong number of classes");
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
         HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
     }

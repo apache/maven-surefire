@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.booter.BaseProviderFactory;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
@@ -39,15 +38,24 @@ import org.apache.maven.surefire.api.testset.TestArtifactInfo;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestRequest;
 import org.apache.maven.surefire.api.util.RunOrder;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
  */
-public class SurefireReflectorTest extends TestCase {
+public class SurefireReflectorTest {
+    @Test
     public void testShouldCreateFactoryWithoutException() {
         ReporterFactory factory = new ReporterFactory() {
             @Override
@@ -68,6 +76,7 @@ public class SurefireReflectorTest extends TestCase {
         assertSame(factory, bpf.getReporterFactory());
     }
 
+    @Test
     public void testSetDirectoryScannerParameters() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -79,6 +88,7 @@ public class SurefireReflectorTest extends TestCase {
         assertNotNull(((Foo) foo).getDirectoryScannerParameters());
     }
 
+    @Test
     public void testNullSetDirectoryScannerParameters() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -88,6 +98,7 @@ public class SurefireReflectorTest extends TestCase {
         assertNull(((Foo) foo).getDirectoryScannerParameters());
     }
 
+    @Test
     public void testSetIfDirScannerAware() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -98,6 +109,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testRunOrderParameters() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -107,6 +119,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testRunOrderParametersWithRunOrderRandomSeed() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -120,6 +133,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testNullRunOrderParameters() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -134,6 +148,7 @@ public class SurefireReflectorTest extends TestCase {
         fail();
     }
 
+    @Test
     public void testTestSuiteDefinition() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -145,6 +160,7 @@ public class SurefireReflectorTest extends TestCase {
         assertNotNull(((Foo) foo).getTestRequest());
     }
 
+    @Test
     public void testNullTestSuiteDefinition() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -153,6 +169,7 @@ public class SurefireReflectorTest extends TestCase {
         assertNull(((Foo) foo).getTestRequest());
     }
 
+    @Test
     public void testProviderProperties() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -161,6 +178,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testReporterConfiguration() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -174,6 +192,7 @@ public class SurefireReflectorTest extends TestCase {
         return new ReporterConfiguration(new File("CDE"), true);
     }
 
+    @Test
     public void testTestClassLoader() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -182,6 +201,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testTestClassLoaderAware() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -190,6 +210,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testArtifactInfo() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -199,6 +220,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testNullArtifactInfo() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -208,6 +230,7 @@ public class SurefireReflectorTest extends TestCase {
         assertNull(((Foo) foo).getTestArtifactInfo());
     }
 
+    @Test
     public void testArtifactInfoAware() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -215,10 +238,11 @@ public class SurefireReflectorTest extends TestCase {
         TestArtifactInfo testArtifactInfo = new TestArtifactInfo("12.3", "test");
         surefireReflector.setTestArtifactInfoAware(foo, testArtifactInfo);
         assertTrue(isCalled(foo));
-        assertEquals(testArtifactInfo.getClassifier(), "test");
-        assertEquals(testArtifactInfo.getVersion(), "12.3");
+        assertEquals("test", testArtifactInfo.getClassifier());
+        assertEquals("12.3", testArtifactInfo.getVersion());
     }
 
+    @Test
     public void testReporterFactory() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -239,6 +263,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(isCalled(foo));
     }
 
+    @Test
     public void testReporterFactoryAware() {
         SurefireReflector surefireReflector = getReflector();
         Object foo = getFoo();
@@ -261,61 +286,71 @@ public class SurefireReflectorTest extends TestCase {
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
+    @Test
     public void testConvertIfRunResult() {
         RunResult runResult = new RunResult(20, 1, 2, 3, 4, "IOException", true);
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         RunResult obj = (RunResult) reflector.convertIfRunResult(runResult);
-        assertEquals(obj.getCompletedCount(), 20);
-        assertEquals(obj.getErrors(), 1);
-        assertEquals(obj.getFailures(), 2);
-        assertEquals(obj.getSkipped(), 3);
+        assertEquals(20, obj.getCompletedCount());
+        assertEquals(1, obj.getErrors());
+        assertEquals(2, obj.getFailures());
+        assertEquals(3, obj.getSkipped());
         assertFalse(obj.isErrorFree());
         assertFalse(obj.isInternalError());
-        assertEquals(obj.getFailsafeCode(), (Integer) RunResult.FAILURE);
+        assertEquals((Integer) RunResult.FAILURE, obj.getFailsafeCode());
 
         assertNull(reflector.convertIfRunResult(null));
-        assertEquals(reflector.convertIfRunResult(""), "");
+        assertEquals("", reflector.convertIfRunResult(""));
     }
 
+    @Test
     public void testInstantiateProvider() {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         Object booterParams = getFoo();
         Object provider = reflector.instantiateProvider(DummyProvider.class.getName(), booterParams);
         assertNotNull(provider);
-        assertEquals(provider.getClass(), DummyProvider.class);
+        assertEquals(DummyProvider.class, provider.getClass());
     }
 
+    @Test
     public void testSetMainCliOptions() {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         Object booterParams = getFoo();
         reflector.setMainCliOptions(booterParams, asList(SHOW_ERRORS, LOGGING_LEVEL_DEBUG));
-        assertEquals(((BaseProviderFactory) booterParams).getMainCliOptions().size(), 2);
-        assertEquals(((BaseProviderFactory) booterParams).getMainCliOptions().get(0), SHOW_ERRORS);
-        assertEquals(((BaseProviderFactory) booterParams).getMainCliOptions().get(1), LOGGING_LEVEL_DEBUG);
+        assertEquals(2, ((BaseProviderFactory) booterParams).getMainCliOptions().size());
+        assertEquals(
+                SHOW_ERRORS,
+                ((BaseProviderFactory) booterParams).getMainCliOptions().get(0));
+        assertEquals(
+                LOGGING_LEVEL_DEBUG,
+                ((BaseProviderFactory) booterParams).getMainCliOptions().get(1));
     }
 
+    @Test
     public void testSetSkipAfterFailureCount() {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         Foo booterParams = (Foo) getFoo();
-        assertEquals(booterParams.getSkipAfterFailureCount(), 0);
+        assertEquals(0, booterParams.getSkipAfterFailureCount());
         reflector.setSkipAfterFailureCount(booterParams, 5);
-        assertEquals(booterParams.getSkipAfterFailureCount(), 5);
+        assertEquals(5, booterParams.getSkipAfterFailureCount());
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
+    @Test
     public void testSetSystemExitTimeout() {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         Foo booterParams = (Foo) getFoo();
         assertNull(booterParams.getSystemExitTimeout());
         reflector.setSystemExitTimeout(booterParams, 60);
-        assertEquals(booterParams.getSystemExitTimeout(), (Integer) 60);
+        assertEquals((Integer) 60, booterParams.getSystemExitTimeout());
     }
 
+    @Test
     public void testSetProviderPropertiesAware() {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
@@ -323,8 +358,8 @@ public class SurefireReflectorTest extends TestCase {
         reflector.setProviderPropertiesAware(booterParams, Collections.singletonMap("k", "v"));
         assertTrue(booterParams.isCalled());
         assertNotNull(booterParams.getProviderProperties());
-        assertEquals(booterParams.getProviderProperties().size(), 1);
-        assertEquals(booterParams.getProviderProperties().get("k"), "v");
+        assertEquals(1, booterParams.getProviderProperties().size());
+        assertEquals("v", booterParams.getProviderProperties().get("k"));
     }
 
     private SurefireReflector getReflector() {

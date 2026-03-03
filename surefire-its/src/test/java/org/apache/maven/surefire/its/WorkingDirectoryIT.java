@@ -28,11 +28,11 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test working directory configuration, SUREFIRE-416
@@ -96,13 +96,13 @@ public class WorkingDirectoryIT extends SurefireJUnit4IntegrationTestCase {
 
     private void verifyOutputDirectory(OutputValidator childTestDir) throws IOException {
         final TestFile outFile = getOutFile(childTestDir);
-        assertTrue("out.txt doesn't exist: " + outFile.getAbsolutePath(), outFile.exists());
+        assertTrue(outFile.exists(), "out.txt doesn't exist: " + outFile.getAbsolutePath());
         Properties p = new Properties();
         try (FileInputStream is = outFile.getFileInputStream()) {
             p.load(is);
         }
         String userDirPath = p.getProperty("user.dir");
-        assertNotNull("user.dir was null in property file", userDirPath);
+        assertNotNull(userDirPath, "user.dir was null in property file");
         File userDir = new File(userDirPath);
         // test if not a symlink
         if (childTestDir
@@ -110,13 +110,13 @@ public class WorkingDirectoryIT extends SurefireJUnit4IntegrationTestCase {
                 .getCanonicalFile()
                 .equals(childTestDir.getBaseDir().getAbsoluteFile())) {
             assertTrue(
-                    "wrong user.dir ! symlink ",
-                    childTestDir.getBaseDir().getAbsolutePath().equalsIgnoreCase(userDir.getAbsolutePath()));
+                    childTestDir.getBaseDir().getAbsolutePath().equalsIgnoreCase(userDir.getAbsolutePath()),
+                    "wrong user.dir ! symlink ");
         } else {
             assertEquals(
-                    "wrong user.dir symlink ",
                     childTestDir.getBaseDir().getCanonicalPath(),
-                    userDir.getCanonicalPath());
+                    userDir.getCanonicalPath(),
+                    "wrong user.dir symlink ");
         }
     }
 }

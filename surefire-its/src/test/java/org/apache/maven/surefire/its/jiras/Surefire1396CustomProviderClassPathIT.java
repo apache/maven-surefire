@@ -19,14 +19,14 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Jonathan Bell
  */
 public class Surefire1396CustomProviderClassPathIT extends SurefireJUnit4IntegrationTestCase {
-    @BeforeClass
+    @BeforeAll
     public static void installProvider() {
         unpack(
                         Surefire1396CustomProviderClassPathIT.class,

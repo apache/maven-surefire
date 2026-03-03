@@ -21,6 +21,7 @@ package org.apache.maven.surefire.stream;
 import javax.annotation.Nonnull;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
@@ -57,7 +58,7 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
 import org.apache.maven.surefire.api.stream.SegmentType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.Math.min;
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -94,9 +95,8 @@ import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
 import static org.apache.maven.surefire.api.stream.SegmentType.TEST_RUN_ID;
 import static org.apache.maven.surefire.stream.EventDecoder.newReportEntry;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -957,6 +957,18 @@ public class EventDecoderTest {
                 .isEqualTo(trimmedStackTrace);
         assertThat(decodedReportEntry.getStackTraceWriter().writeTrimmedTraceToString())
                 .isEqualTo(trimmedStackTrace);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target instanceof Class ? (Class<?>) target : target.getClass();
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                return (T) method.invoke(target instanceof Class ? null : target, args);
+            }
+        }
+        throw new NoSuchMethodException(methodName);
     }
 
     private static class Channel implements ReadableByteChannel {

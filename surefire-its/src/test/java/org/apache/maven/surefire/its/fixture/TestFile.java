@@ -28,14 +28,14 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.Matcher;
 
 import static java.nio.charset.Charset.defaultCharset;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Kristian Rosenvold
@@ -62,12 +62,12 @@ public class TestFile {
     }
 
     public OutputValidator assertFileExists() {
-        assertTrue("File doesn't exist: " + file.getAbsolutePath(), file.exists());
+        assertTrue(file.exists(), "File doesn't exist: " + file.getAbsolutePath());
         return surefireVerifier;
     }
 
     public OutputValidator assertFileNotExists() {
-        assertFalse("File doesn't exist: " + file.getAbsolutePath(), file.exists());
+        assertFalse(file.exists(), "File doesn't exist: " + file.getAbsolutePath());
         return surefireVerifier;
     }
 
@@ -119,7 +119,7 @@ public class TestFile {
                 return this;
             }
         }
-        Assert.fail("Did not find expected message in log");
+        fail("Did not find expected message in log");
         return null;
     }
 
@@ -131,7 +131,7 @@ public class TestFile {
         final List<String> list = surefireVerifier.loadFile(file, encoding);
         for (String line : list) {
             if (matcher.matches(line)) {
-                Assert.fail("Found unexpected message in log");
+                fail("Found unexpected message in log");
                 return null;
             }
         }

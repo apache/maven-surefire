@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test for SUREFIRE-1360. Enabling and disabling properties element in plugin configuration.

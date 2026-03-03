@@ -32,19 +32,16 @@ import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.booter.ForkedNodeArg;
 import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.channels.Channels.newChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.booter.Command.TEST_SET_FINISHED;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.BYE_ACK;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Asserts that this stream properly reads bytes from queue.
@@ -60,7 +57,7 @@ public class TestProvidingInputStreamTest {
         Queue<String> commands = new ArrayDeque<>();
         TestProvidingInputStream is = new TestProvidingInputStream(commands);
         is.close();
-        assertThat(is.readNextCommand(), is(nullValue()));
+        assertThat(is.readNextCommand()).isNull();
     }
 
     @Test
@@ -79,9 +76,9 @@ public class TestProvidingInputStreamTest {
         });
         Thread assertionThread = new Thread(futureTask);
         assertionThread.start();
-        assertThat(is.readNextCommand(), is(nullValue()));
+        assertThat(is.readNextCommand()).isNull();
         State state = futureTask.get();
-        assertThat(state, is(State.WAITING));
+        assertThat(state).isEqualTo(State.WAITING);
     }
 
     @Test
@@ -98,15 +95,15 @@ public class TestProvidingInputStreamTest {
 
         for (int i = 0; i < 2; i++) {
             Command cmd = is.readNextCommand();
-            assertThat(cmd.getData(), is(nullValue()));
-            assertThat(cmd, is(TEST_SET_FINISHED));
+            assertThat(cmd.getData()).isNull();
+            assertThat(cmd).isEqualTo(TEST_SET_FINISHED);
         }
 
         boolean emptyStream = isInputStreamEmpty(is);
 
         is.close();
         assertTrue(emptyStream);
-        assertThat(is.readNextCommand(), is(nullValue()));
+        assertThat(is.readNextCommand()).isNull();
     }
 
     @Test
@@ -123,7 +120,7 @@ public class TestProvidingInputStreamTest {
                 .start();
 
         Command cmd = is.readNextCommand();
-        assertThat(cmd.getData(), is("Test"));
+        assertThat(cmd.getData()).isEqualTo("Test");
 
         is.close();
     }
@@ -166,11 +163,11 @@ public class TestProvidingInputStreamTest {
         pluginIs.acknowledgeByeEventReceived();
         pluginIs.noop();
         Command bye = decoder.decode();
-        assertThat(bye, is(notNullValue()));
-        assertThat(bye.getCommandType(), is(BYE_ACK));
+        assertThat(bye).isNotNull();
+        assertThat(bye.getCommandType()).isEqualTo(BYE_ACK);
         Command noop = decoder.decode();
-        assertThat(noop, is(notNullValue()));
-        assertThat(noop.getCommandType(), is(NOOP));
+        assertThat(noop).isNotNull();
+        assertThat(noop.getCommandType()).isEqualTo(NOOP);
     }
 
     private static void sleep(long millis) {

@@ -27,9 +27,7 @@ import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.booter.ForkedNodeArg;
 import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.channels.Channels.newChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -39,12 +37,11 @@ import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.api.booter.Shutdown.EXIT;
 import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Testing cached and immediate commands in {@link TestLessInputStream}.
@@ -53,8 +50,6 @@ import static org.junit.Assert.fail;
  * @since 2.19
  */
 public class TestLessInputStreamBuilderTest {
-    @Rule
-    public final ExpectedException e = ExpectedException.none();
 
     @Test
     public void cachableCommandsShouldBeIterableWithStillOpenIterator() {
@@ -66,13 +61,13 @@ public class TestLessInputStreamBuilderTest {
 
         builder.getCachableCommands().skipSinceNextTest();
         assertTrue(iterator.hasNext());
-        assertThat(iterator.next(), is(SKIP_SINCE_NEXT_TEST));
+        assertThat(iterator.next()).isEqualTo(SKIP_SINCE_NEXT_TEST);
 
         assertFalse(iterator.hasNext());
 
         builder.getCachableCommands().shutdown(KILL);
         assertTrue(iterator.hasNext());
-        assertThat(iterator.next(), is(new Command(SHUTDOWN, KILL.getParam())));
+        assertThat(iterator.next()).isEqualTo(new Command(SHUTDOWN, KILL.getParam()));
 
         builder.removeStream(is);
     }
@@ -81,52 +76,50 @@ public class TestLessInputStreamBuilderTest {
     public void immediateCommands() throws IOException {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         TestLessInputStream is = builder.build();
-        assertThat(is.availablePermits(), is(0));
+        assertThat(is.availablePermits()).isEqualTo(0);
         is.noop();
-        assertThat(is.availablePermits(), is(1));
+        assertThat(is.availablePermits()).isEqualTo(1);
         is.beforeNextCommand();
-        assertThat(is.availablePermits(), is(0));
-        assertThat(is.nextCommand(), is(Command.NOOP));
-        assertThat(is.availablePermits(), is(0));
-        e.expect(NoSuchElementException.class);
-        is.nextCommand();
+        assertThat(is.availablePermits()).isEqualTo(0);
+        assertThat(is.nextCommand()).isEqualTo(Command.NOOP);
+        assertThat(is.availablePermits()).isEqualTo(0);
+        assertThrows(NoSuchElementException.class, () -> is.nextCommand());
     }
 
     @Test
     public void combinedCommands() throws IOException {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
         TestLessInputStream is = builder.build();
-        assertThat(is.availablePermits(), is(0));
+        assertThat(is.availablePermits()).isEqualTo(0);
         builder.getCachableCommands().skipSinceNextTest();
         is.noop();
-        assertThat(is.availablePermits(), is(2));
+        assertThat(is.availablePermits()).isEqualTo(2);
         is.beforeNextCommand();
-        assertThat(is.availablePermits(), is(1));
-        assertThat(is.nextCommand(), is(Command.NOOP));
-        assertThat(is.availablePermits(), is(1));
+        assertThat(is.availablePermits()).isEqualTo(1);
+        assertThat(is.nextCommand()).isEqualTo(Command.NOOP);
+        assertThat(is.availablePermits()).isEqualTo(1);
         builder.getCachableCommands().skipSinceNextTest();
-        assertThat(is.availablePermits(), is(1));
+        assertThat(is.availablePermits()).isEqualTo(1);
         builder.getImmediateCommands().shutdown(EXIT);
-        assertThat(is.availablePermits(), is(2));
+        assertThat(is.availablePermits()).isEqualTo(2);
         is.beforeNextCommand();
-        assertThat(is.nextCommand().getCommandType(), is(SHUTDOWN));
-        assertThat(is.availablePermits(), is(1));
+        assertThat(is.nextCommand().getCommandType()).isEqualTo(SHUTDOWN);
+        assertThat(is.availablePermits()).isEqualTo(1);
         is.beforeNextCommand();
-        assertThat(is.nextCommand(), is(SKIP_SINCE_NEXT_TEST));
-        assertThat(is.availablePermits(), is(0));
+        assertThat(is.nextCommand()).isEqualTo(SKIP_SINCE_NEXT_TEST);
+        assertThat(is.availablePermits()).isEqualTo(0);
         builder.getImmediateCommands().noop();
-        assertThat(is.availablePermits(), is(1));
+        assertThat(is.availablePermits()).isEqualTo(1);
         builder.getCachableCommands().shutdown(EXIT);
         builder.getCachableCommands().shutdown(EXIT);
-        assertThat(is.availablePermits(), is(2));
+        assertThat(is.availablePermits()).isEqualTo(2);
         is.beforeNextCommand();
-        assertThat(is.nextCommand(), is(Command.NOOP));
-        assertThat(is.availablePermits(), is(1));
+        assertThat(is.nextCommand()).isEqualTo(Command.NOOP);
+        assertThat(is.availablePermits()).isEqualTo(1);
         is.beforeNextCommand();
-        assertThat(is.nextCommand().getCommandType(), is(SHUTDOWN));
-        assertThat(is.availablePermits(), is(0));
-        e.expect(NoSuchElementException.class);
-        is.nextCommand();
+        assertThat(is.nextCommand().getCommandType()).isEqualTo(SHUTDOWN);
+        assertThat(is.availablePermits()).isEqualTo(0);
+        assertThrows(NoSuchElementException.class, () -> is.nextCommand());
     }
 
     @Test
@@ -176,47 +169,53 @@ public class TestLessInputStreamBuilderTest {
         builder.getImmediateCommands().shutdown(KILL);
         builder.getImmediateCommands().noop();
         Command bye = decoder.decode();
-        assertThat(bye, is(notNullValue()));
-        assertThat(bye.getCommandType(), is(SHUTDOWN));
-        assertThat(bye.getData(), is(KILL.getParam()));
+        assertThat(bye).isNotNull();
+        assertThat(bye.getCommandType()).isEqualTo(SHUTDOWN);
+        assertThat(bye.getData()).isEqualTo(KILL.getParam());
         Command noop = decoder.decode();
-        assertThat(noop, is(notNullValue()));
-        assertThat(noop.getCommandType(), is(NOOP));
+        assertThat(noop).isNotNull();
+        assertThat(noop.getCommandType()).isEqualTo(NOOP);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldThrowUnsupportedException1() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        builder.getImmediateCommands().provideNewTest();
+        assertThrows(UnsupportedOperationException.class, () -> builder.getImmediateCommands()
+                .provideNewTest());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldThrowUnsupportedException2() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        builder.getImmediateCommands().skipSinceNextTest();
+        assertThrows(UnsupportedOperationException.class, () -> builder.getImmediateCommands()
+                .skipSinceNextTest());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldThrowUnsupportedException3() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        builder.getImmediateCommands().acknowledgeByeEventReceived();
+        assertThrows(UnsupportedOperationException.class, () -> builder.getImmediateCommands()
+                .acknowledgeByeEventReceived());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldThrowUnsupportedException4() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        builder.getCachableCommands().acknowledgeByeEventReceived();
+        assertThrows(UnsupportedOperationException.class, () -> builder.getCachableCommands()
+                .acknowledgeByeEventReceived());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldThrowUnsupportedException5() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        builder.getCachableCommands().provideNewTest();
+        assertThrows(UnsupportedOperationException.class, () -> builder.getCachableCommands()
+                .provideNewTest());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldThrowUnsupportedException6() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        builder.getCachableCommands().noop();
+        assertThrows(UnsupportedOperationException.class, () -> builder.getCachableCommands()
+                .noop());
     }
 }

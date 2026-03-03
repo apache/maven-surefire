@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *

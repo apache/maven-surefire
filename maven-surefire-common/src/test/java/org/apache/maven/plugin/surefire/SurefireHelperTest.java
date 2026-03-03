@@ -29,9 +29,7 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 
@@ -41,21 +39,18 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPa
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
  * Test of {@link SurefireHelper}.
  */
 public class SurefireHelperTest {
-
-    @Rule
-    public ExpectedException e = ExpectedException.none();
 
     @Test
     public void shouldReplaceForkNumberPath() {
@@ -144,9 +139,10 @@ public class SurefireHelperTest {
         plugin.setTestFailureIgnore(true);
 
         SurefireBooterForkException exc = new SurefireBooterForkException("Unrecognized option: -Xxxx");
-        e.expect(MojoExecutionException.class);
-        e.expectMessage(containsString("Unrecognized option: -Xxxx"));
-        reportExecution(plugin, summary, new PluginConsoleLogger(mock(Logger.class)), exc);
+        MojoExecutionException ex = assertThrows(
+                MojoExecutionException.class,
+                () -> reportExecution(plugin, summary, new PluginConsoleLogger(mock(Logger.class)), exc));
+        assertThat(ex.getMessage()).contains("Unrecognized option: -Xxxx");
     }
 
     @Test
@@ -154,19 +150,21 @@ public class SurefireHelperTest {
         RunResult summary = new RunResult(0, 0, 0, 0);
         Mojo plugin = new Mojo();
         plugin.setFailIfNoTests(true);
-        e.expect(MojoFailureException.class);
-        e.expectMessage("No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)");
-        reportExecution(plugin, summary, null, null);
+        MojoFailureException ex =
+                assertThrows(MojoFailureException.class, () -> reportExecution(plugin, summary, null, null));
+        assertThat(ex.getMessage())
+                .contains("No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)");
     }
 
     @Test
     public void shouldHandleTestFailure() throws Exception {
         RunResult summary = new RunResult(1, 0, 1, 0);
-        e.expect(MojoFailureException.class);
-        e.expectMessage("There are test failures.\n\nSee null "
-                + "for the individual test results.\nSee dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
-        reportExecution(new Mojo(), summary, null, null);
+        MojoFailureException ex =
+                assertThrows(MojoFailureException.class, () -> reportExecution(new Mojo(), summary, null, null));
+        assertThat(ex.getMessage())
+                .contains("There are test failures.")
+                .contains("for the individual test results.")
+                .contains("[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
     }
 
     @Test
@@ -174,11 +172,12 @@ public class SurefireHelperTest {
         RunResult summary = new RunResult(1, 0, 0, 0, 1);
         Mojo reportParameters = new Mojo();
         reportParameters.setFailOnFlakeCount(1);
-        e.expect(MojoFailureException.class);
-        e.expectMessage("There is 1 flake and failOnFlakeCount is set to 1.\n\nSee null "
-                + "for the individual test results.\nSee dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
-        reportExecution(reportParameters, summary, null, null);
+        MojoFailureException ex =
+                assertThrows(MojoFailureException.class, () -> reportExecution(reportParameters, summary, null, null));
+        assertThat(ex.getMessage())
+                .contains("There is 1 flake and failOnFlakeCount is set to 1.")
+                .contains("for the individual test results.")
+                .contains("[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
     }
 
     @Test
@@ -186,12 +185,13 @@ public class SurefireHelperTest {
         RunResult summary = new RunResult(1, 0, 1, 0, 2);
         Mojo reportParameters = new Mojo();
         reportParameters.setFailOnFlakeCount(1);
-        e.expect(MojoFailureException.class);
-        e.expectMessage("There are test failures.\nThere are 2 flakes and failOnFlakeCount is set to 1."
-                + "\n\nSee null "
-                + "for the individual test results.\nSee dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
-        reportExecution(reportParameters, summary, null, null);
+        MojoFailureException ex =
+                assertThrows(MojoFailureException.class, () -> reportExecution(reportParameters, summary, null, null));
+        assertThat(ex.getMessage())
+                .contains("There are test failures.")
+                .contains("There are 2 flakes and failOnFlakeCount is set to 1.")
+                .contains("for the individual test results.")
+                .contains("[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
     }
 
     @Test

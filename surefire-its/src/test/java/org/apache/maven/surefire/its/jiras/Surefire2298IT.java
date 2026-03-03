@@ -24,8 +24,8 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.hamcrest.collection.IsIterableWithSize;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Node;
 import org.xmlunit.builder.Input;
 import org.xmlunit.xpath.JAXPXPathEngine;
@@ -39,7 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @SuppressWarnings("checkstyle:magicnumber")
 public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         assumeJavaVersion(17);
     }

@@ -22,8 +22,8 @@ import java.io.File;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author <a href="mailto:orien@codehaus.org">Orien Madgwick</a>
  */
-@Ignore("objectFactory not support by testng engine")
+@Disabled("objectFactory not support by testng engine")
 public class CheckTestNgCustomObjectFactoryIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTestNgListenerReporter() throws Exception {

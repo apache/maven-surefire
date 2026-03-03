@@ -23,12 +23,9 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import static java.io.File.separator;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
@@ -38,13 +35,11 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 /**
  * Test of {@link SystemUtils}.
@@ -53,12 +48,12 @@ import static org.powermock.api.mockito.PowerMockito.verifyStatic;
  * @since 2.20.1
  */
 @SuppressWarnings("checkstyle:magicnumber")
-@RunWith(Enclosed.class)
 public class SystemUtilsTest {
     /**
      *
      */
-    public static class PlainUnitTests {
+    @Nested
+    class PlainUnitTests {
         @Test
         public void shouldParseProprietaryReleaseFile() throws IOException {
             String classes = new File(".").getCanonicalPath() + separator + "target" + separator + "test-classes";
@@ -169,7 +164,7 @@ public class SystemUtilsTest {
 
         @Test
         public void shouldFindClassLoader() {
-            ClassLoader cl = SystemUtils.reflectClassLoader(getClass(), "getPlatformClassLoader");
+            ClassLoader cl = SystemUtils.reflectClassLoader(SystemUtilsTest.class, "getPlatformClassLoader");
             assertThat(cl).isSameAs(ClassLoader.getSystemClassLoader());
         }
 
@@ -237,20 +232,13 @@ public class SystemUtilsTest {
 
             assertThat(actualPid + "").isEqualTo(expectedPid);
         }
-
-        @SuppressWarnings("unused")
-        public static ClassLoader getPlatformClassLoader() {
-            return ClassLoader.getSystemClassLoader();
-        }
     }
 
     /**
      *
      */
-    @RunWith(PowerMockRunner.class)
-    @PrepareForTest(SystemUtils.class)
-    @PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
-    public static class MockTest {
+    @Nested
+    class MockTest {
 
         @Test
         public void shouldBeDifferentJdk9() {
@@ -259,42 +247,48 @@ public class SystemUtilsTest {
 
         @Test
         public void shouldBeSameJdk9() {
-            // PowerMockJUnit44RunnerDelegateImpl does not work with Assumptions: assumeFalse
             if (!JAVA_RECENT.atLeast(JAVA_9)) {
                 testIsJava9AtLeast(new File(System.getProperty("java.home")).getParentFile());
             }
         }
 
-        private static void testIsJava9AtLeast(File pathInJdk) {
+        private void testIsJava9AtLeast(File pathInJdk) {
             File path = new File(pathInJdk, "bin" + separator + "java");
 
-            mockStatic(SystemUtils.class);
+            try (MockedStatic<SystemUtils> mocked = mockStatic(SystemUtils.class)) {
+                mocked.when(() -> SystemUtils.isJava9AtLeast(anyString())).thenCallRealMethod();
 
-            when(SystemUtils.isJava9AtLeast(anyString())).thenCallRealMethod();
+                mocked.when(() -> SystemUtils.toJdkHomeFromJvmExec(anyString())).thenCallRealMethod();
 
-            when(SystemUtils.toJdkHomeFromJvmExec(anyString())).thenCallRealMethod();
+                mocked.when(() -> SystemUtils.toJdkHomeFromJre()).thenCallRealMethod();
 
-            when(SystemUtils.toJdkHomeFromJre()).thenCallRealMethod();
+                mocked.when(() -> SystemUtils.toJdkHomeFromJre(anyString())).thenCallRealMethod();
 
-            when(SystemUtils.toJdkHomeFromJre(anyString())).thenCallRealMethod();
+                mocked.when(() -> SystemUtils.isBuiltInJava9AtLeast()).thenCallRealMethod();
 
-            when(SystemUtils.isBuiltInJava9AtLeast()).thenCallRealMethod();
+                mocked.when(() -> SystemUtils.toJdkVersionFromReleaseFile(any(File.class)))
+                        .thenCallRealMethod();
 
-            when(SystemUtils.toJdkVersionFromReleaseFile(any(File.class))).thenCallRealMethod();
+                mocked.when(() -> SystemUtils.isJava9AtLeast(any(BigDecimal.class)))
+                        .thenCallRealMethod();
 
-            when(SystemUtils.isJava9AtLeast(any(BigDecimal.class))).thenCallRealMethod();
+                if (JAVA_RECENT.atLeast(JAVA_9)) {
+                    assertThat(SystemUtils.isJava9AtLeast(path.getAbsolutePath()))
+                            .isTrue();
+                } else {
+                    assertThat(SystemUtils.isJava9AtLeast(path.getAbsolutePath()))
+                            .isFalse();
+                }
 
-            if (JAVA_RECENT.atLeast(JAVA_9)) {
-                assertThat(SystemUtils.isJava9AtLeast(path.getAbsolutePath())).isTrue();
-            } else {
-                assertThat(SystemUtils.isJava9AtLeast(path.getAbsolutePath())).isFalse();
+                mocked.verify(() -> SystemUtils.toJdkVersionFromReleaseFile(any(File.class)), times(0));
+
+                mocked.verify(() -> SystemUtils.isBuiltInJava9AtLeast(), times(1));
             }
-
-            verifyStatic(SystemUtils.class, times(0));
-            SystemUtils.toJdkVersionFromReleaseFile(any(File.class));
-
-            verifyStatic(SystemUtils.class, times(1));
-            SystemUtils.isBuiltInJava9AtLeast();
         }
+    }
+
+    @SuppressWarnings("unused")
+    public static ClassLoader getPlatformClassLoader() {
+        return ClassLoader.getSystemClassLoader();
     }
 }

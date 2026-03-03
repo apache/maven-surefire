@@ -22,31 +22,23 @@ import java.util.Arrays;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Integration Test for SUREFIRE-2117
  */
-@RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class Surefire2117XmlReportingNestedIT extends SurefireJUnit4IntegrationTestCase {
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String jupiterVersion;
-
-    @Parameters(name = "{0}")
-    public static Iterable<?> junitJupiterVersions() {
+    static Iterable<?> junitJupiterVersions() {
         return Arrays.asList("5.8.2", "5.9.1", "5.13.4");
     }
 
-    @Test
-    public void testXmlReport() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("junitJupiterVersions")
+    void testXmlReport(String jupiterVersion) {
         OutputValidator validator = unpack("surefire-2117-xml-reporting-nested", "-" + jupiterVersion)
                 .sysProp("junit5.version", jupiterVersion)
                 .executeTest()

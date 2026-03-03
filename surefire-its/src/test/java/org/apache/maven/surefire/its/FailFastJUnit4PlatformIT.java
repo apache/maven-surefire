@@ -20,12 +20,9 @@ package org.apache.maven.surefire.its;
 
 import java.util.Arrays;
 
-import org.junit.runners.Parameterized.Parameters;
-
 public class FailFastJUnit4PlatformIT extends AbstractFailFastIT {
 
-    @Parameters(name = "{0}")
-    public static Iterable<Object[]> data() {
+    static Iterable<Object[]> data() {
         //                    description    profile     forkCount,
         //                    |              |           |  fail-fast-count,
         //                    |              |           |  |  reuseForks

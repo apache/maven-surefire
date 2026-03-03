@@ -27,17 +27,12 @@ import java.nio.file.Path;
 
 import org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.ClasspathElementUri;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-import org.powermock.modules.junit4.PowerMockRunnerDelegate;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.booterclient.JarManifestForkConfiguration.escapeUri;
@@ -48,151 +43,131 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Files.delete;
 import static org.assertj.core.util.Files.newTemporaryFolder;
-import static org.junit.Assume.assumeTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.same;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 /**
  * Unit tests for {@link JarManifestForkConfiguration}.
  */
-@RunWith(PowerMockRunner.class)
-@PowerMockRunnerDelegate(JUnit4.class)
-@PrepareForTest({JarManifestForkConfiguration.class, InPluginProcessDumpSingleton.class})
-@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
 public class JarManifestForkConfigurationTest {
     private static final File TMP = newTemporaryFolder();
 
     private static File dumpDirectory;
 
-    @BeforeClass
+    @BeforeAll
     public static void createSystemTemporaryDir() {
         dumpDirectory = new File(TMP, "dump");
         assertThat(dumpDirectory.mkdir()).isTrue();
     }
 
-    @AfterClass
+    @AfterAll
     public static void deleteSystemTemporaryDir() {
         delete(TMP);
     }
 
     @Test
     public void relativeClasspathUnixSimple() throws Exception {
-        mockStatic(JarManifestForkConfiguration.class);
-        Path parent = mock(Path.class);
-        when(parent.toString()).thenReturn("/home/me/prj/target/surefire");
-        Path classPathElement = mock(Path.class);
-        when(classPathElement.toString()).thenReturn("/home/me/.m2/repository/grp/art/1.0/art-1.0.jar");
-        when(relativize(parent, classPathElement)).thenReturn("../../../.m2/repository/grp/art/1.0/art-1.0.jar");
-        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
-                .thenCallRealMethod();
-        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
-        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
-                .isEqualTo("../../../.m2/repository/grp/art/1.0/art-1.0.jar");
+        try (MockedStatic<JarManifestForkConfiguration> mocked =
+                mockStatic(JarManifestForkConfiguration.class, inv -> inv.callRealMethod())) {
+            Path parent = mock(Path.class, "/home/me/prj/target/surefire");
+            Path classPathElement = mock(Path.class, "/home/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+            Path relativePath = mock(Path.class, "../../../.m2/repository/grp/art/1.0/art-1.0.jar");
+            org.mockito.Mockito.when(parent.relativize(classPathElement)).thenReturn(relativePath);
+            assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                    .isEqualTo("../../../.m2/repository/grp/art/1.0/art-1.0.jar");
+        }
     }
 
     @Test
     public void relativeClasspathUnixTricky() throws Exception {
-        mockStatic(JarManifestForkConfiguration.class);
-        Path parent = mock(Path.class);
-        when(parent.toString()).thenReturn("/home/me/prj/target/surefire");
-        Path classPathElement = mock(Path.class);
-        when(classPathElement.toString()).thenReturn("/the Maven repo/grp/art/1.0/art-1.0.jar");
-        when(relativize(parent, classPathElement)).thenReturn("../../../../../the Maven repo/grp/art/1.0/art-1.0.jar");
-        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
-                .thenCallRealMethod();
-        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
-        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
-                .isEqualTo("../../../../../the%20Maven%20repo/grp/art/1.0/art-1.0.jar");
+        try (MockedStatic<JarManifestForkConfiguration> mocked =
+                mockStatic(JarManifestForkConfiguration.class, inv -> inv.callRealMethod())) {
+            Path parent = mock(Path.class, "/home/me/prj/target/surefire");
+            Path classPathElement = mock(Path.class, "/the Maven repo/grp/art/1.0/art-1.0.jar");
+            Path relativePath = mock(Path.class, "../../../../../the Maven repo/grp/art/1.0/art-1.0.jar");
+            org.mockito.Mockito.when(parent.relativize(classPathElement)).thenReturn(relativePath);
+            assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                    .isEqualTo("../../../../../the%20Maven%20repo/grp/art/1.0/art-1.0.jar");
+        }
     }
 
     @Test
     public void relativeClasspathWindowsSimple() throws Exception {
-        mockStatic(JarManifestForkConfiguration.class);
-        Path parent = mock(Path.class);
-        when(parent.toString()).thenReturn("C:\\Windows\\Temp\\surefire");
-        Path classPathElement = mock(Path.class);
-        when(classPathElement.toString()).thenReturn("C:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
-        when(relativize(parent, classPathElement))
-                .thenReturn("..\\..\\..\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
-        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
-                .thenCallRealMethod();
-        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
-        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
-                .isEqualTo("../../../Users/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+        try (MockedStatic<JarManifestForkConfiguration> mocked =
+                mockStatic(JarManifestForkConfiguration.class, inv -> inv.callRealMethod())) {
+            Path parent = mock(Path.class, "C:\\Windows\\Temp\\surefire");
+            Path classPathElement = mock(Path.class, "C:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
+            Path relativePath = mock(Path.class, "..\\..\\..\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
+            org.mockito.Mockito.when(parent.relativize(classPathElement)).thenReturn(relativePath);
+            assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                    .isEqualTo("../../../Users/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+        }
     }
 
     @Test
     public void relativeClasspathWindowsTricky() throws Exception {
-        mockStatic(JarManifestForkConfiguration.class);
-        Path parent = mock(Path.class);
-        when(parent.toString()).thenReturn("C:\\Windows\\Temp\\surefire");
-        Path classPathElement = mock(Path.class);
-        when(classPathElement.toString()).thenReturn("C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
-        when(relativize(parent, classPathElement))
-                .thenReturn("..\\..\\..\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
-        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
-                .thenCallRealMethod();
-        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
-        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
-                .isEqualTo("../../../Test%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+        try (MockedStatic<JarManifestForkConfiguration> mocked =
+                mockStatic(JarManifestForkConfiguration.class, inv -> inv.callRealMethod())) {
+            Path parent = mock(Path.class, "C:\\Windows\\Temp\\surefire");
+            Path classPathElement = mock(Path.class, "C:\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
+            Path relativePath =
+                    mock(Path.class, "..\\..\\..\\Test User\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
+            org.mockito.Mockito.when(parent.relativize(classPathElement)).thenReturn(relativePath);
+            assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                    .isEqualTo("../../../Test%20User/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+        }
     }
 
     @Test
     public void crossDriveWindows() throws Exception {
-        mockStatic(JarManifestForkConfiguration.class);
-        mockStatic(InPluginProcessDumpSingleton.class);
-        when(InPluginProcessDumpSingleton.getSingleton()).thenReturn(mock(InPluginProcessDumpSingleton.class));
-        Path parent = mock(Path.class);
-        when(parent.toString()).thenReturn("C:\\Windows\\Temp\\surefire");
-        Path classPathElement = mock(Path.class);
-        when(classPathElement.toString()).thenReturn("X:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
-        when(classPathElement.toUri()).thenAnswer(new Answer<URI>() {
-            @Override
-            public URI answer(InvocationOnMock invocation) throws URISyntaxException {
-                String path = invocation.getMock().toString();
-                return new URI("file", "", "/" + path.replace('\\', '/'), null);
-            }
-        });
-        when(relativize(same(parent), same(classPathElement)))
-                .thenThrow(new IllegalArgumentException("'other' has different root"));
-        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
-                .thenCallRealMethod();
-        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
-        when(toAbsoluteUri(same(classPathElement))).thenCallRealMethod();
-        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
-                .isEqualTo("file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+        try (MockedStatic<JarManifestForkConfiguration> mocked =
+                        mockStatic(JarManifestForkConfiguration.class, inv -> inv.callRealMethod());
+                MockedStatic<InPluginProcessDumpSingleton> dumpMocked =
+                        mockStatic(InPluginProcessDumpSingleton.class)) {
+            dumpMocked
+                    .when(InPluginProcessDumpSingleton::getSingleton)
+                    .thenReturn(mock(InPluginProcessDumpSingleton.class));
+            Path parent = mock(Path.class, "C:\\Windows\\Temp\\surefire");
+            Path classPathElement = mock(Path.class, "X:\\Users\\me\\.m2\\repository\\grp\\art\\1.0\\art-1.0.jar");
+            org.mockito.Mockito.when(classPathElement.toUri()).thenAnswer(new Answer<URI>() {
+                @Override
+                public URI answer(InvocationOnMock invocation) throws URISyntaxException {
+                    String path = invocation.getMock().toString();
+                    return new URI("file", "", "/" + path.replace('\\', '/'), null);
+                }
+            });
+            mocked.when(() -> relativize(parent, classPathElement))
+                    .thenThrow(new IllegalArgumentException("'other' has different root"));
+            assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                    .isEqualTo("file:///X:/Users/me/.m2/repository/grp/art/1.0/art-1.0.jar");
+        }
     }
 
     @Test
     public void uncWindows() throws Exception {
         assumeTrue(IS_OS_WINDOWS);
-        mockStatic(JarManifestForkConfiguration.class);
-        mockStatic(InPluginProcessDumpSingleton.class);
-        when(InPluginProcessDumpSingleton.getSingleton()).thenReturn(mock(InPluginProcessDumpSingleton.class));
-        Path parent = mock(Path.class);
-        when(parent.toString()).thenReturn("C:\\Windows\\Temp\\surefire");
-        Path classPathElement = mock(Path.class);
-        when(classPathElement.toString()).thenReturn("\\\\server\\grp\\art\\1.0\\art-1.0.jar");
-        when(classPathElement.toFile()).thenAnswer(new Answer<File>() {
-            @Override
-            public File answer(InvocationOnMock invocation) {
-                String path = invocation.getMock().toString();
-                return new File(path);
-            }
-        });
-        when(relativize(same(parent), same(classPathElement)))
-                .thenThrow(new IllegalArgumentException("'other' has different root"));
-        when(toClasspathElementUri(same(parent), same(classPathElement), same(dumpDirectory), anyBoolean()))
-                .thenCallRealMethod();
-        when(escapeUri(anyString(), any(Charset.class))).thenCallRealMethod();
-        when(toAbsoluteUri(same(classPathElement))).thenCallRealMethod();
-        assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
-                .isEqualTo("file:////server/grp/art/1.0/art-1.0.jar");
+        try (MockedStatic<JarManifestForkConfiguration> mocked =
+                        mockStatic(JarManifestForkConfiguration.class, inv -> inv.callRealMethod());
+                MockedStatic<InPluginProcessDumpSingleton> dumpMocked =
+                        mockStatic(InPluginProcessDumpSingleton.class)) {
+            dumpMocked
+                    .when(InPluginProcessDumpSingleton::getSingleton)
+                    .thenReturn(mock(InPluginProcessDumpSingleton.class));
+            Path parent = mock(Path.class, "C:\\Windows\\Temp\\surefire");
+            Path classPathElement = mock(Path.class, "\\\\server\\grp\\art\\1.0\\art-1.0.jar");
+            org.mockito.Mockito.when(classPathElement.toFile()).thenAnswer(new Answer<File>() {
+                @Override
+                public File answer(InvocationOnMock invocation) {
+                    String path = invocation.getMock().toString();
+                    return new File(path);
+                }
+            });
+            mocked.when(() -> relativize(parent, classPathElement))
+                    .thenThrow(new IllegalArgumentException("'other' has different root"));
+            assertThat(toClasspathElementUri(parent, classPathElement, dumpDirectory, true).uri)
+                    .isEqualTo("file:////server/grp/art/1.0/art-1.0.jar");
+        }
     }
 
     @Test

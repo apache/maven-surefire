@@ -20,24 +20,27 @@ package org.apache.maven.surefire.api.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Random;
 
-import junit.framework.TestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.reflect.Whitebox.getInternalState;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit test for the surefire temp file manager.
  *
  * @author Markus Spann
  */
-public class TempFileManagerTest extends TestCase {
+public class TempFileManagerTest {
 
     @Test
-    public void testDefaultInstance() {
+    public void testDefaultInstance() throws Exception {
         TempFileManager tfm = TempFileManager.instance();
         assertSame(tfm, TempFileManager.instance((File) null));
         assertSame(tfm, TempFileManager.instance((String) null));
@@ -53,11 +56,11 @@ public class TempFileManagerTest extends TestCase {
         String subDirName = TempFileManagerTest.class.getSimpleName() + new Random().nextLong();
         TempFileManager tfm = TempFileManager.instance(subDirName);
         assertEquals(tfm.getTempDir(), new File(System.getProperty("java.io.tmpdir"), subDirName));
-        assertFalse(tfm.getTempDir() + " should not exist", tfm.getTempDir().exists());
+        assertFalse(tfm.getTempDir().exists(), tfm.getTempDir() + " should not exist");
     }
 
     @Test
-    public void testCreateTempFileAndDelete() {
+    public void testCreateTempFileAndDelete() throws Exception {
         String subDirName = TempFileManagerTest.class.getSimpleName() + new Random().nextLong();
         TempFileManager tfm = TempFileManager.instance(subDirName);
         String prefix = "prefix";
@@ -94,5 +97,12 @@ public class TempFileManagerTest extends TestCase {
         assertFalse(tfm.isDeleteOnExit());
         tfm.setDeleteOnExit(true);
         assertTrue(tfm.isDeleteOnExit());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return (T) field.get(target);
     }
 }

@@ -22,9 +22,9 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Test running a single test with -Dtest=BasicTest
@@ -48,7 +48,7 @@ public class CheckSingleTestIT extends SurefireJUnit4IntegrationTestCase {
         final OutputValidator output =
                 unpack().setTestToRun("DoesNotExist").maven().withFailure().executeTest();
         TestFile reportsDir = output.getTargetFile("surefire-reports");
-        assertFalse("Unexpected reports directory", reportsDir.exists());
+        assertFalse(reportsDir.exists(), "Unexpected reports directory");
     }
 
     @Test
@@ -58,7 +58,7 @@ public class CheckSingleTestIT extends SurefireJUnit4IntegrationTestCase {
                 .executeTest()
                 .verifyErrorFreeLog();
         output.getTargetFile("surefire-reports");
-        //   assertFalse( "Unexpected reports directory", reportsDir.exists() ); Hmpf. Not really a good test
+        //   assertFalse(reportsDir.exists(), "Unexpected reports directory") ); Hmpf. Not really a good test
     }
 
     private SurefireLauncher unpack() {

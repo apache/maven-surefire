@@ -22,8 +22,10 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.LegacySupport;
+import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -36,35 +38,90 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.LocalRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
  */
 @SuppressWarnings("checkstyle:linelength")
-public class SurefireReportTest extends AbstractMojoTestCase {
+class SurefireReportTest {
+
+    private final TestHelper testCase = new TestHelper();
+
+    /**
+     * Helper that exposes protected methods of {@link AbstractMojoTestCase} for use in JUnit 5 tests.
+     */
+    static class TestHelper extends AbstractMojoTestCase {
+        @Override
+        public void setUp() throws Exception {
+            super.setUp();
+        }
+
+        @Override
+        public void tearDown() throws Exception {
+            super.tearDown();
+        }
+
+        @Override
+        public Mojo lookupMojo(String goal, File pom) throws Exception {
+            return super.lookupMojo(goal, pom);
+        }
+
+        public <T> T lookupComponent(Class<T> role) throws Exception {
+            return lookup(role);
+        }
+
+        @Override
+        public MavenSession newMavenSession(MavenProject project) {
+            return super.newMavenSession(project);
+        }
+
+        @Override
+        public void setVariableValueToObject(Object object, String variable, Object value)
+                throws IllegalAccessException {
+            super.setVariableValueToObject(object, variable, value);
+        }
+
+        @Override
+        public Object getVariableValueFromObject(Object object, String variable) throws IllegalAccessException {
+            return super.getVariableValueFromObject(object, variable);
+        }
+    }
+
     private ArtifactStubFactory artifactStubFactory;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        artifactStubFactory = new DependencyArtifactStubFactory(getTestFile("target"), true, false);
+    @BeforeEach
+    void setUp() throws Exception {
+        testCase.setUp();
+        artifactStubFactory = new DependencyArtifactStubFactory(testCase.getTestFile("target"), true, false);
         artifactStubFactory.getWorkingDir().mkdirs();
     }
 
-    protected File getPluginXmlFile(String projectDirName) {
-        return new File(getBasedir(), "src/test/resources/unit/" + projectDirName + "/plugin-config.xml");
+    @AfterEach
+    void tearDown() throws Exception {
+        testCase.tearDown();
     }
 
-    protected SurefireReport createReportMojo(File pluginXmlFile) throws Exception {
-        SurefireReport mojo = (SurefireReport) lookupMojo("report", pluginXmlFile);
-        assertNotNull("Mojo not found.", mojo);
+    private File getPluginXmlFile(String projectDirName) {
+        return new File(testCase.getBasedir(), "src/test/resources/unit/" + projectDirName + "/plugin-config.xml");
+    }
 
-        LegacySupport legacySupport = lookup(LegacySupport.class);
-        legacySupport.setSession(newMavenSession(new MavenProjectStub()));
+    private SurefireReport createReportMojo(File pluginXmlFile) throws Exception {
+        SurefireReport mojo = (SurefireReport) testCase.lookupMojo("report", pluginXmlFile);
+        assertNotNull(mojo, "Mojo not found.");
+
+        LegacySupport legacySupport = testCase.lookupComponent(LegacySupport.class);
+        legacySupport.setSession(testCase.newMavenSession(new MavenProjectStub()));
         DefaultRepositorySystemSession repoSession =
                 (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
         repoSession.setLocalRepositoryManager(new SimpleLocalRepositoryManagerFactory()
@@ -73,41 +130,43 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         List<MavenProject> reactorProjects =
                 mojo.getReactorProjects() != null ? mojo.getReactorProjects() : Collections.emptyList();
 
-        setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution());
+        testCase.setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution());
         // setVariableValueToObject(mojo, "session", legacySupport.getSession());
-        setVariableValueToObject(mojo, "repoSession", legacySupport.getRepositorySession());
-        setVariableValueToObject(mojo, "reactorProjects", reactorProjects);
-        setVariableValueToObject(
+        testCase.setVariableValueToObject(mojo, "repoSession", legacySupport.getRepositorySession());
+        testCase.setVariableValueToObject(mojo, "reactorProjects", reactorProjects);
+        testCase.setVariableValueToObject(
                 mojo, "remoteProjectRepositories", mojo.getProject().getRemoteProjectRepositories());
-        setVariableValueToObject(
+        testCase.setVariableValueToObject(
                 mojo, "siteDirectory", new File(mojo.getProject().getBasedir(), "src/site"));
         return mojo;
     }
 
-    public void testBasicSurefireReport() throws Exception {
+    @Test
+    void testBasicSurefireReport() throws Exception {
         File testPom = getPluginXmlFile("basic-surefire-report-test");
         SurefireReport mojo = createReportMojo(testPom);
-        File outputDir = (File) getVariableValueFromObject(mojo, "outputDirectory");
-        boolean showSuccess = (Boolean) getVariableValueFromObject(mojo, "showSuccess");
-        File reportsDir = (File) getVariableValueFromObject(mojo, "reportsDirectory");
-        String outputName = (String) getVariableValueFromObject(mojo, "outputName");
-        File xrefTestLocation = (File) getVariableValueFromObject(mojo, "xrefTestLocation");
-        boolean linkXRef = (Boolean) getVariableValueFromObject(mojo, "linkXRef");
+        File outputDir = (File) testCase.getVariableValueFromObject(mojo, "outputDirectory");
+        boolean showSuccess = (Boolean) testCase.getVariableValueFromObject(mojo, "showSuccess");
+        File reportsDir = (File) testCase.getVariableValueFromObject(mojo, "reportsDirectory");
+        String outputName = (String) testCase.getVariableValueFromObject(mojo, "outputName");
+        File xrefTestLocation = (File) testCase.getVariableValueFromObject(mojo, "xrefTestLocation");
+        boolean linkXRef = (Boolean) testCase.getVariableValueFromObject(mojo, "linkXRef");
 
-        assertEquals(new File(getBasedir() + "/target/site/unit/basic-surefire-report-test"), outputDir);
+        assertEquals(new File(testCase.getBasedir() + "/target/site/unit/basic-surefire-report-test"), outputDir);
         assertTrue(showSuccess);
         assertEquals(
-                new File(getBasedir() + "/src/test/resources/unit/basic-surefire-report-test/surefire-reports")
+                new File(testCase.getBasedir() + "/src/test/resources/unit/basic-surefire-report-test/surefire-reports")
                         .getAbsolutePath(),
                 reportsDir.getAbsolutePath());
         assertEquals("surefire", outputName);
         assertEquals(
-                new File(getBasedir() + "/target/site/unit/basic-surefire-report-test/xref-test").getAbsolutePath(),
+                new File(testCase.getBasedir() + "/target/site/unit/basic-surefire-report-test/xref-test")
+                        .getAbsolutePath(),
                 xrefTestLocation.getAbsolutePath());
         assertTrue(linkXRef);
 
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/basic-surefire-report-test/surefire.html");
+        File report = new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-test/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -131,13 +190,15 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         return me;
     }
 
-    public void testBasicSurefireReportIfShowSuccessIsFalse() throws Exception {
+    @Test
+    void testBasicSurefireReportIfShowSuccessIsFalse() throws Exception {
         File testPom = getPluginXmlFile("basic-surefire-report-success-false");
         SurefireReport mojo = createReportMojo(testPom);
-        boolean showSuccess = (Boolean) getVariableValueFromObject(mojo, "showSuccess");
+        boolean showSuccess = (Boolean) testCase.getVariableValueFromObject(mojo, "showSuccess");
         assertFalse(showSuccess);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire.html");
+        File report =
+                new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -145,13 +206,15 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         assertTrue(idx < 0);
     }
 
-    public void testBasicSurefireReportIfLinkXrefIsFalse() throws Exception {
+    @Test
+    void testBasicSurefireReportIfLinkXrefIsFalse() throws Exception {
         File testPom = getPluginXmlFile("basic-surefire-report-linkxref-false");
         SurefireReport mojo = createReportMojo(testPom);
-        boolean linkXRef = (Boolean) getVariableValueFromObject(mojo, "linkXRef");
+        boolean linkXRef = (Boolean) testCase.getVariableValueFromObject(mojo, "linkXRef");
         assertFalse(linkXRef);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/basic-surefire-report-linkxref-false/surefire.html");
+        File report =
+                new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-linkxref-false/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -159,11 +222,13 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         assertTrue(idx == -1);
     }
 
-    public void testBasicSurefireReportIfReportingIsNull() throws Exception {
+    @Test
+    void testBasicSurefireReportIfReportingIsNull() throws Exception {
         File testPom = getPluginXmlFile("basic-surefire-report-reporting-null");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire.html");
+        File report =
+                new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -172,11 +237,13 @@ public class SurefireReportTest extends AbstractMojoTestCase {
     }
 
     @SuppressWarnings("checkstyle:methodname")
-    public void testBasicSurefireReport_AnchorTestCases() throws Exception {
+    @Test
+    void testBasicSurefireReport_AnchorTestCases() throws Exception {
         File testPom = getPluginXmlFile("basic-surefire-report-anchor-test-cases");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire.html");
+        File report = new File(
+                testCase.getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -188,11 +255,12 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         assertTrue(idx > 0);
     }
 
-    public void testSurefireReportSingleError() throws Exception {
+    @Test
+    void testSurefireReportSingleError() throws Exception {
         File testPom = getPluginXmlFile("surefire-report-single-error");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/surefire-report-single-error/surefire.html");
+        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-single-error/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -275,12 +343,13 @@ public class SurefireReportTest extends AbstractMojoTestCase {
                         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" + "</pre>")));
     }
 
-    public void testSurefireReportNestedClassTrimStackTrace() throws Exception {
+    @Test
+    void testSurefireReportNestedClassTrimStackTrace() throws Exception {
         File testPom = getPluginXmlFile("surefire-report-nestedClass-trimStackTrace");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report =
-                new File(getBasedir(), "target/site/unit/surefire-report-nestedClass-trimStackTrace/surefire.html");
+        File report = new File(
+                testCase.getBasedir(), "target/site/unit/surefire-report-nestedClass-trimStackTrace/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -339,11 +408,12 @@ public class SurefireReportTest extends AbstractMojoTestCase {
                         + "</pre>")));
     }
 
-    public void testSurefireReportNestedClass() throws Exception {
+    @Test
+    void testSurefireReportNestedClass() throws Exception {
         File testPom = getPluginXmlFile("surefire-report-nestedClass");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/surefire-report-nestedClass/surefire.html");
+        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-nestedClass/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -426,11 +496,13 @@ public class SurefireReportTest extends AbstractMojoTestCase {
                         + "</pre>")));
     }
 
-    public void testSurefireReportEnclosedTrimStackTrace() throws Exception {
+    @Test
+    void testSurefireReportEnclosedTrimStackTrace() throws Exception {
         File testPom = getPluginXmlFile("surefire-report-enclosed-trimStackTrace");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/surefire-report-enclosed-trimStackTrace/surefire.html");
+        File report = new File(
+                testCase.getBasedir(), "target/site/unit/surefire-report-enclosed-trimStackTrace/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -489,11 +561,12 @@ public class SurefireReportTest extends AbstractMojoTestCase {
                         + "</pre>")));
     }
 
-    public void testSurefireReportEnclosed() throws Exception {
+    @Test
+    void testSurefireReportEnclosed() throws Exception {
         File testPom = getPluginXmlFile("surefire-report-enclosed");
         SurefireReport mojo = createReportMojo(testPom);
         mojo.execute();
-        File report = new File(getBasedir(), "target/site/unit/surefire-report-enclosed/surefire.html");
+        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-enclosed/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
@@ -586,24 +659,25 @@ public class SurefireReportTest extends AbstractMojoTestCase {
                                 + "</pre>")));
     }
 
-    public void testCustomTitleAndDescriptionReport() throws Exception {
+    @Test
+    void testCustomTitleAndDescriptionReport() throws Exception {
         File testPom = getPluginXmlFile("surefire-1183");
         SurefireReport mojo = createReportMojo(testPom);
 
-        File outputDir = (File) getVariableValueFromObject(mojo, "outputDirectory");
-        String outputName = (String) getVariableValueFromObject(mojo, "outputName");
-        File reportsDir = (File) getVariableValueFromObject(mojo, "reportsDirectory");
+        File outputDir = (File) testCase.getVariableValueFromObject(mojo, "outputDirectory");
+        String outputName = (String) testCase.getVariableValueFromObject(mojo, "outputName");
+        File reportsDir = (File) testCase.getVariableValueFromObject(mojo, "reportsDirectory");
 
-        assertEquals(new File(getBasedir() + "/target/site/unit/surefire-1183"), outputDir);
+        assertEquals(new File(testCase.getBasedir() + "/target/site/unit/surefire-1183"), outputDir);
         assertEquals(
-                new File(getBasedir() + "/src/test/resources/unit/surefire-1183/acceptancetest-reports")
+                new File(testCase.getBasedir() + "/src/test/resources/unit/surefire-1183/acceptancetest-reports")
                         .getAbsolutePath(),
                 reportsDir.getAbsolutePath());
         assertEquals("acceptance-test", outputName);
 
         mojo.execute();
 
-        File report = new File(getBasedir(), "target/site/unit/surefire-1183/acceptance-test.html");
+        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-1183/acceptance-test.html");
 
         assertTrue(report.exists());
 

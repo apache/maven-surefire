@@ -20,16 +20,16 @@ package org.apache.maven.plugin.surefire.extensions;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 
 import org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.plugin.surefire.report.DirectConsoleOutput;
 import org.apache.maven.surefire.extensions.ConsoleOutputReportEventListener;
 import org.apache.maven.surefire.extensions.ConsoleOutputReporter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
  * tests for {@link SurefireConsoleOutputReporter} and {@link JUnit5ConsoleOutputReporter}.
@@ -132,5 +132,24 @@ public class ConsoleOutputReporterTest {
         assertThat((Integer) getInternalState(listener2, "forkNumber")).isSameAs(forkNumber);
         assertThat((String) getInternalState(listener2, "encoding")).isSameAs(encoding);
         assertThat((String) getInternalState(listener2, "reportEntryName")).isNull();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return (T) field.get(target);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

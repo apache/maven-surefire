@@ -27,16 +27,19 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.booter.KeyValueSource;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.list;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the insertion-order preserving properties collection
  */
-public class SurefirePropertiesTest extends TestCase {
+public class SurefirePropertiesTest {
 
+    @Test
     public void testKeys() throws Exception {
         SurefireProperties orderedProperties = new SurefireProperties((KeyValueSource) null);
         orderedProperties.setProperty("abc", "1");
@@ -49,6 +52,7 @@ public class SurefirePropertiesTest extends TestCase {
         assertEquals("efg", keys.nextElement());
     }
 
+    @Test
     public void testKeysReinsert() throws Exception {
         SurefireProperties orderedProperties = new SurefireProperties((KeyValueSource) null);
         orderedProperties.setProperty("abc", "1");
@@ -64,6 +68,7 @@ public class SurefirePropertiesTest extends TestCase {
         assertEquals("xyz", keys.nextElement());
     }
 
+    @Test
     public void testConstructWithOther() {
         Properties src = new Properties();
         src.setProperty("a", "1");
@@ -89,6 +94,7 @@ public class SurefirePropertiesTest extends TestCase {
         assertEquals("b", it.next());
     }
 
+    @Test
     public void testPutAll() {
         Properties src = new Properties();
         src.setProperty("a", "1");
@@ -115,6 +121,7 @@ public class SurefirePropertiesTest extends TestCase {
         assertEquals("b", it.next());
     }
 
+    @Test
     public void testCopyPropertiesFrom() {
         SurefireProperties orderedProperties = new SurefireProperties();
         Map<String, String> properties = new LinkedHashMap<>();

@@ -95,7 +95,6 @@
     <plexus-java-version>1.5.2</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.4.2</mavenSharedUtilsVersion>
-    <powermockVersion>2.0.9</powermockVersion>
     <jacocoVersion>0.8.14</jacocoVersion>
     <testngVersion>5.11</testngVersion>
     <maven.surefire.scm.devConnection>scm:git:https://github.com/apache/maven-surefire.git</maven.surefire.scm.devConnection>
@@ -231,42 +230,16 @@
         <artifactId>mockito-core</artifactId>
         <version>3.12.4</version>
       </dependency>
-      <!-- PowerMock@Java9 and Java11
-      org.powermock for java9, see https://github.com/powermock/powermock/issues/783
-      These dependencies substitute org.powermock:powermock-mockito-release-full:jar:full:1.6.4 in java9.
-      -->
       <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-core</artifactId>
-        <version>${powermockVersion}</version>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-inline</artifactId>
+        <version>3.12.4</version>
       </dependency>
       <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermockVersion}</version>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>3.12.4</version>
       </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>${powermockVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-reflect</artifactId>
-        <version>${powermockVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.javassist</groupId>
-        <artifactId>javassist</artifactId>
-        <version>3.30.2-GA</version>
-      </dependency>
-      <!-- END: PowerMock@Java9 -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>

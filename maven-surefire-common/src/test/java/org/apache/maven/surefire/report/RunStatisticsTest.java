@@ -18,12 +18,15 @@
  */
 package org.apache.maven.surefire.report;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  */
-public class RunStatisticsTest extends TestCase {
+public class RunStatisticsTest {
+    @Test
     public void testSetRunStatistics() {
         RunStatistics statistics = new RunStatistics();
         statistics.set(10, 5, 2, 1, 2);

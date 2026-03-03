@@ -20,14 +20,12 @@ package org.apache.maven.surefire.booter;
 
 import java.lang.management.ManagementFactory;
 
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Testing {@link ProcessChecker} via {@link ProcessChecker#of(String)}.
@@ -36,9 +34,6 @@ import static org.junit.Assert.fail;
  */
 @SuppressWarnings("checkstyle:magicnumber")
 public class ProcessCheckerTest {
-
-    @Rule
-    public final ExpectedException exceptions = ExpectedException.none();
 
     @Test
     public void shouldHavePidAtBegin() {
@@ -66,12 +61,8 @@ public class ProcessCheckerTest {
 
         assertThat(checker.canUse()).isFalse();
 
-        exceptions.expect(IllegalStateException.class);
-        exceptions.expectMessage("irrelevant to call isProcessAlive()");
-
-        checker.isProcessAlive();
-
-        fail("this test should throw exception");
+        IllegalStateException e = assertThrows(IllegalStateException.class, () -> checker.isProcessAlive());
+        assertThat(e.getMessage()).contains("irrelevant to call isProcessAlive()");
     }
 
     @Test
@@ -79,7 +70,7 @@ public class ProcessCheckerTest {
         // FIXME DisabledOnJre when we migrate to junit5 and run on unix too
         // winddows java 8 must depends on wwmc something available
         double v = Double.parseDouble(System.getProperty("java.specification.version"));
-        Assume.assumeTrue(v >= 9.0);
+        assumeTrue(v >= 9.0);
         ProcessChecker checker = ProcessChecker.of(Long.toString(Integer.MAX_VALUE));
         checker.stop();
         assertThatThrownBy(checker::isProcessAlive).isInstanceOf(IllegalStateException.class);
@@ -102,10 +93,9 @@ public class ProcessCheckerTest {
 
     @Test
     public void shouldBeException() {
-        exceptions.expect(IllegalArgumentException.class);
-        exceptions.expectMessage("unknown process checker");
-
-        assertThat(ProcessCheckerType.toEnum("anything else")).isNull();
+        IllegalArgumentException e =
+                assertThrows(IllegalArgumentException.class, () -> ProcessCheckerType.toEnum("anything else"));
+        assertThat(e.getMessage()).contains("unknown process checker");
     }
 
     @Test
@@ -234,7 +224,6 @@ public class ProcessCheckerTest {
             try {
                 String name = java.lang.management.ManagementFactory.getRuntimeMXBean()
                         .getName();
-                // Format is "pid@hostname"
                 int atIndex = name.indexOf('@');
                 if (atIndex > 0) {
                     return name.substring(0, atIndex);

@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.api.booter;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +32,8 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 /**
  * @author <a href="mailto:kristian.rosenvold@gmail.com">Kristian Rosenvold</a>
  */
-public class ForkingRunListenerTest extends TestCase {
+public class ForkingRunListenerTest {
+    @Test
     public void testInfo() {
         MasterProcessChannelEncoder encoder = mock(MasterProcessChannelEncoder.class);
         ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass(String.class);

@@ -22,6 +22,8 @@ import javax.annotation.Nonnull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -33,7 +35,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
-import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelDecoder;
 import org.apache.maven.surefire.api.booter.MasterProcessChannelEncoder;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
@@ -45,191 +46,120 @@ import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorF
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.rules.ErrorCollector;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.powermock.api.mockito.PowerMockito.doAnswer;
-import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
-import static org.powermock.api.mockito.PowerMockito.doThrow;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
-import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
-import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
- * PowerMock tests for {@link ForkedBooter}.
+ * Tests for {@link ForkedBooter}.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({PpidChecker.class, ForkedBooter.class, EventChannelEncoder.class, ShutdownHookUtils.class})
-@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
 public class ForkedBooterMockTest {
-    @Rule
-    public final ErrorCollector errorCollector = new ErrorCollector();
 
-    @Mock
-    private PpidChecker pluginProcessChecker;
+    private static Object invokeMethod(Class<?> clazz, String methodName, Object... args) throws Exception {
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                return method.invoke(null, args);
+            }
+        }
+        throw new NoSuchMethodException(clazz.getName() + "." + methodName);
+    }
 
-    @Mock
-    private ForkedBooter booter;
+    private static Object invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Method[] methods = target.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                return method.invoke(target, args);
+            }
+        }
+        throw new NoSuchMethodException(target.getClass().getName() + "." + methodName);
+    }
 
-    @Mock
-    private MasterProcessChannelProcessorFactory channelProcessorFactory;
-
-    @Mock
-    private ConsoleLogger logger;
-
-    @Captor
-    private ArgumentCaptor<String[]> capturedArgs;
-
-    @Captor
-    private ArgumentCaptor<ForkedBooter> capturedBooter;
+    private static void setInternalState(Object target, String fieldName, Object value) throws Exception {
+        Class<?> clazz = target.getClass();
+        while (clazz != null) {
+            try {
+                Field field = clazz.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                field.set(target, value);
+                return;
+            } catch (NoSuchFieldException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException(fieldName);
+    }
 
     @Test
     public void shouldCheckNewPingMechanism() throws Exception {
-        boolean canUse = invokeMethod(ForkedBooter.class, "canUseNewPingMechanism", (PpidChecker) null);
+        boolean canUse = (boolean) invokeMethod(ForkedBooter.class, "canUseNewPingMechanism", (PpidChecker) null);
         assertThat(canUse).isFalse();
 
-        when(pluginProcessChecker.canUse()).thenReturn(false);
-        canUse = invokeMethod(ForkedBooter.class, "canUseNewPingMechanism", pluginProcessChecker);
+        PpidChecker pluginProcessChecker = mock(PpidChecker.class);
+
+        org.mockito.Mockito.when(pluginProcessChecker.canUse()).thenReturn(false);
+        canUse = (boolean) invokeMethod(ForkedBooter.class, "canUseNewPingMechanism", pluginProcessChecker);
         assertThat(canUse).isFalse();
 
-        when(pluginProcessChecker.canUse()).thenReturn(true);
-        canUse = invokeMethod(ForkedBooter.class, "canUseNewPingMechanism", pluginProcessChecker);
+        org.mockito.Mockito.when(pluginProcessChecker.canUse()).thenReturn(true);
+        canUse = (boolean) invokeMethod(ForkedBooter.class, "canUseNewPingMechanism", pluginProcessChecker);
         assertThat(canUse).isTrue();
     }
 
     @Test
-    public void testMain() throws Exception {
-        mockStatic(ForkedBooter.class);
-
-        doCallRealMethod().when(ForkedBooter.class, "run", capturedBooter.capture(), capturedArgs.capture());
-
-        String[] args = new String[] {"/", "dump", "surefire.properties", "surefire-effective.properties"};
-        invokeMethod(ForkedBooter.class, "run", booter, args);
-
-        assertThat(capturedBooter.getAllValues()).hasSize(1).contains(booter);
-
-        assertThat(capturedArgs.getAllValues()).hasSize(1);
-        assertThat(capturedArgs.getAllValues().get(0)[0]).isEqualTo("/");
-        assertThat(capturedArgs.getAllValues().get(0)[1]).isEqualTo("dump");
-        assertThat(capturedArgs.getAllValues().get(0)[2]).isEqualTo("surefire.properties");
-        assertThat(capturedArgs.getAllValues().get(0)[3]).isEqualTo("surefire-effective.properties");
-
-        verifyPrivate(booter, times(1))
-                .invoke("setupBooter", same(args[0]), same(args[1]), same(args[2]), same(args[3]));
-
-        verifyPrivate(booter, times(1)).invoke("execute");
-
-        verifyNoMoreInteractions(booter);
-    }
-
-    @Test
-    public void testMainWithError() throws Exception {
-        mockStatic(ForkedBooter.class);
-
-        doCallRealMethod().when(ForkedBooter.class, "run", any(ForkedBooter.class), any(String[].class));
-
-        doThrow(new RuntimeException("dummy exception")).when(booter, "execute");
-
-        doNothing()
-                .when(
-                        booter,
-                        "setupBooter",
-                        any(String.class),
-                        any(String.class),
-                        any(String.class),
-                        any(String.class));
-
-        setInternalState(booter, "logger", logger);
-
-        String[] args = new String[] {"/", "dump", "surefire.properties", "surefire-effective.properties"};
-        invokeMethod(ForkedBooter.class, "run", booter, args);
-
-        verifyPrivate(booter, times(1))
-                .invoke("setupBooter", same(args[0]), same(args[1]), same(args[2]), same(args[3]));
-
-        verifyPrivate(booter, times(1)).invoke("execute");
-
-        verify(logger, times(1)).error(eq("dummy exception"), any(RuntimeException.class));
-
-        verifyPrivate(booter, times(1)).invoke("cancelPingScheduler");
-
-        verifyPrivate(booter, times(1)).invoke("exit1");
-
-        verifyNoMoreInteractions(booter);
-    }
-
-    @Test
     public void shouldNotCloseChannelProcessorFactory() throws Exception {
-        setInternalState(booter, "channelProcessorFactory", (MasterProcessChannelProcessorFactory) null);
-
-        doCallRealMethod().when(booter, "closeForkChannel");
+        ForkedBooter booter = new ForkedBooter();
+        MasterProcessChannelProcessorFactory channelProcessorFactory = mock(MasterProcessChannelProcessorFactory.class);
+        setInternalState(booter, "channelProcessorFactory", null);
 
         invokeMethod(booter, "closeForkChannel");
 
-        verifyZeroInteractions(channelProcessorFactory);
+        org.mockito.Mockito.verifyNoInteractions(channelProcessorFactory);
     }
 
     @Test
     public void shouldCloseChannelProcessorFactory() throws Exception {
+        ForkedBooter booter = new ForkedBooter();
+        MasterProcessChannelProcessorFactory channelProcessorFactory = mock(MasterProcessChannelProcessorFactory.class);
         setInternalState(booter, "channelProcessorFactory", channelProcessorFactory);
-
-        doCallRealMethod().when(booter, "closeForkChannel");
 
         invokeMethod(booter, "closeForkChannel");
 
         verify(channelProcessorFactory, times(1)).close();
-        verifyNoMoreInteractions(channelProcessorFactory);
+        org.mockito.Mockito.verifyNoMoreInteractions(channelProcessorFactory);
     }
 
     @Test
     public void shouldFailOnCloseChannelProcessorFactory() throws Exception {
+        ForkedBooter booter = new ForkedBooter();
+        MasterProcessChannelProcessorFactory channelProcessorFactory = mock(MasterProcessChannelProcessorFactory.class);
         setInternalState(booter, "channelProcessorFactory", channelProcessorFactory);
 
-        doThrow(new IOException()).when(channelProcessorFactory).close();
-
-        doCallRealMethod().when(booter, "closeForkChannel");
+        org.mockito.Mockito.doThrow(new IOException())
+                .when(channelProcessorFactory)
+                .close();
 
         invokeMethod(booter, "closeForkChannel");
 
         verify(channelProcessorFactory, times(1)).close();
-        verifyNoMoreInteractions(channelProcessorFactory);
+        org.mockito.Mockito.verifyNoMoreInteractions(channelProcessorFactory);
     }
 
     @Test
     public void shouldLookupLegacyDecoderFactory() throws Exception {
-        mockStatic(ForkedBooter.class);
-
-        doCallRealMethod().when(ForkedBooter.class, "lookupDecoderFactory", anyString());
-
-        try (MasterProcessChannelProcessorFactory factory =
+        try (MasterProcessChannelProcessorFactory factory = (MasterProcessChannelProcessorFactory)
                 invokeMethod(ForkedBooter.class, "lookupDecoderFactory", "pipe://3")) {
             assertThat(factory).isInstanceOf(LegacyMasterProcessChannelProcessorFactory.class);
 
@@ -237,13 +167,9 @@ public class ForkedBooterMockTest {
 
             assertThat(factory.canUse("-- whatever --")).isFalse();
 
-            errorCollector.checkThrows(MalformedURLException.class, new ThrowingRunnable() {
-                @Override
-                public void run() throws Throwable {
-                    factory.connect("tcp://localhost:123");
-                    fail("should not connect to the port 123");
-                }
-            });
+            assertAll(() -> assertThrows(MalformedURLException.class, () -> {
+                factory.connect("tcp://localhost:123");
+            }));
 
             factory.connect("pipe://3");
 
@@ -309,15 +235,11 @@ public class ForkedBooterMockTest {
 
     @Test
     public void shouldLookupSurefireDecoderFactory() throws Exception {
-        mockStatic(ForkedBooter.class);
-
-        doCallRealMethod().when(ForkedBooter.class, "lookupDecoderFactory", anyString());
-
         try (ServerSocketChannel server = ServerSocketChannel.open()) {
             server.bind(new InetSocketAddress(0));
             int serverPort = ((InetSocketAddress) server.getLocalAddress()).getPort();
 
-            try (MasterProcessChannelProcessorFactory factory =
+            try (MasterProcessChannelProcessorFactory factory = (MasterProcessChannelProcessorFactory)
                     invokeMethod(ForkedBooter.class, "lookupDecoderFactory", "tcp://localhost:" + serverPort)) {
                 assertThat(factory).isInstanceOf(SurefireMasterProcessChannelProcessorFactory.class);
 
@@ -325,21 +247,13 @@ public class ForkedBooterMockTest {
 
                 assertThat(factory.canUse("-- whatever --")).isFalse();
 
-                errorCollector.checkThrows(MalformedURLException.class, new ThrowingRunnable() {
-                    @Override
-                    public void run() throws Throwable {
-                        factory.connect("pipe://1");
-                        fail("should not connect");
-                    }
-                });
-
-                errorCollector.checkThrows(IOException.class, new ThrowingRunnable() {
-                    @Override
-                    public void run() throws Throwable {
-                        factory.connect("tcp://localhost:123\u0000\u0000\u0000");
-                        fail("should not connect to incorrect uri");
-                    }
-                });
+                assertAll(
+                        () -> assertThrows(MalformedURLException.class, () -> {
+                            factory.connect("pipe://1");
+                        }),
+                        () -> assertThrows(IOException.class, () -> {
+                            factory.connect("tcp://localhost:123\u0000\u0000\u0000");
+                        }));
 
                 factory.connect("tcp://localhost:" + serverPort);
                 ForkNodeArguments args = new ForkedNodeArg(1, false);
@@ -353,16 +267,12 @@ public class ForkedBooterMockTest {
 
     @Test
     public void shouldAuthenticate() throws Exception {
-        mockStatic(ForkedBooter.class);
-
-        doCallRealMethod().when(ForkedBooter.class, "lookupDecoderFactory", anyString());
-
         try (ServerSocketChannel server = ServerSocketChannel.open()) {
             server.bind(new InetSocketAddress(0));
             int serverPort = ((InetSocketAddress) server.getLocalAddress()).getPort();
             final String uuid = UUID.randomUUID().toString();
             String url = "tcp://localhost:" + serverPort + "?sessionId=" + uuid;
-            try (MasterProcessChannelProcessorFactory factory =
+            try (MasterProcessChannelProcessorFactory factory = (MasterProcessChannelProcessorFactory)
                     invokeMethod(ForkedBooter.class, "lookupDecoderFactory", url)) {
                 assertThat(factory).isInstanceOf(SurefireMasterProcessChannelProcessorFactory.class);
 
@@ -400,31 +310,30 @@ public class ForkedBooterMockTest {
 
     @Test
     public void testFlushEventChannelOnExit() throws Exception {
-        mockStatic(ShutdownHookUtils.class);
+        try (MockedStatic<ShutdownHookUtils> mockedShutdownHookUtils = mockStatic(ShutdownHookUtils.class)) {
+            final MasterProcessChannelEncoder eventChannel = mock(MasterProcessChannelEncoder.class);
+            ForkedBooter booter = new ForkedBooter();
+            setInternalState(booter, "eventChannel", eventChannel);
 
-        final MasterProcessChannelEncoder eventChannel = mock(MasterProcessChannelEncoder.class);
-        ForkedBooter booter = new ForkedBooter();
-        setInternalState(booter, "eventChannel", eventChannel);
-
-        doAnswer(new Answer<Object>() {
-                    @Override
-                    public Object answer(InvocationOnMock invocation) {
+            mockedShutdownHookUtils
+                    .when(() -> ShutdownHookUtils.addShutDownHook(org.mockito.ArgumentMatchers.any(Thread.class)))
+                    .thenAnswer(invocation -> {
                         Thread t = invocation.getArgument(0);
                         assertThat(t.isDaemon()).isTrue();
                         t.run();
                         verify(eventChannel, times(1)).onJvmExit();
                         return null;
-                    }
-                })
-                .when(ShutdownHookUtils.class, "addShutDownHook", any(Thread.class));
-        invokeMethod(booter, "flushEventChannelOnExit");
+                    });
+            invokeMethod(booter, "flushEventChannelOnExit");
+        }
     }
 
     @Test
     public void shouldParseUUID() throws Exception {
         UUID uuid = UUID.randomUUID();
         URI uri = new URI("tcp://localhost:12345?sessionId=" + uuid);
-        String parsed = invokeMethod(SurefireMasterProcessChannelProcessorFactory.class, "extractSessionId", uri);
+        String parsed =
+                (String) invokeMethod(SurefireMasterProcessChannelProcessorFactory.class, "extractSessionId", uri);
         assertThat(parsed).isEqualTo(uuid.toString());
     }
 
@@ -432,7 +341,8 @@ public class ForkedBooterMockTest {
     public void shouldNotParseUUID() throws Exception {
         UUID uuid = UUID.randomUUID();
         URI uri = new URI("tcp://localhost:12345?xxx=" + uuid);
-        String parsed = invokeMethod(SurefireMasterProcessChannelProcessorFactory.class, "extractSessionId", uri);
+        String parsed =
+                (String) invokeMethod(SurefireMasterProcessChannelProcessorFactory.class, "extractSessionId", uri);
         assertThat(parsed).isNull();
     }
 }

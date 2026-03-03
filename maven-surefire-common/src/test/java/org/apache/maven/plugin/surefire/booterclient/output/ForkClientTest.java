@@ -64,7 +64,7 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.channels.Channels.newChannel;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_DEBUG;
@@ -85,6 +85,7 @@ import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTER
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_CONSOLE_ERROR;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -104,14 +105,16 @@ import static org.mockito.Mockito.when;
 public class ForkClientTest {
     private static final int ELAPSED_TIME = 102;
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldFailOnNPE() {
-        String cwd = System.getProperty("user.dir");
-        File target = new File(cwd, "target");
-        DefaultReporterFactory factory = mock(DefaultReporterFactory.class);
-        when(factory.getReportsDirectory()).thenReturn(new File(target, "surefire-reports"));
-        ForkClient client = new ForkClient(factory, null, 0);
-        client.handleEvent(null);
+        assertThrows(NullPointerException.class, () -> {
+            String cwd = System.getProperty("user.dir");
+            File target = new File(cwd, "target");
+            DefaultReporterFactory factory = mock(DefaultReporterFactory.class);
+            when(factory.getReportsDirectory()).thenReturn(new File(target, "surefire-reports"));
+            ForkClient client = new ForkClient(factory, null, 0);
+            client.handleEvent(null);
+        });
     }
 
     @Test

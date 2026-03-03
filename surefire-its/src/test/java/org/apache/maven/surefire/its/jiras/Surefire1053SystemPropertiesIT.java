@@ -21,9 +21,9 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -52,11 +52,11 @@ public class Surefire1053SystemPropertiesIT extends SurefireJUnit4IntegrationTes
 
         for (String line : validator.loadLogLines()) {
             assertFalse(
-                    "no warning for file.encoding not in argLine",
-                    line.contains("file.encoding cannot be set as system property, use <argLine>"));
+                    line.contains("file.encoding cannot be set as system property, use <argLine>"),
+                    "no warning for file.encoding not in argLine");
             assertFalse(
-                    "no warning for double definition of file.encoding",
-                    line.contains("The system property file.encoding is configured twice!"));
+                    line.contains("The system property file.encoding is configured twice!"),
+                    "no warning for double definition of file.encoding");
         }
     }
 

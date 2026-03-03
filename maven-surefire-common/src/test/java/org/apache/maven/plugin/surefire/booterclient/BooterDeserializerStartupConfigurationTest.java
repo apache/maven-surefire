@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.cli.CommandLineOption;
@@ -46,20 +45,25 @@ import org.apache.maven.surefire.booter.ClasspathConfiguration;
 import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.REACTOR_FAIL_FAST;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.SHOW_ERRORS;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Performs roundtrip testing of serialization/deserialization of The StartupConfiguration
  *
  * @author Kristian Rosenvold
  */
-public class BooterDeserializerStartupConfigurationTest extends TestCase {
+public class BooterDeserializerStartupConfigurationTest {
 
     private static int idx = 0;
 
@@ -69,7 +73,7 @@ public class BooterDeserializerStartupConfigurationTest extends TestCase {
 
     private final List<CommandLineOption> cli = Arrays.asList(LOGGING_LEVEL_DEBUG, SHOW_ERRORS, REACTOR_FAIL_FAST);
 
-    @Before
+    @BeforeEach
     public void setupDirectories() throws IOException {
         File target = new File(System.getProperty("user.dir"), "target");
         basedir = new File(target, "BooterDeserializerProviderConfigurationTest-" + ++idx);
@@ -77,15 +81,17 @@ public class BooterDeserializerStartupConfigurationTest extends TestCase {
         assertTrue(basedir.mkdirs());
     }
 
-    @After
+    @AfterEach
     public void deleteDirectories() throws IOException {
         FileUtils.deleteDirectory(basedir);
     }
 
+    @Test
     public void testProvider() throws IOException {
         assertEquals("com.provider", getReloadedStartupConfiguration().getProviderClassName());
     }
 
+    @Test
     public void testClassPathConfiguration() throws IOException {
         AbstractPathConfiguration reloadedClasspathConfiguration =
                 getReloadedStartupConfiguration().getClasspathConfiguration();
@@ -94,6 +100,7 @@ public class BooterDeserializerStartupConfigurationTest extends TestCase {
         assertCpConfigEquals(classpathConfiguration, (ClasspathConfiguration) reloadedClasspathConfiguration);
     }
 
+    @Test
     public void testProcessChecker() throws IOException {
         assertEquals(ALL, getReloadedStartupConfiguration().getProcessChecker());
     }
@@ -109,10 +116,12 @@ public class BooterDeserializerStartupConfigurationTest extends TestCase {
         assertEquals(expectedConfiguration.getTestClasspath(), actualConfiguration.getTestClasspath());
     }
 
+    @Test
     public void testClassLoaderConfiguration() throws IOException {
         assertFalse(getReloadedStartupConfiguration().isManifestOnlyJarRequestedAndUsable());
     }
 
+    @Test
     public void testClassLoaderConfigurationTrues() throws IOException {
         final StartupConfiguration testStartupConfiguration =
                 getTestStartupConfiguration(getManifestOnlyJarForkConfiguration());
@@ -120,10 +129,12 @@ public class BooterDeserializerStartupConfigurationTest extends TestCase {
         assertEquals(current, saveAndReload(testStartupConfiguration).isManifestOnlyJarRequestedAndUsable());
     }
 
+    @Test
     public void testProcessCheckerAll() throws IOException {
         assertEquals(ALL, getReloadedStartupConfiguration().getProcessChecker());
     }
 
+    @Test
     public void testProcessCheckerNull() throws IOException {
         StartupConfiguration startupConfiguration = new StartupConfiguration(
                 "com.provider",

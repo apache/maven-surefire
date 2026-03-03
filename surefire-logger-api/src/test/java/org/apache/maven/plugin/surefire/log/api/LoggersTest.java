@@ -21,10 +21,11 @@ package org.apache.maven.plugin.surefire.log.api;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -62,9 +63,9 @@ public class LoggersTest {
                 .contains("at " + getClass().getName() + ".testPrintStreamLogger(LoggersTest.java");
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void shouldThrowNPE() {
-        new ConsoleLoggerDecorator(null);
+        assertThrows(NullPointerException.class, () -> new ConsoleLoggerDecorator(null));
     }
 
     @Test

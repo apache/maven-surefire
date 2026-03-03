@@ -34,7 +34,7 @@ import org.apache.maven.surefire.booter.ModularClasspath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.io.File.pathSeparatorChar;
 import static java.io.File.separator;

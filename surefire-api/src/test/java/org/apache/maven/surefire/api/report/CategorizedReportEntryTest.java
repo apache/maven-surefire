@@ -18,13 +18,16 @@
  */
 package org.apache.maven.surefire.api.report;
 
+import org.junit.jupiter.api.Test;
+
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Ashley Scopes
  */
 public class CategorizedReportEntryTest {
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsNull() {
         String className = "ClassName";
         String classText = null;
@@ -34,6 +37,7 @@ public class CategorizedReportEntryTest {
         assertEquals("ClassName (of The Group Name)", reportEntry.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsEmpty() {
         String className = "ClassName";
         String classText = "";
@@ -43,6 +47,7 @@ public class CategorizedReportEntryTest {
         assertEquals("ClassName (of The Group Name)", reportEntry.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsBlank() {
         String className = "ClassName";
         String classText = "  ";
@@ -52,6 +57,7 @@ public class CategorizedReportEntryTest {
         assertEquals("ClassName (of The Group Name)", reportEntry.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsProvided() {
         String className = "ClassName";
         String classText = "The Class Name";

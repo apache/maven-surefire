@@ -21,7 +21,7 @@ under the License.
   "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
   "https://checkstyle.org/dtds/suppressions_1_2.dtd">
  <suppressions>
-  <suppress checks="ParameterNumberCheck" files="CategorizedReportEntry.java|SimpleReportEntry.java|SurefireReportRenderer.java|AbstractSurefireMojo.java|ModularClasspathForkConfiguration.java|EventDecoder.java|ForkStarter.java|StatelessXmlReporter.java|TestNGExecutor.java|BooterSerializer.java|DefaultStatelessReportMojoConfiguration.java" />
+  <suppress checks="ParameterNumberCheck" files="CategorizedReportEntry.java|SimpleReportEntry.java|SurefireReportRenderer.java|AbstractSurefireMojo.java|ModularClasspathForkConfiguration.java|EventDecoder.java|ForkStarter.java|StatelessXmlReporter.java|TestNGExecutor.java|BooterSerializer.java|DefaultStatelessReportMojoConfiguration.java|AbstractFailFastIT.java" />
   <suppress checks="MethodLengthCheck" files="AbstractStreamEncoderTest.java|EventChannelEncoderTest.java|EventDecoderTest.java|AbstractSurefireMojoTest.java|ForkStarter.java|AbstractSurefireMojoJava7PlusTest.java" />
   <suppress checks="UnusedLocalVariableCheck" files="PpidCheckerTest.java|ATestClass.java|E2ETest.java|AbstractSurefireMojo.java|AbstractStreamDecoderTest.java" />
   <suppress checks="AvoidStarImportCheck" files="BooterDeserializer.java|TestSuiteXmlParserTest.java" />

@@ -20,12 +20,11 @@ package org.apache.maven.surefire.booter;
 
 import java.lang.management.ManagementFactory;
 
-import org.junit.Assume;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Tests for {@link ProcessHandleChecker}.
@@ -37,18 +36,17 @@ public class ProcessHandleCheckerTest {
     @Test
     public void shouldReportAvailableOnJava9Plus() {
         // This test runs on modern JVMs, so isAvailable() should return true
-        // FIXME DisabledOnJre when we migrate to junit5
         double v = Double.parseDouble(System.getProperty("java.specification.version"));
-        Assume.assumeTrue(v >= 9.0);
+        assumeTrue(v >= 9.0);
         assertThat(ProcessHandleChecker.isAvailable()).isTrue();
     }
 
     @Test
     public void shouldDetectCurrentProcessAsAlive() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
@@ -59,7 +57,7 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldDetectNonExistentProcessAsNotUsable() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         // Use an invalid PID that's unlikely to exist
         ProcessHandleChecker checker = new ProcessHandleChecker("999999999");
@@ -69,10 +67,10 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldStopChecker() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
@@ -87,10 +85,10 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldDestroyActiveCommands() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
@@ -104,10 +102,10 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnMeaningfulToString() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
@@ -121,10 +119,10 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnToStringWithStartInstantAfterCanUse() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 
@@ -136,10 +134,10 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldCreateViaFactoryMethod() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessChecker checker = ProcessChecker.of(currentPid);
 
@@ -162,10 +160,10 @@ public class ProcessHandleCheckerTest {
 
     @Test
     public void shouldReturnProcessInfoAfterCanUse() {
-        assumeTrue("ProcessHandle not available", ProcessHandleChecker.isAvailable());
+        assumeTrue(ProcessHandleChecker.isAvailable(), "ProcessHandle not available");
 
         String currentPid = getCurrentPid();
-        assumeTrue("Could not determine current PID", currentPid != null);
+        assumeTrue(currentPid != null, "Could not determine current PID");
 
         ProcessHandleChecker checker = new ProcessHandleChecker(currentPid);
 

@@ -24,27 +24,35 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author Kristian Rosenvold
  */
-public class ClasspathTest extends TestCase {
+public class ClasspathTest {
     private static final String DUMMY_PROPERTY_NAME = "dummyProperty";
 
     private static final String DUMMY_URL_1 = "foo.jar";
 
     private static final String DUMMY_URL_2 = "bar.jar";
 
+    @Test
     public void testShouldWriteEmptyPropertyForEmptyClasspath() {
         Classpath classpath = Classpath.emptyClasspath();
         classpath.writeToSystemProperty(DUMMY_PROPERTY_NAME);
         assertEquals("", System.getProperty(DUMMY_PROPERTY_NAME));
     }
 
+    @Test
     public void testShouldWriteSeparatedElementsAsSystemProperty() {
         Classpath classpath =
                 Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_2);
@@ -54,17 +62,20 @@ public class ClasspathTest extends TestCase {
                 System.getProperty(DUMMY_PROPERTY_NAME));
     }
 
+    @Test
     public void testShouldAddNoDuplicateElements() {
         Classpath classpath =
                 emptyClasspath().addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_1);
         assertClasspathConsistsOfElements(classpath, new String[] {DUMMY_URL_1});
     }
 
+    @Test
     public void testShouldJoinTwoNullClasspaths() {
         Classpath joinedClasspath = Classpath.join(null, null);
         assertEmptyClasspath(joinedClasspath);
     }
 
+    @Test
     public void testShouldHaveAllElementsAfterJoiningTwoDifferentClasspaths() {
         Classpath firstClasspath = Classpath.emptyClasspath();
         Classpath secondClasspath =
@@ -73,6 +84,7 @@ public class ClasspathTest extends TestCase {
         assertClasspathConsistsOfElements(joinedClasspath, new String[] {DUMMY_URL_1, DUMMY_URL_2});
     }
 
+    @Test
     public void testShouldNotHaveDuplicatesAfterJoiningTowClasspathsWithEqualElements() {
         Classpath firstClasspath = Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1);
         Classpath secondClasspath = Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1);
@@ -80,6 +92,7 @@ public class ClasspathTest extends TestCase {
         assertClasspathConsistsOfElements(joinedClasspath, new String[] {DUMMY_URL_1});
     }
 
+    @Test
     public void testShouldNotBeAbleToRemoveElement() {
         try {
             Classpath classpath = createClasspathWithTwoElements();
@@ -92,14 +105,14 @@ public class ClasspathTest extends TestCase {
     private void assertClasspathConsistsOfElements(Classpath classpath, String[] elements) {
         List<String> classpathElements = classpath.getClassPath();
         for (String element : elements) {
-            assertTrue("The element '" + element + " is missing.", classpathElements.contains(element));
+            assertTrue(classpathElements.contains(element), "The element '" + element + " is missing.");
         }
-        assertEquals("Wrong number of classpath elements.", elements.length, classpathElements.size());
+        assertEquals(elements.length, classpathElements.size(), "Wrong number of classpath elements.");
     }
 
     private void assertEmptyClasspath(Classpath classpath) {
         List<String> classpathElements = classpath.getClassPath();
-        assertEquals("Wrong number of classpath elements.", 0, classpathElements.size());
+        assertEquals(0, classpathElements.size(), "Wrong number of classpath elements.");
     }
 
     private Classpath createClasspathWithTwoElements() {
@@ -107,6 +120,7 @@ public class ClasspathTest extends TestCase {
         return classpath.addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_2);
     }
 
+    @Test
     public void testShouldThrowIllegalArgumentExceptionWhenNullIsAddedAsClassPathElementUrl() {
         Classpath classpath = Classpath.emptyClasspath();
         try {
@@ -116,6 +130,7 @@ public class ClasspathTest extends TestCase {
         }
     }
 
+    @Test
     public void testShouldNotAddNullAsClassPathElementUrl() {
         Classpath classpath = Classpath.emptyClasspath();
         try {
@@ -125,6 +140,7 @@ public class ClasspathTest extends TestCase {
         assertEmptyClasspath(classpath);
     }
 
+    @Test
     public void testCloneShouldBeEqual() {
         Classpath classpath =
                 Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_2);
@@ -137,6 +153,7 @@ public class ClasspathTest extends TestCase {
         assertEquals(classpath.hashCode(), classpath.clone().hashCode());
     }
 
+    @Test
     public void testIterator() {
         Classpath classpath =
                 Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_2);
@@ -147,6 +164,7 @@ public class ClasspathTest extends TestCase {
         assertEquals(DUMMY_URL_2, url2);
     }
 
+    @Test
     public void testLog() {
         Classpath classpath =
                 Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_2);
@@ -154,6 +172,7 @@ public class ClasspathTest extends TestCase {
         assertEquals("classpath:  " + DUMMY_URL_1 + "  " + DUMMY_URL_2, log);
     }
 
+    @Test
     public void testCompactLog() {
         Classpath classpath = Classpath.emptyClasspath()
                 .addClassPathElementUrl("root" + File.separatorChar + DUMMY_URL_1)
@@ -162,6 +181,7 @@ public class ClasspathTest extends TestCase {
         assertEquals("classpath:  " + DUMMY_URL_1 + "  " + DUMMY_URL_2, log);
     }
 
+    @Test
     public void testLoadInNewClassLoader() throws Exception {
         Class<?> target = ConsoleLogger.class;
         String thisPath = "/" + target.getName().replace('.', '/') + ".class";
@@ -169,7 +189,7 @@ public class ClasspathTest extends TestCase {
         assertTrue(url.toString().endsWith(thisPath));
         String s = url.toString().replace(thisPath, "").replace("!", "").replace("jar:file:", "file:");
         URI oneClasspath = new URI(s);
-        assertTrue("File: '" + oneClasspath + "' should exist", new File(oneClasspath).exists());
+        assertTrue(new File(oneClasspath).exists(), "File: '" + oneClasspath + "' should exist");
         Classpath classpath = Classpath.emptyClasspath();
         ClassLoader classLoader = classpath
                 .addClassPathElementUrl(new File(oneClasspath).getCanonicalPath())
@@ -180,6 +200,7 @@ public class ClasspathTest extends TestCase {
         assertNotSame(cls, target);
     }
 
+    @Test
     public void testDontLoadInNewClassLoader() throws SurefireExecutionException {
         Class<?> target = ConsoleLogger.class;
 

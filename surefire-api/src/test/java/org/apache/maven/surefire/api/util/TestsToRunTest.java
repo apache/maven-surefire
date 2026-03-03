@@ -22,12 +22,18 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kristian Rosenvold
  */
-public class TestsToRunTest extends TestCase {
+public class TestsToRunTest {
+    @Test
     public void testGetTestSets() {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add(T1.class);
@@ -41,6 +47,7 @@ public class TestsToRunTest extends TestCase {
         assertFalse(it.hasNext());
     }
 
+    @Test
     public void testContainsAtLeast() {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add(T1.class);
@@ -50,6 +57,7 @@ public class TestsToRunTest extends TestCase {
         assertFalse(testsToRun.containsAtLeast(3));
     }
 
+    @Test
     public void testContainsExactly() {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add(T1.class);
@@ -60,6 +68,7 @@ public class TestsToRunTest extends TestCase {
         assertFalse(testsToRun.containsExactly(3));
     }
 
+    @Test
     public void testToRunArray() {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add(T1.class);
@@ -69,6 +78,7 @@ public class TestsToRunTest extends TestCase {
         assertEquals(2, locatedClasses.length);
     }
 
+    @Test
     public void testGetClassByName() {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add(T1.class);
@@ -79,6 +89,7 @@ public class TestsToRunTest extends TestCase {
         assertNull(testsToRun.getClassByName("org.apache.maven.surefire.util.TestsToRunTest$T3"));
     }
 
+    @Test
     public void testTwoIterators() {
         Set<Class<?>> classes = new LinkedHashSet<>();
         classes.add(T1.class);

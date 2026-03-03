@@ -18,8 +18,11 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 /**
  *
@@ -27,7 +30,8 @@ import org.junit.Test;
 @SuppressWarnings("checkstyle:magicnumber")
 public class Surefire1881IT extends SurefireJUnit4IntegrationTestCase {
 
-    @Test(timeout = 60_000L)
+    @Test
+    @Timeout(value = 60_000L, unit = TimeUnit.MILLISECONDS)
     public void test() {
         unpack("/surefire-1881")
                 .executeVerify()

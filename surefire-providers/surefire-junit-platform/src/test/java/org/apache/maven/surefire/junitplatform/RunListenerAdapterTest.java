@@ -18,6 +18,7 @@
  */
 package org.apache.maven.surefire.junitplatform;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
@@ -30,10 +31,10 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGenerator;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.engine.config.DefaultJupiterConfiguration;
 import org.junit.jupiter.engine.config.JupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
@@ -75,7 +76,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
  * Unit tests for {@link RunListenerAdapter}.
@@ -92,7 +92,7 @@ public class RunListenerAdapterTest {
 
     private RunListenerAdapter adapter;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         listener = mock(TestReportListener.class);
         adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
@@ -298,7 +298,7 @@ public class RunListenerAdapterTest {
     }
 
     @Test
-    public void notifiedForUnclassifiedTestIdentifier() {
+    public void notifiedForUnclassifiedTestIdentifier() throws Exception {
         EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("engine"), "engine") {
             @Override
             public Type getType() {
@@ -730,5 +730,12 @@ public class RunListenerAdapterTest {
         public Type getType() {
             return Type.TEST;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return (T) field.get(target);
     }
 }

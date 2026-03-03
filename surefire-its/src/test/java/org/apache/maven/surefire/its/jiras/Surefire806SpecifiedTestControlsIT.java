@@ -19,8 +19,8 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -28,7 +28,7 @@ import org.junit.Test;
 public class Surefire806SpecifiedTestControlsIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
-    @Ignore("since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution")
+    @Disabled("since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution")
     public void singleTestInOneExecutionOfMultiExecutionProject() {
         unpack("/surefire-806-specifiedTests-multi")
                 .setTestToRun("FirstTest")
@@ -38,7 +38,7 @@ public class Surefire806SpecifiedTestControlsIT extends SurefireJUnit4Integratio
     }
 
     @Test
-    @Ignore("since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution")
+    @Disabled("since SUREFIRE-1153 the includes/excludes are overridden by -Dtest or it.test for whatever execution")
     public void twoSpecifiedTestExecutionsInCorrectExecutionBlocks() {
         unpack("/surefire-806-specifiedTests-multi")
                 .setTestToRun("FirstTest,SecondTest")

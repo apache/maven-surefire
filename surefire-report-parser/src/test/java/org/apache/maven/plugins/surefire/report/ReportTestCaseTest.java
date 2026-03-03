@@ -18,45 +18,47 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Jontri
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class ReportTestCaseTest extends TestCase {
+class ReportTestCaseTest {
     private ReportTestCase tCase;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @BeforeEach
+    void setUp() {
         tCase = new ReportTestCase();
     }
 
-    public void testSetName() {
+    @Test
+    void testSetName() {
         tCase.setName("Test Case Name");
 
         assertEquals("Test Case Name", tCase.getName());
     }
 
-    public void testSetTime() {
+    @Test
+    void testSetTime() {
         tCase.setTime(.06f);
 
         assertEquals(.06f, tCase.getTime(), 0.0);
     }
 
-    public void testSetFailure() {
+    @Test
+    void testSetFailure() {
         tCase.setFailure("messageVal", "typeVal");
 
         assertEquals("messageVal", tCase.getFailureMessage());
         assertEquals("typeVal", tCase.getFailureType());
     }
 
-    public void testSetFullName() {
+    @Test
+    void testSetFullName() {
         tCase.setFullName("Test Case Full Name");
 
         assertEquals("Test Case Full Name", tCase.getFullName());

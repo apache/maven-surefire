@@ -20,100 +20,94 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.surefire.api.suite.RunResult;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
  */
-public class SurefireMojoTest extends TestCase {
-    @Rule
-    public final ExpectedException e = ExpectedException.none();
+class SurefireMojoTest {
 
-    public void testDefaultIncludes() {
+    @Test
+    void testDefaultIncludes() {
         assertThat(new SurefireMojo().getDefaultIncludes())
                 .containsOnly("**/Test*.java", "**/*Test.java", "**/*Tests.java", "**/*TestCase.java");
     }
 
-    public void testReportSchemaLocation() {
+    @Test
+    void testReportSchemaLocation() {
         assertThat(new SurefireMojo().getReportSchemaLocation())
                 .isEqualTo("https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd");
     }
 
-    public void testFailIfNoTests() throws Exception {
+    @Test
+    void testFailIfNoTests() throws Exception {
         RunResult runResult = new RunResult(0, 0, 0, 0);
-        try {
-            SurefireMojo mojo = new SurefireMojo();
-            mojo.setFailIfNoTests(true);
-            mojo.handleSummary(runResult, null);
-        } catch (MojoFailureException e) {
-            assertThat(e.getLocalizedMessage())
-                    .isEqualTo("No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)");
-            return;
-        }
-        fail("Expected MojoFailureException with message "
-                + "'No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)'");
+        SurefireMojo mojo = new SurefireMojo();
+        mojo.setFailIfNoTests(true);
+        MojoFailureException e = assertThrows(MojoFailureException.class, () -> mojo.handleSummary(runResult, null));
+        assertThat(e.getLocalizedMessage())
+                .isEqualTo("No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)");
     }
 
-    public void testTestFailure() throws Exception {
+    @Test
+    void testTestFailure() throws Exception {
         RunResult runResult = new RunResult(1, 0, 1, 0);
-        try {
-            SurefireMojo mojo = new SurefireMojo();
-            mojo.handleSummary(runResult, null);
-        } catch (MojoFailureException e) {
-            assertThat(e.getLocalizedMessage())
-                    .isEqualTo("There are test failures.\n\nSee null "
-                            + "for the individual test results.\nSee dump files (if any exist) "
-                            + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
-            return;
-        }
-        fail("Expected MojoFailureException with message "
-                + "'There are test failures.\n\nSee null "
-                + "for the individual test results.\nSee dump files (if any exist) "
-                + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.'");
+        SurefireMojo mojo = new SurefireMojo();
+        MojoFailureException e = assertThrows(MojoFailureException.class, () -> mojo.handleSummary(runResult, null));
+        assertThat(e.getLocalizedMessage())
+                .isEqualTo("There are test failures.\n\nSee null "
+                        + "for the individual test results.\nSee dump files (if any exist) "
+                        + "[date].dump, [date]-jvmRun[N].dump and [date].dumpstream.");
     }
 
-    public void testPluginName() {
+    @Test
+    void testPluginName() {
         assertThat(new SurefireMojo().getPluginName()).isEqualTo("surefire");
     }
 
-    public void testShouldGetNullEnv() {
+    @Test
+    void testShouldGetNullEnv() {
         SurefireMojo mojo = new SurefireMojo();
         assertThat(mojo.getExcludedEnvironmentVariables()).hasSize(0);
     }
 
-    public void testShouldGetEnv() {
+    @Test
+    void testShouldGetEnv() {
         SurefireMojo mojo = new SurefireMojo();
         mojo.setExcludedEnvironmentVariables(new String[] {"ABC", "KLM"});
         assertThat(mojo.getExcludedEnvironmentVariables()).hasSize(2).contains("ABC", "KLM");
     }
 
-    public void testShouldGetPropertyFile() {
+    @Test
+    void testShouldGetPropertyFile() {
         SurefireMojo mojo = new SurefireMojo();
         mojo.setSystemPropertiesFile(new File("testShouldGetPropertyFile"));
         assertThat(mojo.getSystemPropertiesFile()).isEqualTo(new File("testShouldGetPropertyFile"));
     }
 
-    public void testNegativeFailOnFlakeCount() {
+    @Test
+    void testNegativeFailOnFlakeCount() {
         SurefireMojo mojo = new SurefireMojo();
         mojo.setFailOnFlakeCount(-1);
-        e.expect(MojoFailureException.class);
-        e.expectMessage("Parameter \"failOnFlakeCount\" should not be negative.");
+        MojoFailureException e = assertThrows(MojoFailureException.class, () -> mojo.warnIfIllegalFailOnFlakeCount());
+        assertThat(e.getMessage()).contains("Parameter \"failOnFlakeCount\" should not be negative.");
     }
 
-    public void testFailOnFlakeCountWithoutRerun() {
+    @Test
+    void testFailOnFlakeCountWithoutRerun() {
         SurefireMojo mojo = new SurefireMojo();
         mojo.setFailOnFlakeCount(1);
-        e.expect(MojoFailureException.class);
-        e.expectMessage("\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1.");
+        MojoFailureException e = assertThrows(MojoFailureException.class, () -> mojo.warnIfIllegalFailOnFlakeCount());
+        assertThat(e.getMessage()).contains("\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1.");
     }
 
-    public void testShouldHaveJUnit5EnginesFilter() {
+    @Test
+    void testShouldHaveJUnit5EnginesFilter() {
         SurefireMojo mojo = new SurefireMojo();
 
         mojo.setIncludeJUnit5Engines(new String[] {"e1", "e2"});

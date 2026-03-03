@@ -16,25 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.junitplatform;
+package org.apache.maven.surefire.its;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import org.apache.maven.surefire.its.fixture.Settings;
+import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 
 /**
- * Adapt the JUnit4 tests which use only annotations to the JUnit3 test suite.
+ * JUnit test project using multiple method patterns, including wildcards in class and method names.
+ * Uses {@link Settings#JUNIT4_INCLUDES_EXCLUDES}.
  *
- * @since 3.0.0-M4
+ * @see TestMultipleMethodPatternsIT
  */
-public class JUnit47SuiteTest extends TestCase {
-    public static Test suite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JUnit4TestAdapter(JUnitPlatformProviderTest.class));
-        suite.addTest(new JUnit4TestAdapter(RunListenerAdapterTest.class));
-        suite.addTest(new JUnit4TestAdapter(TestMethodFilterTest.class));
-        suite.addTest(new JUnit4TestAdapter(TestPlanScannerFilterTest.class));
-        return suite;
+public class TestMultipleMethodPatternsIncludesExcludesIT extends AbstractTestMultipleMethodPatterns {
+
+    @Override
+    protected Settings getSettings() {
+        return Settings.JUNIT4_INCLUDES_EXCLUDES;
+    }
+
+    @Override
+    protected SurefireLauncher unpack() {
+        return unpack("junit4-multiple-method-patterns", "_" + getSettings().path());
     }
 }

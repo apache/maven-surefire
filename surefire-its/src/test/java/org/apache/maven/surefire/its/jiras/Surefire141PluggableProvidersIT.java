@@ -24,8 +24,8 @@ import java.io.FilenameFilter;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireVerifierException;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Kristian Rosenvold
  */
 public class Surefire141PluggableProvidersIT extends SurefireJUnit4IntegrationTestCase {
-    @BeforeClass
+    @BeforeAll
     public static void installProvider() {
         unpack(Surefire141PluggableProvidersIT.class, "surefire-141-pluggableproviders-provider", "prov")
                 .executeInstall();

@@ -23,11 +23,8 @@ import java.util.Iterator;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.util.Arrays.asList;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -35,8 +32,8 @@ import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashe
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_NO_REUSE;
 import static org.apache.maven.surefire.its.jiras.Surefire1295AttributeJvmCrashesToTestsIT.ForkMode.ONE_FORK_REUSE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * https://issues.apache.org/jira/browse/SUREFIRE-1295
@@ -45,7 +42,6 @@ import static org.junit.Assume.assumeTrue;
  * @author michaeltandy
  * @since 2.20
  */
-@RunWith(Parameterized.class)
 public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4IntegrationTestCase {
     private static final int ONE_FORK_REUSE_THREAD_COUNT = 1;
 
@@ -58,8 +54,7 @@ public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4Inte
         ONE_FORK_REUSE
     }
 
-    @Parameters
-    public static Iterable<Object[]> parameters() {
+    static Iterable<Object[]> parameters() {
         return asList(new Object[][] {
             //                exit() does not stop all Threads immediately,
             //                see https://github.com/michaeltandy/crashjvm/issues/1
@@ -75,16 +70,9 @@ public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4Inte
         });
     }
 
-    @Parameter(0)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String crashStyle;
-
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public ForkMode forkStyle;
-
-    @Test
-    public void test() throws Exception {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    void test(String crashStyle, ForkMode forkStyle) throws Exception {
         SurefireLauncher launcher = unpack("crash-during-test", "_" + crashStyle + "_" + forkStyle.ordinal())
                 .setForkJvm();
 
@@ -118,8 +106,8 @@ public class Surefire1295AttributeJvmCrashesToTestsIT extends SurefireJUnit4Inte
         }
 
         assumeTrue(
-                "crashjvm does not support " + System.getProperty("os.name") + "/" + System.getProperty("os.arch"),
-                osAndArchSupported);
+                osAndArchSupported,
+                "crashjvm does not support " + System.getProperty("os.name") + "/" + System.getProperty("os.arch"));
 
         validator
                 .verifyTextInLog("The forked VM terminated without properly saying "

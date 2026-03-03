@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
@@ -58,19 +57,21 @@ import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class ForkingRunListenerTest extends TestCase {
+public class ForkingRunListenerTest {
     private final ByteArrayOutputStream content, anotherContent;
     private final PrintStream printStream, anotherPrintStream;
 
@@ -87,6 +88,7 @@ public class ForkingRunListenerTest extends TestCase {
         content.reset();
     }
 
+    @Test
     public void testSetStarting() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestSetReportEntry expected = createDefaultReportEntry();
@@ -94,6 +96,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.SET_STARTING, expected);
     }
 
+    @Test
     public void testSetCompleted() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestSetReportEntry expected = createDefaultReportEntry();
@@ -101,6 +104,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.SET_COMPLETED, expected);
     }
 
+    @Test
     public void testStarting() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -108,6 +112,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_STARTING, expected);
     }
 
+    @Test
     public void testSucceeded() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -115,6 +120,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_SUCCEEDED, expected);
     }
 
+    @Test
     public void testFailed() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithStackTrace();
@@ -122,6 +128,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_FAILED, expected);
     }
 
+    @Test
     public void testFailedWithCommaInMessage() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithSpecialMessage("We, the people");
@@ -129,6 +136,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_FAILED, expected);
     }
 
+    @Test
     public void testFailedWithUnicodeEscapeInMessage() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithSpecialMessage("We, \\u0177 people");
@@ -136,6 +144,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_FAILED, expected);
     }
 
+    @Test
     public void testFailure() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -143,6 +152,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_ERROR, expected);
     }
 
+    @Test
     public void testSkipped() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -150,6 +160,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_SKIPPED, expected);
     }
 
+    @Test
     public void testAssumptionFailure() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -157,6 +168,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_ASSUMPTION_FAIL, expected);
     }
 
+    @Test
     public void testConsole() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleLogger directConsoleReporter = standardTestRun.run();
@@ -164,6 +176,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.CONSOLE_INFO, "HeyYou");
     }
 
+    @Test
     public void testConsoleOutput() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestOutputReceiver<TestOutputReportEntry> directConsoleReporter = standardTestRun.run();
@@ -171,6 +184,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.STDOUT, "HeyYou");
     }
 
+    @Test
     public void testSystemProperties() throws Exception {
         StandardTestRun standardTestRun = new StandardTestRun();
         standardTestRun.run();
@@ -205,6 +219,7 @@ public class ForkingRunListenerTest extends TestCase {
         assertThat(forkStreamClient.getTestVmSystemProperties()).containsEntry("k2", "v2");
     }
 
+    @Test
     public void testMultipleEntries() throws Exception {
         StandardTestRun standardTestRun = new StandardTestRun();
         standardTestRun.run();
@@ -233,6 +248,7 @@ public class ForkingRunListenerTest extends TestCase {
         assertEquals(MockReporter.SET_COMPLETED, events.get(3));
     }
 
+    @Test
     public void test2DifferentChannels() throws Exception {
         reset();
         ReportEntry expected = createDefaultReportEntry();

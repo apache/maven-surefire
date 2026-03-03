@@ -24,11 +24,11 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.apache.maven.surefire.api.provider.SurefireProvider;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Slawomir Jaranowski
  */
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProviderDetectorTest {
 
     @Mock
