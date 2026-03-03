@@ -18,9 +18,13 @@
  */
 package org.apache.maven.surefire.report;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-class CaseThatWillFail extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CaseThatWillFail {
+
+    @Test
     public void testThatWillFail() {
         assertEquals("abc", "def");
     }

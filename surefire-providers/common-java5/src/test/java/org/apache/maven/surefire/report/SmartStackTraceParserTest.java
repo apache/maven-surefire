@@ -23,20 +23,24 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import junit.framework.AssertionFailedError;
-import junit.framework.ComparisonFailure;
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.util.internal.DaemonThreadFactory;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 
 import static org.apache.maven.surefire.report.SmartStackTraceParser.findTopmostWithClass;
 import static org.apache.maven.surefire.report.SmartStackTraceParser.focusInsideClass;
 import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceWithFocusOnClassAsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
  */
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-public class SmartStackTraceParserTest extends TestCase {
+public class SmartStackTraceParserTest {
+    @Test
     public void testGetString() {
         ATestClass aTestClass = new ATestClass();
         try {
@@ -49,6 +53,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testGetStringFromNested() {
         OutermostClass aTestClass = new OutermostClass();
         try {
@@ -61,6 +66,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testGetStringWithMethod() {
         OutermostClass aTestClass = new OutermostClass();
         try {
@@ -73,6 +79,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testNestedFailure() {
         ATestClass aTestClass = new ATestClass();
         try {
@@ -85,6 +92,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testNestedNpe() {
         ATestClass aTestClass = new ATestClass();
         try {
@@ -97,6 +105,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testNestedNpeOutsideTest() {
         ATestClass aTestClass = new ATestClass();
         try {
@@ -109,6 +118,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testLongMessageHandling() {
         ATestClass aTestClass = new ATestClass();
         try {
@@ -121,6 +131,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testFailureInBaseClass() {
         ASubClass aTestClass = new ASubClass();
         try {
@@ -132,15 +143,16 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testClassThatWillFail() {
         CaseThatWillFail aTestClass = new CaseThatWillFail();
         try {
             aTestClass.testThatWillFail();
-        } catch (ComparisonFailure e) {
+        } catch (Throwable e) {
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser(CaseThatWillFail.class.getName(), e, null);
             String res = smartStackTraceParser.getString();
-            assertEquals("CaseThatWillFail.testThatWillFail:25 expected:<[abc]> but was:<[def]>", res);
+            assertEquals("CaseThatWillFail.testThatWillFail:29 expected: <abc> but was: <def>", res);
         }
     }
 
@@ -153,6 +165,7 @@ public class SmartStackTraceParserTest extends TestCase {
         return null;
     }
 
+    @Test
     public void testCollections() {
         Throwable aThrownException = getAThrownException();
         List<StackTraceElement> innerMost = focusInsideClass(
@@ -165,17 +178,19 @@ public class SmartStackTraceParserTest extends TestCase {
         assertEquals(TestClass1.InnerBTestClass.class.getName(), outer.getClassName());
     }
 
+    @Test
     public void testAssertionWithNoMessage() {
         try {
             new AssertionNoMessage().testThrowSomething();
-        } catch (ComparisonFailure e) {
+        } catch (Throwable e) {
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser(AssertionNoMessage.class.getName(), e, null);
             String res = smartStackTraceParser.getString();
-            assertEquals("AssertionNoMessage.testThrowSomething:25 expected:<[abc]> but was:<[xyz]>", res);
+            assertEquals("AssertionNoMessage.testThrowSomething:28 expected: <abc> but was: <xyz>", res);
         }
     }
 
+    @Test
     public void testFailWithFail() {
         try {
             new FailWithFail().testThatWillFail();
@@ -183,10 +198,11 @@ public class SmartStackTraceParserTest extends TestCase {
             SmartStackTraceParser smartStackTraceParser =
                     new SmartStackTraceParser(FailWithFail.class.getName(), e, null);
             String res = smartStackTraceParser.getString();
-            assertEquals("FailWithFail.testThatWillFail:25 abc", res);
+            assertEquals("FailWithFail.testThatWillFail:28 abc", res);
         }
     }
 
+    @Test
     public void testCollectorWithNested() {
         try {
             InnerATestClass.testFake();
@@ -202,12 +218,14 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testNonClassNameStacktrace() {
         SmartStackTraceParser smartStackTraceParser =
                 new SmartStackTraceParser("Not a class name", new Throwable("my message"), null);
         assertEquals("my message", smartStackTraceParser.getString());
     }
 
+    @Test
     public void testNullElementInStackTrace() throws Exception {
         ATestClass aTestClass = new ATestClass();
         try {
@@ -223,6 +241,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testSingleNestedWithThread() {
         ExecutionException e = getSingleNested();
         String name = getClass().getName();
@@ -233,6 +252,7 @@ public class SmartStackTraceParserTest extends TestCase {
         assertEquals(stackTraceElements.get(stackTraceElements.size() - 1).getClassName(), name);
     }
 
+    @Test
     public void testDoubleNestedWithThread() {
         ExecutionException e = getDoubleNestedException();
 
@@ -250,6 +270,7 @@ public class SmartStackTraceParserTest extends TestCase {
         assertEquals(stackTraceElements.get(stackTraceElements.size() - 1).getClassName(), name);
     }
 
+    @Test
     public void testStackTraceWithFocusOnClassAsString() {
         try {
             new StackTraceFocusedOnClass.C().c();
@@ -269,6 +290,7 @@ public class SmartStackTraceParserTest extends TestCase {
         }
     }
 
+    @Test
     public void testNullStackTrace() {
         try {
             new ATestClass().aMockedException();

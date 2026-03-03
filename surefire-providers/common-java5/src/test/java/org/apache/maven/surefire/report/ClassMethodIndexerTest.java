@@ -18,15 +18,17 @@
  */
 package org.apache.maven.surefire.report;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class ClassMethodIndexerTest extends TestCase {
+public class ClassMethodIndexerTest {
+    @Test
     public void testNPE() {
         ClassMethodIndexer indexer = new ClassMethodIndexer();
         try {
@@ -37,18 +39,21 @@ public class ClassMethodIndexerTest extends TestCase {
         }
     }
 
+    @Test
     public void testClass() {
         ClassMethodIndexer indexer = new ClassMethodIndexer();
         long index = indexer.indexClass(getClass().getName());
         assertThat(index).isEqualTo(0x0000000100000000L);
     }
 
+    @Test
     public void testClassMethod() {
         ClassMethodIndexer indexer = new ClassMethodIndexer();
         long index = indexer.indexClassMethod(getClass().getName(), "methodName");
         assertThat(index).isEqualTo(0x0000000100000001L);
     }
 
+    @Test
     public void testRun() {
         ClassMethodIndexer indexer = new ClassMethodIndexer();
         long index = indexer.indexClass(getClass().getName());

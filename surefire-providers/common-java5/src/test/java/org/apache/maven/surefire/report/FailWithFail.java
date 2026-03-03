@@ -18,9 +18,12 @@
  */
 package org.apache.maven.surefire.report;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-class FailWithFail extends TestCase {
+import static org.junit.jupiter.api.Assertions.fail;
+
+class FailWithFail {
+    @Test
     public void testThatWillFail() {
         fail("abc");
     }

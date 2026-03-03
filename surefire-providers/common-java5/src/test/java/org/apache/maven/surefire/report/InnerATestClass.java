@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.report;
 
-import junit.framework.Assert;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,11 +28,12 @@ import junit.framework.Assert;
  * To change this template use File | Settings | File Templates.
  */
 class InnerATestClass {
+
     public static void testFake() {
         innerMethod();
     }
 
     private static void innerMethod() {
-        Assert.assertTrue(false);
+        assertTrue(false);
     }
 }

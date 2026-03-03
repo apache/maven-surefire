@@ -18,9 +18,12 @@
  */
 package org.apache.maven.surefire.report;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-class AssertionNoMessage extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class AssertionNoMessage {
+    @Test
     public void testThrowSomething() {
         assertEquals("abc", "xyz");
     }
