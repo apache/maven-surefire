@@ -138,7 +138,8 @@ public class RunListenerAdapterTest {
         assertEquals(MY_TEST_METHOD_NAME + "(String)", entry.getName());
         assertNull(entry.getNameText());
         assertEquals(MyTestClass.class.getName(), entry.getSourceName());
-        assertNull(entry.getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.RunListenerAdapterTest$MyTestClass", entry.getSourceText());
         assertNull(entry.getStackTraceWriter());
     }
 
@@ -234,9 +235,9 @@ public class RunListenerAdapterTest {
         inOrder.verify(listener)
                 .testStarting(new SimpleReportEntry(
                         NORMAL_RUN,
-                        0x0000000100000001L,
+                        4294967297L,
                         MyTestClass.class.getName(),
-                        "parent",
+                        MyTestClass.class.getName(),
                         MY_NAMED_TEST_METHOD_NAME,
                         "dn1"));
         inOrder.verifyNoMoreInteractions();
@@ -247,7 +248,7 @@ public class RunListenerAdapterTest {
         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
+        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
         assertThat(report.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
         assertThat(report.getValue().getNameText()).isEqualTo("dn1");
         assertThat(report.getValue().getElapsed()).isNotNull();
@@ -258,9 +259,9 @@ public class RunListenerAdapterTest {
         inOrder.verify(listener)
                 .testStarting(new SimpleReportEntry(
                         NORMAL_RUN,
-                        0x0000000100000002L,
+                        4294967297L,
                         MyTestClass.class.getName(),
-                        "parent",
+                        MyTestClass.class.getName(),
                         MY_TEST_METHOD_NAME + "(String)",
                         null));
         inOrder.verifyNoMoreInteractions();
@@ -537,7 +538,7 @@ public class RunListenerAdapterTest {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         verify(listener).testStarting(entryCaptor.capture());
         assertEquals(parentDisplay, entryCaptor.getValue().getSourceName());
-        assertNull(entryCaptor.getValue().getSourceText());
+        assertEquals("I am your father", entryCaptor.getValue().getSourceText());
         assertNull(entryCaptor.getValue().getName());
         assertNull(entryCaptor.getValue().getNameText());
     }
@@ -597,7 +598,7 @@ public class RunListenerAdapterTest {
         ReportEntry value = entryCaptor.getValue();
 
         assertEquals(MyTestClass.class.getName(), value.getSourceName());
-        assertNull(value.getSourceText());
+        assertEquals("some display name", value.getSourceText());
         assertEquals("myNamedTestMethod", value.getName());
         assertEquals("some display name", value.getNameText());
     }
