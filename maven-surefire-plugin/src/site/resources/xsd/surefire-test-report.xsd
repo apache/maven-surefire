@@ -128,6 +128,7 @@
       <xs:attribute name="errors" type="xs:string" use="required"/>
       <xs:attribute name="skipped" type="xs:string" use="required"/>
       <xs:attribute name="failures" type="xs:string" use="required"/>
+      <xs:attribute name="flakes" type="xs:string"/>
       <xs:attribute name="group" type="xs:string"/>
     </xs:complexType>
   </xs:element>
