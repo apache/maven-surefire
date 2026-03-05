@@ -29,13 +29,13 @@ public class TestRequest {
 
     private final File testSourceDirectory;
 
-    private final TestListResolver requestedTests;
+    private final TestListResolver testListResolver;
 
     private final int rerunFailingTestsCount;
 
-    public TestRequest(File testSourceDirectory, TestListResolver requestedTests, int rerunFailingTestsCount) {
+    public TestRequest(File testSourceDirectory, TestListResolver testListResolver, int rerunFailingTestsCount) {
         this.testSourceDirectory = testSourceDirectory;
-        this.requestedTests = requestedTests;
+        this.testListResolver = testListResolver;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
     }
 
@@ -54,7 +54,7 @@ public class TestRequest {
      * @return filter
      */
     public TestListResolver getTestListResolver() {
-        return requestedTests;
+        return testListResolver;
     }
 
     /**

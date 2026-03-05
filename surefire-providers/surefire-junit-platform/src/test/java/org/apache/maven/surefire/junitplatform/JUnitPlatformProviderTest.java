@@ -439,17 +439,17 @@ public class JUnitPlatformProviderTest {
 
         assertEquals(2, reportEntries.size());
 
+        assertEquals(NestingTest.class.getName(), reportEntries.get(0).getSourceName());
         assertEquals(
                 NestingTest.Level1NestedTest.class.getName(),
-                reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+                reportEntries.get(0).getSourceText());
         assertEquals("level1test", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
+        assertEquals(NestingTest.class.getName(), reportEntries.get(1).getSourceName());
         assertEquals(
                 NestingTest.Level1NestedTest.Level2NestedTest.class.getName(),
-                reportEntries.get(1).getSourceName());
-        assertNull(reportEntries.get(1).getSourceText());
+                reportEntries.get(1).getSourceText());
         assertEquals("level2test", reportEntries.get(1).getName());
         assertNull(reportEntries.get(1).getNameText());
     }
@@ -478,7 +478,9 @@ public class JUnitPlatformProviderTest {
 
         assertEquals(
                 DisabledParameterizedTest.class.getName(), reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+        assertEquals(
+                "JUnitPlatformProviderTest$DisabledParameterizedTest",
+                reportEntries.get(0).getSourceText());
         assertEquals("disabledParameterized(String)", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
@@ -488,9 +490,9 @@ public class JUnitPlatformProviderTest {
         assertEquals(0, summary.getTestsSucceededCount());
         assertEquals(0, summary.getTestsFailedCount());
         assertEquals(0, summary.getTestsSkippedCount());
-        assertEquals(3, summary.getContainersFoundCount());
-        assertEquals(2, summary.getContainersStartedCount());
-        assertEquals(2, summary.getContainersSucceededCount());
+        assertEquals(4, summary.getContainersFoundCount());
+        assertEquals(3, summary.getContainersStartedCount());
+        assertEquals(3, summary.getContainersSucceededCount());
         assertEquals(0, summary.getContainersFailedCount());
         assertEquals(1, summary.getContainersSkippedCount());
     }
@@ -518,7 +520,8 @@ public class JUnitPlatformProviderTest {
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals(TestClass8.class.getName(), reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+        assertEquals(
+                "JUnitPlatformProviderTest$TestClass8", reportEntries.get(0).getSourceText());
         assertEquals("testParameterizedTestCases", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
@@ -553,7 +556,8 @@ public class JUnitPlatformProviderTest {
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals(TestClass9.class.getName(), reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+        assertEquals(
+                "JUnitPlatformProviderTest$TestClass9", reportEntries.get(0).getSourceText());
         assertEquals("testParameterizedTestCases", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
@@ -592,7 +596,9 @@ public class JUnitPlatformProviderTest {
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(0).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[1]",
                 reportEntries.get(0).getName());
@@ -601,7 +607,9 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(0).getNameText());
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(1).getSourceName());
-        assertNull(reportEntries.get(1).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(1).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[2]",
                 reportEntries.get(1).getName());
@@ -610,7 +618,9 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(1).getNameText());
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(2).getSourceName());
-        assertNull(reportEntries.get(2).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(2).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[2]",
                 reportEntries.get(2).getName());
@@ -619,7 +629,9 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(2).getNameText());
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(3).getSourceName());
-        assertNull(reportEntries.get(3).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(3).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[2]",
                 reportEntries.get(3).getName());
@@ -735,7 +747,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(1, provider.getFilters().length);
+        assertEquals(2, provider.getFilters().length);
     }
 
     @Test
@@ -758,7 +770,7 @@ public class JUnitPlatformProviderTest {
         when(providerParameters.getProviderProperties()).thenReturn(properties);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
-        assertEquals(1, provider.getFilters().length);
+        assertEquals(2, provider.getFilters().length);
     }
 
     @Test
@@ -772,7 +784,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(2, provider.getFilters().length);
+        assertEquals(3, provider.getFilters().length);
     }
 
     @Test
@@ -786,7 +798,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(2, provider.getFilters().length);
+        assertEquals(3, provider.getFilters().length);
     }
 
     @Test
@@ -800,7 +812,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(2, provider.getFilters().length);
+        assertEquals(3, provider.getFilters().length);
     }
 
     @Test
@@ -913,7 +925,7 @@ public class JUnitPlatformProviderTest {
         TestListResolver testListResolver = new TestListResolver("**/*Test#test*");
         assertFalse(testListResolver.isEmpty());
         assertFalse(testListResolver.isWildcard());
-        TestRequest request = new TestRequest(null, null, 0);
+        TestRequest request = new TestRequest(null, testListResolver, 0);
         when(providerParameters.getTestRequest()).thenReturn(request);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
@@ -935,7 +947,7 @@ public class JUnitPlatformProviderTest {
         TestListResolver testListResolver = new TestListResolver("");
         assertTrue(testListResolver.isEmpty());
         assertFalse(testListResolver.isWildcard());
-        TestRequest request = new TestRequest(null, null, 0);
+        TestRequest request = new TestRequest(null, testListResolver, 0);
         when(providerParameters.getTestRequest()).thenReturn(request);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
@@ -949,9 +961,8 @@ public class JUnitPlatformProviderTest {
         TestListResolver testListResolver = new TestListResolver("*.java");
         assertTrue(testListResolver.isWildcard());
         assertFalse(testListResolver.isEmpty());
-        TestRequest request = new TestRequest(null, null, 0);
+        TestRequest request = new TestRequest(null, testListResolver, 0);
         when(providerParameters.getTestRequest()).thenReturn(request);
-
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
         assertThat(provider.getFilters()).isEmpty();
