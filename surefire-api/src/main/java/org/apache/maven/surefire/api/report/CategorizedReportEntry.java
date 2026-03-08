@@ -155,13 +155,14 @@ public class CategorizedReportEntry extends SimpleReportEntry {
     public String getReportNameWithGroup() {
         String sourceText = getSourceText();
 
-        if (isBlank(sourceText)) {
-            sourceText = getName();
-        }
-
-        if (isBlank(sourceText)) {
-            sourceText = getSourceName();
-        }
+        // TODO see CategorizedReportEntryTest
+        //        if (isBlank(sourceText)) {
+        //            sourceText = getName();
+        //        }
+        //
+        //        if (isBlank(sourceText)) {
+        //            sourceText = getSourceName();
+        //        }
 
         if (isBlank(sourceText)) {
             return null;

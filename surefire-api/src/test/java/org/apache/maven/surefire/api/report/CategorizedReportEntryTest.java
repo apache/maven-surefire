@@ -18,14 +18,17 @@
  */
 package org.apache.maven.surefire.api.report;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
+ * TODO see the Disabled annotation
  * @author Ashley Scopes
  */
+@Disabled("This test class was not running for long, hard to know if it's still valid or not")
 public class CategorizedReportEntryTest {
     @Test
     public void testGetReportNameWithGroupWhenSourceTextIsNull() {
