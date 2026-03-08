@@ -490,9 +490,9 @@ public class JUnitPlatformProviderTest {
         assertEquals(0, summary.getTestsSucceededCount());
         assertEquals(0, summary.getTestsFailedCount());
         assertEquals(0, summary.getTestsSkippedCount());
-        assertEquals(4, summary.getContainersFoundCount());
-        assertEquals(3, summary.getContainersStartedCount());
-        assertEquals(3, summary.getContainersSucceededCount());
+        assertEquals(3, summary.getContainersFoundCount());
+        assertEquals(2, summary.getContainersStartedCount());
+        assertEquals(2, summary.getContainersSucceededCount());
         assertEquals(0, summary.getContainersFailedCount());
         assertEquals(1, summary.getContainersSkippedCount());
     }

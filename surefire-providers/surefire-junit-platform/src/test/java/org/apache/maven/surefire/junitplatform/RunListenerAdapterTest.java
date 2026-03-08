@@ -153,18 +153,20 @@ public class RunListenerAdapterTest {
         TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
 
         String className = MyTestClass.class.getName();
+        String classText = className.substring(className.lastIndexOf('.') + 1);
 
         adapter.testPlanExecutionStarted(plan);
         adapter.executionStarted(TestIdentifier.from(engine));
         adapter.executionStarted(TestIdentifier.from(parent));
         verify(listener)
-                .testSetStarting(new SimpleReportEntry(NORMAL_RUN, 0x0000000100000000L, className, null, null, null));
+                .testSetStarting(
+                        new SimpleReportEntry(NORMAL_RUN, 0x0000000100000000L, className, classText, null, null));
         verifyNoMoreInteractions(listener);
 
         adapter.executionStarted(TestIdentifier.from(child));
         verify(listener)
                 .testStarting(new SimpleReportEntry(
-                        NORMAL_RUN, 0x0000000100000001L, className, null, MY_TEST_METHOD_NAME, null));
+                        NORMAL_RUN, 0x0000000100000001L, className, className, MY_TEST_METHOD_NAME, null));
         verifyNoMoreInteractions(listener);
 
         adapter.executionFinished(TestIdentifier.from(child), successful());
@@ -173,7 +175,7 @@ public class RunListenerAdapterTest {
         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
         assertThat(report.getValue().getSourceName()).isEqualTo(className);
-        assertThat(report.getValue().getSourceText()).isNull();
+        assertThat(report.getValue().getSourceText()).isEqualTo(className);
         assertThat(report.getValue().getName()).isEqualTo(MY_TEST_METHOD_NAME);
         assertThat(report.getValue().getNameText()).isNull();
         assertThat(report.getValue().getElapsed()).isNotNull();
@@ -259,7 +261,7 @@ public class RunListenerAdapterTest {
         inOrder.verify(listener)
                 .testStarting(new SimpleReportEntry(
                         NORMAL_RUN,
-                        4294967297L,
+                        0x0000000100000002L,
                         MyTestClass.class.getName(),
                         MyTestClass.class.getName(),
                         MY_TEST_METHOD_NAME + "(String)",
@@ -273,7 +275,7 @@ public class RunListenerAdapterTest {
         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000002L);
         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
+        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
         assertThat(report.getValue().getName()).isEqualTo(MY_TEST_METHOD_NAME + "(String)");
         assertThat(report.getValue().getNameText()).isNull();
         assertThat(report.getValue().getElapsed()).isNotNull();
@@ -314,7 +316,8 @@ public class RunListenerAdapterTest {
 
         adapter.executionStarted(TestIdentifier.from(engine));
         verify(listener)
-                .testStarting(new SimpleReportEntry(NORMAL_RUN, 0x0000000100000001L, "engine", null, "engine", null));
+                .testStarting(
+                        new SimpleReportEntry(NORMAL_RUN, 0x0000000100000001L, "engine", "engine", "engine", null));
         verifyNoMoreInteractions(listener);
 
         adapter.executionFinished(TestIdentifier.from(engine), successful());
@@ -323,7 +326,7 @@ public class RunListenerAdapterTest {
         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
         assertThat(report.getValue().getSourceName()).isEqualTo("engine");
-        assertThat(report.getValue().getSourceText()).isNull();
+        assertThat(report.getValue().getSourceText()).isEqualTo("engine");
         assertThat(report.getValue().getName()).isEqualTo("engine");
         assertThat(report.getValue().getNameText()).isNull();
         assertThat(report.getValue().getElapsed()).isNotNull();
@@ -500,16 +503,18 @@ public class RunListenerAdapterTest {
         adapter.executionFinished(TestIdentifier.from(classDescriptor), successful());
 
         String className = MyTestClass.class.getName();
+        String classText = className.substring(className.lastIndexOf('.') + 1);
 
         verify(listener)
-                .testSetStarting(new SimpleReportEntry(NORMAL_RUN, 0x0000000100000000L, className, null, null, null));
+                .testSetStarting(
+                        new SimpleReportEntry(NORMAL_RUN, 0x0000000100000000L, className, classText, null, null));
 
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass(SimpleReportEntry.class);
         verify(listener).testSetCompleted(report.capture());
         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000000L);
         assertThat(report.getValue().getSourceName()).isEqualTo(className);
-        assertThat(report.getValue().getSourceText()).isNull();
+        assertThat(report.getValue().getSourceText()).isEqualTo(classText);
         assertThat(report.getValue().getName()).isNull();
         assertThat(report.getValue().getNameText()).isNull();
         assertThat(report.getValue().getStackTraceWriter()).isNull();

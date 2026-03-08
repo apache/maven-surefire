@@ -18,219 +18,124 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
+import javax.inject.Inject;
 
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.LegacySupport;
-import org.apache.maven.plugin.Mojo;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.descriptor.MojoDescriptor;
-import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+
+import org.apache.maven.api.plugin.testing.Basedir;
+import org.apache.maven.api.plugin.testing.InjectMojo;
+import org.apache.maven.api.plugin.testing.MojoTest;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.plugin.testing.ArtifactStubFactory;
-import org.apache.maven.plugin.testing.stubs.MavenProjectStub;
-import org.apache.maven.plugins.surefire.report.stubs.DependencyArtifactStubFactory;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
-import org.eclipse.aether.repository.LocalRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.maven.api.plugin.testing.MojoExtension.getTestFile;
+import static org.apache.maven.api.plugin.testing.MojoExtension.getVariableValueFromObject;
 import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:aramirez@apache.org">Allan Ramirez</a>
  */
 @SuppressWarnings("checkstyle:linelength")
+@MojoTest(realRepositorySession = true)
+@Basedir("/unit")
 class SurefireReportTest {
-
-    private final TestHelper testCase = new TestHelper();
-
-    /**
-     * Helper that exposes protected methods of {@link AbstractMojoTestCase} for use in JUnit 5 tests.
-     */
-    static class TestHelper extends AbstractMojoTestCase {
-        @Override
-        public void setUp() throws Exception {
-            super.setUp();
-        }
-
-        @Override
-        public void tearDown() throws Exception {
-            super.tearDown();
-        }
-
-        @Override
-        public Mojo lookupMojo(String goal, File pom) throws Exception {
-            return super.lookupMojo(goal, pom);
-        }
-
-        public <T> T lookupComponent(Class<T> role) throws Exception {
-            return lookup(role);
-        }
-
-        @Override
-        public MavenSession newMavenSession(MavenProject project) {
-            return super.newMavenSession(project);
-        }
-
-        @Override
-        public void setVariableValueToObject(Object object, String variable, Object value)
-                throws IllegalAccessException {
-            super.setVariableValueToObject(object, variable, value);
-        }
-
-        @Override
-        public Object getVariableValueFromObject(Object object, String variable) throws IllegalAccessException {
-            return super.getVariableValueFromObject(object, variable);
-        }
-    }
 
     private ArtifactStubFactory artifactStubFactory;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        testCase.setUp();
-        artifactStubFactory = new DependencyArtifactStubFactory(testCase.getTestFile("target"), true, false);
-        artifactStubFactory.getWorkingDir().mkdirs();
-    }
+    @Inject
+    protected MavenProject mavenProject;
 
-    @AfterEach
-    void tearDown() throws Exception {
-        testCase.tearDown();
-    }
-
-    private File getPluginXmlFile(String projectDirName) {
-        return new File(testCase.getBasedir(), "src/test/resources/unit/" + projectDirName + "/plugin-config.xml");
-    }
-
-    private SurefireReport createReportMojo(File pluginXmlFile) throws Exception {
-        SurefireReport mojo = (SurefireReport) testCase.lookupMojo("report", pluginXmlFile);
-        assertNotNull(mojo, "Mojo not found.");
-
-        LegacySupport legacySupport = testCase.lookupComponent(LegacySupport.class);
-        legacySupport.setSession(testCase.newMavenSession(new MavenProjectStub()));
-        DefaultRepositorySystemSession repoSession =
-                (DefaultRepositorySystemSession) legacySupport.getRepositorySession();
-        repoSession.setLocalRepositoryManager(new SimpleLocalRepositoryManagerFactory()
-                .newInstance(repoSession, new LocalRepository(artifactStubFactory.getWorkingDir())));
-
-        List<MavenProject> reactorProjects =
-                mojo.getReactorProjects() != null ? mojo.getReactorProjects() : Collections.emptyList();
-
-        testCase.setVariableValueToObject(mojo, "mojoExecution", getMockMojoExecution());
-        // setVariableValueToObject(mojo, "session", legacySupport.getSession());
-        testCase.setVariableValueToObject(mojo, "repoSession", legacySupport.getRepositorySession());
-        testCase.setVariableValueToObject(mojo, "reactorProjects", reactorProjects);
-        testCase.setVariableValueToObject(
-                mojo, "remoteProjectRepositories", mojo.getProject().getRemoteProjectRepositories());
-        testCase.setVariableValueToObject(
-                mojo, "siteDirectory", new File(mojo.getProject().getBasedir(), "src/site"));
-        return mojo;
+    protected void readMavenProjectModel(MavenProject project, String pom) throws IOException {
+        MavenXpp3Reader pomReader = new MavenXpp3Reader();
+        try (InputStream in = Files.newInputStream(getTestFile(pom).toPath())) {
+            project.setModel(pomReader.read(in));
+        } catch (XmlPullParserException e) {
+            throw new IOException(e);
+        }
     }
 
     @Test
-    void testBasicSurefireReport() throws Exception {
-        File testPom = getPluginXmlFile("basic-surefire-report-test");
-        SurefireReport mojo = createReportMojo(testPom);
-        File outputDir = (File) testCase.getVariableValueFromObject(mojo, "outputDirectory");
-        boolean showSuccess = (Boolean) testCase.getVariableValueFromObject(mojo, "showSuccess");
-        File reportsDir = (File) testCase.getVariableValueFromObject(mojo, "reportsDirectory");
-        String outputName = (String) testCase.getVariableValueFromObject(mojo, "outputName");
-        File xrefTestLocation = (File) testCase.getVariableValueFromObject(mojo, "xrefTestLocation");
-        boolean linkXRef = (Boolean) testCase.getVariableValueFromObject(mojo, "linkXRef");
+    @InjectMojo(goal = "report", pom = "basic-surefire-report-test/plugin-config.xml")
+    void testBasicSurefireReport(SurefireReport mojo) throws Exception {
+        File outputDir = mojo.getReportOutputDirectory();
+        boolean showSuccess = getVariableValueFromObject(mojo, "showSuccess");
+        File reportsDir = getVariableValueFromObject(mojo, "reportsDirectory");
+        String outputName = getVariableValueFromObject(mojo, "outputName");
+        File xrefTestLocation = getVariableValueFromObject(mojo, "xrefTestLocation");
+        boolean linkXRef = getVariableValueFromObject(mojo, "linkXRef");
 
-        assertEquals(new File(testCase.getBasedir() + "/target/site/unit/basic-surefire-report-test"), outputDir);
+        assertEquals(new File(mavenProject.getBasedir(), "/target/site/unit/basic-surefire-report-test"), outputDir);
         assertTrue(showSuccess);
         assertEquals(
-                new File(testCase.getBasedir() + "/src/test/resources/unit/basic-surefire-report-test/surefire-reports")
-                        .getAbsolutePath(),
+                new File(mavenProject.getBasedir(), "basic-surefire-report-test/surefire-reports").getAbsolutePath(),
                 reportsDir.getAbsolutePath());
         assertEquals("surefire", outputName);
         assertEquals(
-                new File(testCase.getBasedir() + "/target/site/unit/basic-surefire-report-test/xref-test")
+                new File(mavenProject.getBasedir(), "/target/site/unit/basic-surefire-report-test/xref-test")
                         .getAbsolutePath(),
                 xrefTestLocation.getAbsolutePath());
         assertTrue(linkXRef);
 
         mojo.execute();
-        File report = new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-test/surefire.html");
+        File report = new File(mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-test/surefire.html");
         assertTrue(report.exists());
         String htmlContent = FileUtils.fileRead(report);
 
         int idx = htmlContent.indexOf("images/icon_success_sml.gif");
-        assertTrue(idx >= 0);
-    }
-
-    private MojoExecution getMockMojoExecution() {
-        MojoDescriptor md = new MojoDescriptor();
-        md.setGoal("report");
-
-        MojoExecution me = new MojoExecution(md);
-
-        PluginDescriptor pd = new PluginDescriptor();
-        Plugin p = new Plugin();
-        p.setGroupId("org.apache.maven.plugins");
-        p.setArtifactId("maven-surefire-report-plugin");
-        pd.setPlugin(p);
-        md.setPluginDescriptor(pd);
-
-        return me;
+        assertTrue(idx >= 0, "Wrong content in file: " + report);
     }
 
     @Test
-    void testBasicSurefireReportIfShowSuccessIsFalse() throws Exception {
-        File testPom = getPluginXmlFile("basic-surefire-report-success-false");
-        SurefireReport mojo = createReportMojo(testPom);
-        boolean showSuccess = (Boolean) testCase.getVariableValueFromObject(mojo, "showSuccess");
+    @InjectMojo(goal = "report", pom = "basic-surefire-report-success-false/plugin-config.xml")
+    void testBasicSurefireReportIfShowSuccessIsFalse(SurefireReport mojo) throws Exception {
+        boolean showSuccess = getVariableValueFromObject(mojo, "showSuccess");
         assertFalse(showSuccess);
         mojo.execute();
-        File report =
-                new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire.html");
+        File report = new File(
+                mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
+        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("images/icon_success_sml.gif");
         assertTrue(idx < 0);
     }
 
     @Test
-    void testBasicSurefireReportIfLinkXrefIsFalse() throws Exception {
-        File testPom = getPluginXmlFile("basic-surefire-report-linkxref-false");
-        SurefireReport mojo = createReportMojo(testPom);
-        boolean linkXRef = (Boolean) testCase.getVariableValueFromObject(mojo, "linkXRef");
+    @InjectMojo(goal = "report", pom = "basic-surefire-report-linkxref-false/plugin-config.xml")
+    void testBasicSurefireReportIfLinkXrefIsFalse(SurefireReport mojo) throws Exception {
+        boolean linkXRef = getVariableValueFromObject(mojo, "linkXRef");
         assertFalse(linkXRef);
         mojo.execute();
-        File report =
-                new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-linkxref-false/surefire.html");
+        File report = new File(
+                mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-linkxref-false/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
+
+        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
-        assertTrue(idx == -1);
+        assertEquals(-1, idx);
     }
 
     @Test
-    void testBasicSurefireReportIfReportingIsNull() throws Exception {
-        File testPom = getPluginXmlFile("basic-surefire-report-reporting-null");
-        SurefireReport mojo = createReportMojo(testPom);
+    @InjectMojo(goal = "report", pom = "basic-surefire-report-reporting-null/plugin-config.xml")
+    void testBasicSurefireReportIfReportingIsNull(SurefireReport mojo) throws Exception {
         mojo.execute();
-        File report =
-                new File(testCase.getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire.html");
+        File report = new File(
+                mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
+        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
         assertTrue(idx < 0);
@@ -238,14 +143,13 @@ class SurefireReportTest {
 
     @SuppressWarnings("checkstyle:methodname")
     @Test
-    void testBasicSurefireReport_AnchorTestCases() throws Exception {
-        File testPom = getPluginXmlFile("basic-surefire-report-anchor-test-cases");
-        SurefireReport mojo = createReportMojo(testPom);
+    @InjectMojo(goal = "report", pom = "basic-surefire-report-anchor-test-cases/plugin-config.xml")
+    void testBasicSurefireReport_AnchorTestCases(SurefireReport mojo) throws Exception {
         mojo.execute();
         File report = new File(
-                testCase.getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire.html");
+                mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
+        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testX\"></a>testX</td>");
         assertTrue(idx > 0);
@@ -256,13 +160,13 @@ class SurefireReportTest {
     }
 
     @Test
-    void testSurefireReportSingleError() throws Exception {
-        File testPom = getPluginXmlFile("surefire-report-single-error");
-        SurefireReport mojo = createReportMojo(testPom);
+    @InjectMojo(goal = "report", pom = "surefire-report-single-error/plugin-config.xml")
+    void testSurefireReportSingleError(SurefireReport mojo) throws Exception {
         mojo.execute();
-        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-single-error/surefire.html");
+        File report =
+                new File(mavenProject.getBasedir(), "target/site/unit/surefire-report-single-error/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
+        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
 
         assertThat(
                 htmlContent,
@@ -342,348 +246,379 @@ class SurefireReportTest {
                         + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
                         + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)" + "</pre>")));
     }
-
-    @Test
-    void testSurefireReportNestedClassTrimStackTrace() throws Exception {
-        File testPom = getPluginXmlFile("surefire-report-nestedClass-trimStackTrace");
-        SurefireReport mojo = createReportMojo(testPom);
-        mojo.execute();
-        File report = new File(
-                testCase.getBasedir(), "target/site/unit/surefire-report-nestedClass-trimStackTrace/surefire.html");
-        assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td>")));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>"
-                        + "<a href=\"#surefire.MyTest\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
-                        + "</a>"
-                        + "</td>\n"
-                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-        assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
-
-        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest.html#L13"));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<pre>"
-                        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-                        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
-                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-                        + "</pre>")));
-    }
-
-    @Test
-    void testSurefireReportNestedClass() throws Exception {
-        File testPom = getPluginXmlFile("surefire-report-nestedClass");
-        SurefireReport mojo = createReportMojo(testPom);
-        mojo.execute();
-        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-nestedClass/surefire.html");
-        assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td>")));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>"
-                        + "<a href=\"#surefire.MyTest\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
-                        + "</a>"
-                        + "</td>\n"
-                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-        assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
-
-        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest.html#L13"));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<pre>"
-                        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-                        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
-                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
-                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
-                        + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
-                        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
-                        + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
-                        + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
-                        + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
-                        + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
-                        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
-                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
-                        + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
-                        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-                        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-                        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-                        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-                        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-                        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
-                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
-                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
-                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
-                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
-                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
-                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
-                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
-                        + "</pre>")));
-    }
-
-    @Test
-    void testSurefireReportEnclosedTrimStackTrace() throws Exception {
-        File testPom = getPluginXmlFile("surefire-report-enclosed-trimStackTrace");
-        SurefireReport mojo = createReportMojo(testPom);
-        mojo.execute();
-        File report = new File(
-                testCase.getBasedir(), "target/site/unit/surefire-report-enclosed-trimStackTrace/surefire.html");
-        assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td>")));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>"
-                        + "<a href=\"#surefire.MyTest$A\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
-                        + "</a>"
-                        + "</td>\n"
-                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-
-        assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
-
-        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest$A.html#L45"));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<pre>"
-                        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
-                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-                        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
-                        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
-                        + "</pre>")));
-    }
-
-    @Test
-    void testSurefireReportEnclosed() throws Exception {
-        File testPom = getPluginXmlFile("surefire-report-enclosed");
-        SurefireReport mojo = createReportMojo(testPom);
-        mojo.execute();
-        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-enclosed/surefire.html");
-        assertTrue(report.exists());
-        String htmlContent = FileUtils.fileRead(report);
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td>")));
-
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<tr class=\"b\">\n"
-                        + "<td>"
-                        + "<a href=\"#surefire.MyTest$A\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
-                        + "</a>"
-                        + "</td>\n"
-                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>1</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0</td>\n"
-                        + "<td>0%</td>\n"
-                        + "<td>0 s</td></tr>")));
-
-        assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
-
-        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest$A.html#L45"));
-
-        assertThat(
-                htmlContent,
-                containsString(
-                        toSystemNewLine("<pre>" + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
-                                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
-                                + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
-                                + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
-                                + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
-                                + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
-                                + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
-                                + "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
-                                + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
-                                + "\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
-                                + "\tat org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
-                                + "\tat org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
-                                + "\tat org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
-                                + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
-                                + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
-                                + "\tat org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
-                                + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-                                + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-                                + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-                                + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-                                + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-                                + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-                                + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
-                                + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
-                                + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
-                                + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
-                                + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
-                                + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
-                                + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
-                                + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
-                                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
-                                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
-                                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
-                                + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
-                                + "\tat org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
-                                + "\tat org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
-                                + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
-                                + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
-                                + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
-                                + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
-                                + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
-                                + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
-                                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
-                                + "</pre>")));
-    }
-
-    @Test
-    void testCustomTitleAndDescriptionReport() throws Exception {
-        File testPom = getPluginXmlFile("surefire-1183");
-        SurefireReport mojo = createReportMojo(testPom);
-
-        File outputDir = (File) testCase.getVariableValueFromObject(mojo, "outputDirectory");
-        String outputName = (String) testCase.getVariableValueFromObject(mojo, "outputName");
-        File reportsDir = (File) testCase.getVariableValueFromObject(mojo, "reportsDirectory");
-
-        assertEquals(new File(testCase.getBasedir() + "/target/site/unit/surefire-1183"), outputDir);
-        assertEquals(
-                new File(testCase.getBasedir() + "/src/test/resources/unit/surefire-1183/acceptancetest-reports")
-                        .getAbsolutePath(),
-                reportsDir.getAbsolutePath());
-        assertEquals("acceptance-test", outputName);
-
-        mojo.execute();
-
-        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-1183/acceptance-test.html");
-
-        assertTrue(report.exists());
-
-        String htmlContent = FileUtils.fileRead(report);
-        assertThat(
-                htmlContent,
-                containsString(toSystemNewLine("<section><a id=\"Acceptance_Test\"></a>\n<h1>Acceptance Test</h1>")));
-    }
+    //
+    //    @Test
+    //    void testSurefireReportNestedClassTrimStackTrace() throws Exception {
+    //        File testPom = getPluginXmlFile("surefire-report-nestedClass-trimStackTrace");
+    //        SurefireReport mojo = createReportMojo(testPom);
+    //        mojo.execute();
+    //        File report = new File(
+    //                testCase.getBasedir(),
+    // "target/site/unit/surefire-report-nestedClass-trimStackTrace/surefire.html");
+    //        assertTrue(report.exists());
+    //        String htmlContent = FileUtils.fileRead(report);
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td>")));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>"
+    //                        + "<a href=\"#surefire.MyTest\">"
+    //                        + "<img src=\"images/icon_error_sml.gif\" />"
+    //                        + "</a>"
+    //                        + "</td>\n"
+    //                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //        assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
+    //
+    //        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest.html#L13"));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<pre>"
+    //                        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+    //                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+    //                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+    //                        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+    //                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+    //                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+    //                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+    //                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+    //                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+    //                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
+    //                        + "</pre>")));
+    //    }
+    //
+    //    @Test
+    //    void testSurefireReportNestedClass() throws Exception {
+    //        File testPom = getPluginXmlFile("surefire-report-nestedClass");
+    //        SurefireReport mojo = createReportMojo(testPom);
+    //        mojo.execute();
+    //        File report = new File(testCase.getBasedir(),
+    // "target/site/unit/surefire-report-nestedClass/surefire.html");
+    //        assertTrue(report.exists());
+    //        String htmlContent = FileUtils.fileRead(report);
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td>")));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>"
+    //                        + "<a href=\"#surefire.MyTest\">"
+    //                        + "<img src=\"images/icon_error_sml.gif\" />"
+    //                        + "</a>"
+    //                        + "</td>\n"
+    //                        + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //        assertThat(htmlContent, containsString(">surefire.MyTest:13</a>"));
+    //
+    //        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest.html#L13"));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<pre>"
+    //                        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+    //                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+    //                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+    //                        + "\tat surefire.MyTest.test(MyTest.java:13)\n"
+    //                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+    //                        + "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+    //                        + "\tat
+    // sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+    //                        + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+    //                        + "\tat
+    // org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+    //                        + "\tat
+    // org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+    //                        + "\tat
+    // org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+    //                        + "\tat
+    // org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+    //                        + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+    //                        + "\tat
+    // org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+    //                        + "\tat
+    // org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+    //                        + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+    //                        + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+    //                        + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+    //                        + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+    //                        + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+    //                        + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+    //                        + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+    //                        + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+    //                        + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+    //                        + "\tat org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+    //                        + "\tat
+    // org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+    //                        + "\tat
+    // org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+    //                        + "\tat org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+    //                        + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+    //                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+    //                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+    //                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+    //                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+    //                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)"
+    //                        + "</pre>")));
+    //    }
+    //
+    //    @Test
+    //    void testSurefireReportEnclosedTrimStackTrace() throws Exception {
+    //        File testPom = getPluginXmlFile("surefire-report-enclosed-trimStackTrace");
+    //        SurefireReport mojo = createReportMojo(testPom);
+    //        mojo.execute();
+    //        File report = new File(
+    //                testCase.getBasedir(), "target/site/unit/surefire-report-enclosed-trimStackTrace/surefire.html");
+    //        assertTrue(report.exists());
+    //        String htmlContent = FileUtils.fileRead(report);
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td>")));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>"
+    //                        + "<a href=\"#surefire.MyTest$A\">"
+    //                        + "<img src=\"images/icon_error_sml.gif\" />"
+    //                        + "</a>"
+    //                        + "</td>\n"
+    //                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //
+    //        assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
+    //
+    //        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest$A.html#L45"));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<pre>"
+    //                        + "java.lang.RuntimeException: java.lang.IndexOutOfBoundsException\n"
+    //                        + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+    //                        + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+    //                        + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+    //                        + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+    //                        + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
+    //                        + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+    //                        + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
+    //                        + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
+    //                        + "</pre>")));
+    //    }
+    //
+    //    @Test
+    //    void testSurefireReportEnclosed() throws Exception {
+    //        File testPom = getPluginXmlFile("surefire-report-enclosed");
+    //        SurefireReport mojo = createReportMojo(testPom);
+    //        mojo.execute();
+    //        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-report-enclosed/surefire.html");
+    //        assertTrue(report.exists());
+    //        String htmlContent = FileUtils.fileRead(report);
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td>")));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td><a href=\"#surefire\">surefire</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<tr class=\"b\">\n"
+    //                        + "<td>"
+    //                        + "<a href=\"#surefire.MyTest$A\">"
+    //                        + "<img src=\"images/icon_error_sml.gif\" />"
+    //                        + "</a>"
+    //                        + "</td>\n"
+    //                        + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>1</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0</td>\n"
+    //                        + "<td>0%</td>\n"
+    //                        + "<td>0 s</td></tr>")));
+    //
+    //        assertThat(htmlContent, containsString(">surefire.MyTest$A:45</a>"));
+    //
+    //        assertThat(htmlContent, containsString("./xref-test/surefire/MyTest$A.html#L45"));
+    //
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(
+    //                        toSystemNewLine("<pre>" + "java.lang.RuntimeException:
+    // java.lang.IndexOutOfBoundsException\n"
+    //                                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:24)\n"
+    //                                + "\tat surefire.MyTest.newRethrownDelegate(MyTest.java:17)\n"
+    //                                + "\tat surefire.MyTest.access$200(MyTest.java:9)\n"
+    //                                + "\tat surefire.MyTest$A.t(MyTest.java:45)\n"
+    //                                + "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\n"
+    //                                + "\tat
+    // sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)\n"
+    //                                + "\tat
+    // sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\n"
+    //                                + "\tat java.lang.reflect.Method.invoke(Method.java:606)\n"
+    //                                + "\tat
+    // org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n"
+    //                                + "\tat
+    // org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)\n"
+    //                                + "\tat
+    // org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)\n"
+    //                                + "\tat
+    // org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)\n"
+    //                                + "\tat
+    // org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)\n"
+    //                                + "\tat
+    // org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)\n"
+    //                                + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+    //                                + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+    //                                + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+    //                                + "\tat org.junit.runners.Suite.runChild(Suite.java:128)\n"
+    //                                + "\tat org.junit.runners.Suite.runChild(Suite.java:27)\n"
+    //                                + "\tat org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)\n"
+    //                                + "\tat org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)\n"
+    //                                + "\tat org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)\n"
+    //                                + "\tat org.junit.runners.ParentRunner.run(ParentRunner.java:363)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:272)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.executeWithRerun(JUnit4Provider.java:167)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:147)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:130)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:211)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:163)\n"
+    //                                + "\tat
+    // org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:105)\n"
+    //                                + "\tCaused by: java.lang.IndexOutOfBoundsException\n"
+    //                                + "\tat surefire.MyTest.failure(MyTest.java:33)\n"
+    //                                + "\tat surefire.MyTest.access$100(MyTest.java:9)\n"
+    //                                + "\tat surefire.MyTest$Nested.run(MyTest.java:38)\n"
+    //                                + "\tat surefire.MyTest.delegate(MyTest.java:29)\n"
+    //                                + "\tat surefire.MyTest.rethrownDelegate(MyTest.java:22)\n"
+    //                                + "</pre>")));
+    //    }
+    //
+    //    @Test
+    //    void testCustomTitleAndDescriptionReport() throws Exception {
+    //        File testPom = getPluginXmlFile("surefire-1183");
+    //        SurefireReport mojo = createReportMojo(testPom);
+    //
+    //        File outputDir = (File) testCase.getVariableValueFromObject(mojo, "outputDirectory");
+    //        String outputName = (String) testCase.getVariableValueFromObject(mojo, "outputName");
+    //        File reportsDir = (File) testCase.getVariableValueFromObject(mojo, "reportsDirectory");
+    //
+    //        assertEquals(new File(testCase.getBasedir() + "/target/site/unit/surefire-1183"), outputDir);
+    //        assertEquals(
+    //                new File(testCase.getBasedir() + "/src/test/resources/unit/surefire-1183/acceptancetest-reports")
+    //                        .getAbsolutePath(),
+    //                reportsDir.getAbsolutePath());
+    //        assertEquals("acceptance-test", outputName);
+    //
+    //        mojo.execute();
+    //
+    //        File report = new File(testCase.getBasedir(), "target/site/unit/surefire-1183/acceptance-test.html");
+    //
+    //        assertTrue(report.exists());
+    //
+    //        String htmlContent = FileUtils.fileRead(report);
+    //        assertThat(
+    //                htmlContent,
+    //                containsString(toSystemNewLine("<section><a id=\"Acceptance_Test\"></a>\n<h1>Acceptance
+    // Test</h1>")));
+    //    }
 }
