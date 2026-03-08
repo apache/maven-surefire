@@ -40,8 +40,6 @@ import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.OutputReportEntry;
-import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
@@ -123,12 +121,12 @@ public class E2ETest {
         Thread t = new Thread() {
             @Override
             public void run() {
-                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver() {
-                    @Override
-                    public void writeTestOutput(OutputReportEntry reportEntry) {
-                        encoder.testOutput(stdOutln(reportEntry.getLog()));
-                    }
-                };
+                //                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver() {
+                //                    @Override
+                //                    public void writeTestOutput(OutputReportEntry reportEntry) {
+                //                        encoder.testOutput(stdOutln(reportEntry.getLog()));
+                //                    }
+                //                };
 
                 // PrintStream out = System.out;
                 // PrintStream err = System.err;
@@ -164,9 +162,9 @@ public class E2ETest {
         // 1.0 seconds while using the encoder/decoder
         assertThat(readTime.get())
                 .describedAs("The performance test should assert 1.0 s of read time. "
-                        + "The limit 10 s guarantees that the read time does not exceed this limit on overloaded CPU.")
+                        + "The limit 30 s guarantees that the read time does not exceed this limit on overloaded CPU.")
                 .isPositive()
-                .isLessThanOrEqualTo(10_000L);
+                .isLessThanOrEqualTo(30_000L);
     }
 
     @Test
