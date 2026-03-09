@@ -164,7 +164,7 @@ public class RunListenerAdapterTest {
         adapter.executionStarted(TestIdentifier.from(child));
         verify(listener)
                 .testStarting(new SimpleReportEntry(
-                        NORMAL_RUN, 0x0000000100000001L, className, null, MY_TEST_METHOD_NAME, null));
+                        NORMAL_RUN, 0x0000000100000001L, className, className, MY_TEST_METHOD_NAME, null));
         verifyNoMoreInteractions(listener);
 
         adapter.executionFinished(TestIdentifier.from(child), successful());
@@ -232,14 +232,13 @@ public class RunListenerAdapterTest {
         verifyZeroInteractions(listener);
 
         adapter.executionStarted(TestIdentifier.from(child1));
-        inOrder.verify(listener)
-                .testStarting(new SimpleReportEntry(
-                        NORMAL_RUN,
-                        4294967297L,
-                        MyTestClass.class.getName(),
-                        "parent",
-                        MY_NAMED_TEST_METHOD_NAME,
-                        "dn1"));
+        report = ArgumentCaptor.forClass(SimpleReportEntry.class);
+        inOrder.verify(listener).testStarting(report.capture());
+        assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
+        assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
+        assertThat(report.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
+        assertThat(report.getValue().getNameText()).isEqualTo("dn1");
         inOrder.verifyNoMoreInteractions();
 
         adapter.executionFinished(TestIdentifier.from(child1), successful());
@@ -248,7 +247,7 @@ public class RunListenerAdapterTest {
         assertThat(report.getValue().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(report.getValue().getTestRunId()).isEqualTo(0x0000000100000001L);
         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
+        assertThat(report.getValue().getSourceText()).isEqualTo(MyTestClass.class.getName());
         assertThat(report.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
         assertThat(report.getValue().getNameText()).isEqualTo("dn1");
         assertThat(report.getValue().getElapsed()).isNotNull();
@@ -286,7 +285,7 @@ public class RunListenerAdapterTest {
         adapter.executionFinished(TestIdentifier.from(parent), successful());
         inOrder.verify(listener).testSetCompleted(report.capture());
         assertThat(report.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
-        assertThat(report.getValue().getSourceText()).isEqualTo("parent");
+        assertThat(report.getValue().getSourceText()).isNull();
         assertThat(report.getValue().getName()).isNull();
         assertThat(report.getValue().getNameText()).isNull();
         assertThat(report.getValue().getElapsed()).isNotNull();

@@ -478,9 +478,7 @@ public class JUnitPlatformProviderTest {
 
         assertEquals(
                 DisabledParameterizedTest.class.getName(), reportEntries.get(0).getSourceName());
-        assertEquals(
-                "JUnitPlatformProviderTest$DisabledParameterizedTest",
-                reportEntries.get(0).getSourceText());
+        assertNull(reportEntries.get(0).getSourceText());
         assertEquals("disabledParameterized(String)", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
@@ -520,8 +518,7 @@ public class JUnitPlatformProviderTest {
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals(TestClass8.class.getName(), reportEntries.get(0).getSourceName());
-        assertEquals(
-                "JUnitPlatformProviderTest$TestClass8", reportEntries.get(0).getSourceText());
+        assertNull(reportEntries.get(0).getSourceText());
         assertEquals("testParameterizedTestCases", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
@@ -556,8 +553,7 @@ public class JUnitPlatformProviderTest {
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals(TestClass9.class.getName(), reportEntries.get(0).getSourceName());
-        assertEquals(
-                "JUnitPlatformProviderTest$TestClass9", reportEntries.get(0).getSourceText());
+        assertNull(reportEntries.get(0).getSourceText());
         assertEquals("testParameterizedTestCases", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
