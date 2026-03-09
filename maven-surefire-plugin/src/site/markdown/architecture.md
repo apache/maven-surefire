@@ -188,7 +188,8 @@ graph LR
     end
 ```
 
-### new Provider Model
+### new Provider Model since 3.6.0
+
 ```mermaid
 graph LR
     subgraph "After — 3.6.0 (1 provider)"
