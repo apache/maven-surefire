@@ -342,6 +342,7 @@
             <jmx>false</jmx>-->
             <formats>
               <format>HTML</format>
+              <format>XML</format>
             </formats>
             <includes>
               <include>**/failsafe/*</include>

@@ -201,6 +201,13 @@
               <destFile>${project.build.directory}/jacoco.exec</destFile>
             </configuration>
           </execution>
+          <execution>
+            <id>report</id>
+            <goals>
+              <goal>report</goal>
+              <goal>report-integration</goal>
+            </goals>
+          </execution>
         </executions>
       </plugin>
     </plugins>
