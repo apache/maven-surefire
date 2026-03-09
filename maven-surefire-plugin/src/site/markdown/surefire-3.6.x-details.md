@@ -42,71 +42,9 @@ The result is a net deletion of **~26,000 lines** across 726 files, a version bu
 
 ---
 
-## Breaking Changes
 
-| Change | Impact | Mitigation |
-|--------|--------|------------|
-| **JUnit 3 standalone** no longer supported | Projects using only JUnit 3 must add JUnit 4.12+ dependency | Add `junit:junit:4.12` — test code unchanged |
-| **JUnit 4 < 4.12** no longer supported | Upgrade to JUnit 4.12+ | Mechanical version bump |
-| **TestNG < 6.14.3** no longer supported | Upgrade to TestNG 6.14.3+ | Mechanical version bump |
-| **POJO tests** removed | Tests without framework annotations won't be found | Add `@Test` annotations |
-| **Category expression syntax** changed | Complex boolean group expressions may behave differently under JUnit Platform tag expressions | Review and test group filter configurations |
-| **Provider selection** changed | Manually configured legacy providers still work (via SPI) but auto-detection always chooses JUnit Platform | Pin surefire 3.5.x or add legacy provider as dependency |
-
----
 
 ## What Changes for Users
-
-### Minimum version requirements
-
-| Framework | Before (3.5.x) | After (3.6.0) |
-|-----------|----------------|---------------|
-| **JUnit 3** | Supported natively | Requires JUnit 4.12+ dependency (runs via Vintage Engine) |
-| **JUnit 4** | 4.0+ | **4.12+** (runs via Vintage Engine) |
-| **JUnit 5** | Any | Any (unchanged) |
-| **TestNG** | 4.7+ | **6.14.3+** (runs via TestNG JUnit Platform Engine) |
-| **POJO tests** | Supported | **Removed** |
-
-### JUnit 3 tests still work
-
-JUnit 3 test code does not need to change. You only need to ensure your project depends on JUnit 4.12+ (which includes JUnit 3 API compatibility). The Vintage Engine executes JUnit 3 and JUnit 4 tests transparently.
-
-### POJO tests removed
-
-The `LegacyPojoStackTraceWriter` and POJO test detection (`PojoTestSetExecutor`) are removed. Tests must use a recognized framework annotation (`@Test` from JUnit or TestNG).
-
-### Group / category filtering
-
-The custom JavaCC-based category expression parser (`surefire-grouper`) is replaced by JUnit Platform's native **tag expression** syntax. For most users, `<groups>` and `<excludedGroups>` configuration works unchanged, but the underlying evaluation engine is different. Complex boolean expressions may need review.
-
-### Backward compatibility options
-
-If upgrading causes issues, users have two fallback paths:
-
-1. **Pin Surefire 3.5.x** — stay on the previous version:
-   ```xml
-   <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-surefire-plugin</artifactId>
-       <version>3.5.4</version>
-   </plugin>
-   ```
-
-2. **Use a legacy provider as a plugin dependency** (transitional):
-   ```xml
-   <plugin>
-       <groupId>org.apache.maven.plugins</groupId>
-       <artifactId>maven-surefire-plugin</artifactId>
-       <version>3.6.0</version>
-       <dependencies>
-           <dependency>
-               <groupId>org.apache.maven.surefire</groupId>
-               <artifactId>surefire-junit3</artifactId>
-               <version>3.5.4</version>
-           </dependency>
-       </dependencies>
-   </plugin>
-   ```
 
 ### New feature: Stack trace filtering
 

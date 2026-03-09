@@ -203,11 +203,24 @@ public interface SurefireProvider {
 | **TestNG** | 4.7+ | **6.14.3+** (runs via TestNG JUnit Platform Engine) |
 | **POJO tests** | Supported | **Removed** |
 
-### JUnit 3 tests still work
+### Breaking Changes since 3.6.0
+
+| Change | Impact | Mitigation |
+|--------|--------|------------|
+| **JUnit 3 standalone** no longer supported | Projects using only JUnit 3 must add JUnit 4.12+ dependency | Add `junit:junit:4.12` — test code unchanged |
+| **JUnit 4 < 4.12** no longer supported | Upgrade to JUnit 4.12+ | Mechanical version bump |
+| **TestNG < 6.14.3** no longer supported | Upgrade to TestNG 6.14.3+ | Mechanical version bump |
+| **POJO tests** removed | Tests without framework annotations won't be found | Add `@Test` annotations |
+| **Category expression syntax** changed | Complex boolean group expressions may behave differently under JUnit Platform tag expressions | Review and test group filter configurations |
+| **Provider selection** changed | Manually configured legacy providers still work (via SPI) but auto-detection always chooses JUnit Platform | Pin surefire 3.5.x or add legacy provider as dependency |
+
+---
+
+#### JUnit 3 tests still work
 
 JUnit 3 test code does not need to change. You only need to ensure your project depends on JUnit 4.12+ (which includes JUnit 3 API compatibility). The Vintage Engine executes JUnit 3 and JUnit 4 tests transparently.
 
-### POJO tests removed
+#### POJO tests removed
 
 The `LegacyPojoStackTraceWriter` and POJO test detection (`PojoTestSetExecutor`) are removed. Tests must use a recognized framework annotation (`@Test` from JUnit or TestNG).
 
