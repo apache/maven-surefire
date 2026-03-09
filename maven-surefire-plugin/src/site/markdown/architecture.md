@@ -20,7 +20,7 @@ under the License.
 # Apache Maven Surefire — Architecture Overview
 
 > Architecture reference for the `master` branch (version 3.5.x).
-> For the upcoming 3.6.0 changes, see [PR #3179 — Unified JUnit Platform Provider](pr-3179-unified-provider.md).
+> For the upcoming 3.6.x change details, see [surefire-3.6.x-details](surefire-3.6.x-details.md).
 
 ## What is Surefire?
 
@@ -71,11 +71,7 @@ graph TD
     end
 
     subgraph "Providers — Loaded in Forked JVM"
-        JP["surefire-junit-platform<br/><i>JUnit 5 / Jupiter</i>"]
-        J4["surefire-junit4"]
-        J47["surefire-junit47<br/><i>Parallel + categories</i>"]
-        J3["surefire-junit3<br/><i>JUnit 3 + POJO</i>"]
-        TNG["surefire-testng"]
+        JP["surefire-junit-platform<br/><i>unified provider for all JUnit 3+ versions</i>"]
     end
 
     subgraph "Shading"
