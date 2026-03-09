@@ -163,7 +163,8 @@ public class RunListenerAdapterTest {
 
         adapter.executionStarted(TestIdentifier.from(child));
         verify(listener)
-                .testStarting(new SimpleReportEntry(NORMAL_RUN, 0x0000000100000001L, className, null, null, null));
+                .testStarting(new SimpleReportEntry(
+                        NORMAL_RUN, 0x0000000100000001L, className, null, MY_TEST_METHOD_NAME, null));
         verifyNoMoreInteractions(listener);
 
         adapter.executionFinished(TestIdentifier.from(child), successful());
