@@ -438,7 +438,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             Optional<String> displayNameTagValue = findDisplayNameTagValue(testIdentifier);
             return new ResultDisplay(
                     classLevelName.orElse(className),
-                    displayNameTagValue.orElse(Optional.ofNullable(display).orElse(className)),
+                    displayNameTagValue.orElse(className),
                     null,
                     null,
                     classDisplayName); // != null ? classDisplayName : className);
