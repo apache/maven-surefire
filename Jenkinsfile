@@ -32,7 +32,8 @@ properties(
 final def oses = ['linux':'ubuntu']
 final def mavens = ['3.x.x']
 // all non-EOL versions and the first EA
-final def jdks = [21, 17, 11, 8]
+// final def jdks = [21, 17, 11, 8]
+final def jdks = [21]
 
 final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
 final def goals = ['clean', 'install']
@@ -141,15 +142,10 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
     } finally {
         try {
             if (makeReports) {
-                jacoco(changeBuildStatus: false,
-                        execPattern: '**/target/jacoco*.exec',
-                        sourcePattern: sourcesPatternCsv(),
-                        classPattern: classPatternCsv())
-
-                junit(healthScaleFactor: 0.0,
-                        allowEmptyResults: true,
-                        keepLongStdio: true,
-                        testResults: testReportsPatternCsv())
+                recordCoverage id: "coverage-${jdkName}", name: "Coverage ${jdkName}",
+                      tools: [[parser: 'JACOCO'], [parser: 'JUNIT', pattern: '**/target/surefire-reports/**/TEST*.xml,**/target/invoker-reports/TEST*.xml']],
+                      sourceCodeRetention: 'MODIFIED',
+                      sourceDirectories: [[path: 'src/main/java']]
             }
 
             if (errorStatus != 0) {
