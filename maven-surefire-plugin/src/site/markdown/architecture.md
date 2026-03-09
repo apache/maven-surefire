@@ -19,8 +19,6 @@ under the License.
 
 # Apache Maven Surefire — Architecture Overview
 
-> Architecture reference for the `master` branch (version 3.5.x).
-> For the upcoming 3.6.x change details, see [surefire-3.6.x-details](surefire-3.6.x-details.md).
 
 ## What is Surefire?
 
@@ -175,6 +173,35 @@ The command line for the forked JVM is built by one of three `ForkConfiguration`
 ---
 
 ## Provider Model
+
+### old Provider Model 3.5.x
+
+```mermaid
+graph LR
+    subgraph "Before — 3.5.x (5 providers)"
+        M1["AbstractSurefireMojo"] --> PD1["ProviderDetector<br/>(priority-based)"]
+        PD1 --> JP1["surefire-junit-platform"]
+        PD1 --> TNG1["surefire-testng"]
+        PD1 --> J471["surefire-junit47"]
+        PD1 --> J41["surefire-junit4"]
+        PD1 --> J31["surefire-junit3"]
+    end
+```
+
+### new Provider Model
+```mermaid
+graph LR
+    subgraph "After — 3.6.0 (1 provider)"
+        M2["AbstractSurefireMojo"] --> PD2["Simplified detection"]
+        PD2 --> JP2["surefire-junit-platform"]
+        JP2 --> VE["Vintage Engine<br/>(JUnit 3/4)"]
+        JP2 --> JE["Jupiter Engine<br/>(JUnit 5)"]
+        JP2 --> TE["TestNG Engine<br/>(TestNG)"]
+    end
+```
+
+The five `ProviderInfo` implementations (`JUnit3ProviderInfo`, `JUnit4ProviderInfo`, `JUnitCoreProviderInfo`, `TestNgProviderInfo`, `JUnitPlatformProviderInfo`) are collapsed into a unified detection path that always selects `surefire-junit-platform`. Framework-specific configuration (TestNG groups, JUnit 4 categories, parallel execution) is now **mapped to JUnit Platform launcher configuration** rather than being handled by framework-specific providers.
+
 
 ### SurefireProvider SPI
 
@@ -438,3 +465,61 @@ mvn compile -f surefire-grouper/pom.xml
 ```
 
 **Requirements**: Maven 3.6.3+, JDK 8+ (source level 8, `animal-sniffer` enforces Java 8 API).
+
+---
+
+## Stack trace filtering
+
+A new `StackTraceProvider` optimizes memory usage by truncating stack traces to 15 frames and filtering JDK packages by default. This is configurable:
+
+```xml
+<configuration>
+    <stackTraceFilterPrefixes>
+        <prefix>org.springframework.</prefix>
+        <prefix>org.junit.</prefix>
+    </stackTraceFilterPrefixes>
+</configuration>
+```
+
+When not specified or empty, the default filters (`java.`, `javax.`, `sun.`, `jdk.`) apply.
+
+---
+
+## Stack Trace Memory Optimization
+
+### Problem
+
+To associate console output with test classes, Surefire captures stack traces for every output line. With full stack traces (25–30 frames typical), this consumed 600–1,800 bytes per line.
+
+### Solution
+
+The new `StackTraceProvider` class (in `surefire-api`) introduces:
+
+- **Frame limit**: Maximum 15 frames per stack trace (sufficient to capture the test class after surefire framework frames)
+- **Package filtering**: JDK packages (`java.`, `javax.`, `sun.`, `jdk.`) filtered by default
+- **Configurable prefixes**: Users can specify custom filter prefixes that **replace** (not add to) the defaults
+
+### Memory impact
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Frames per trace | 25–30 | ≤15 |
+| Bytes per output line | 600–1,800 | 300–600 |
+| Estimated savings | — | ~50% |
+
+### Configuration
+
+```xml
+<!-- Custom prefixes (replaces defaults) -->
+<configuration>
+    <stackTraceFilterPrefixes>
+        <prefix>org.springframework.</prefix>
+        <prefix>org.junit.</prefix>
+    </stackTraceFilterPrefixes>
+</configuration>
+```
+
+```bash
+# Command line
+mvn test -Dsurefire.stackTraceFilterPrefixes=org.springframework.,org.junit.
+```
