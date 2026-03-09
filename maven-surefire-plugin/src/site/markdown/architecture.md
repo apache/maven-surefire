@@ -195,36 +195,54 @@ public interface SurefireProvider {
 
 ### Provider implementations
 
-| Provider | Module | Test framework | Key classes |
-|----------|--------|---------------|-------------|
-| **JUnit 3 + POJO** | `surefire-junit3` | JUnit 3.x, plain POJOs | `JUnit3Provider`, `PojoTestSetExecutor` |
-| **JUnit 4** | `surefire-junit4` | JUnit 4.0–4.6 | `JUnit4Provider` |
-| **JUnit 4.7+** | `surefire-junit47` | JUnit 4.7+ with parallel/categories | `JUnitCoreProvider`, `ParallelComputerBuilder` |
-| **TestNG** | `surefire-testng` | TestNG 4.7+ | `TestNGProvider`, `TestNGExecutor` |
-| **JUnit Platform** | `surefire-junit-platform` | JUnit 5, any JUnit Platform engine | `JUnitPlatformProvider`, `LauncherAdapter` |
+| Framework | Before (3.5.x) | After (3.6.0) |
+|-----------|----------------|---------------|
+| **JUnit 3** | Supported natively | Requires JUnit 4.12+ dependency (runs via Vintage Engine) |
+| **JUnit 4** | 4.0+ | **4.12+** (runs via Vintage Engine) |
+| **JUnit 5** | Any | Any (unchanged) |
+| **TestNG** | 4.7+ | **6.14.3+** (runs via TestNG JUnit Platform Engine) |
+| **POJO tests** | Supported | **Removed** |
 
-### Auto-detection
+### JUnit 3 tests still work
 
-When no provider is manually configured, Surefire scans the test classpath and selects the **first applicable** provider:
+JUnit 3 test code does not need to change. You only need to ensure your project depends on JUnit 4.12+ (which includes JUnit 3 API compatibility). The Vintage Engine executes JUnit 3 and JUnit 4 tests transparently.
 
-```mermaid
-flowchart TD
-    Start["Scan test classpath"] --> SPI{"SPI configured?<br/>(META-INF/services)"}
-    SPI -->|Yes| UseSPI["Use SPI provider(s)"]
-    SPI -->|No| JP{"JUnit Platform<br/>on classpath?"}
-    JP -->|Yes| UseJP["Use surefire-junit-platform"]
-    JP -->|No| TNG{"TestNG<br/>on classpath?"}
-    TNG -->|Yes| UseTNG["Use surefire-testng"]
-    TNG -->|No| J47{"JUnit ≥4.7 AND<br/>(parallel OR groups)?"}
-    J47 -->|Yes| UseJ47["Use surefire-junit47"]
-    J47 -->|No| J4{"JUnit 4.x<br/>on classpath?"}
-    J4 -->|Yes| UseJ4["Use surefire-junit4"]
-    J4 -->|No| J3["Use surefire-junit3<br/>(always applicable — fallback)"]
-```
+### POJO tests removed
 
-The priority order is defined in `AbstractSurefireMojo.createProviders()`. Surefire resolves the provider's dependencies at runtime via `SurefireDependencyResolver` and adds them to the forked JVM's classpath — the provider JAR is never a compile-time dependency of the plugin.
+The `LegacyPojoStackTraceWriter` and POJO test detection (`PojoTestSetExecutor`) are removed. Tests must use a recognized framework annotation (`@Test` from JUnit or TestNG).
 
----
+### Group / category filtering
+
+The custom JavaCC-based category expression parser (`surefire-grouper`) is replaced by JUnit Platform's native **tag expression** syntax. For most users, `<groups>` and `<excludedGroups>` configuration works unchanged, but the underlying evaluation engine is different. Complex boolean expressions may need review.
+
+### Backward compatibility options
+
+If upgrading causes issues, users have two fallback paths:
+
+1. **Pin Surefire 3.5.x** — stay on the previous version:
+   ```xml
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-surefire-plugin</artifactId>
+       <version>3.5.4</version>
+   </plugin>
+   ```
+
+2. **Use a legacy provider as a plugin dependency** (transitional):
+   ```xml
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-surefire-plugin</artifactId>
+       <version>3.6.0</version>
+       <dependencies>
+           <dependency>
+               <groupId>org.apache.maven.surefire</groupId>
+               <artifactId>surefire-junit3</artifactId>
+               <version>3.5.4</version>
+           </dependency>
+       </dependencies>
+   </plugin>
+   ```
 
 ## Communication Protocol
 
