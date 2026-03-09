@@ -88,7 +88,7 @@ class SurefireReportTest {
         File report = new File(
                 mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-success-false/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("images/icon_success_sml.gif");
         assertTrue(idx < 0);
@@ -104,7 +104,7 @@ class SurefireReportTest {
                 mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-linkxref-false/surefire.html");
         assertTrue(report.exists());
 
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
         assertEquals(-1, idx);
@@ -117,7 +117,7 @@ class SurefireReportTest {
         File report = new File(
                 mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-reporting-null/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
         assertTrue(idx < 0);
@@ -131,7 +131,7 @@ class SurefireReportTest {
         File report = new File(
                 mavenProject.getBasedir(), "target/site/unit/basic-surefire-report-anchor-test-cases/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         int idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testX\"></a>testX</td>");
         assertTrue(idx > 0);
@@ -148,7 +148,7 @@ class SurefireReportTest {
         File report =
                 new File(mavenProject.getBasedir(), "target/site/unit/surefire-report-single-error/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         assertThat(
                 htmlContent,
@@ -232,7 +232,7 @@ class SurefireReportTest {
         File report = new File(
                 mavenProject.getBasedir(), "target/site/unit/surefire-report-nestedClass-trimStackTrace/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         assertThat(
                 htmlContent,
@@ -293,7 +293,7 @@ class SurefireReportTest {
         mojo.execute();
         File report = new File(mavenProject.getBasedir(), "target/site/unit/surefire-report-nestedClass/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         assertThat(
                 htmlContent,
@@ -379,7 +379,7 @@ class SurefireReportTest {
         File report = new File(
                 mavenProject.getBasedir(), "target/site/unit/surefire-report-enclosed-trimStackTrace/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         assertThat(
                 htmlContent,
@@ -440,7 +440,7 @@ class SurefireReportTest {
         mojo.execute();
         File report = new File(mavenProject.getBasedir(), "target/site/unit/surefire-report-enclosed/surefire.html");
         assertTrue(report.exists());
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
         assertThat(
                 htmlContent,
