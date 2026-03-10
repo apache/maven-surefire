@@ -79,28 +79,11 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <propertyName>jacoco.agent</propertyName>
-        </configuration>
-        <executions>
-          <execution>
-            <id>jacoco-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+          <argLine>${jvm.args.tests} @{argLine}</argLine>
         </configuration>
         <dependencies>
           <dependency>

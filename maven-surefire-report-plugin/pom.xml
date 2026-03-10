@@ -205,22 +205,20 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <propertyName>jacoco.agent</propertyName>
-        </configuration>
         <executions>
           <execution>
-            <id>jacoco-agent</id>
+            <id>jacoco-report</id>
             <goals>
-              <goal>prepare-agent</goal>
+              <goal>report-aggregate</goal>
             </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+          <argLine>${jvm.args.tests} @{argLine}</argLine>
           <classpathDependencyExcludes>
             <classpathDependencyExclude>org.fusesource.jansi:jansi</classpathDependencyExclude>
           </classpathDependencyExcludes>

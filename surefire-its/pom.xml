@@ -43,6 +43,7 @@
     <junit.vintage.execution.parallel.classes>false</junit.vintage.execution.parallel.classes>
     <junit.vintage.execution.parallel.methods>false</junit.vintage.execution.parallel.methods>
     <junit.vintage.execution.parallel.pool>5</junit.vintage.execution.parallel.pool>
+    <maven.clean.fast>true</maven.clean.fast>
   </properties>
 
   <dependencies>
@@ -55,6 +56,18 @@
     <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-logger-api</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-failsafe-plugin</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
@@ -188,25 +201,18 @@
           <execution>
             <id>jacoco-agent</id>
             <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>jacoco-agent-it</id>
-            <goals>
               <goal>prepare-agent-integration</goal>
             </goals>
             <configuration>
               <propertyName>jacoco-it.agent</propertyName>
-              <destFile>${project.build.directory}/jacoco.exec</destFile>
             </configuration>
           </execution>
           <execution>
-            <id>report</id>
+            <id>jacoco-report</id>
             <goals>
-              <goal>report</goal>
-              <goal>report-integration</goal>
+              <goal>report-aggregate</goal>
             </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>
