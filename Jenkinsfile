@@ -143,9 +143,12 @@ def buildProcess(String stageKey, String jdkName, String mvnName, goals, options
         try {
             if (makeReports) {
                 recordCoverage id: "coverage-${jdkName}", name: "Coverage ${jdkName}",
-                      tools: [[parser: 'JACOCO'], [parser: 'JUNIT', pattern: '**/target/surefire-reports/**/TEST*.xml,**/target/invoker-reports/TEST*.xml']],
+                      tools: [
+                        [parser: 'JACOCO'],
+                        [parser: 'JUNIT', pattern: '**/target/surefire-reports/**/TEST*.xml,**/target/failsafe-reports/**/TEST*.xml,**/target/invoker-reports/TEST*.xml']
+                      ],
                       sourceCodeRetention: 'MODIFIED',
-                      sourceDirectories: [[path: 'src/main/java']],
+                      sourceDirectories: [[path: '**/src/main/java']],
                       ignoreParsingErrors: true
             }
 
