@@ -548,7 +548,7 @@ class SurefireReportTest {
 
         assertTrue(report.exists());
 
-        String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
+        String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
         assertThat(
                 htmlContent,
                 containsString(toSystemNewLine("<section><a id=\"Acceptance_Test\"></a>\n<h1>Acceptance Test</h1>")));
