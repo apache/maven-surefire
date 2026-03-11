@@ -22,20 +22,21 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.report.FileReporter;
 import org.apache.maven.plugin.surefire.report.ReportEntryType;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public class FileReporterTest extends TestCase {
+public class FileReporterTest {
 
     private FileReporter reporter;
 
@@ -43,6 +44,7 @@ public class FileReporterTest extends TestCase {
 
     private static final String TEST_NAME = "org.apache.maven.surefire.report.FileReporterTest";
 
+    @Test
     public void testFileNameWithoutSuffix() {
         File reportDir = new File("target");
         reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, getClass().getName(), null, TEST_NAME, null);
@@ -53,8 +55,8 @@ public class FileReporterTest extends TestCase {
 
         File expectedReportFile = new File(reportDir, TEST_NAME + ".txt");
         assertTrue(
-                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                expectedReportFile.exists());
+                expectedReportFile.exists(),
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }
@@ -63,6 +65,7 @@ public class FileReporterTest extends TestCase {
         return new TestSetStats(true, true);
     }
 
+    @Test
     public void testFileNameWithSuffix() {
         File reportDir = new File("target");
         String suffixText = "sampleSuffixText";
@@ -74,8 +77,8 @@ public class FileReporterTest extends TestCase {
 
         File expectedReportFile = new File(reportDir, TEST_NAME + "-" + suffixText + ".txt");
         assertTrue(
-                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                expectedReportFile.exists());
+                expectedReportFile.exists(),
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
     }

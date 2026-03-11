@@ -24,7 +24,7 @@ import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.shared.utils.xml.Xpp3DomBuilder.build;
 import static org.hamcrest.MatcherAssert.assertThat;

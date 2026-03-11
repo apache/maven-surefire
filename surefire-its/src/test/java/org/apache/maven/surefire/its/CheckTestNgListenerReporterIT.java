@@ -23,12 +23,8 @@ import java.util.Collection;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import static org.junit.runners.Parameterized.Parameter;
-import static org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Test simple TestNG listener and reporter
@@ -36,27 +32,18 @@ import static org.junit.runners.Parameterized.Parameters;
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  * @author <a href="mailto:krosenvold@apache.org">Kristian Rosenvold</a>
  */
-@RunWith(Parameterized.class)
 @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:linelength"})
 public class CheckTestNgListenerReporterIT extends SurefireJUnit4IntegrationTestCase {
-    @Parameters(name = "{index}: TestNG {0}")
-    public static Collection<Object[]> data() {
+    static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             {"6.14.3", null},
             {"7.0.0", null} // Currently latest TestNG version
         });
     }
 
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String version;
-
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String classifier;
-
-    @Test
-    public void testNgListenerReporter() {
+    @ParameterizedTest(name = "{index}: TestNG {0}")
+    @MethodSource("data")
+    void testNgListenerReporter(String version, String classifier) {
 
         final SurefireLauncher launcher =
                 unpack("testng-listener-reporter", "_" + version).sysProp("testNgVersion", version);

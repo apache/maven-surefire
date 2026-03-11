@@ -28,9 +28,9 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
@@ -39,7 +39,7 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersionExcluded;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Test a directory with an umlaut
@@ -49,7 +49,7 @@ import static org.junit.Assume.assumeTrue;
 public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
     private String localRepo;
 
-    @Before
+    @BeforeEach
     public void backupLocalRepo() {
         // We touched the Javac bug, see the discussion [1].
         // The fix [2] will be in Java 17, not in Java 16. So we cannot use Java 16 then!
@@ -60,7 +60,7 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
         localRepo = System.getProperty("maven.repo.local");
     }
 
-    @After
+    @AfterEach
     public void restoreLocalRepo() {
         if (localRepo == null) {
             System.clearProperty("maven.repo.local");

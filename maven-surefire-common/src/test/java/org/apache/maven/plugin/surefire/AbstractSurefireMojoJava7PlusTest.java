@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,13 +46,14 @@ import org.codehaus.plexus.languages.java.jpms.ModuleNameSource;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
@@ -63,24 +65,21 @@ import static org.assertj.core.data.Index.atIndex;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
-import static org.powermock.api.mockito.PowerMockito.doReturn;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Test for {@link AbstractSurefireMojo}.
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({AbstractSurefireMojo.class, ResolvePathsRequest.class})
-@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class AbstractSurefireMojoJava7PlusTest {
     @Mock
     private ArtifactHandler handler;
@@ -94,8 +93,8 @@ public class AbstractSurefireMojoJava7PlusTest {
     @Test
     @SuppressWarnings("checkstyle:linelength")
     public void shouldHaveStartupConfigForModularClasspath() throws Exception {
-        AbstractSurefireMojo mojo = spy(new Mojo());
-        doReturn(locationManager).when(mojo, "getLocationManager");
+        Mojo mojo = spy(new Mojo());
+        setInternalState(mojo, "locationManager", locationManager);
 
         when(handler.isAddedToClasspath()).thenReturn(true);
 
@@ -121,9 +120,8 @@ public class AbstractSurefireMojoJava7PlusTest {
         TestClassPath testClasspath =
                 new TestClassPath(asList(modular, nonModular, junit, hamcrest), classesDir, testClassesDir, null);
 
-        doReturn(testClasspath).when(mojo, "generateTestClasspath");
-        doReturn(1).when(mojo, "getEffectiveForkCount");
-        doReturn(true).when(mojo, "effectiveIsEnableAssertions");
+        doReturn(1).when(mojo).getEffectiveForkCount();
+        doReturn(true).when(mojo).effectiveIsEnableAssertions();
         when(mojo.isChildDelegation()).thenReturn(false);
         when(mojo.getTestClassesDirectory()).thenReturn(testClassesDir);
 
@@ -141,17 +139,14 @@ public class AbstractSurefireMojoJava7PlusTest {
         ResolvePathResult moduleInfo = mock(ResolvePathResult.class);
         when(moduleInfo.getModuleDescriptor()).thenReturn(descriptor);
 
+        when(descriptor.name()).thenReturn("abc");
+
         @SuppressWarnings("unchecked")
         ResolvePathsRequest<String> req = mock(ResolvePathsRequest.class);
-        mockStatic(ResolvePathsRequest.class);
-        when(ResolvePathsRequest.ofStrings(eq(testClasspath.toClasspath().getClassPath())))
-                .thenReturn(req);
         when(req.setJdkHome(anyString())).thenReturn(req);
         when(req.setIncludeStatic(true)).thenReturn(req);
         when(req.setIncludeAllProviders(anyBoolean())).thenReturn(req);
         when(req.setModuleDescriptor(eq(descriptor))).thenReturn(req);
-
-        when(descriptor.name()).thenReturn("abc");
 
         @SuppressWarnings("unchecked")
         ResolvePathsResult<String> res = mock(ResolvePathsResult.class);
@@ -223,70 +218,71 @@ public class AbstractSurefireMojoJava7PlusTest {
         when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
         when(providerInfo.getProviderClasspath()).thenReturn(providerClasspath);
 
-        StartupConfiguration conf = invokeMethod(
-                mojo,
-                "newStartupConfigWithModularPath",
-                classLoaderConfiguration,
-                providerInfo,
-                new ResolvePathResultWrapper(moduleInfo, true),
-                scanResult,
-                "",
-                testClasspath);
+        try (MockedStatic<ResolvePathsRequest> reqMock = mockStatic(ResolvePathsRequest.class)) {
+            reqMock.when(() -> ResolvePathsRequest.ofStrings(
+                            eq(testClasspath.toClasspath().getClassPath())))
+                    .thenReturn(req);
 
-        verify(mojo, times(1)).effectiveIsEnableAssertions();
-        verify(mojo, times(1)).isChildDelegation();
-        verify(mojo, times(1)).getTestClassesDirectory();
-        verify(scanResult, times(1)).getClasses();
-        verifyStatic(ResolvePathsRequest.class, times(1));
-        ResolvePathsRequest.ofStrings(eq(testClasspath.toClasspath().getClassPath()));
-        verify(req, times(1)).setModuleDescriptor(eq(descriptor));
-        verify(res, times(1)).getClasspathElements();
-        verify(res, times(1)).getModulepathElements();
-        verify(locationManager, times(1)).resolvePaths(eq(req));
-        ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Exception> argument2 = ArgumentCaptor.forClass(Exception.class);
-        verify(logger, times(1)).warn(argument1.capture(), argument2.capture());
-        assertThat(argument1.getValue()).isEqualTo("Exception for 'java 1.8'.");
-        assertThat(argument2.getValue().getMessage()).isEqualTo("low version");
-        ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
-        verify(logger, times(9)).debug(argument.capture());
-        assertThat(argument.getAllValues())
-                .containsExactly(
-                        "main module descriptor name: abc",
-                        "test classpath:  non-modular.jar  junit.jar  hamcrest.jar",
-                        "test modulepath:  modular.jar  classes",
-                        "provider classpath:  surefire-provider.jar",
-                        "test(compact) classpath:  non-modular.jar  junit.jar  hamcrest.jar",
-                        "test(compact) modulepath:  modular.jar  classes",
-                        "provider(compact) classpath:  surefire-provider.jar",
-                        "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-booter.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-extensions-spi.jar  surefire-logger-api.jar  surefire-shared-utils.jar",
-                        "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-booter.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-extensions-spi.jar  surefire-logger-api.jar  surefire-shared-utils.jar");
+            StartupConfiguration conf = invokeMethod(
+                    mojo,
+                    "newStartupConfigWithModularPath",
+                    classLoaderConfiguration,
+                    providerInfo,
+                    new ResolvePathResultWrapper(moduleInfo, true),
+                    scanResult,
+                    "",
+                    testClasspath);
 
-        assertThat(conf).isNotNull();
-        assertThat(conf.isShadefire()).isFalse();
-        assertThat(conf.isProviderMainClass()).isFalse();
-        assertThat(conf.isManifestOnlyJarRequestedAndUsable()).isFalse();
-        assertThat(conf.getClassLoaderConfiguration()).isSameAs(classLoaderConfiguration);
-        assertThat(conf.getProviderClassName()).isEqualTo("org.asf.Provider");
-        assertThat(conf.getActualClassName()).isEqualTo("org.asf.Provider");
-        assertThat(conf.getClasspathConfiguration()).isNotNull();
-        assertThat((Object) conf.getClasspathConfiguration().getTestClasspath())
-                .isEqualTo(new Classpath(res.getClasspathElements()));
-        assertThat((Object) conf.getClasspathConfiguration().getProviderClasspath())
-                .isEqualTo(new Classpath(singleton("surefire-provider.jar")));
-        assertThat(conf.getClasspathConfiguration()).isInstanceOf(ModularClasspathConfiguration.class);
-        ModularClasspathConfiguration mcc = (ModularClasspathConfiguration) conf.getClasspathConfiguration();
-        assertThat(mcc.getModularClasspath().getModuleNameFromDescriptor()).isEqualTo("abc");
-        assertThat(mcc.getModularClasspath().getPackages()).containsOnly("org.apache");
-        assertThat(mcc.getModularClasspath().getPatchFile().getAbsolutePath()).isEqualTo("test-classes");
-        assertThat(mcc.getModularClasspath().getModulePath()).containsExactly("modular.jar", "classes");
+            verify(mojo, times(1)).effectiveIsEnableAssertions();
+            verify(mojo, times(1)).isChildDelegation();
+            verify(mojo, times(1)).getTestClassesDirectory();
+            verify(scanResult, times(1)).getClasses();
+            ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<Exception> argument2 = ArgumentCaptor.forClass(Exception.class);
+            verify(logger, times(1)).warn(argument1.capture(), argument2.capture());
+            assertThat(argument1.getValue()).isEqualTo("Exception for 'java 1.8'.");
+            assertThat(argument2.getValue().getMessage()).isEqualTo("low version");
+            ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+            verify(logger, times(9)).debug(argument.capture());
+            assertThat(argument.getAllValues())
+                    .containsExactly(
+                            "main module descriptor name: abc",
+                            "test classpath:  non-modular.jar  junit.jar  hamcrest.jar",
+                            "test modulepath:  modular.jar  classes",
+                            "provider classpath:  surefire-provider.jar",
+                            "test(compact) classpath:  non-modular.jar  junit.jar  hamcrest.jar",
+                            "test(compact) modulepath:  modular.jar  classes",
+                            "provider(compact) classpath:  surefire-provider.jar",
+                            "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-booter.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-extensions-spi.jar  surefire-logger-api.jar  surefire-shared-utils.jar",
+                            "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-booter.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-extensions-spi.jar  surefire-logger-api.jar  surefire-shared-utils.jar");
+
+            assertThat(conf).isNotNull();
+            assertThat(conf.isShadefire()).isFalse();
+            assertThat(conf.isProviderMainClass()).isFalse();
+            assertThat(conf.isManifestOnlyJarRequestedAndUsable()).isFalse();
+            assertThat(conf.getClassLoaderConfiguration()).isSameAs(classLoaderConfiguration);
+            assertThat(conf.getProviderClassName()).isEqualTo("org.asf.Provider");
+            assertThat(conf.getActualClassName()).isEqualTo("org.asf.Provider");
+            assertThat(conf.getClasspathConfiguration()).isNotNull();
+            assertThat((Object) conf.getClasspathConfiguration().getTestClasspath())
+                    .isEqualTo(new Classpath(res.getClasspathElements()));
+            assertThat((Object) conf.getClasspathConfiguration().getProviderClasspath())
+                    .isEqualTo(new Classpath(singleton("surefire-provider.jar")));
+            assertThat(conf.getClasspathConfiguration()).isInstanceOf(ModularClasspathConfiguration.class);
+            ModularClasspathConfiguration mcc = (ModularClasspathConfiguration) conf.getClasspathConfiguration();
+            assertThat(mcc.getModularClasspath().getModuleNameFromDescriptor()).isEqualTo("abc");
+            assertThat(mcc.getModularClasspath().getPackages()).containsOnly("org.apache");
+            assertThat(mcc.getModularClasspath().getPatchFile().getAbsolutePath())
+                    .isEqualTo("test-classes");
+            assertThat(mcc.getModularClasspath().getModulePath()).containsExactly("modular.jar", "classes");
+        }
     }
 
     @Test
     @SuppressWarnings("checkstyle:linelength")
     public void shouldHaveStartupConfigForModularClasspathAndTestDescriptor() throws Exception {
-        AbstractSurefireMojo mojo = spy(new Mojo());
-        doReturn(locationManager).when(mojo, "getLocationManager");
+        Mojo mojo = spy(new Mojo());
+        setInternalState(mojo, "locationManager", locationManager);
 
         when(handler.isAddedToClasspath()).thenReturn(true);
 
@@ -312,9 +308,8 @@ public class AbstractSurefireMojoJava7PlusTest {
         TestClassPath testClasspath =
                 new TestClassPath(asList(modular, nonModular, junit, hamcrest), classesDir, testClassesDir, null);
 
-        doReturn(testClasspath).when(mojo, "generateTestClasspath");
-        doReturn(1).when(mojo, "getEffectiveForkCount");
-        doReturn(true).when(mojo, "effectiveIsEnableAssertions");
+        doReturn(1).when(mojo).getEffectiveForkCount();
+        doReturn(true).when(mojo).effectiveIsEnableAssertions();
         when(mojo.isChildDelegation()).thenReturn(false);
         when(mojo.getTestClassesDirectory()).thenReturn(testClassesDir);
 
@@ -495,6 +490,56 @@ public class AbstractSurefireMojoJava7PlusTest {
         File f = mock(File.class);
         when(f.getAbsolutePath()).thenReturn(absolutePath);
         return f;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target instanceof Class ? (Class<?>) target : target.getClass();
+        while (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    return (T) method.invoke(target instanceof Class ? null : target, args);
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchMethodException(methodName);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Class<?>[] paramTypes, Object... args)
+            throws Exception {
+        Class<?> clazz = target instanceof Class ? (Class<?>) target : target.getClass();
+        while (clazz != null) {
+            try {
+                Method method = clazz.getDeclaredMethod(methodName, paramTypes);
+                method.setAccessible(true);
+                return (T) method.invoke(target instanceof Class ? null : target, args);
+            } catch (NoSuchMethodException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchMethodException(methodName);
+    }
+
+    private static void setInternalState(Object target, String fieldName, Object value) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    java.lang.reflect.Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    field.set(target, value);
+                    return;
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

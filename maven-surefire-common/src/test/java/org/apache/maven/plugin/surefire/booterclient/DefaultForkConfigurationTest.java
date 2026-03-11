@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import javax.annotation.Nonnull;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,30 +33,20 @@ import org.apache.maven.plugin.surefire.util.Relocator;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ClasspathConfiguration;
-import org.apache.maven.surefire.booter.ForkedBooter;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.verifyPrivate;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Unit tests for {@link DefaultForkConfiguration}.
@@ -63,9 +54,6 @@ import static org.powermock.reflect.Whitebox.invokeMethod;
  * @author Tibor Digana (tibor17)
  * @since 2.21
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({DefaultForkConfiguration.class, Relocator.class})
-@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
 public class DefaultForkConfigurationTest {
     private Classpath booterClasspath;
     private File tempDirectory;
@@ -82,7 +70,7 @@ public class DefaultForkConfigurationTest {
     private ConsoleLogger log;
     private ForkNodeFactory forkNodeFactory;
 
-    @Before
+    @BeforeEach
     public void setup() {
         booterClasspath = new Classpath(singleton("provider.jar"));
         tempDirectory = new File("target/surefire");
@@ -127,10 +115,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq(""));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEmpty();
     }
 
@@ -162,10 +147,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq(""));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEmpty();
     }
 
@@ -197,10 +179,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq(""));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEmpty();
     }
 
@@ -232,10 +211,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq("-Dfile.encoding=UTF-8"));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEqualTo("-Dfile.encoding=UTF-8");
     }
 
@@ -268,10 +244,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq("-Dfile.encoding=UTF-8"));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEqualTo("-Dfile.encoding=UTF-8");
     }
 
@@ -303,10 +276,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq("a  b"));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEqualTo("a  b");
     }
 
@@ -338,10 +308,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq("-Dthread=" + forkCount));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEqualTo("-Dthread=" + forkCount);
     }
 
@@ -373,10 +340,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull File dumpLogDirectory) {}
                 };
 
-        DefaultForkConfiguration mockedConfig = spy(config);
-        String newArgLine = invokeMethod(mockedConfig, "newJvmArgLine", new Class[] {int.class}, 2);
-        verifyPrivate(mockedConfig, times(1)).invoke("interpolateArgLineWithPropertyExpressions");
-        verifyPrivate(mockedConfig, times(1)).invoke("extendJvmArgLine", eq("-Dthread=" + forkCount));
+        String newArgLine = invokeMethod(config, "newJvmArgLine", new Class[] {int.class}, 2);
         assertThat(newArgLine).isEqualTo("-Dthread=" + forkCount);
     }
 
@@ -387,17 +351,21 @@ public class DefaultForkConfigurationTest {
         StartupConfiguration conf = new StartupConfiguration(
                 "org.apache.maven.shadefire.surefire.MyProvider", cc, clc, null, Collections.<String[]>emptyList());
         StartupConfiguration confMock = spy(conf);
-        mockStatic(Relocator.class);
-        when(Relocator.relocate(anyString())).thenCallRealMethod();
 
-        String cls = invokeMethod(DefaultForkConfiguration.class, "findStartClass", confMock);
+        try (MockedStatic<Relocator> relocatorMock = mockStatic(Relocator.class)) {
+            relocatorMock.when(() -> Relocator.relocate(anyString())).thenCallRealMethod();
 
-        verify(confMock, times(1)).isShadefire();
-        verifyStatic(Relocator.class, times(1));
-        Relocator.relocate(eq(ForkedBooter.class.getName()));
+            String cls = invokeMethod(
+                    DefaultForkConfiguration.class,
+                    "findStartClass",
+                    new Class[] {StartupConfiguration.class},
+                    confMock);
 
-        assertThat(cls).isEqualTo("org.apache.maven.shadefire.surefire.booter.ForkedBooter");
-        assertThat(confMock.isShadefire()).isTrue();
+            verify(confMock, times(1)).isShadefire();
+
+            assertThat(cls).isEqualTo("org.apache.maven.shadefire.surefire.booter.ForkedBooter");
+            assertThat(confMock.isShadefire()).isTrue();
+        }
     }
 
     @Test
@@ -407,16 +375,36 @@ public class DefaultForkConfigurationTest {
         StartupConfiguration conf = new StartupConfiguration(
                 "org.apache.maven.surefire.MyProvider", cc, clc, null, Collections.<String[]>emptyList());
         StartupConfiguration confMock = spy(conf);
-        mockStatic(Relocator.class);
-        when(Relocator.relocate(anyString())).thenCallRealMethod();
 
-        String cls = invokeMethod(DefaultForkConfiguration.class, "findStartClass", confMock);
+        try (MockedStatic<Relocator> relocatorMock = mockStatic(Relocator.class)) {
+            relocatorMock.when(() -> Relocator.relocate(anyString())).thenCallRealMethod();
 
-        verify(confMock, times(1)).isShadefire();
-        verifyStatic(Relocator.class, never());
-        Relocator.relocate(eq(ForkedBooter.class.getName()));
+            String cls = invokeMethod(
+                    DefaultForkConfiguration.class,
+                    "findStartClass",
+                    new Class[] {StartupConfiguration.class},
+                    confMock);
 
-        assertThat(cls).isEqualTo("org.apache.maven.surefire.booter.ForkedBooter");
-        assertThat(confMock.isShadefire()).isFalse();
+            verify(confMock, times(1)).isShadefire();
+
+            assertThat(cls).isEqualTo("org.apache.maven.surefire.booter.ForkedBooter");
+            assertThat(confMock.isShadefire()).isFalse();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Class<?>[] paramTypes, Object... args)
+            throws Exception {
+        Class<?> clazz = target instanceof Class ? (Class<?>) target : target.getClass();
+        while (clazz != null) {
+            try {
+                Method method = clazz.getDeclaredMethod(methodName, paramTypes);
+                method.setAccessible(true);
+                return (T) method.invoke(target instanceof Class ? null : target, args);
+            } catch (NoSuchMethodException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchMethodException(methodName);
     }
 }

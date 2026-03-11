@@ -27,11 +27,11 @@ import java.util.regex.Pattern;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ReportTestTimestampIT extends SurefireJUnit4IntegrationTestCase {
     @Test
@@ -43,11 +43,11 @@ public class ReportTestTimestampIT extends SurefireJUnit4IntegrationTestCase {
 
         // testsuite has no timestamp
         assertFalse(
-                "Unexpected timestamp on testsuite", xml.matches(".*<testsuite[^>]*\\btimestamp=\"[^\"]+\"[^>]*>.*"));
+                xml.matches(".*<testsuite[^>]*\\btimestamp=\"[^\"]+\"[^>]*>.*"), "Unexpected timestamp on testsuite");
 
         // no testcase has timestamp
         int testcaseWithTsCount = countMatches(xml, "<testcase[^>]*\\btimestamp=\"[^\"]+\"");
-        assertEquals("Unexpected timestamp on testcase", 0, testcaseWithTsCount);
+        assertEquals(0, testcaseWithTsCount, "Unexpected timestamp on testcase");
     }
 
     @Test
@@ -58,12 +58,12 @@ public class ReportTestTimestampIT extends SurefireJUnit4IntegrationTestCase {
         String xml = reportFile.slurpFile();
 
         // testsuite has timestamp
-        assertTrue("Missing timestamp on testsuite", xml.matches(".*<testsuite[^>]*\\btimestamp=\"[^\"]+\"[^>]*>.*"));
+        assertTrue(xml.matches(".*<testsuite[^>]*\\btimestamp=\"[^\"]+\"[^>]*>.*"), "Missing timestamp on testsuite");
 
         // each testcase has timestamp
         int testcaseCount = countMatches(xml, "<testcase");
         int testcaseWithTsCount = countMatches(xml, "<testcase[^>]*\\btimestamp=\"[^\"]+\"");
-        assertEquals("Not all testcases have timestamp", testcaseCount, testcaseWithTsCount);
+        assertEquals(testcaseCount, testcaseWithTsCount, "Not all testcases have timestamp");
 
         assertAllTimestampsIso(xml);
     }
@@ -81,7 +81,7 @@ public class ReportTestTimestampIT extends SurefireJUnit4IntegrationTestCase {
         Matcher matcher = Pattern.compile("timestamp=\"([^\"]+)\"").matcher(xml);
         while (matcher.find()) {
             String timestamp = matcher.group(1);
-            assertTrue("Invalid ISO timestamp: " + timestamp, isIsoTimestamp(timestamp));
+            assertTrue(isIsoTimestamp(timestamp), "Invalid ISO timestamp: " + timestamp);
         }
     }
 

@@ -29,10 +29,10 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test forking in a multi-module project with parallel maven builds
@@ -46,9 +46,9 @@ public class ForkCountMultiModuleIT extends SurefireJUnit4IntegrationTestCase {
         assertAllDifferentPids(pids);
         int matchesOne = countSuffixMatches(pids, "_1_1");
         int matchesTwo = countSuffixMatches(pids, "_2_2");
-        assertTrue("At least one fork had forkNumber 1", matchesOne >= 1);
-        assertTrue("At least one fork had forkNumber 2", matchesTwo >= 1);
-        assertEquals("No other forkNumbers than 1 and 2 have been used", 6, matchesOne + matchesTwo);
+        assertTrue(matchesOne >= 1, "At least one fork had forkNumber 1");
+        assertTrue(matchesTwo >= 1, "At least one fork had forkNumber 2");
+        assertEquals(6, matchesOne + matchesTwo, "No other forkNumbers than 1 and 2 have been used");
     }
 
     @Test
@@ -67,14 +67,14 @@ public class ForkCountMultiModuleIT extends SurefireJUnit4IntegrationTestCase {
         int matchesTwo = countSuffixMatches(pids, "_2_2");
         int matchesThree = countSuffixMatches(pids, "_3_3");
         int matchesFour = countSuffixMatches(pids, "_4_4");
-        assertTrue("At least one fork had forkNumber 1", matchesOne >= 1);
-        assertTrue("At least one fork had forkNumber 2", matchesTwo >= 1);
-        assertTrue("At least one fork had forkNumber 3", matchesThree >= 1);
-        assertTrue("At least one fork had forkNumber 4", matchesFour >= 1);
+        assertTrue(matchesOne >= 1, "At least one fork had forkNumber 1");
+        assertTrue(matchesTwo >= 1, "At least one fork had forkNumber 2");
+        assertTrue(matchesThree >= 1, "At least one fork had forkNumber 3");
+        assertTrue(matchesFour >= 1, "At least one fork had forkNumber 4");
         assertEquals(
-                "No other forkNumbers than 1, 2, 3, or 4 have been used",
                 6,
-                matchesOne + matchesTwo + matchesThree + matchesFour);
+                matchesOne + matchesTwo + matchesThree + matchesFour,
+                "No other forkNumbers than 1, 2, 3, or 4 have been used");
     }
 
     @Test
@@ -86,20 +86,20 @@ public class ForkCountMultiModuleIT extends SurefireJUnit4IntegrationTestCase {
         int matchesTwo = countSuffixMatches(pids, "_2_2");
         int matchesThree = countSuffixMatches(pids, "_3_3");
         int matchesFour = countSuffixMatches(pids, "_4_4");
-        assertTrue("At least one fork had forkNumber 1", matchesOne >= 1);
-        assertTrue("At least one fork had forkNumber 2", matchesTwo >= 1);
-        assertTrue("At least one fork had forkNumber 3", matchesThree >= 1);
-        assertTrue("At least one fork had forkNumber 4", matchesFour >= 1);
+        assertTrue(matchesOne >= 1, "At least one fork had forkNumber 1");
+        assertTrue(matchesTwo >= 1, "At least one fork had forkNumber 2");
+        assertTrue(matchesThree >= 1, "At least one fork had forkNumber 3");
+        assertTrue(matchesFour >= 1, "At least one fork had forkNumber 4");
         assertEquals(
-                "No other forkNumbers than 1, 2, 3, or 4 have been used",
                 6,
-                matchesOne + matchesTwo + matchesThree + matchesFour);
+                matchesOne + matchesTwo + matchesThree + matchesFour,
+                "No other forkNumbers than 1, 2, 3, or 4 have been used");
     }
 
     private void assertEndWith(List<String> pids, String suffix, int expectedMatches) {
         int matches = countSuffixMatches(pids, suffix);
 
-        assertEquals("suffix " + suffix + " matched the correct number of pids", expectedMatches, matches);
+        assertEquals(expectedMatches, matches, "suffix " + suffix + " matched the correct number of pids");
     }
 
     private int countSuffixMatches(List<String> pids, String suffix) {
@@ -114,7 +114,7 @@ public class ForkCountMultiModuleIT extends SurefireJUnit4IntegrationTestCase {
 
     private void assertDifferentPids(List<String> pids, int numOfDifferentPids) {
         Set<String> pidSet = new HashSet<>(pids);
-        assertEquals("number of different pids is not as expected", numOfDifferentPids, pidSet.size());
+        assertEquals(numOfDifferentPids, pidSet.size(), "number of different pids is not as expected");
     }
 
     private void assertAllDifferentPids(List<String> pids) {

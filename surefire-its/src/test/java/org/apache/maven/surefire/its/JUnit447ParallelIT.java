@@ -23,8 +23,8 @@ import java.util.Iterator;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 2.16
  */
 @SuppressWarnings("checkstyle:magicnumber")
-@Ignore
+@Disabled
 public class JUnit447ParallelIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test

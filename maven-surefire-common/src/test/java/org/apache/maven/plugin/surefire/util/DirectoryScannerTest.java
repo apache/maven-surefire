@@ -19,62 +19,53 @@
 package org.apache.maven.plugin.surefire.util;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.util.ScanResult;
-import org.hamcrest.Matcher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.runners.Parameterized.Parameter;
-import static org.junit.runners.Parameterized.Parameters;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Kristian Rosenvold
  */
-@RunWith(Parameterized.class)
 public class DirectoryScannerTest {
-    @Parameters(name = "\"{0}\" should count {1} classes")
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            {"**/*ZT*A.java", is(3)},
-            {"**/*ZT*A.java#testMethod", is(3)},
-            {"**/*ZT?A.java#testMethod, !*ZT2A", is(2)},
-            {"**/*ZT?A.java#testMethod, !*ZT2A#testMethod", is(3)},
-            {"#testMethod", is(greaterThanOrEqualTo(3))}
-        });
+    static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of("**/*ZT*A.java", 3, true),
+                Arguments.of("**/*ZT*A.java#testMethod", 3, true),
+                Arguments.of("**/*ZT?A.java#testMethod, !*ZT2A", 2, true),
+                Arguments.of("**/*ZT?A.java#testMethod, !*ZT2A#testMethod", 3, true),
+                Arguments.of("#testMethod", 3, false));
     }
 
-    @Parameter(0)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String filter;
-
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public Matcher<? super Integer> expectedClassesCount;
-
-    @Test
-    public void locateTestClasses() throws Exception {
+    @ParameterizedTest(name = "\"{0}\" should count {1} classes")
+    @MethodSource("data")
+    public void locateTestClasses(String filter, int expectedClassesCount, boolean exact) throws Exception {
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File(new File("target/test-classes").getCanonicalPath());
         TestListResolver resolver = new TestListResolver(filter);
         DirectoryScanner surefireDirectoryScanner = new DirectoryScanner(baseDir, resolver);
 
         ScanResult classNames = surefireDirectoryScanner.scan();
-        assertThat(classNames, is(notNullValue()));
-        assertThat(classNames.size(), is(expectedClassesCount));
+        assertThat(classNames).isNotNull();
+        if (exact) {
+            assertThat(classNames.size()).isEqualTo(expectedClassesCount);
+        } else {
+            assertThat(classNames.size()).isGreaterThanOrEqualTo(expectedClassesCount);
+        }
 
         Map<String, String> props = new HashMap<>();
         classNames.writeTo(props);
-        assertThat(props.values(), hasSize(expectedClassesCount));
+        if (exact) {
+            assertThat(props.values()).hasSize(expectedClassesCount);
+        } else {
+            assertThat(props.values().size()).isGreaterThanOrEqualTo(expectedClassesCount);
+        }
     }
 }

@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Integration test for <a href="https://issues.apache.org/jira/browse/SUREFIRE-2190">SUREFIRE-2190</a>.

@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;

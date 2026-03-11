@@ -19,7 +19,7 @@
 package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
 import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;

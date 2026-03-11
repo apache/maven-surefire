@@ -26,17 +26,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class SurefireReportParserTest extends TestCase {
-    public void testParseXMLReportFiles() throws Exception {
+class SurefireReportParserTest {
+    @Test
+    void testParseXMLReportFiles() throws Exception {
         SurefireReportParser parser = new SurefireReportParser(singletonList(getTestDir()), new NullConsoleLogger());
 
         List<ReportTestSuite> suites = parser.parseXMLReportFiles();
@@ -44,7 +47,7 @@ public class SurefireReportParserTest extends TestCase {
         assertEquals(8, suites.size());
 
         for (ReportTestSuite suite : suites) {
-            assertNotNull(suite.getName() + " was not correctly parsed", suite.getTestCases());
+            assertNotNull(suite.getTestCases(), suite.getName() + " was not correctly parsed");
             assertNotNull(suite.getName());
             assertNotNull(suite.getPackageName());
         }
@@ -56,7 +59,8 @@ public class SurefireReportParserTest extends TestCase {
         return new File(URLDecoder.decode(resource.getPath(), "UTF-8")).getAbsoluteFile();
     }
 
-    public void testGetSummary() throws Exception {
+    @Test
+    void testGetSummary() throws Exception {
         ReportTestSuite tSuite1 = new ReportTestSuite()
                 .setNumberOfErrors(10)
                 .setNumberOfFailures(20)
@@ -94,7 +98,8 @@ public class SurefireReportParserTest extends TestCase {
         assertEquals(0.68f, (float) testMap.get("totalPercentage"));
     }
 
-    public void testGetSuitesGroupByPackage() {
+    @Test
+    void testGetSuitesGroupByPackage() {
         ReportTestSuite tSuite1 = new ReportTestSuite();
 
         ReportTestSuite tSuite2 = new ReportTestSuite();
@@ -128,13 +133,15 @@ public class SurefireReportParserTest extends TestCase {
         assertEquals(tSuite3, groupMap.get("Package2").get(0));
     }
 
-    public void testComputePercentage() throws Exception {
+    @Test
+    void testComputePercentage() throws Exception {
         SurefireReportParser parser = new SurefireReportParser(null, new NullConsoleLogger());
 
         assertEquals(0.7f, (float) parser.computePercentage(100, 20, 10, 0));
     }
 
-    public void testGetFailureDetails() {
+    @Test
+    void testGetFailureDetails() {
         ReportTestSuite tSuite1 = new ReportTestSuite();
 
         ReportTestSuite tSuite2 = new ReportTestSuite();

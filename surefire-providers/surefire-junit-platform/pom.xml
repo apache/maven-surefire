@@ -124,11 +124,6 @@
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-reflect</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -153,9 +148,6 @@
         <configuration>
           <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <includes>
-            <include>**/JUnit47SuiteTest.java</include>
-          </includes>
         </configuration>
       </plugin>
     </plugins>

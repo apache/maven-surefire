@@ -22,10 +22,10 @@ import java.io.File;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Integration Tests for SUREFIRE-1737
@@ -45,6 +45,6 @@ public class Surefire1737IT extends SurefireJUnit4IntegrationTestCase {
         assertTrue(new File(baseDir, "target/surefire-reports/pkg.JUnit5Test.txt").exists());
         // xml report should be not generated
         File xmlReport = new File(baseDir, "target/surefire-reports/TEST-pkg.JUnit5Test.xml");
-        assertFalse("xml report: " + xmlReport + " should not be generated", xmlReport.exists());
+        assertFalse(xmlReport.exists(), "xml report: " + xmlReport + " should not be generated");
     }
 }

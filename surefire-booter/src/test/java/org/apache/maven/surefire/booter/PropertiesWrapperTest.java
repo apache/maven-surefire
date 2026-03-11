@@ -23,12 +23,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kristian Rosenvold
  */
-public class PropertiesWrapperTest extends TestCase {
+public class PropertiesWrapperTest {
+    @Test
     public void testAddList() {
         PropertiesWrapper propertiesWrapper = new PropertiesWrapper(new HashMap<String, String>());
         List<String> items = new ArrayList<>();
@@ -57,6 +61,7 @@ public class PropertiesWrapperTest extends TestCase {
 
     private final Classpath classpathWithTwoElements = createClasspathWithTwoElements();
 
+    @Test
     public void testReadFromProperties() {
         properties.put(DUMMY_PREFIX + "0", FIRST_ELEMENT);
         properties.put(DUMMY_PREFIX + "1", SECOND_ELEMENT);
@@ -64,17 +69,20 @@ public class PropertiesWrapperTest extends TestCase {
         assertEquals(classpathWithTwoElements, recreatedClasspath);
     }
 
+    @Test
     public void testReadFromPropertiesWithEmptyProperties() {
         Classpath recreatedClasspath = readClasspathFromProperties();
         assertTrue(recreatedClasspath.getClassPath().isEmpty());
     }
 
+    @Test
     public void testWriteToProperties() {
         mapper.setClasspath(DUMMY_PREFIX, classpathWithTwoElements);
         assertEquals(FIRST_ELEMENT, mapper.getProperty(DUMMY_PREFIX + "0"));
         assertEquals(SECOND_ELEMENT, mapper.getProperty(DUMMY_PREFIX + "1"));
     }
 
+    @Test
     public void testRoundtrip() {
         mapper.setClasspath(DUMMY_PREFIX, classpathWithTwoElements);
         Classpath recreatedClasspath = readClasspathFromProperties();

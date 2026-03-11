@@ -28,16 +28,16 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * TestNG test project using multiple method patterns, including wildcards in class and method names.
- * Uses {@link Settings#TestNG_TEST}.
+ * Uses {@link Settings#TestNG_INCLUDES}.
  *
- * @see TestMultipleMethodPatternsTestNGIncludesIT
+ * @see TestMultipleMethodPatternsTestNGIT
  * @see TestMultipleMethodPatternsTestNGIncludesExcludesIT
  */
-public class TestMultipleMethodPatternsTestNGIT extends AbstractTestMultipleMethodPatterns {
+public class TestMultipleMethodPatternsTestNGIncludesIT extends AbstractTestMultipleMethodPatterns {
 
     @Override
     protected Settings getSettings() {
-        return Settings.TestNG_TEST;
+        return Settings.TestNG_INCLUDES;
     }
 
     @Override

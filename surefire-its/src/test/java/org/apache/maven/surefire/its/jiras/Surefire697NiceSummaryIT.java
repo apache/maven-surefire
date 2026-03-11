@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * SUREFIRE-697 Asserts proper truncation of long exception messages Some say testing this is a bit over the top.

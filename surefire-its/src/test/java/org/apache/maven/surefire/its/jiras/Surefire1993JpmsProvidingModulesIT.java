@@ -21,8 +21,8 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
@@ -33,7 +33,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
  * @author mthmulders
  */
 public class Surefire1993JpmsProvidingModulesIT extends SurefireJUnit4IntegrationTestCase {
-    @Before
+    @BeforeEach
     public void setUp() {
         assumeJavaVersion(9);
     }

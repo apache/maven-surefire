@@ -23,11 +23,8 @@ import java.util.ArrayList;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -39,7 +36,6 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * @author mpkorstanje
  */
-@RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class JUnit447RerunFailingTestWithCucumberIT extends SurefireJUnit4IntegrationTestCase {
     private static final String LEGACY_FORK_NODE = "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
@@ -47,19 +43,14 @@ public class JUnit447RerunFailingTestWithCucumberIT extends SurefireJUnit4Integr
     private static final String SUREFIRE_FORK_NODE =
             "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
 
-    @Parameters
-    public static Iterable<Object[]> data() {
+    static Iterable<Object[]> data() {
         ArrayList<Object[]> args = new ArrayList<>();
         args.add(new Object[] {"tcp"});
         args.add(new Object[] {null});
         return args;
     }
 
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String profileId;
-
-    private SurefireLauncher unpack() {
+    private SurefireLauncher unpackCucumber(String profileId) {
         SurefireLauncher launcher =
                 unpack("junit47-rerun-failing-tests-with-cucumber", profileId == null ? "" : "-" + profileId);
 
@@ -70,10 +61,12 @@ public class JUnit447RerunFailingTestWithCucumberIT extends SurefireJUnit4Integr
         return launcher;
     }
 
-    @Test
-    public void testRerunFailingErrorTestsFalse() throws VerificationException {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testRerunFailingErrorTestsFalse(String profileId) throws VerificationException {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        unpack().debugLogging()
+        unpackCucumber(profileId)
+                .debugLogging()
                 .maven()
                 .sysProp("surefire.rerunFailingTestsCount", 0)
                 .withFailure()
@@ -82,10 +75,12 @@ public class JUnit447RerunFailingTestWithCucumberIT extends SurefireJUnit4Integr
                 .assertThatLogLine(containsString("Found implementation of fork node factory: " + cls), equalTo(1));
     }
 
-    @Test
-    public void testRerunFailingErrorTestsWithOneRetry() throws VerificationException {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testRerunFailingErrorTestsWithOneRetry(String profileId) throws VerificationException {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        unpack().debugLogging()
+        unpackCucumber(profileId)
+                .debugLogging()
                 .maven()
                 .sysProp("surefire.rerunFailingTestsCount", 1)
                 .withFailure()
@@ -94,10 +89,12 @@ public class JUnit447RerunFailingTestWithCucumberIT extends SurefireJUnit4Integr
                 .assertThatLogLine(containsString("Found implementation of fork node factory: " + cls), equalTo(1));
     }
 
-    @Test
-    public void testRerunFailingErrorTestsTwoRetry() throws VerificationException {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testRerunFailingErrorTestsTwoRetry(String profileId) throws VerificationException {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        unpack().maven()
+        unpackCucumber(profileId)
+                .maven()
                 .debugLogging()
                 .sysProp("surefire.rerunFailingTestsCount", 2)
                 .executeTest()

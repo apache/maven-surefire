@@ -19,13 +19,14 @@
 package org.apache.maven.plugin.surefire.report;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
@@ -40,20 +41,24 @@ import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.report.RunStatistics;
 import org.apache.maven.surefire.shared.utils.logging.MessageUtils;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.getTestResultType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.getInternalState;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  *
  */
-public class DefaultReporterFactoryTest extends TestCase {
+public class DefaultReporterFactoryTest {
     private static final String TEST_ONE = "testOne";
 
     private static final String TEST_TWO = "testTwo";
@@ -74,6 +79,7 @@ public class DefaultReporterFactoryTest extends TestCase {
 
     private static final String TEST_ERROR_SUFFIX = "-- Time elapsed: 292.2 s <<< ERROR!";
 
+    @Test
     public void testMergeTestHistoryResult() throws Exception {
         MessageUtils.setColorEnabled(false);
         File target = new File(System.getProperty("user.dir"), "target");
@@ -272,6 +278,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         }
     }
 
+    @Test
     public void testGetTestResultType() {
         List<ReportEntryType> emptyList = new ArrayList<>();
         assertEquals(TestResultType.UNKNOWN, getTestResultType(emptyList, 1));
@@ -311,6 +318,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals(TestResultType.SKIPPED, getTestResultType(skippedList, 1));
     }
 
+    @Test
     public void testLogger() {
         MessageUtils.setColorEnabled(false);
         File target = new File(System.getProperty("user.dir"), "target");
@@ -379,6 +387,7 @@ public class DefaultReporterFactoryTest extends TestCase {
         reporter.reset();
     }
 
+    @Test
     public void testCreateReporterWithZeroStatistics() {
         MessageUtils.setColorEnabled(false);
         File target = new File(System.getProperty("user.dir"), "target");
@@ -460,6 +469,40 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals("Tests run: 0, Failures: 0, Errors: 0, Skipped: 0", messages.get(7));
         assertEquals("", messages.get(8));
         assertEquals(9, messages.size());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return (T) field.get(target);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target.getClass();
+        while (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    return (T) method.invoke(target, args);
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchMethodException(methodName);
     }
 
     static class DummyStackTraceWriter implements StackTraceWriter {

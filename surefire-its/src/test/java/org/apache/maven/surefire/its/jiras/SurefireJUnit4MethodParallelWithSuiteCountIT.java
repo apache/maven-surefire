@@ -28,8 +28,8 @@ import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.String.format;
 import static java.math.RoundingMode.DOWN;
@@ -40,7 +40,7 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kristian Rosenvold
@@ -67,7 +67,7 @@ public class SurefireJUnit4MethodParallelWithSuiteCountIT extends SurefireJUnit4
         return Integer.decode(logLine.split("=")[1]);
     }
 
-    @Before
+    @BeforeEach
     public void init() {
         NumberFormat lowScaleFormatter = NumberFormat.getInstance(ROOT);
         lowScaleFormatter.setRoundingMode(DOWN);
@@ -94,8 +94,8 @@ public class SurefireJUnit4MethodParallelWithSuiteCountIT extends SurefireJUnit4
             long min = 250 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
             long max = 750 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
             assertTrue(
-                    format("duration %d should be between %d and %d ms", duration, min, max),
-                    duration > min && duration < max);
+                    duration > min && duration < max,
+                    format("duration %d should be between %d and %d ms", duration, min, max));
         }
         Set<String> suiteLines = printTestLines(validator, "suite finished after duration=");
         assertThat(suiteLines, hasSize(1));
@@ -146,8 +146,8 @@ public class SurefireJUnit4MethodParallelWithSuiteCountIT extends SurefireJUnit4
         long min = 1450 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
         long max = 1750 * PERFORMANCE_TEST_MULTIPLICATION_FACTOR;
         assertTrue(
-                format("duration %d should be between %d and %d ms", duration, min, max),
-                duration > min && duration < max);
+                duration > min && duration < max,
+                format("duration %d should be between %d and %d ms", duration, min, max));
     }
 
     public SurefireLauncher unpack() {

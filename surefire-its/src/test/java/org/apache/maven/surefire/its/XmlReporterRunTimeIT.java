@@ -23,14 +23,14 @@ import java.io.File;
 import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.extractReports;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test reported runtime
@@ -48,7 +48,7 @@ public class XmlReporterRunTimeIT extends SurefireJUnit4IntegrationTestCase {
     public void testForkAlwaysWithChecksumOverride() {
         OutputValidator validator = runTest("foobar");
         File statisticsFile = new File(validator.getBaseDir(), ".surefire-foobar");
-        assertTrue("Statistics file (" + statisticsFile.getAbsolutePath() + ") doesn't exist", statisticsFile.exists());
+        assertTrue(statisticsFile.exists(), "Statistics file (" + statisticsFile.getAbsolutePath() + ") doesn't exist");
     }
 
     private OutputValidator runTest(String checksumOverride) {

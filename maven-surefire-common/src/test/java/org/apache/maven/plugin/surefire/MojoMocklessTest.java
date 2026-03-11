@@ -19,6 +19,8 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -38,21 +40,62 @@ import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.powermock.reflect.Whitebox.invokeMethod;
-import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  *
  */
 public class MojoMocklessTest {
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target.getClass();
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                return (T) method.invoke(target, args);
+            }
+        }
+        // search superclasses
+        clazz = clazz.getSuperclass();
+        while (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    return (T) method.invoke(target, args);
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchMethodException(methodName);
+    }
+
+    private static void setInternalState(Object target, String fieldName, Object value) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    field.set(target, value);
+                    return;
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void testGetStartupReportConfiguration() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);

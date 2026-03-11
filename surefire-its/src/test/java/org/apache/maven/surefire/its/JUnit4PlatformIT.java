@@ -23,30 +23,18 @@ import java.util.List;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  *
  */
-@RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class JUnit4PlatformIT extends SurefireJUnit4IntegrationTestCase {
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String junit5Version;
 
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String jqwikVersion;
-
-    @Parameters(name = "{0}")
-    public static Iterable<Object[]> artifactVersions() {
+    static Iterable<Object[]> artifactVersions() {
         List<Object[]> args = new ArrayList<>();
         args.add(new Object[] {"5.8.2", "1.6.5"});
         args.add(new Object[] {"5.9.1", "1.7.1"});
@@ -56,8 +44,9 @@ public class JUnit4PlatformIT extends SurefireJUnit4IntegrationTestCase {
         return args;
     }
 
-    @Test
-    public void testVintageEngine() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testVintageEngine(String junit5Version, String jqwikVersion) {
         unpack("junit-platform-engine-vintage", "-" + junit5Version + "-" + jqwikVersion)
                 .sysProp("junit5.version", junit5Version)
                 .sysProp("jqwik.version", jqwikVersion)
@@ -65,8 +54,9 @@ public class JUnit4PlatformIT extends SurefireJUnit4IntegrationTestCase {
                 .assertTestSuiteResults(1, 0, 0, 0);
     }
 
-    @Test
-    public void testJQwikEngine() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJQwikEngine(String junit5Version, String jqwikVersion) {
         unpack("junit-platform-engine-jqwik", "-" + junit5Version + "-" + jqwikVersion)
                 .sysProp("junit5.version", junit5Version)
                 .sysProp("jqwik.version", jqwikVersion)
@@ -74,8 +64,9 @@ public class JUnit4PlatformIT extends SurefireJUnit4IntegrationTestCase {
                 .assertTestSuiteResults(1, 0, 0, 0);
     }
 
-    @Test
-    public void testMultipleEngines() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testMultipleEngines(String junit5Version, String jqwikVersion) {
         OutputValidator validator = unpack("junit-platform-multiple-engines", "-" + junit5Version + "-" + jqwikVersion)
                 .sysProp("junit5.version", junit5Version)
                 .sysProp("jqwik.version", jqwikVersion)

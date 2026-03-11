@@ -20,13 +20,15 @@ package org.apache.maven.surefire.api.runorder;
 
 import java.util.List;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Kristian Rosenvold
  */
-public class ThreadedExecutionSchedulerTest extends TestCase {
+public class ThreadedExecutionSchedulerTest {
 
     private final RunEntryStatistics a1 = fromValues(200, 2, A.class, "at1");
 
@@ -44,6 +46,7 @@ public class ThreadedExecutionSchedulerTest extends TestCase {
 
     private final RunEntryStatistics e1 = fromValues(200, 2, E.class, "ct2");
 
+    @Test
     public void testAddTest() {
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler(2);
         addPrioritizedTests(threadedExecutionScheduler);
@@ -56,6 +59,7 @@ public class ThreadedExecutionSchedulerTest extends TestCase {
         assertEquals(E.class, result.get(4));
     }
 
+    @Test
     public void testAddTestJaggedResult() {
         ThreadedExecutionScheduler threadedExecutionScheduler = new ThreadedExecutionScheduler(4);
         addPrioritizedTests(threadedExecutionScheduler);

@@ -20,8 +20,6 @@ package org.apache.maven.surefire.its;
 
 import java.util.ArrayList;
 
-import static org.junit.runners.Parameterized.Parameters;
-
 /**
  * Test class for SUREFIRE-580, configuration parameter {@code skipAfterFailureCount}.
  *
@@ -29,9 +27,8 @@ import static org.junit.runners.Parameterized.Parameters;
  * @since 2.19
  */
 public class FailFastJUnit4IT extends AbstractFailFastIT {
-    @Parameters(name = "{0}")
     @SuppressWarnings({"checkstyle:visibilitymodifier", "checkstyle:linelength"})
-    public static Iterable<Object[]> data() {
+    static Iterable<Object[]> data() {
         /**
          * reuseForks=false is not used because of race conditions and unpredictable commands received by
          * MasterProcessReader, this feature has significant limitation.

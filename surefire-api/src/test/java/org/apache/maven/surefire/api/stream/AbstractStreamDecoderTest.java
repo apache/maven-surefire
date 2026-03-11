@@ -22,6 +22,8 @@ import javax.annotation.Nonnull;
 
 import java.io.EOFException;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -40,8 +42,8 @@ import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.MalformedFrameException;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Memento;
 import org.apache.maven.surefire.api.stream.AbstractStreamDecoder.Segment;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.Math.min;
 import static java.lang.System.arraycopy;
@@ -55,7 +57,7 @@ import static org.apache.maven.surefire.api.booter.Constants.DEFAULT_STREAM_ENCO
 import static org.apache.maven.surefire.api.booter.ForkedProcessEventType.BOOTERCODE_STDOUT;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * The performance of "get( Integer )" is 13.5 nano seconds on i5/2.6GHz:
@@ -126,12 +128,12 @@ public class AbstractStreamDecoderTest {
     private static final String PATTERN1 =
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
 
-    private static final String PATTERN2 = "€ab©c";
+    private static final String PATTERN2 = "\u20acab\u00a9c";
 
     private static final byte[] PATTERN2_BYTES =
             new byte[] {(byte) -30, (byte) -126, (byte) -84, 'a', 'b', (byte) 0xc2, (byte) 0xa9, 'c'};
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         for (ForkedProcessEventType event : ForkedProcessEventType.values()) {
             byte[] array = event.getOpcodeBinary();
@@ -171,13 +173,15 @@ public class AbstractStreamDecoderTest {
         assertThat(output.flip().toString()).isEqualTo("AB");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldNotDecode() throws Exception {
-        CharsetDecoder decoder = UTF_8.newDecoder();
-        ByteBuffer input = ByteBuffer.allocate(100);
-        int bytesToDecode = 101;
-        CharBuffer output = CharBuffer.allocate(1000);
-        invokeMethod(AbstractStreamDecoder.class, "decodeString", decoder, input, output, bytesToDecode, true, 0);
+    @Test
+    public void shouldNotDecode() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            CharsetDecoder decoder = UTF_8.newDecoder();
+            ByteBuffer input = ByteBuffer.allocate(100);
+            int bytesToDecode = 101;
+            CharBuffer output = CharBuffer.allocate(1000);
+            invokeMethod(AbstractStreamDecoder.class, "decodeString", decoder, input, output, bytesToDecode, true, 0);
+        });
     }
 
     @Test
@@ -212,7 +216,7 @@ public class AbstractStreamDecoderTest {
         assertThat(thread.readInteger(memento)).isNull();
     }
 
-    @Test(expected = EOFException.class)
+    @Test
     public void shouldNotReadString() throws Exception {
         Channel channel = new Channel(PATTERN1.getBytes(), PATTERN1.length());
         channel.read(ByteBuffer.allocate(100));
@@ -220,7 +224,7 @@ public class AbstractStreamDecoderTest {
         Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
         Memento memento = thread.new Memento();
-        invokeMethod(thread, "readString", memento, 10);
+        assertThrows(EOFException.class, () -> invokeMethod(thread, "readString", memento, 10));
     }
 
     @Test
@@ -393,26 +397,30 @@ public class AbstractStreamDecoderTest {
         assertThat(eventType).isEqualTo(BOOTERCODE_STDOUT);
     }
 
-    @Test(expected = EOFException.class)
-    public void shouldEventTypeReachedEndOfStream() throws Exception {
-        byte[] stream = ":maven-surefire-event:\u000E:xxx".getBytes(UTF_8);
-        Channel channel = new Channel(stream, 1);
-        Mock thread = new Mock(channel, new MockForkNodeArguments(), EVENTS);
+    @Test
+    public void shouldEventTypeReachedEndOfStream() {
+        assertThrows(EOFException.class, () -> {
+            byte[] stream = ":maven-surefire-event:\u000E:xxx".getBytes(UTF_8);
+            Channel channel = new Channel(stream, 1);
+            Mock thread = new Mock(channel, new MockForkNodeArguments(), EVENTS);
 
-        Memento memento = thread.new Memento();
-        memento.setCharset(UTF_8);
-        thread.readMessageType(memento);
+            Memento memento = thread.new Memento();
+            memento.setCharset(UTF_8);
+            thread.readMessageType(memento);
+        });
     }
 
-    @Test(expected = MalformedFrameException.class)
-    public void shouldEventTypeReachedMalformedHeader() throws Exception {
-        byte[] stream = ":xxxxx-xxxxxxxx-xxxxx:\u000E:xxx".getBytes(UTF_8);
-        Channel channel = new Channel(stream, 1);
-        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
+    @Test
+    public void shouldEventTypeReachedMalformedHeader() {
+        assertThrows(MalformedFrameException.class, () -> {
+            byte[] stream = ":xxxxx-xxxxxxxx-xxxxx:\u000E:xxx".getBytes(UTF_8);
+            Channel channel = new Channel(stream, 1);
+            Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
-        Memento memento = thread.new Memento();
-        memento.setCharset(UTF_8);
-        thread.readMessageType(memento);
+            Memento memento = thread.new Memento();
+            memento.setCharset(UTF_8);
+            thread.readMessageType(memento);
+        });
     }
 
     @Test
@@ -505,16 +513,18 @@ public class AbstractStreamDecoderTest {
         assertThat(memento.getDecoder().charset()).isEqualTo(UTF_8);
     }
 
-    @Test(expected = MalformedFrameException.class)
-    public void malformedCharset() throws Exception {
-        byte[] stream = ((char) 8 + ":ISO_8859:").getBytes(US_ASCII);
-        Channel channel = new Channel(stream, 1);
-        Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
+    @Test
+    public void malformedCharset() {
+        assertThrows(MalformedFrameException.class, () -> {
+            byte[] stream = ((char) 8 + ":ISO_8859:").getBytes(US_ASCII);
+            Channel channel = new Channel(stream, 1);
+            Mock thread = new Mock(channel, new MockForkNodeArguments(), emptyMap());
 
-        Memento memento = thread.new Memento();
-        memento.setCharset(UTF_8);
+            Memento memento = thread.new Memento();
+            memento.setCharset(UTF_8);
 
-        thread.readCharset(memento);
+            thread.readCharset(memento);
+        });
     }
 
     private static class Channel implements ReadableByteChannel {
@@ -633,5 +643,47 @@ public class AbstractStreamDecoderTest {
 
         @Override
         public void close() throws Exception {}
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target instanceof Class ? (Class<?>) target : target.getClass();
+        Object instance = target instanceof Class ? null : target;
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                try {
+                    return (T) method.invoke(instance, args);
+                } catch (InvocationTargetException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof Exception) {
+                        throw (Exception) cause;
+                    }
+                    throw e;
+                }
+            }
+        }
+        // search superclasses for instance methods
+        if (instance != null) {
+            Class<?> superClass = clazz.getSuperclass();
+            while (superClass != null) {
+                for (Method method : superClass.getDeclaredMethods()) {
+                    if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                        method.setAccessible(true);
+                        try {
+                            return (T) method.invoke(instance, args);
+                        } catch (InvocationTargetException e) {
+                            Throwable cause = e.getCause();
+                            if (cause instanceof Exception) {
+                                throw (Exception) cause;
+                            }
+                            throw e;
+                        }
+                    }
+                }
+                superClass = superClass.getSuperclass();
+            }
+        }
+        throw new NoSuchMethodException(methodName);
     }
 }

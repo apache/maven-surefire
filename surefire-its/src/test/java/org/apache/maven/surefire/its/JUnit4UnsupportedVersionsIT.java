@@ -22,35 +22,27 @@ import java.util.Collection;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.util.Arrays.asList;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_3_8_2;
 import static org.apache.maven.surefire.its.JUnitVersion.JUNIT_4_11;
-import static org.junit.runners.Parameterized.Parameters;
 
 /**
  * Basic suite test using all known versions of JUnit 4.x
  *
  */
-@RunWith(Parameterized.class)
 public class JUnit4UnsupportedVersionsIT extends SurefireJUnit4IntegrationTestCase {
 
-    @Parameters(name = "{index}: JUnit {0}")
-    public static Collection<Object[]> junitVersions() {
+    static Collection<Object[]> junitVersions() {
         return asList(new Object[][] {{JUNIT_3_8_2}, {JUNIT_4_11}});
     }
 
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public JUnitVersion version;
-
-    @Test()
-    public void testJunitTemp() {
-        version.configure(unpack())
+    @ParameterizedTest(name = "{index}: JUnit {0}")
+    @MethodSource("junitVersions")
+    void testJunitTemp(JUnitVersion version) {
+        version.configure(unpack(version))
                 .maven()
                 .withFailure()
                 .executeTest()
@@ -58,7 +50,7 @@ public class JUnit4UnsupportedVersionsIT extends SurefireJUnit4IntegrationTestCa
                         "The used JUnit Version %s is not supported anymore. Please update to version 4.12+", version));
     }
 
-    private SurefireLauncher unpack() {
+    private SurefireLauncher unpack(JUnitVersion version) {
         return unpack("/junit-unsupported", version.toString());
     }
 }

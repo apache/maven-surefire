@@ -20,8 +20,8 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test that TestNG's @Test(successPercentage = n, invocationCount=n) passes so long as successPercentage tests
@@ -30,7 +30,7 @@ import org.junit.Test;
  * @author Jon Todd
  * @author Andreas Gudian
  */
-@Ignore("FIXME percentage attribute looks to be sypported but is failing in this case")
+@Disabled("FIXME percentage attribute looks to be sypported but is failing in this case")
 public class TestNgSuccessPercentageIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testPassesWhenFailuresLessThanSuccessPercentage() {

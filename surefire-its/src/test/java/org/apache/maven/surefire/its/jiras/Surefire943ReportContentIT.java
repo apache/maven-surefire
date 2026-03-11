@@ -24,8 +24,8 @@ import org.apache.maven.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.shared.utils.xml.Xpp3DomBuilder;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -64,85 +64,85 @@ public class Surefire943ReportContentIT extends SurefireJUnit4IntegrationTestCas
     private void validateFailInBeforeClass(OutputValidator validator, String className) throws FileNotFoundException {
         Xpp3Dom[] children = readTests(validator, className);
 
-        Assert.assertEquals(1, children.length);
+        Assertions.assertEquals(1, children.length);
 
         Xpp3Dom child = children[0];
 
-        Assert.assertEquals(className, child.getAttribute("classname"));
-        Assert.assertEquals("", child.getAttribute("name"));
+        Assertions.assertEquals(className, child.getAttribute("classname"));
+        Assertions.assertEquals("", child.getAttribute("name"));
 
-        Assert.assertEquals(
-                "Expected error tag for failed BeforeClass method for " + className,
+        Assertions.assertEquals(
                 1,
-                child.getChildren("error").length);
+                child.getChildren("error").length,
+                "Expected error tag for failed BeforeClass method for " + className);
 
-        Assert.assertTrue(
-                "time for test failure in BeforeClass is expected to be positive",
-                Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d) >= 0);
+        Assertions.assertTrue(
+                Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d) >= 0,
+                "time for test failure in BeforeClass is expected to be positive");
 
-        Assert.assertTrue(
-                "time for test failure in BeforeClass is expected to be resonably low",
-                Double.compare(Double.parseDouble(child.getAttribute("time")), 2.0d) <= 0);
+        Assertions.assertTrue(
+                Double.compare(Double.parseDouble(child.getAttribute("time")), 2.0d) <= 0,
+                "time for test failure in BeforeClass is expected to be resonably low");
     }
 
     private void validateSkipped(OutputValidator validator, String className) throws FileNotFoundException {
         Xpp3Dom[] children = readTests(validator, className);
 
-        Assert.assertEquals(2, children.length);
+        Assertions.assertEquals(2, children.length);
 
         Xpp3Dom child = children[0];
 
-        Assert.assertEquals(className, child.getAttribute("classname"));
-        Assert.assertEquals("alsoIgnored", child.getAttribute("name"));
-        Assert.assertEquals(1, child.getChildren("skipped").length);
+        Assertions.assertEquals(className, child.getAttribute("classname"));
+        Assertions.assertEquals("alsoIgnored", child.getAttribute("name"));
+        Assertions.assertEquals(1, child.getChildren("skipped").length);
 
-        Assert.assertEquals(
-                "Expected skipped tag for ignored method for " + className, 1, child.getChildren("skipped").length);
+        Assertions.assertEquals(
+                1, child.getChildren("skipped").length, "Expected skipped tag for ignored method for " + className);
 
-        Assert.assertEquals(
-                "time for ignored test is expected to be zero",
+        Assertions.assertEquals(
                 0,
-                Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d));
+                Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d),
+                "time for ignored test is expected to be zero");
     }
 
     private void validate(OutputValidator validator, String className, int ignored) throws FileNotFoundException {
         Xpp3Dom[] children = readTests(validator, className);
 
-        Assert.assertEquals(2 + ignored, children.length);
+        Assertions.assertEquals(2 + ignored, children.length);
 
         for (Xpp3Dom child : children) {
-            Assert.assertEquals(className, child.getAttribute("classname"));
+            Assertions.assertEquals(className, child.getAttribute("classname"));
 
             if ("alwaysSuccessful".equals(child.getAttribute("name"))) {
-                Assert.assertEquals(
-                        "Expected no failures for method alwaysSuccessful for " + className, 0, child.getChildCount());
+                Assertions.assertEquals(
+                        0, child.getChildCount(), "Expected no failures for method alwaysSuccessful for " + className);
 
-                Assert.assertTrue(
-                        "time for successful test is expected to be positive",
-                        Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d) > 0);
+                Assertions.assertTrue(
+                        Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d) > 0,
+                        "time for successful test is expected to be positive");
             } else if (child.getAttribute("name").contains("Ignored")) {
-                Assert.assertEquals(
-                        "Expected skipped-tag for ignored method for " + className,
+                Assertions.assertEquals(
                         1,
-                        child.getChildren("skipped").length);
+                        child.getChildren("skipped").length,
+                        "Expected skipped-tag for ignored method for " + className);
 
-                Assert.assertEquals(
-                        "time for ignored test is expected to be zero",
+                Assertions.assertEquals(
                         0,
-                        Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d));
+                        Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d),
+                        "time for ignored test is expected to be zero");
 
             } else {
-                Assert.assertEquals(
-                        "Expected methods \"alwaysSuccessful\", \"*Ignored\" and \"fails\" in " + className,
+                Assertions.assertEquals(
                         "fails",
-                        child.getAttribute("name"));
-                Assert.assertEquals(
-                        "Expected failure description for method \"fails\" in " + className,
+                        child.getAttribute("name"),
+                        "Expected methods \"alwaysSuccessful\", \"*Ignored\" and \"fails\" in " + className);
+                Assertions.assertEquals(
                         1,
-                        child.getChildren("failure").length);
-                Assert.assertTrue(
-                        "time for failed test is expected to be positive",
-                        Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d) > 0);
+                        child.getChildren("failure").length,
+                        "Expected failure description for method \"fails\" in " + className);
+                Assertions.assertTrue(
+                        Double.compare(Double.parseDouble(child.getAttribute("time")), 0.0d) > 0,
+                        "time for failed test is expected to be positive");
             }
         }
     }

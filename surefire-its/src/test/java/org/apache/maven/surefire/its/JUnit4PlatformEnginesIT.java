@@ -24,11 +24,8 @@ import java.util.List;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
@@ -36,16 +33,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Sets.set;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesRegex;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  *
  */
-@RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
     // This must correspond to the Surefire version uses for testing
@@ -54,24 +49,7 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                     + "\"https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd\" "
                     + "version=\"3.0\" name=\"&lt;&lt; ✨ &gt;&gt;\"";
 
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String platform;
-
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String jupiter;
-
-    @Parameter(2)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String opentest;
-
-    @Parameter(3)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String apiguardian;
-
-    @Parameters(name = "{0}")
-    public static Iterable<Object[]> artifactVersions() {
+    static Iterable<Object[]> artifactVersions() {
         List<Object[]> args = new ArrayList<>();
         args.add(new Object[] {"1.8.2", "5.8.2", "1.2.0", "1.1.2"});
         args.add(new Object[] {"1.9.1", "5.9.1", "1.2.0", "1.1.2"});
@@ -80,14 +58,15 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
         return args;
     }
 
-    @Test
-    public void testToRegex() {
+    @org.junit.jupiter.api.Test
+    void testToRegex() {
         String regex = toRegex(".[]()*");
         assertThat(regex).isEqualTo("\\.\\[\\]\\(\\).*");
     }
 
-    @Test
-    public void platform() throws VerificationException {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void platform(String platform, String jupiter, String opentest, String apiguardian) throws VerificationException {
         OutputValidator validator = unpack("junit-platform", '-' + platform)
                 .sysProp("jupiter.version", jupiter)
                 .debugLogging()
@@ -154,8 +133,9 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                         regex(toRegex("*junit-platform-launcher-" + platform + ".jar*"))));
     }
 
-    @Test
-    public void testJupiterEngine() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngine(String platform, String jupiter, String opentest, String apiguardian) {
         unpack("junit-platform-engine-jupiter", "-" + jupiter)
                 .setTestToRun("Basic*Test")
                 .sysProp("junit5.version", jupiter)
@@ -163,8 +143,9 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .verifyErrorFree(5);
     }
 
-    @Test
-    public void failingBeforeAllMethod() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void failingBeforeAllMethod(String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1688", "-" + jupiter)
                 .setTestToRun("FailingBeforeAllJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -179,8 +160,9 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("oneTimeSetUp() failed");
     }
 
-    @Test
-    public void errorInBeforeAllMethod() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void errorInBeforeAllMethod(String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1741", "-" + jupiter)
                 .setTestToRun("ErrorInBeforeAllJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -195,8 +177,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("oneTimeSetUp() encountered an error");
     }
 
-    @Test
-    public void testJupiterEngineWithErrorInParameterizedSource() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithErrorInParameterizedSource(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1741", "-" + jupiter)
                 .setTestToRun("ErrorInParameterizedSourceJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -211,8 +195,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("args() method source encountered an error");
     }
 
-    @Test
-    public void testJupiterEngineWithFailureInParameterizedSource() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithFailureInParameterizedSource(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1741", "-" + jupiter)
                 .setTestToRun("FailureInParameterizedSourceJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -227,8 +213,9 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("args() method source failed");
     }
 
-    @Test
-    public void testJupiterEngineWithErrorInTestFactory() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithErrorInTestFactory(String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1727", "-" + jupiter)
                 .setTestToRun("ErrorInTestFactoryJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -243,8 +230,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("Encountered error in TestFactory testFactory()");
     }
 
-    @Test
-    public void testJupiterEngineWithFailureInTestFactory() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithFailureInTestFactory(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1727", "-" + jupiter)
                 .setTestToRun("FailureInTestFactoryJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -259,8 +248,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("Encountered failure in TestFactory testFactory()");
     }
 
-    @Test
-    public void testJupiterEngineWithErrorInTestTemplateProvider() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithErrorInTestTemplateProvider(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1727", "-" + jupiter)
                 .setTestToRun("ErrorInTestTemplateProviderTest")
                 .sysProp("junit5.version", jupiter)
@@ -275,8 +266,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("Encountered error in TestTemplate provideTestTemplateInvocationContexts()");
     }
 
-    @Test
-    public void testJupiterEngineWithFailureInTestTemplateProvider() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithFailureInTestTemplateProvider(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1727", "-" + jupiter)
                 .setTestToRun("FailureInTestTemplateProviderTest")
                 .sysProp("junit5.version", jupiter)
@@ -291,8 +284,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("Encountered failure in TestTemplate provideTestTemplateInvocationContexts()");
     }
 
-    @Test
-    public void testJupiterEngineWithTestTemplateNotClassifiedAsFlake() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithTestTemplateNotClassifiedAsFlake(
+            String platform, String jupiter, String opentest, String apiguardian) {
         unpack("junit5-testtemplate-bug", "-" + jupiter)
                 .setTestToRun("FieldSettingTest")
                 .sysProp("junit5.version", jupiter)
@@ -315,8 +310,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertTestSuiteResults(2, 0, 1, 0, 0);
     }
 
-    @Test
-    public void testJupiterEngineWithParameterizedTestsNotClassifiedAsFlake() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithParameterizedTestsNotClassifiedAsFlake(
+            String platform, String jupiter, String opentest, String apiguardian) {
         unpack("junit5-testtemplate-bug", "-" + jupiter)
                 .debugLogging()
                 .setTestToRun("ParamsContextTest")
@@ -330,11 +327,13 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertTestSuiteResults(2, 0, 1, 0, 0);
     }
 
-    @Test
-    public void testJupiterEngineWithAssertionsFailNoParameters() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithAssertionsFailNoParameters(
+            String platform, String jupiter, String opentest, String apiguardian) {
         // `Assertions.fail()` not supported until 5.2.0
-        assumeThat(jupiter, is(not("5.0.3")));
-        assumeThat(jupiter, is(not("5.1.1")));
+        assumeFalse(jupiter.equals("5.0.3"));
+        assumeFalse(jupiter.equals("5.1.1"));
 
         OutputValidator validator = unpack("surefire-1748-fail-no-parameters", "-" + jupiter)
                 .setTestToRun("AssertionsFailNoParametersJupiterTest")
@@ -351,8 +350,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                         "jira1748.AssertionsFailNoParametersJupiterTest.doTest(AssertionsFailNoParametersJupiterTest.java");
     }
 
-    @Test
-    public void testJupiterEngineWithAssertionsFailEmptyStringParameters() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithAssertionsFailEmptyStringParameters(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1748", "-" + jupiter)
                 .setTestToRun("AssertionsFailEmptyStringParameterJupiterTest")
                 .sysProp("junit5.version", jupiter)
@@ -368,8 +369,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                         "AssertionsFailEmptyStringParameterJupiterTest.doTest(AssertionsFailEmptyStringParameterJupiterTest");
     }
 
-    @Test
-    public void testJupiterEngineWithAssertionsFailMessage() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithAssertionsFailMessage(
+            String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1857-assertion-message", "-" + jupiter)
                 .setTestToRun("AssertionFailureMessageTest")
                 .sysProp("junit5.version", jupiter)
@@ -384,8 +387,9 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("message=\"fail_message\"");
     }
 
-    @Test
-    public void testJupiterEngineWithExceptionMessage() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithExceptionMessage(String platform, String jupiter, String opentest, String apiguardian) {
         OutputValidator validator = unpack("surefire-1857-exception-message", "-" + jupiter)
                 .setTestToRun("ExceptionMessageTest")
                 .sysProp("junit5.version", jupiter)
@@ -400,8 +404,10 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertContainsText("message=\"error_message\"");
     }
 
-    @Test
-    public void testJupiterEngineWithDisplayNames() throws VerificationException {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testJupiterEngineWithDisplayNames(String platform, String jupiter, String opentest, String apiguardian)
+            throws VerificationException {
         OutputValidator validator = unpack("junit-platform-engine-jupiter", "-" + jupiter)
                 .sysProp("junit5.version", jupiter)
                 .executeTest()
@@ -457,11 +463,12 @@ public class JUnit4PlatformEnginesIT extends SurefireJUnit4IntegrationTestCase {
                 .assertThatLogLine(matchesRegex(".*Tests run.* << . >>$"), is(1));
     }
 
-    @Test
-    public void testTags() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("artifactVersions")
+    void testTags(String platform, String jupiter, String opentest, String apiguardian) {
         // [don't & !forced] not supported in 5.0.3 as it seems
         // PreconditionViolationException: Tag name [don't & !forced] must be syntactically valid
-        assumeThat(jupiter, is(not("5.0.3")));
+        assumeFalse(jupiter.equals("5.0.3"));
 
         unpack("junit-platform-tags", "-" + jupiter)
                 .sysProp("junit5.version", jupiter)

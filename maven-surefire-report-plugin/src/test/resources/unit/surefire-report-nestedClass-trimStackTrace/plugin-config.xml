@@ -24,9 +24,9 @@
         <artifactId>maven-surefire-report-plugin</artifactId>
         <configuration>
           <outputDirectory>${basedir}/target/site/unit/surefire-report-nestedClass-trimStackTrace</outputDirectory>
-          <project implementation="org.apache.maven.plugins.surefire.report.stubs.NestedClassTrimStackTraceStub"/>
+<!--          <project implementation="org.apache.maven.plugins.surefire.report.stubs.NestedClassTrimStackTraceStub"/>-->
           <showSuccess>true</showSuccess>
-          <reportsDirectory>${basedir}/src/test/resources/unit/surefire-report-nestedClass-trimStackTrace/surefire-reports
+          <reportsDirectory>${basedir}/surefire-report-nestedClass-trimStackTrace/surefire-reports
           </reportsDirectory>
           <outputName>surefire</outputName>
           <xrefTestLocation>${basedir}/target/site/unit/surefire-report-nestedClass-trimStackTrace/xref-test</xrefTestLocation>

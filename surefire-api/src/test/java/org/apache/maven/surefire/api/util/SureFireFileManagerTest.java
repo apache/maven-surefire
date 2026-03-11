@@ -26,11 +26,11 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Set;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit test for the surefire instance of temp file manager.
@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
 public class SureFireFileManagerTest {
 
     @Test
-    @Ignore("old not executing tests - to review")
+    @Disabled("old not executing tests - to review")
     public void testCreateTempFile() throws IOException {
 
         File tempFile = SureFireFileManager.createTempFile("sfprefix", "sfsuffix");

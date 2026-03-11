@@ -21,7 +21,7 @@ package org.apache.maven.surefire.spi;
 import java.io.IOException;
 
 import org.apache.maven.surefire.providerapi.ServiceLoader;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.Thread.currentThread;
 import static org.assertj.core.api.Assertions.assertThat;

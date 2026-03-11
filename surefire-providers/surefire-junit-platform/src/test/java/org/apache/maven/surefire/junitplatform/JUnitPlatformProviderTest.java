@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.junitplatform;
 
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,11 +46,11 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherSession;
 import org.junit.platform.launcher.LauncherSessionListener;
@@ -90,7 +91,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
-import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
  * Unit tests for {@link JUnitPlatformProvider}.
@@ -439,17 +439,17 @@ public class JUnitPlatformProviderTest {
 
         assertEquals(2, reportEntries.size());
 
+        assertEquals(NestingTest.class.getName(), reportEntries.get(0).getSourceName());
         assertEquals(
                 NestingTest.Level1NestedTest.class.getName(),
-                reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+                reportEntries.get(0).getSourceText());
         assertEquals("level1test", reportEntries.get(0).getName());
         assertNull(reportEntries.get(0).getNameText());
 
+        assertEquals(NestingTest.class.getName(), reportEntries.get(1).getSourceName());
         assertEquals(
                 NestingTest.Level1NestedTest.Level2NestedTest.class.getName(),
-                reportEntries.get(1).getSourceName());
-        assertNull(reportEntries.get(1).getSourceText());
+                reportEntries.get(1).getSourceText());
         assertEquals("level2test", reportEntries.get(1).getName());
         assertNull(reportEntries.get(1).getNameText());
     }
@@ -592,7 +592,9 @@ public class JUnitPlatformProviderTest {
         List<ReportEntry> reportEntries = entryCaptor.getAllValues();
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(0).getSourceName());
-        assertNull(reportEntries.get(0).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(0).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[1]",
                 reportEntries.get(0).getName());
@@ -601,7 +603,9 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(0).getNameText());
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(1).getSourceName());
-        assertNull(reportEntries.get(1).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(1).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[2]",
                 reportEntries.get(1).getName());
@@ -610,7 +614,9 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(1).getNameText());
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(2).getSourceName());
-        assertNull(reportEntries.get(2).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(2).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[2]",
                 reportEntries.get(2).getName());
@@ -619,7 +625,9 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(2).getNameText());
 
         assertEquals(TestClass7.class.getName(), reportEntries.get(3).getSourceName());
-        assertNull(reportEntries.get(3).getSourceText());
+        assertEquals(
+                "org.apache.maven.surefire.junitplatform.JUnitPlatformProviderTest$TestClass7",
+                reportEntries.get(3).getSourceText());
         assertEquals(
                 "testParameterizedTestCases(String, boolean)[2]",
                 reportEntries.get(3).getName());
@@ -735,7 +743,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(1, provider.getFilters().length);
+        assertEquals(2, provider.getFilters().length);
     }
 
     @Test
@@ -758,7 +766,7 @@ public class JUnitPlatformProviderTest {
         when(providerParameters.getProviderProperties()).thenReturn(properties);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
-        assertEquals(1, provider.getFilters().length);
+        assertEquals(2, provider.getFilters().length);
     }
 
     @Test
@@ -772,7 +780,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(2, provider.getFilters().length);
+        assertEquals(3, provider.getFilters().length);
     }
 
     @Test
@@ -786,7 +794,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(2, provider.getFilters().length);
+        assertEquals(3, provider.getFilters().length);
     }
 
     @Test
@@ -800,7 +808,7 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
-        assertEquals(2, provider.getFilters().length);
+        assertEquals(3, provider.getFilters().length);
     }
 
     @Test
@@ -908,12 +916,12 @@ public class JUnitPlatformProviderTest {
     }
 
     @Test
-    public void shouldFilterTestMethod() {
+    public void shouldFilterTestMethod() throws Exception {
         ProviderParameters providerParameters = providerParametersMock();
         TestListResolver testListResolver = new TestListResolver("**/*Test#test*");
         assertFalse(testListResolver.isEmpty());
         assertFalse(testListResolver.isWildcard());
-        TestRequest request = new TestRequest(null, null, 0);
+        TestRequest request = new TestRequest(null, testListResolver, 0);
         when(providerParameters.getTestRequest()).thenReturn(request);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
@@ -935,7 +943,7 @@ public class JUnitPlatformProviderTest {
         TestListResolver testListResolver = new TestListResolver("");
         assertTrue(testListResolver.isEmpty());
         assertFalse(testListResolver.isWildcard());
-        TestRequest request = new TestRequest(null, null, 0);
+        TestRequest request = new TestRequest(null, testListResolver, 0);
         when(providerParameters.getTestRequest()).thenReturn(request);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
@@ -949,9 +957,8 @@ public class JUnitPlatformProviderTest {
         TestListResolver testListResolver = new TestListResolver("*.java");
         assertTrue(testListResolver.isWildcard());
         assertFalse(testListResolver.isEmpty());
-        TestRequest request = new TestRequest(null, null, 0);
+        TestRequest request = new TestRequest(null, testListResolver, 0);
         when(providerParameters.getTestRequest()).thenReturn(request);
-
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
         assertThat(provider.getFilters()).isEmpty();
@@ -1427,5 +1434,12 @@ public class JUnitPlatformProviderTest {
 
         @org.junit.jupiter.api.Test
         void test() {}
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) throws Exception {
+        Field field = target.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return (T) field.get(target);
     }
 }

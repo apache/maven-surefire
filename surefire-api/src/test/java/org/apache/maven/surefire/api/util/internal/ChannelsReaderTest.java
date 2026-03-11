@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousByteChannel;
@@ -33,48 +34,42 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.ShutdownChannelGroupException;
+import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import static java.nio.file.Files.write;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * The tests for {@link Channels#newChannel(InputStream)} and {@link Channels#newBufferedChannel(InputStream)}.
  */
 public class ChannelsReaderTest {
-    @Rule
-    public final ExpectedException ee = ExpectedException.none();
-
-    @Rule
-    public final TemporaryFolder tmp =
-            TemporaryFolder.builder().assureDeletion().build();
+    @TempDir
+    Path tmp;
 
     @Test
     public void shouldOverflowBuffer() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        WritableBufferedByteChannel channel = invokeMethod(
-                Channels.class, "newChannel", new Class[] {OutputStream.class, int.class}, new Object[] {out, 8});
+        WritableBufferedByteChannel channel =
+                invokeMethod(Channels.class, "newChannel", new Class[] {OutputStream.class, int.class}, out, 8);
 
         assertThat(channel.countBufferOverflows()).isEqualTo(0);
 
@@ -222,29 +217,28 @@ public class ChannelsReaderTest {
         ReadableByteChannel channel = Channels.newChannel(is);
         channel.close();
         assertThat(channel.isOpen()).isFalse();
-        ee.expect(ClosedChannelException.class);
-        channel.read(ByteBuffer.allocate(0));
+        assertThrows(ClosedChannelException.class, () -> channel.read(ByteBuffer.allocate(0)));
     }
 
     @Test
     public void shouldFailIfNotReadable() throws IOException {
         ByteArrayInputStream is = new ByteArrayInputStream(new byte[] {1, 2, 3});
         ReadableByteChannel channel = Channels.newChannel(is);
-        ee.expect(NonReadableChannelException.class);
-        channel.read(ByteBuffer.allocate(0).asReadOnlyBuffer());
+        assertThrows(
+                NonReadableChannelException.class,
+                () -> channel.read(ByteBuffer.allocate(0).asReadOnlyBuffer()));
     }
 
     @Test
     public void shouldFailIOnDirectBuffer() throws IOException {
         ByteArrayInputStream is = new ByteArrayInputStream(new byte[] {1, 2, 3});
         ReadableByteChannel channel = Channels.newChannel(is);
-        ee.expect(NonReadableChannelException.class);
-        channel.read(ByteBuffer.allocateDirect(0));
+        assertThrows(NonReadableChannelException.class, () -> channel.read(ByteBuffer.allocateDirect(0)));
     }
 
     @Test
     public void shouldUseFileChannel() throws IOException {
-        File f = tmp.newFile();
+        File f = java.nio.file.Files.createFile(tmp.resolve("test")).toFile();
         write(f.toPath(), new byte[] {1, 2, 3});
         FileInputStream is = new FileInputStream(f);
         ReadableByteChannel channel = Channels.newChannel(is);
@@ -284,32 +278,40 @@ public class ChannelsReaderTest {
         assertThat(bb.array()).isEqualTo(new byte[] {1, 2, 3, 0});
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void shouldValidateInput1() throws Exception {
-        AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
-        InputStream is = Channels.newInputStream(channel);
-        is.read(new byte[0], -1, 0);
+    @Test
+    public void shouldValidateInput1() {
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
+            InputStream is = Channels.newInputStream(channel);
+            is.read(new byte[0], -1, 0);
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void shouldValidateInput2() throws Exception {
-        AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
-        InputStream is = Channels.newInputStream(channel);
-        is.read(new byte[0], 0, -1);
+    @Test
+    public void shouldValidateInput2() {
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
+            InputStream is = Channels.newInputStream(channel);
+            is.read(new byte[0], 0, -1);
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void shouldValidateInput3() throws Exception {
-        AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
-        InputStream is = Channels.newInputStream(channel);
-        is.read(new byte[0], 1, 0);
+    @Test
+    public void shouldValidateInput3() {
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
+            InputStream is = Channels.newInputStream(channel);
+            is.read(new byte[0], 1, 0);
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
-    public void shouldValidateInput4() throws Exception {
-        AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
-        InputStream is = Channels.newInputStream(channel);
-        is.read(new byte[0], 0, 1);
+    @Test
+    public void shouldValidateInput4() {
+        assertThrows(IndexOutOfBoundsException.class, () -> {
+            AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
+            InputStream is = Channels.newInputStream(channel);
+            is.read(new byte[0], 0, 1);
+        });
     }
 
     @Test
@@ -345,7 +347,7 @@ public class ChannelsReaderTest {
         AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
         InputStream is = Channels.newInputStream(channel);
         is.read(new byte[] {5}, 0, 0);
-        verifyZeroInteractions(channel);
+        verifyNoInteractions(channel);
     }
 
     @Test
@@ -424,9 +426,8 @@ public class ChannelsReaderTest {
         AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
         when(channel.read(any(ByteBuffer.class))).thenThrow(ShutdownChannelGroupException.class);
         InputStream is = Channels.newInputStream(channel);
-        ee.expect(IOException.class);
-        ee.expectCause(instanceOf(ShutdownChannelGroupException.class));
-        is.read(new byte[1], 0, 1);
+        IOException ex = assertThrows(IOException.class, () -> is.read(new byte[1], 0, 1));
+        assertThat(ex.getCause()).isInstanceOf(ShutdownChannelGroupException.class);
     }
 
     @Test
@@ -436,8 +437,7 @@ public class ChannelsReaderTest {
         when(future.get()).thenThrow(new ExecutionException(new InterruptedIOException()));
         when(channel.read(any(ByteBuffer.class))).thenReturn(future);
         InputStream is = Channels.newInputStream(channel);
-        ee.expect(InterruptedIOException.class);
-        is.read(new byte[1], 0, 1);
+        assertThrows(InterruptedIOException.class, () -> is.read(new byte[1], 0, 1));
     }
 
     @Test
@@ -447,10 +447,9 @@ public class ChannelsReaderTest {
         when(future.get()).thenThrow(new ExecutionException(new RuntimeException("msg")));
         when(channel.read(any(ByteBuffer.class))).thenReturn(future);
         InputStream is = Channels.newInputStream(channel);
-        ee.expect(IOException.class);
-        ee.expectCause(instanceOf(RuntimeException.class));
-        ee.expectMessage("msg");
-        is.read(new byte[1], 0, 1);
+        IOException ex = assertThrows(IOException.class, () -> is.read(new byte[1], 0, 1));
+        assertThat(ex.getCause()).isInstanceOf(RuntimeException.class);
+        assertThat(ex.getMessage()).contains("msg");
     }
 
     @Test
@@ -460,8 +459,15 @@ public class ChannelsReaderTest {
         when(future.get()).thenThrow(new ExecutionException("msg", null));
         when(channel.read(any(ByteBuffer.class))).thenReturn(future);
         InputStream is = Channels.newInputStream(channel);
-        ee.expect(IOException.class);
-        ee.expectMessage("msg");
-        is.read(new byte[1], 0, 1);
+        IOException ex = assertThrows(IOException.class, () -> is.read(new byte[1], 0, 1));
+        assertThat(ex.getMessage()).contains("msg");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Class<?> targetClass, String methodName, Class<?>[] paramTypes, Object... args)
+            throws Exception {
+        Method method = targetClass.getDeclaredMethod(methodName, paramTypes);
+        method.setAccessible(true);
+        return (T) method.invoke(null, args);
     }
 }

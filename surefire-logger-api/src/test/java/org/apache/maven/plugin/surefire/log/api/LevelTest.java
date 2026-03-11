@@ -18,7 +18,7 @@
  */
 package org.apache.maven.plugin.surefire.log.api;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
 import static org.assertj.core.api.Assertions.assertThat;

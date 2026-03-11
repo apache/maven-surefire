@@ -21,13 +21,13 @@ package org.apache.maven.plugins.surefire.report;
 import java.io.File;
 import java.io.StringWriter;
 
-import junit.framework.TestCase;
 import org.apache.maven.doxia.module.xhtml5.Xhtml5Sink;
 import org.apache.maven.doxia.sink.Sink;
 import org.apache.maven.doxia.tools.SiteTool;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.codehaus.plexus.i18n.DefaultI18N;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
 import static org.apache.maven.plugins.surefire.report.Utils.toSystemNewLine;
@@ -37,9 +37,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Prevent fom NPE if failure type and message is null however detail presents.
  */
-public class Surefire597Test extends TestCase {
+class Surefire597Test {
     @SuppressWarnings("checkstyle:linelength")
-    public void testCorruptedTestCaseFailureWithMissingErrorTypeAndMessage() throws Exception {
+    @Test
+    void testCorruptedTestCaseFailureWithMissingErrorTypeAndMessage() throws Exception {
         File basedir = new File(".").getCanonicalFile();
         File report = new File(basedir, "target/test-classes/surefire-597");
         StringWriter writer = new StringWriter();

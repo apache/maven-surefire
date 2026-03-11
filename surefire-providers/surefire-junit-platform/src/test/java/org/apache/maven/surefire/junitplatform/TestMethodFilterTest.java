@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 
 import org.apache.maven.surefire.api.testset.TestListResolver;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.engine.config.DefaultJupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;

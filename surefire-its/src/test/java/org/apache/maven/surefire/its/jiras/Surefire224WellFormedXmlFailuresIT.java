@@ -25,9 +25,9 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite;
 import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Test Surefire-224 (XML test reports are not well-formed when failure message contains quotes)
@@ -46,7 +46,7 @@ public class Surefire224WellFormedXmlFailuresIT extends SurefireJUnit4Integratio
         ReportTestSuite suite =
                 HelperAssertions.extractReports(outputValidator.getBaseDir()).get(0);
         List<org.apache.maven.plugins.surefire.report.ReportTestCase> testCases = suite.getTestCases();
-        assertEquals("Wrong number of test case objects", 4, testCases.size());
+        assertEquals(4, testCases.size(), "Wrong number of test case objects");
         ReportTestCase testQuote = null, testLower = null, testGreater = null, testU0000 = null;
         for (ReportTestCase current : testCases) {
             if ("testQuote".equals(current.getName())) {
@@ -59,10 +59,10 @@ public class Surefire224WellFormedXmlFailuresIT extends SurefireJUnit4Integratio
                 testU0000 = current;
             }
         }
-        assertEquals("Wrong error message", "\"", testQuote.getFailureMessage());
-        assertEquals("Wrong error message", "<", testLower.getFailureMessage());
-        assertEquals("Wrong error message", ">", testGreater.getFailureMessage());
+        assertEquals("\"", testQuote.getFailureMessage(), "Wrong error message");
+        assertEquals("<", testLower.getFailureMessage(), "Wrong error message");
+        assertEquals(">", testGreater.getFailureMessage(), "Wrong error message");
         // SUREFIRE-456 we have to doubly-escape non-visible control characters like \u0000
-        assertEquals("Wrong error message", "Hi &#0; there!", testU0000.getFailureMessage());
+        assertEquals("Hi &#0; there!", testU0000.getFailureMessage(), "Wrong error message");
     }
 }

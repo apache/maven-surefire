@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire.extensions;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,15 +29,34 @@ import org.apache.maven.plugin.surefire.report.StatelessXmlReporter;
 import org.apache.maven.plugin.surefire.report.TestSetStats;
 import org.apache.maven.plugin.surefire.report.WrappedReportEntry;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
  * tests for {@link SurefireStatelessReporter} and {@link JUnit5Xml30StatelessReporter}.
  */
 public class StatelessReporterTest {
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return (T) field.get(target);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Test
     public void shouldCloneXmlReporter() {
         SurefireStatelessReporter extension = new SurefireStatelessReporter();

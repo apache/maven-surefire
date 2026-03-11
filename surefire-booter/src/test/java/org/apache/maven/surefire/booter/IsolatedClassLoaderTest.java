@@ -23,14 +23,11 @@ import java.net.URL;
 
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.shared.utils.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.io.File.pathSeparator;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests isolated CL.
@@ -38,7 +35,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class IsolatedClassLoaderTest {
     private IsolatedClassLoader classLoader;
 
-    @Before
+    @BeforeEach
     public void prepareClassLoader() throws Exception {
         classLoader = new IsolatedClassLoader(null, false, "role");
 
@@ -54,8 +51,8 @@ public class IsolatedClassLoaderTest {
     @Test
     public void shouldLoadIsolatedClass() throws Exception {
         Class<?> isolatedClass = classLoader.loadClass(AbstractProvider.class.getName());
-        assertThat(isolatedClass, is(notNullValue()));
-        assertThat(isolatedClass.getName(), is(AbstractProvider.class.getName()));
-        assertThat(isolatedClass, is(not((Class) AbstractProvider.class)));
+        assertThat(isolatedClass).isNotNull();
+        assertThat(isolatedClass.getName()).isEqualTo(AbstractProvider.class.getName());
+        assertThat(isolatedClass).isNotSameAs(AbstractProvider.class);
     }
 }

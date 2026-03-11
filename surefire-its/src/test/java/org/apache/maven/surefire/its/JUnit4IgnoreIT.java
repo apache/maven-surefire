@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test JUnit 4 tests marked with "Ignore" attribute

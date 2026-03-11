@@ -23,8 +23,8 @@ import java.util.List;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -59,7 +59,7 @@ public class JUnit4PlatformStreamCorruptionIT extends SurefireJUnit4IntegrationT
     }
 
     @Test
-    @Ignore("https://issues.apache.org/jira/browse/SUREFIRE-1659?focusedCommentId=17374005&page="
+    @Disabled("https://issues.apache.org/jira/browse/SUREFIRE-1659?focusedCommentId=17374005&page="
             + "com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-17374005")
     public void warningIsNotEmittedWithJulToLog4j() throws VerificationException {
         OutputValidator validator = unpack("/surefire-1659-stream-corruption")

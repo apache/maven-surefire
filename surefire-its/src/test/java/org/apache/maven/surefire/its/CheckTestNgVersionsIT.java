@@ -25,12 +25,12 @@ import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Basic suite test using all known versions of TestNG. Used for regression testing Surefire against old versions. To
@@ -42,13 +42,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
 
-    @Ignore("Disable for now as runOrder is not implemented for TestNG in Surefire")
+    @Disabled("Disable for now as runOrder is not implemented for TestNG in Surefire")
     @Test
     public void test751() {
         runTestNgTest("7.5.1");
     }
 
-    @Ignore("Disable for now as runOrder is not implemented for TestNG in Surefire")
+    @Disabled("Disable for now as runOrder is not implemented for TestNG in Surefire")
     @Test
     public void test6143() {
         runTestNgTest("6.14.3");
@@ -94,14 +94,11 @@ public class CheckTestNgVersionsIT extends SurefireJUnit4IntegrationTestCase {
 
         // Validate order
 
-        assertTrue(
-                "TestNGSuiteTestC was not executed first",
-                getTestClass(report, 0).endsWith("TestNGSuiteTestC"));
+        assertTrue(getTestClass(report, 0).endsWith("TestNGSuiteTestC"), "TestNGSuiteTestC was not executed first");
 
-        assertTrue(
-                "TestNGSuiteTestB was executed second", getTestClass(report, 1).endsWith("TestNGSuiteTestB"));
+        assertTrue(getTestClass(report, 1).endsWith("TestNGSuiteTestB"), "TestNGSuiteTestB was executed second");
 
-        assertTrue("TestNGSuiteTestA was executed last", getTestClass(report, 2).endsWith("TestNGSuiteTestA"));
+        assertTrue(getTestClass(report, 2).endsWith("TestNGSuiteTestA"), "TestNGSuiteTestA was executed last");
     }
 
     private String getTestClass(List<ReportTestSuite> report, int i) {

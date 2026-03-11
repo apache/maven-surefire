@@ -25,6 +25,7 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,11 +35,9 @@ import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.booter.ForkedNodeArg;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static java.nio.channels.Channels.newChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -52,9 +51,10 @@ import static org.apache.maven.surefire.api.booter.Shutdown.DEFAULT;
 import static org.apache.maven.surefire.api.booter.Shutdown.EXIT;
 import static org.apache.maven.surefire.api.booter.Shutdown.KILL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for {@link CommandChannelDecoder}.
@@ -63,19 +63,14 @@ import static org.junit.Assert.fail;
 public class CommandChannelDecoderTest {
     private static final Random RND = new Random();
 
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempFolder;
 
-    @Before
+    @BeforeEach
     public void initTmpFile() {
-        File reportsDir = tempFolder.getRoot();
+        File reportsDir = tempFolder.toFile();
         String dumpFileName = "surefire-" + RND.nextLong();
         DumpErrorSingleton.getSingleton().init(reportsDir, dumpFileName);
-    }
-
-    @After
-    public void deleteTmpFiles() {
-        tempFolder.delete();
     }
 
     @Test
@@ -249,34 +244,37 @@ public class CommandChannelDecoderTest {
         decoder.close();
     }
 
-    @Test(expected = EOFException.class)
+    @Test
     public void testIncompleteCommand() throws IOException {
-
-        ByteArrayInputStream is = new ByteArrayInputStream(":maven-surefire-command:".getBytes());
-        ForkNodeArguments args = new ForkedNodeArg(1, false);
-        CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
-        decoder.decode();
-        fail();
+        assertThrows(EOFException.class, () -> {
+            ByteArrayInputStream is = new ByteArrayInputStream(":maven-surefire-command:".getBytes());
+            ForkNodeArguments args = new ForkedNodeArg(1, false);
+            CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
+            decoder.decode();
+            fail();
+        });
     }
 
-    @Test(expected = EOFException.class)
+    @Test
     public void testIncompleteCommandStart() throws IOException {
-
-        ByteArrayInputStream is = new ByteArrayInputStream(new byte[] {':', '\r'});
-        ForkNodeArguments args = new ForkedNodeArg(1, false);
-        CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
-        decoder.decode();
-        fail();
+        assertThrows(EOFException.class, () -> {
+            ByteArrayInputStream is = new ByteArrayInputStream(new byte[] {':', '\r'});
+            ForkNodeArguments args = new ForkedNodeArg(1, false);
+            CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
+            decoder.decode();
+            fail();
+        });
     }
 
-    @Test(expected = EOFException.class)
+    @Test
     public void shouldNotDecodeCorruptedCommand() throws IOException {
-        String cmd = ":maven-surefire-command:\u0007:bye-ack ::maven-surefire-command:";
-        InputStream is = new ByteArrayInputStream(cmd.getBytes());
-        ForkNodeArguments args = new ForkedNodeArg(1, false);
-        CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
-
-        decoder.decode();
+        assertThrows(EOFException.class, () -> {
+            String cmd = ":maven-surefire-command:\u0007:bye-ack ::maven-surefire-command:";
+            InputStream is = new ByteArrayInputStream(cmd.getBytes());
+            ForkNodeArguments args = new ForkedNodeArg(1, false);
+            CommandChannelDecoder decoder = new CommandChannelDecoder(newChannel(is), args);
+            decoder.decode();
+        });
     }
 
     @Test
