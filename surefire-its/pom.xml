@@ -38,10 +38,12 @@
     <maven.install.skip>true</maven.install.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <maven.clean.fast>true</maven.clean.fast>
-    <!-- can be 'fixed' -->
-    <junit.jupiter.execution.parallel.config.strategy>dynamic</junit.jupiter.execution.parallel.config.strategy>
+    <!-- can be 'fixed' or 'dynamic` -->
+    <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
     <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
     <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
+    <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.2</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
+    <junit.jupiter.execution.parallel.config.fixed.max-pool-size>4</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
   </properties>
 
   <dependencies>
@@ -57,18 +59,18 @@
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-surefire-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-failsafe-plugin</artifactId>
-      <version>${project.version}</version>
-      <scope>runtime</scope>
-    </dependency>
+    <!--    <dependency>-->
+    <!--      <groupId>org.apache.maven.plugins</groupId>-->
+    <!--      <artifactId>maven-surefire-plugin</artifactId>-->
+    <!--      <version>${project.version}</version>-->
+    <!--      <scope>runtime</scope>-->
+    <!--    </dependency>-->
+    <!--    <dependency>-->
+    <!--      <groupId>org.apache.maven.plugins</groupId>-->
+    <!--      <artifactId>maven-failsafe-plugin</artifactId>-->
+    <!--      <version>${project.version}</version>-->
+    <!--      <scope>runtime</scope>-->
+    <!--    </dependency>-->
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-verifier</artifactId>
@@ -230,6 +232,7 @@
                   junit.jupiter.execution.parallel.mode.classes.default=${junit.jupiter.execution.parallel.mode.classes.default}
                   junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
                   junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
+                  junit.jupiter.execution.parallel.config.fixed.max-pool-size=${junit.jupiter.execution.parallel.config.fixed.max-pool-size}
                   junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}</configurationParameters>
               </properties>
               <skipTests>${skipTests}</skipTests>
@@ -284,10 +287,12 @@
     <profile>
       <id>apache.ci</id>
       <properties>
-        <its.forkCount>0.4C</its.forkCount>
-        <its.threadCount>1</its.threadCount>
         <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
+        <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
+        <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
         <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
+        <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.2</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
+        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>3</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
       </properties>
     </profile>
     <profile>
