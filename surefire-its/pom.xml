@@ -256,6 +256,18 @@
               <!-- <forkedProcessTimeoutInSeconds>5400</forkedProcessTimeoutInSeconds> -->
               <shutdown>kill</shutdown>
             </configuration>
+            <dependencies>
+              <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.14.3</version>
+              </dependency>
+              <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-engine</artifactId>
+                <version>1.14.3</version>
+              </dependency>
+            </dependencies>
             <executions>
               <execution>
                 <goals>
