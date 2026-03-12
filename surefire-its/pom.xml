@@ -34,16 +34,14 @@
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
-    <its.forkCount>0.5C</its.forkCount>
-    <its.threadCount>1</its.threadCount>
     <maven.deploy.skip>true</maven.deploy.skip>
     <maven.install.skip>true</maven.install.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
-    <junit.vintage.execution.parallel.enabled>false</junit.vintage.execution.parallel.enabled>
-    <junit.vintage.execution.parallel.classes>false</junit.vintage.execution.parallel.classes>
-    <junit.vintage.execution.parallel.methods>false</junit.vintage.execution.parallel.methods>
-    <junit.vintage.execution.parallel.pool>5</junit.vintage.execution.parallel.pool>
     <maven.clean.fast>true</maven.clean.fast>
+    <!-- can be 'fixed' -->
+    <junit.jupiter.execution.parallel.config.strategy>dynamic</junit.jupiter.execution.parallel.config.strategy>
+    <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
+    <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
   </properties>
 
   <dependencies>
@@ -227,17 +225,19 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
               <properties>
-                <configurationParameters>junit.vintage.execution.parallel.enabled=${junit.vintage.execution.parallel.enabled}
-                  junit.vintage.execution.parallel.classes=${junit.vintage.execution.parallel.classes}
-                  junit.vintage.execution.parallel.methods=${junit.vintage.execution.parallel.methods}
-                  junit.vintage.execution.parallel.pool-size=${junit.vintage.execution.parallel.pool}</configurationParameters>
+                <configurationParameters>junit.jupiter.execution.parallel.enabled=${junit.jupiter.execution.parallel.enabled}
+                  junit.jupiter.execution.parallel.mode.default=${junit.jupiter.execution.parallel.mode.default}
+                  junit.jupiter.execution.parallel.mode.classes.default=${junit.jupiter.execution.parallel.mode.classes.default}
+                  junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
+                  junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
+                  junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}</configurationParameters>
               </properties>
               <skipTests>${skipTests}</skipTests>
               <runOrder>alphabetical</runOrder>
               <forkCount>${its.forkCount}</forkCount>
               <threadCount>${its.threadCount}</threadCount>
               <perCoreThreadCount>false</perCoreThreadCount>
-              <argLine>-Xmx512m -XX:+UseG1GC -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+              <argLine>-Xmx128m -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
               <!-- Pass current surefire version to the main suite so that it -->
               <!-- can forward to all integration test projects. SUREFIRE-513 -->
               <systemPropertyVariables>
@@ -287,6 +287,7 @@
         <its.forkCount>0.4C</its.forkCount>
         <its.threadCount>1</its.threadCount>
         <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
+        <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
       </properties>
     </profile>
     <profile>

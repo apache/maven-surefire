@@ -87,6 +87,12 @@
 
   <properties>
     <javaVersion>8</javaVersion>
+    <junit.jupiter.execution.parallel.config.dynamic.factor>0.8</junit.jupiter.execution.parallel.config.dynamic.factor>
+    <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
+    <junit.jupiter.execution.parallel.config.strategy>dynamic</junit.jupiter.execution.parallel.config.strategy>
+    <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
+    <junit.jupiter.execution.parallel.mode.classes.default>concurrent</junit.jupiter.execution.parallel.mode.classes.default>
+    <junit.jupiter.execution.parallel.mode.default>same_thread</junit.jupiter.execution.parallel.mode.default>
     <mavenVersion>3.6.3</mavenVersion>
     <resolverVersion>1.4.1</resolverVersion>
     <commonsLang3Version>3.20.0</commonsLang3Version>
@@ -307,6 +313,14 @@
           <version>3.5.5</version>
           <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
+            <properties>
+              <configurationParameters>junit.jupiter.execution.parallel.enabled=${junit.jupiter.execution.parallel.enabled}
+                junit.jupiter.execution.parallel.mode.default=${junit.jupiter.execution.parallel.mode.default}
+                junit.jupiter.execution.parallel.mode.classes.default=${junit.jupiter.execution.parallel.mode.classes.default}
+                junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
+                junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
+                junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}</configurationParameters>
+            </properties>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <argLine>${jvm.args.tests}</argLine>
