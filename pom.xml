@@ -342,6 +342,7 @@
             <jmx>false</jmx>-->
             <formats>
               <format>HTML</format>
+              <format>XML</format>
             </formats>
             <includes>
               <include>**/failsafe/*</include>
@@ -355,7 +356,22 @@
               <exclude>org/jacoco/**/*</exclude>
               <exclude>com/vladium/emma/rt/*</exclude>
             </excludes>
+            <includeCurrentProject>true</includeCurrentProject>
           </configuration>
+          <executions>
+            <execution>
+              <id>jacoco-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>jacoco-report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>

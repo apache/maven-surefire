@@ -145,22 +145,27 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <propertyName>jacoco.agent</propertyName>
-        </configuration>
         <executions>
           <execution>
             <id>jacoco-agent</id>
             <goals>
               <goal>prepare-agent</goal>
+              <goal>prepare-agent-integration</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>jacoco-report</id>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+          <argLine>${jvm.args.tests} @{argLine}</argLine>
         </configuration>
         <dependencies>
           <dependency>
@@ -299,6 +304,7 @@
                     <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
                   </properties>
                   <debug>true</debug>
+                  <mavenOpts>@{argLine}</mavenOpts>
                 </configuration>
               </execution>
             </executions>

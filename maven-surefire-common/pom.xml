@@ -187,28 +187,11 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>jacoco-instrumentation</id>
-            <goals>
-              <goal>instrument</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>restore-classes</id>
-            <goals>
-              <goal>restore-instrumented-classes</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${jvm.args.tests}</argLine>
-          <systemPropertyVariables>
-            <jacoco-agent.destfile>${project.build.directory}/jacoco.exec</jacoco-agent.destfile>
-          </systemPropertyVariables>
+          <argLine>${jvm.args.tests} @{argLine}</argLine>
         </configuration>
         <dependencies>
           <dependency>
