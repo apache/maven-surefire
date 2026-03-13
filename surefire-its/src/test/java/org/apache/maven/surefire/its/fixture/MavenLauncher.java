@@ -18,8 +18,11 @@
  */
 package org.apache.maven.surefire.its.fixture;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,12 +32,11 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.maven.settings.Settings;
-import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.shared.verifier.Verifier;
 import org.apache.maven.shared.verifier.util.ResourceExtractor;
+import org.w3c.dom.Document;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;
@@ -455,10 +457,12 @@ public final class MavenLauncher {
     }
 
     private static String readSharedLocalRepo() {
-        try (FileReader reader = new FileReader(SETTINGS_XML_PATH)) {
-            Settings settings = new SettingsXpp3Reader().read(reader);
-            String localRepo = settings.getLocalRepository();
-            if (localRepo != null && !localRepo.isEmpty()) {
+        try {
+            Document doc =
+                    DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(SETTINGS_XML_PATH);
+            XPath xpath = XPathFactory.newInstance().newXPath();
+            String localRepo = xpath.evaluate("/settings/localRepository", doc).trim();
+            if (!localRepo.isEmpty()) {
                 return localRepo;
             }
         } catch (Exception ignored) {
