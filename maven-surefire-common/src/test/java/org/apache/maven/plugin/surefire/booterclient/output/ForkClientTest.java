@@ -92,8 +92,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -319,7 +319,7 @@ public class ForkClientTest {
         client.handleEvent(new ControlNextTestEvent());
         verify(notifiableTestStream, times(1)).provideNewTest();
         verifyNoMoreInteractions(notifiableTestStream);
-        verifyZeroInteractions(factory);
+        verifyNoInteractions(factory);
         assertThat(client.isSaidGoodBye()).isFalse();
         assertThat(client.getErrorInFork()).isNull();
         assertThat(client.isErrorInFork()).isFalse();
@@ -344,7 +344,7 @@ public class ForkClientTest {
         verify(notifiableTestStream, times(1)).acknowledgeByeEventReceived();
         verify(notifiableTestStream, never()).shutdown(any(Shutdown.class));
         verifyNoMoreInteractions(notifiableTestStream);
-        verifyZeroInteractions(factory);
+        verifyNoInteractions(factory);
         assertThat(client.isSaidGoodBye()).isTrue();
         assertThat(client.getErrorInFork()).isNull();
         assertThat(client.isErrorInFork()).isFalse();
@@ -365,8 +365,8 @@ public class ForkClientTest {
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.setStopOnNextTestListener(() -> verified[0] = true);
         client.handleEvent(new ControlStopOnNextTestEvent());
-        verifyZeroInteractions(notifiableTestStream);
-        verifyZeroInteractions(factory);
+        verifyNoInteractions(notifiableTestStream);
+        verifyNoInteractions(factory);
         assertThat(verified[0]).isTrue();
         assertThat(client.isSaidGoodBye()).isFalse();
         assertThat(client.getErrorInFork()).isNull();
@@ -388,7 +388,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new StandardStreamOutEvent(NORMAL_RUN, 1L, "msg", null));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -414,7 +414,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "msg", null));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -440,7 +440,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new StandardStreamErrEvent(NORMAL_RUN, 1L, "msg", null));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -466,7 +466,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new StandardStreamErrWithNewLineEvent(NORMAL_RUN, 1L, "msg", null));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -492,7 +492,7 @@ public class ForkClientTest {
                 new DeserializedStacktraceWriter("Listening for transport dt_socket at address: 5005", null, null);
         Event event = new ConsoleErrorEvent(stackTrace);
         client.handleEvent(event);
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verify(factory, times(1)).getReportsDirectory();
         verifyNoMoreInteractions(factory);
@@ -555,7 +555,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new ConsoleWarningEvent("s1"));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -581,7 +581,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new ConsoleDebugEvent("s1"));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -607,7 +607,7 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new ConsoleInfoEvent("s1"));
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory, times(1)).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -633,8 +633,8 @@ public class ForkClientTest {
         NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new SystemPropertyEvent(NORMAL_RUN, 1L, "k1", "v1"));
-        verifyZeroInteractions(notifiableTestStream);
-        verifyZeroInteractions(factory);
+        verifyNoInteractions(notifiableTestStream);
+        verifyNoInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
         assertThat(receiver.getEvents()).isEmpty();
         assertThat(receiver.getData()).isEmpty();
@@ -769,7 +769,7 @@ public class ForkClientTest {
         client.handleEvent(new TestsetStartingEvent(reportEntry));
         client.tryToTimeout(System.currentTimeMillis(), 1);
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -849,7 +849,7 @@ public class ForkClientTest {
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new TestsetCompletedEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -929,7 +929,7 @@ public class ForkClientTest {
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new TestStartingEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.hasTestsInProgress()).isTrue();
@@ -1015,7 +1015,7 @@ public class ForkClientTest {
 
         client.handleEvent(new TestSucceededEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -1103,7 +1103,7 @@ public class ForkClientTest {
 
         client.handleEvent(new TestFailedEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -1195,7 +1195,7 @@ public class ForkClientTest {
 
         client.handleEvent(new TestSkippedEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -1286,7 +1286,7 @@ public class ForkClientTest {
 
         client.handleEvent(new TestErrorEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
@@ -1375,7 +1375,7 @@ public class ForkClientTest {
 
         client.handleEvent(new TestAssumptionFailureEvent(reportEntry));
 
-        verifyZeroInteractions(notifiableTestStream);
+        verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
         verifyNoMoreInteractions(factory);
         assertThat(client.getReporter()).isNotNull();
