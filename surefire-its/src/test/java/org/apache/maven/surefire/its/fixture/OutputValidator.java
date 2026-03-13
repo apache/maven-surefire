@@ -128,6 +128,10 @@ public class OutputValidator {
         return verifier.getBasedir();
     }
 
+    public String getLocalRepository() {
+        return verifier.getLocalRepository();
+    }
+
     /**
      * Returns a file, referenced from the extracted root (where pom.xml is located)
      *

@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Timeout;
@@ -69,7 +70,9 @@ public class Surefire946KillMainProcessInReusableForkIT extends SurefireJUnit4In
                 .sysProp("distinct.classifier", classifierOfDummyDependency)
                 .executeInstall();
 
-        unpack("surefire-946-killMainProcessInReusableFork", "-" + shutdownMavenMethod + "-" + shutdownSurefireMethod)
+        OutputValidator outputValidator = unpack(
+                        "surefire-946-killMainProcessInReusableFork",
+                        "-" + shutdownMavenMethod + "-" + shutdownSurefireMethod)
                 .sysProp("distinct.classifier", classifierOfDummyDependency)
                 .sysProp("surefire.shutdown", shutdownSurefireMethod)
                 .sysProp("selfdestruct.timeoutInMillis", "20000")
@@ -90,7 +93,7 @@ public class Surefire946KillMainProcessInReusableForkIT extends SurefireJUnit4In
         assertThat(localRepository).isNotNull().isNotEmpty();
 
         File dep = new File(
-                localRepository,
+                outputValidator.getLocalRepository(),
                 "org/apache/maven/plugins/surefire/surefire-946-dummy-dependency/0.1/"
                         + "surefire-946-dummy-dependency-0.1-" + classifierOfDummyDependency + ".jar");
 
