@@ -346,6 +346,7 @@ public final class MavenLauncher {
     public OutputValidator getValidator() {
         if (validator == null) {
             validator = new OutputValidator(getVerifier());
+            validator.setEffectiveLocalRepository(getLocalRepoDir().getAbsolutePath());
         }
         return validator;
     }

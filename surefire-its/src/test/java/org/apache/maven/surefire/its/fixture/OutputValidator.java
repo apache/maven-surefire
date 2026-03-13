@@ -44,9 +44,15 @@ public class OutputValidator {
 
     private final File baseDir;
 
+    private String effectiveLocalRepository;
+
     public OutputValidator(Verifier verifier) {
         this.verifier = verifier;
         this.baseDir = new File(verifier.getBasedir());
+    }
+
+    void setEffectiveLocalRepository(String path) {
+        this.effectiveLocalRepository = path;
     }
 
     public OutputValidator verifyTextInLog(String text) {
@@ -129,7 +135,7 @@ public class OutputValidator {
     }
 
     public String getLocalRepository() {
-        return verifier.getLocalRepository();
+        return effectiveLocalRepository != null ? effectiveLocalRepository : verifier.getLocalRepository();
     }
 
     /**
