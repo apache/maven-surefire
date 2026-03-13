@@ -271,12 +271,18 @@ public final class MavenLauncher {
 
     public OutputValidator executeCurrentGoals() {
         try {
-            props.put("maven.build.cache.enabled", "false");
+            // Add as CLI -D args (not JVM system properties) to avoid System.setProperty()
+            // races in embedded Maven execution mode when multiple IT tests run in parallel.
             // Isolate each test class in its own local repository to prevent concurrent write
             // conflicts between parallel test classes. maven.repo.local.tail (Maven 3.9+) chains
             // to the original shared repository so pre-installed artifacts are still resolved.
-            props.put("maven.repo.local", getLocalRepoDir().getAbsolutePath());
-            props.put("maven.repo.local.tail", getVerifier().getLocalRepository());
+            // These are added first so that test-provided goals/-D options later in the list
+            // take precedence (Maven processes args left-to-right, last value wins).
+            getVerifier().addCliArguments(new String[] {
+                "-Dmaven.build.cache.enabled=false",
+                "-Dmaven.repo.local=" + getLocalRepoDir().getAbsolutePath(),
+                "-Dmaven.repo.local.tail=" + getVerifier().getLocalRepository()
+            });
             getVerifier().addCliArguments(cliOptions.toArray(new String[0]));
             getVerifier().addCliArguments(goals.toArray(new String[] {}));
             getVerifier().setSystemProperties(props);
