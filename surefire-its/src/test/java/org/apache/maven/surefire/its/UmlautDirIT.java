@@ -28,9 +28,9 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import static java.nio.file.Files.copy;
 import static java.nio.file.Files.createDirectories;
@@ -46,27 +46,15 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
+@Isolated("manipulates a custom local repository path with special characters")
 public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
-    private String localRepo;
-
     @BeforeEach
-    public void backupLocalRepo() {
+    public void checkJavaVersion() {
         // We touched the Javac bug, see the discussion [1].
         // The fix [2] will be in Java 17, not in Java 16. So we cannot use Java 16 then!
         // [1]: http://ant.1045680.n5.nabble.com/JDK-16-is-in-Rampdown-Phase-One-td5720549.html#a5720552
         // [2]: https://bugs.openjdk.java.net/browse/JDK-8258246
         assumeJavaVersionExcluded(16);
-
-        localRepo = System.getProperty("maven.repo.local");
-    }
-
-    @AfterEach
-    public void restoreLocalRepo() {
-        if (localRepo == null) {
-            System.clearProperty("maven.repo.local");
-        } else {
-            System.setProperty("maven.repo.local", localRepo);
-        }
     }
 
     @Test
@@ -178,8 +166,10 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
                 Paths.get(defaultLocalRepo, "org", "apache", "maven", "plugins", "maven-surefire-plugin"),
                 Paths.get(newLocalRepo, "org", "apache", "maven", "plugins", "maven-surefire-plugin"));
 
-        System.setProperty("maven.repo.local", newLocalRepo);
-        return unpack("junit-pathWithUmlaut");
+        // Pass via goal (CLI -D arg) so Maven uses the custom path. Goals are appended last in
+        // executeCurrentGoals(), so this overrides the default per-class repo injection.
+        // No System.setProperty() — that would pollute the JVM-global state and affect other tests.
+        return unpack("junit-pathWithUmlaut").addGoal("-Dmaven.repo.local=" + newLocalRepo);
     }
 
     private static void copyDir(Path src, Path dest) throws IOException {

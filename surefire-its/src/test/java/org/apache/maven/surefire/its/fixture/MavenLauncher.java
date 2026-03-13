@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.its.fixture;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
 import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.shared.verifier.Verifier;
@@ -44,6 +47,13 @@ import static java.util.Collections.unmodifiableList;
  */
 public final class MavenLauncher {
     private static final File SETTINGS_XML_PATH = settingsXmlPath();
+
+    /**
+     * The authoritative shared local Maven repository, read once from settings.xml at class-load
+     * time. Using a static final prevents races with concurrent embedded Maven executions that call
+     * {@code System.setProperty("maven.repo.local", ...)} and would corrupt a lazily-computed value.
+     */
+    private static final String SHARED_LOCAL_REPO = readSharedLocalRepo();
 
     /**
      * Set by {@link SurefireJUnit4IntegrationTestCase} via JUnit 5 TestInfo injection so that
@@ -281,7 +291,7 @@ public final class MavenLauncher {
             getVerifier().addCliArguments(new String[] {
                 "-Dmaven.build.cache.enabled=false",
                 "-Dmaven.repo.local=" + getLocalRepoDir().getAbsolutePath(),
-                "-Dmaven.repo.local.tail=" + getVerifier().getLocalRepository()
+                "-Dmaven.repo.local.tail=" + SHARED_LOCAL_REPO
             });
             getVerifier().addCliArguments(cliOptions.toArray(new String[0]));
             getVerifier().addCliArguments(goals.toArray(new String[] {}));
@@ -356,7 +366,7 @@ public final class MavenLauncher {
     }
 
     public String getLocalRepository() {
-        return getVerifier().getLocalRepository();
+        return SHARED_LOCAL_REPO;
     }
 
     public void setAutoclean(boolean autoclean) {
@@ -442,5 +452,17 @@ public final class MavenLauncher {
         } catch (IOException e) {
             throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
+    }
+
+    private static String readSharedLocalRepo() {
+        try (FileReader reader = new FileReader(SETTINGS_XML_PATH)) {
+            Settings settings = new SettingsXpp3Reader().read(reader);
+            String localRepo = settings.getLocalRepository();
+            if (localRepo != null && !localRepo.isEmpty()) {
+                return localRepo;
+            }
+        } catch (Exception ignored) {
+        }
+        return new File(System.getProperty("user.home"), ".m2/repository").getAbsolutePath();
     }
 }
