@@ -48,10 +48,4 @@
         </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>junit47</id>
-        </profile>
-    </profiles>
-
 </project>

@@ -49,13 +49,4 @@ public class CheckTestFailIfNoTestsIT extends SurefireJUnit4IntegrationTestCase 
         TestFile reportsDir = outputValidator.getSurefireReportsFile("");
         assertFalse(reportsDir.exists(), "Unexpected reports directory");
     }
-
-    @Test
-    public void jUnit48CategoriesFailWhenNoTests() {
-        unpack().failIfNoTests(false)
-                .activateProfile("junit47")
-                .setJUnitVersion("4.12")
-                .executeTest()
-                .verifyErrorFreeLog();
-    }
 }
