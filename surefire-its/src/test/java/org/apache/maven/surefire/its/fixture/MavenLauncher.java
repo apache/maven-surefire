@@ -45,6 +45,13 @@ import static java.util.Collections.unmodifiableList;
 public final class MavenLauncher {
     private static final File SETTINGS_XML_PATH = settingsXmlPath();
 
+    /**
+     * Set by {@link SurefireJUnit4IntegrationTestCase} via JUnit 5 TestInfo injection so that
+     * {@link #getTestMethodName()} does not need to walk the call stack. The ThreadLocal is cleared
+     * after each test, so it is safe for parallel class execution.
+     */
+    static final ThreadLocal<String> CURRENT_TEST_METHOD = new ThreadLocal<>();
+
     private final List<String> cliOptions = new ArrayList<>();
 
     private final List<String> goals = new ArrayList<>();
@@ -265,6 +272,11 @@ public final class MavenLauncher {
     public OutputValidator executeCurrentGoals() {
         try {
             props.put("maven.build.cache.enabled", "false");
+            // Isolate each test class in its own local repository to prevent concurrent write
+            // conflicts between parallel test classes. maven.repo.local.tail (Maven 3.9+) chains
+            // to the original shared repository so pre-installed artifacts are still resolved.
+            props.put("maven.repo.local", getLocalRepoDir().getAbsolutePath());
+            props.put("maven.repo.local.tail", getVerifier().getLocalRepository());
             getVerifier().addCliArguments(cliOptions.toArray(new String[0]));
             getVerifier().addCliArguments(goals.toArray(new String[] {}));
             getVerifier().setSystemProperties(props);
@@ -279,6 +291,11 @@ public final class MavenLauncher {
         } catch (VerificationException e) {
             throw new SurefireVerifierException(e.getLocalizedMessage(), e);
         }
+    }
+
+    private File getLocalRepoDir() {
+        String tempDirPath = System.getProperty("maven.test.tmpdir", System.getProperty("java.io.tmpdir"));
+        return new File(tempDirPath, testCaseBeingRun.getSimpleName() + "_repo");
     }
 
     public MavenLauncher activateProfile(String profile) {
@@ -364,7 +381,7 @@ public final class MavenLauncher {
         File testDir = new File(tempDir, resourcePath);
         try {
             File parentPom = new File(tempDir.getParentFile(), "pom.xml");
-            if (!parentPom.exists()) {
+            if (parentPom.createNewFile()) {
                 URL resource = cl.getResource("/pom.xml");
                 FileUtils.copyURLToFile(resource, parentPom);
             }
@@ -387,10 +404,13 @@ public final class MavenLauncher {
     }
 
     String getTestMethodName() {
-        // dirty. Im sure we can use junit4 rules to attach testname to thread instead
+        String fromThread = CURRENT_TEST_METHOD.get();
+        if (fromThread != null) {
+            return fromThread;
+        }
+        // Fallback for static callers (e.g. @BeforeAll) where TestInfo is not available
         StackTraceElement[] stackTrace = getStackTraceElements();
-        StackTraceElement topInTestClass;
-        topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun);
+        StackTraceElement topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun);
         if (topInTestClass == null) {
             // Look in superclass...
             topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun.getSuperclass());

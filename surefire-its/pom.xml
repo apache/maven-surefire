@@ -40,10 +40,10 @@
     <maven.clean.fast>true</maven.clean.fast>
     <!-- can be 'fixed' or 'dynamic` -->
     <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
-    <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
+    <junit.jupiter.execution.parallel.config.fixed.parallelism>4</junit.jupiter.execution.parallel.config.fixed.parallelism>
     <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
     <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.2</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
-    <junit.jupiter.execution.parallel.config.fixed.max-pool-size>4</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+    <junit.jupiter.execution.parallel.config.fixed.max-pool-size>6</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
   </properties>
 
   <dependencies>
@@ -301,8 +301,8 @@
       <properties>
         <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
         <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
-        <junit.jupiter.execution.parallel.config.fixed.parallelism>3</junit.jupiter.execution.parallel.config.fixed.parallelism>
-        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>4</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+        <junit.jupiter.execution.parallel.config.fixed.parallelism>6</junit.jupiter.execution.parallel.config.fixed.parallelism>
+        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>8</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
       </properties>
     </profile>
     <profile>
@@ -313,9 +313,9 @@
         </property>
       </activation>
       <properties>
-        <junit.jupiter.execution.parallel.config.fixed.parallelism>4</junit.jupiter.execution.parallel.config.fixed.parallelism>
+        <junit.jupiter.execution.parallel.config.fixed.parallelism>8</junit.jupiter.execution.parallel.config.fixed.parallelism>
         <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
-        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>4</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>10</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
         <!-- workaround for SUREFIRE-2269 -->
         <maven.clean.failOnError>false</maven.clean.failOnError>
         <maven.clean.verbose>true</maven.clean.verbose>

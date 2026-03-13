@@ -21,6 +21,7 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
  *
  * @author Kristian Rosenvold
  */
+@Isolated("asserts elapsed time of the forked test run")
 public class JUnit447ConcurrencyIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void test47() throws Exception {
