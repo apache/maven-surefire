@@ -304,7 +304,7 @@
         <junit.jupiter.execution.parallel.config.fixed.parallelism>3</junit.jupiter.execution.parallel.config.fixed.parallelism>
         <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
         <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.2</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
-        <junit.jupiter.execution.parallel.config.fixed.max-pool-size></junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>3</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
       </properties>
     </profile>
     <profile>
