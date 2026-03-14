@@ -36,7 +36,11 @@ public class Surefire1211JUnit4TestNgIT extends SurefireJUnit4IntegrationTestCas
 
     @Test
     public void withoutJUnit() {
-        unpack().threadCount(1).sysProp("junit", "false").executeTest().verifyErrorFree(1);
+        unpack().setForkJvm()
+                .threadCount(1)
+                .sysProp("junit", "false")
+                .executeTest()
+                .verifyErrorFree(1);
     }
 
     private SurefireLauncher unpack() {

@@ -69,11 +69,15 @@ public final class MavenLauncher {
 
     private boolean expectFailure;
 
+    private boolean forkJvm;
+
     MavenLauncher(Class<?> testClass, String resourceName, String suffix, String[] cli) {
         this.testCaseBeingRun = testClass;
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
         this.cli = cli == null ? null : cli.clone();
+        // by default use embedded mode
+        this.forkJvm = false;
         resetGoals();
         resetCliOptions();
     }
@@ -265,6 +269,11 @@ public final class MavenLauncher {
             getVerifier().addCliArguments(goals.toArray(new String[] {}));
             getVerifier().setSystemProperties(props);
             getVerifier().setEnvironmentVariables(envVars);
+            if (envVars.isEmpty()) {
+                getVerifier().setForkJvm(forkJvm);
+            } else {
+                getVerifier().setForkJvm(true);
+            }
             getVerifier().execute();
             return getValidator();
         } catch (VerificationException e) {
@@ -319,7 +328,7 @@ public final class MavenLauncher {
     }
 
     public void setForkJvm(boolean forkJvm) {
-        getVerifier().setForkJvm(forkJvm);
+        this.forkJvm = forkJvm;
     }
 
     public String getLocalRepository() {

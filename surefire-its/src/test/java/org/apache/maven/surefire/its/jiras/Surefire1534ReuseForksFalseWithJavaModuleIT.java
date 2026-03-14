@@ -33,7 +33,8 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT extends AbstractJava9Pl
 
     @Test
     public void testExecuteWithReuseForksFalseWithJavaModule() {
-        OutputValidator validator = assumeJava9().reuseForks(false).forkCount(1).executeTest();
+        OutputValidator validator =
+                assumeJava9().setForkJvm().reuseForks(false).forkCount(1).executeTest();
 
         validator.assertTestSuiteResults(2, 0, 0, 0);
         validator.verifyErrorFreeLog();
@@ -49,6 +50,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT extends AbstractJava9Pl
     @Test
     public void testExecuteWithReuseForksFalseWithJavaModuleWithFilter() {
         OutputValidator validator = assumeJava9()
+                .setForkJvm()
                 .reuseForks(false)
                 .forkCount(1)
                 .setTestToRun("MainTest")

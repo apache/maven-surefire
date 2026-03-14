@@ -221,9 +221,6 @@
   <profiles>
     <profile>
       <id>run-its</id>
-      <properties>
-        <verifier.forkMode>forked</verifier.forkMode>
-      </properties>
       <build>
         <plugins>
           <plugin>

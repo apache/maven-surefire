@@ -60,6 +60,7 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
         // JUnit 6.0.0 requires Java 17+
         assumeJavaVersion(17);
         unpack("/testng-simple")
+                .setForkJvm()
                 .sysProp("testNgVersion", "6.14.3")
                 .sysProp("surefire.testng.verbose", "15")
                 .executeTest()
