@@ -299,8 +299,12 @@
           <version>1.27</version>
         </plugin>
         <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.5.5</version>
+        </plugin>
+        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.5.5</version>
           <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
@@ -310,6 +314,14 @@
             <useFile>false</useFile>
             <redirectTestOutputToFile>false</redirectTestOutputToFile>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.surefire</groupId>
+              <artifactId>surefire-shadefire</artifactId>
+              <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+              <version>3.5.5</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
@@ -466,7 +478,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
         <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-        <version>3.5.2</version>
+        <version>3.5.5</version>
       </plugin>
     </plugins>
   </reporting>
