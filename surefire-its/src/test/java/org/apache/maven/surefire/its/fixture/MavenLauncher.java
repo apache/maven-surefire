@@ -90,19 +90,60 @@ public final class MavenLauncher {
 
     private boolean forkJvm;
 
-    MavenLauncher(Class<?> testClass, String resourceName, String suffix, String[] cli) {
-        this.testCaseBeingRun = testClass;
-        this.resourceName = resourceName;
-        this.suffix = suffix != null ? suffix : "";
-        this.cli = cli == null ? null : cli.clone();
-        // by default use embedded mode
-        this.forkJvm = false;
+    private String mvnExecutable;
+
+    private MavenLauncher(Builder builder) {
+        this.testCaseBeingRun = builder.testCaseBeingRun;
+        this.resourceName = builder.resourceName;
+        this.suffix = builder.suffix != null ? builder.suffix : "";
+        this.cli = builder.cli == null ? null : builder.cli.clone();
+        this.mvnExecutable = builder.mvnExecutable;
+        this.expectFailure = builder.expectFailure;
         resetGoals();
         resetCliOptions();
     }
 
-    public MavenLauncher(Class<?> testClass, String resourceName, String suffix) {
-        this(testClass, resourceName, suffix, null);
+    public static class Builder {
+        private final Class<?> testCaseBeingRun;
+
+        private final String resourceName;
+
+        private String suffix;
+
+        private String[] cli;
+
+        private boolean expectFailure;
+
+        private String mvnExecutable;
+
+        public Builder(Class<?> testCaseBeingRun, String resourceName) {
+            this.testCaseBeingRun = testCaseBeingRun;
+            this.resourceName = resourceName;
+        }
+
+        public Builder suffix(String suffix) {
+            this.suffix = suffix;
+            return this;
+        }
+
+        public Builder cli(String[] cli) {
+            this.cli = cli;
+            return this;
+        }
+
+        public Builder expectFailure(boolean expectFailure) {
+            this.expectFailure = expectFailure;
+            return this;
+        }
+
+        public Builder mvnExecutable(String mvnExecutable) {
+            this.mvnExecutable = mvnExecutable;
+            return this;
+        }
+
+        public MavenLauncher build() {
+            return new MavenLauncher(this);
+        }
     }
 
     public File getUnpackedAt() {
@@ -169,8 +210,11 @@ public final class MavenLauncher {
     }
 
     public MavenLauncher getSubProjectLauncher(String subProject) {
-        MavenLauncher mavenLauncher =
-                new MavenLauncher(testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli);
+        MavenLauncher mavenLauncher = new Builder(testCaseBeingRun, resourceName + File.separator + subProject)
+                .suffix(suffix)
+                .cli(cli)
+                .mvnExecutable(mvnExecutable)
+                .build();
         mavenLauncher.unpackedAt = new File(ensureUnpacked(), subProject);
         return mavenLauncher;
     }
@@ -178,7 +222,7 @@ public final class MavenLauncher {
     public OutputValidator getSubProjectValidator(String subProject) throws VerificationException {
         String subProjectBasedir = getValidator().getSubFile(subProject).getAbsolutePath();
         String settingsXml = settingsXmlPath().getAbsolutePath();
-        Verifier subProjectVerifier = createVerifier(subProjectBasedir, settingsXml, null);
+        Verifier subProjectVerifier = createVerifier(subProjectBasedir, settingsXml, null, mvnExecutable);
         return new OutputValidator(subProjectVerifier);
     }
 
@@ -384,7 +428,7 @@ public final class MavenLauncher {
             try {
                 String unpackedPath = ensureUnpacked().getAbsolutePath();
                 String settingsXml = SETTINGS_XML_PATH.getAbsolutePath();
-                verifier = createVerifier(unpackedPath, settingsXml, cli);
+                verifier = createVerifier(unpackedPath, settingsXml, cli, mvnExecutable);
             } catch (VerificationException e) {
                 throw new RuntimeException(e);
             }
@@ -440,12 +484,15 @@ public final class MavenLauncher {
         throw new IllegalStateException("Cannot find " + testCaseBeingRun.getName() + "in stacktrace");
     }
 
-    private static Verifier createVerifier(String basedir, String settingsFile, String[] defaultCliOptions)
+    private static Verifier createVerifier(
+            String basedir, String settingsFile, String[] defaultCliOptions, String mvnExecutable)
             throws VerificationException {
 
-        return defaultCliOptions == null
-                ? new Verifier(basedir, settingsFile, false)
-                : new Verifier(basedir, settingsFile, false, defaultCliOptions);
+        return new Verifier.Builder(basedir)
+                .settingsFile(settingsFile)
+                .defaultCliArguments(defaultCliOptions)
+                .mvnExecutable(mvnExecutable)
+                .build();
     }
 
     private static File settingsXmlPath() {

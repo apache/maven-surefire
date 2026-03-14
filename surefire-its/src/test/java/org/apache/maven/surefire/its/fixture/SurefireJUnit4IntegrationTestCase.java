@@ -75,7 +75,11 @@ public abstract class SurefireJUnit4IntegrationTestCase {
     }
 
     private static SurefireLauncher unpack(Class<?> testClass, String sourceName, String suffix, String[] cli) {
-        MavenLauncher mavenLauncher = new MavenLauncher(testClass, sourceName, suffix, cli);
+        MavenLauncher mavenLauncher = new MavenLauncher.Builder(testClass, sourceName)
+                .suffix(suffix)
+                .cli(cli)
+                .mvnExecutable(System.getProperty("mvnExecutable"))
+                .build();
         return new SurefireLauncher(mavenLauncher);
     }
 

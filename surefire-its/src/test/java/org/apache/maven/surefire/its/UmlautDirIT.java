@@ -156,7 +156,10 @@ public class UmlautDirIT extends SurefireJUnit4IntegrationTestCase {
 
     private SurefireLauncher unpackWithCustomLocalRepoDirectory(Path customLocalRepoPath) throws IOException {
         String newLocalRepo = customLocalRepoPath.toString();
-        String defaultLocalRepo = new MavenLauncher(getClass(), "junit-pathWithUmlaut", null).getLocalRepository();
+        String defaultLocalRepo = new MavenLauncher.Builder(getClass(), "junit-pathWithUmlaut")
+                .mvnExecutable(System.getProperty("mvnExecutable"))
+                .build()
+                .getLocalRepository();
 
         copyDir(
                 Paths.get(defaultLocalRepo, "org", "apache", "maven", "surefire"),

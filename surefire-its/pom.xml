@@ -38,6 +38,7 @@
     <maven.install.skip>true</maven.install.skip>
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <maven.clean.fast>true</maven.clean.fast>
+    <mvnExecutable />
     <!-- can be 'fixed' or 'dynamic` -->
     <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
     <junit.jupiter.execution.parallel.config.fixed.parallelism>4</junit.jupiter.execution.parallel.config.fixed.parallelism>
@@ -95,6 +96,11 @@
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-artifact</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-settings-builder</artifactId>
+      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
@@ -233,7 +239,8 @@
                   junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
                   junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
                   junit.jupiter.execution.parallel.config.fixed.max-pool-size=${junit.jupiter.execution.parallel.config.fixed.max-pool-size}
-                  junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}</configurationParameters>
+                  junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}
+                  junit.jupiter.testclass.order.default=org.junit.jupiter.api.ClassOrderer$ClassName</configurationParameters>
               </properties>
               <skipTests>${skipTests}</skipTests>
               <runOrder>alphabetical</runOrder>
@@ -246,6 +253,7 @@
               <systemPropertyVariables>
                 <surefire.version>${project.version}</surefire.version>
                 <maven.home>${maven.home}</maven.home>
+                <mvnExecutable>${mvnExecutable}</mvnExecutable>
                 <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>

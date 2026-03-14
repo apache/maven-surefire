@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SurefireLauncherTest {
     @Test
     public void launcherGetsProperMethodName() {
-        MavenLauncher mavenLauncher = new MavenLauncher(SurefireLauncherTest.class, "foo", "");
+        MavenLauncher mavenLauncher = new MavenLauncher.Builder(SurefireLauncherTest.class, "foo").build();
         String method = new SurefireLauncher(mavenLauncher).getTestMethodName();
         assertEquals("launcherGetsProperMethodName", method);
     }
