@@ -55,6 +55,7 @@ public class CheckTestNgReportTestIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void shouldBeVerbose() throws Exception {
         unpack("/testng-simple")
+                .setForkJvm()
                 .sysProp("testNgVersion", "5.10")
                 .sysProp("testNgClassifier", "jdk15")
                 .sysProp("surefire.testng.verbose", "10")
