@@ -49,7 +49,7 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testForkNever() {
-        String[] pids = doTest(unpack(getProject()).forkNever());
+        String[] pids = doTest(unpack(getProject()).setForkJvm().forkNever());
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
         assertEquals(getMainPID(), pids[0], "my pid is equal to pid 1 of the test");
@@ -69,6 +69,7 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
     public void testForkOncePerThreadTwoThreads() {
         int threadCount = 2;
         String[] pids = doTest(unpack(getProject())
+                .setForkJvm()
                 .forkPerThread(threadCount)
                 .threadCount(threadCount)
                 .addGoal("-DsleepLength=7200"));
@@ -102,8 +103,8 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testForkCountTwoReuse() {
-        String[] pids =
-                doTest(unpack(getProject()).forkCount(2).reuseForks(true).addGoal("-DsleepLength=7200"));
+        String[] pids = doTest(
+                unpack(getProject()).setForkJvm().forkCount(2).reuseForks(true).addGoal("-DsleepLength=7200"));
         assertDifferentPids(pids, 2);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
@@ -126,7 +127,7 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testForkOnce() {
-        String[] pids = doTest(unpack(getProject()).forkOnce());
+        String[] pids = doTest(unpack(getProject()).setForkJvm().forkOnce());
         assertSamePids(pids);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
