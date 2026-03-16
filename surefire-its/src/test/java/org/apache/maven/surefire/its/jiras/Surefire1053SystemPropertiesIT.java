@@ -33,7 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class Surefire1053SystemPropertiesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void checkWarningsFileEncoding() {
-        unpack().sysProp("file.encoding", "ISO-8859-1")
+        unpack().setForkJvm()
+                .sysProp("file.encoding", "ISO-8859-1")
                 .executeTest()
                 .verifyErrorFree(1)
                 .verifyTextInLog("file.encoding cannot be set as system property, use <argLine>-D"

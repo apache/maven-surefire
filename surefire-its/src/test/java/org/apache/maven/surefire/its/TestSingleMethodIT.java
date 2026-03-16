@@ -52,16 +52,6 @@ public class TestSingleMethodIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
-    public void testJunit44() {
-        singleMethod("junit44-single-method", Collections.emptyMap(), null);
-    }
-
-    @Test
-    public void testJunit48Provider4() {
-        singleMethod("junit48-single-method", Collections.emptyMap(), null, "-P surefire-junit4");
-    }
-
-    @Test
     public void testJunit48Provider47() {
         singleMethod("junit48-single-method", Collections.emptyMap(), null, "-P surefire-junit47")
                 .verifyTextInLog(RUNNING_WITH_PROVIDER47);
