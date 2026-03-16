@@ -46,4 +46,9 @@ public class TestMultipleMethodsIT extends SurefireJUnit4IntegrationTestCase {
     public void testJunit44() {
         multipleMethod("junit44-multiple-methods");
     }
+
+    @Test
+    public void testJunit5() {
+        multipleMethod("junit44-multiple-methods");
+    }
 }

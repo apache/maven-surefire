@@ -49,7 +49,6 @@ public class Surefire855AllowFailsafeUseArtifactFileIT extends SurefireJUnit4Int
     @Test
     public void jarNotForkingShouldUseFile() {
         unpack("surefire-855-failsafe-use-jar")
-                .setForkJvm()
                 .maven()
                 .sysProp("forkCount", 0)
                 .executeVerify()

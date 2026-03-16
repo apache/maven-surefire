@@ -18,12 +18,6 @@
  */
 package org.apache.maven.surefire.its.fixture;
 
-import java.lang.reflect.Method;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
-
 import static java.lang.Double.parseDouble;
 
 /**
@@ -42,17 +36,6 @@ public abstract class SurefireJUnit4IntegrationTestCase {
     public static final double JAVA_VERSION = javaVersion();
 
     public static final boolean IS_JAVA9_PLUS = isJDK9Plus();
-
-    @BeforeEach
-    void setCurrentTestMethodName(TestInfo testInfo) {
-        MavenLauncher.CURRENT_TEST_METHOD.set(
-                testInfo.getTestMethod().map(Method::getName).orElse(null));
-    }
-
-    @AfterEach
-    void clearCurrentTestMethodName() {
-        MavenLauncher.CURRENT_TEST_METHOD.remove();
-    }
 
     public OutputValidator executeErrorFreeTest(String sourceName, int total) {
         return unpack(sourceName).executeTest().verifyErrorFree(total);
@@ -75,11 +58,7 @@ public abstract class SurefireJUnit4IntegrationTestCase {
     }
 
     private static SurefireLauncher unpack(Class<?> testClass, String sourceName, String suffix, String[] cli) {
-        MavenLauncher mavenLauncher = new MavenLauncher.Builder(testClass, sourceName)
-                .suffix(suffix)
-                .cli(cli)
-                .mvnExecutable(System.getProperty("mvnExecutable"))
-                .build();
+        MavenLauncher mavenLauncher = new MavenLauncher(testClass, sourceName, suffix, cli);
         return new SurefireLauncher(mavenLauncher);
     }
 

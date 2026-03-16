@@ -39,12 +39,9 @@
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <maven.clean.fast>true</maven.clean.fast>
     <mvnExecutable />
-    <!-- can be 'fixed' or 'dynamic` -->
-    <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
-    <junit.jupiter.execution.parallel.config.fixed.parallelism>4</junit.jupiter.execution.parallel.config.fixed.parallelism>
-    <junit.jupiter.execution.parallel.config.dynamic.factor>0.1</junit.jupiter.execution.parallel.config.dynamic.factor>
-    <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.1</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
-    <junit.jupiter.execution.parallel.config.fixed.max-pool-size>4</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+    <its.forkCount>0.5C</its.forkCount>
+    <its.threadCount>1</its.threadCount>
+    <junit.jupiter.execution.parallel.enabled>false</junit.jupiter.execution.parallel.enabled>
   </properties>
 
   <dependencies>
@@ -60,18 +57,18 @@
       <version>${project.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!--    <dependency>-->
-    <!--      <groupId>org.apache.maven.plugins</groupId>-->
-    <!--      <artifactId>maven-surefire-plugin</artifactId>-->
-    <!--      <version>${project.version}</version>-->
-    <!--      <scope>runtime</scope>-->
-    <!--    </dependency>-->
-    <!--    <dependency>-->
-    <!--      <groupId>org.apache.maven.plugins</groupId>-->
-    <!--      <artifactId>maven-failsafe-plugin</artifactId>-->
-    <!--      <version>${project.version}</version>-->
-    <!--      <scope>runtime</scope>-->
-    <!--    </dependency>-->
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-failsafe-plugin</artifactId>
+      <version>${project.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.shared</groupId>
       <artifactId>maven-verifier</artifactId>
@@ -232,16 +229,6 @@
           <plugin>
             <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
-              <properties>
-                <configurationParameters>junit.jupiter.execution.parallel.enabled=${junit.jupiter.execution.parallel.enabled}
-                  junit.jupiter.execution.parallel.mode.default=${junit.jupiter.execution.parallel.mode.default}
-                  junit.jupiter.execution.parallel.mode.classes.default=${junit.jupiter.execution.parallel.mode.classes.default}
-                  junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
-                  junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
-                  junit.jupiter.execution.parallel.config.fixed.max-pool-size=${junit.jupiter.execution.parallel.config.fixed.max-pool-size}
-                  junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}
-                  junit.jupiter.testclass.order.default=org.junit.jupiter.api.ClassOrderer$ClassName</configurationParameters>
-              </properties>
               <skipTests>${skipTests}</skipTests>
               <runOrder>alphabetical</runOrder>
               <forkCount>${its.forkCount}</forkCount>
@@ -264,18 +251,6 @@
               <!-- <forkedProcessTimeoutInSeconds>5400</forkedProcessTimeoutInSeconds> -->
               <shutdown>kill</shutdown>
             </configuration>
-            <dependencies>
-              <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.14.3</version>
-              </dependency>
-              <dependency>
-                <groupId>org.junit.platform</groupId>
-                <artifactId>junit-platform-engine</artifactId>
-                <version>1.14.3</version>
-              </dependency>
-            </dependencies>
             <executions>
               <execution>
                 <goals>
@@ -307,12 +282,9 @@
     <profile>
       <id>apache.ci</id>
       <properties>
+        <its.forkCount>0.4C</its.forkCount>
+        <its.threadCount>1</its.threadCount>
         <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
-        <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
-        <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
-        <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
-        <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.2</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
-        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>2</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
       </properties>
     </profile>
     <profile>
@@ -323,11 +295,7 @@
         </property>
       </activation>
       <properties>
-        <junit.jupiter.execution.parallel.config.strategy>fixed</junit.jupiter.execution.parallel.config.strategy>
-        <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
-        <junit.jupiter.execution.parallel.config.dynamic.factor>0.2</junit.jupiter.execution.parallel.config.dynamic.factor>
-        <junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>0.2</junit.jupiter.execution.parallel.config.dynamic.max-pool-size-factor>
-        <junit.jupiter.execution.parallel.config.fixed.max-pool-size>2</junit.jupiter.execution.parallel.config.fixed.max-pool-size>
+        <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
         <!-- workaround for SUREFIRE-2269 -->
         <maven.clean.failOnError>false</maven.clean.failOnError>
         <maven.clean.verbose>true</maven.clean.verbose>

@@ -31,8 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class MavenLauncherTest {
     @Test
     public void shouldNotDuplicateSystemProperties() {
-        MavenLauncher launcher = new MavenLauncher.Builder(getClass(), "")
-                .build()
+        MavenLauncher launcher = new MavenLauncher(getClass(), "", "")
                 .addGoal("-DskipTests")
                 .addGoal("-Dx=a")
                 .addGoal("-DskipTests")

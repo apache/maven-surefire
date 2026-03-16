@@ -35,15 +35,32 @@ public class Surefire1209RerunAndForkCountIT extends SurefireJUnit4IntegrationTe
     private static final String SUMMARY_COUNTS = "Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Flakes: 2";
 
     @Test
-    public void reusableForksJUnit() throws VerificationException {
+    public void reusableForksJUnit47() throws VerificationException {
         unpack().executeTest()
                 .assertTestSuiteResults(5, 0, 0, 0, 4)
                 .assertThatLogLine(containsString(SUMMARY_COUNTS), is(1));
     }
 
     @Test
-    public void notReusableForksJUnit() throws VerificationException {
+    public void notReusableForksJUnit47() throws VerificationException {
         unpack().reuseForks(false)
+                .executeTest()
+                .assertTestSuiteResults(5, 0, 0, 0, 4)
+                .assertThatLogLine(containsString(SUMMARY_COUNTS), is(1));
+    }
+
+    @Test
+    public void reusableForksJUnit4() throws VerificationException {
+        unpack().activateProfile("junit4")
+                .executeTest()
+                .assertTestSuiteResults(5, 0, 0, 0, 4)
+                .assertThatLogLine(containsString(SUMMARY_COUNTS), is(1));
+    }
+
+    @Test
+    public void notReusableForksJUnit4() throws VerificationException {
+        unpack().activateProfile("junit4")
+                .reuseForks(false)
                 .executeTest()
                 .assertTestSuiteResults(5, 0, 0, 0, 4)
                 .assertThatLogLine(containsString(SUMMARY_COUNTS), is(1));

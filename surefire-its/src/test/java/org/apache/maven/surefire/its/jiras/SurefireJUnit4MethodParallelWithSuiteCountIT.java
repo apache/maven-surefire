@@ -30,7 +30,6 @@ import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 
 import static java.lang.String.format;
 import static java.math.RoundingMode.DOWN;
@@ -46,7 +45,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * @author Kristian Rosenvold
  */
-@Isolated("asserts elapsed time and duration of parallel test execution")
 @SuppressWarnings("checkstyle:magicnumber")
 public class SurefireJUnit4MethodParallelWithSuiteCountIT extends SurefireJUnit4IntegrationTestCase {
     // if you want to change his constant, change it in SuiteTest1.java and SuiteTest2.java as well

@@ -42,8 +42,7 @@ public class TestMultipleMethodPatternsTestNGIncludesExcludesIT extends Abstract
 
     @Override
     protected SurefireLauncher unpack() {
-        return unpack("testng-multiple-method-patterns", "_" + getSettings().path())
-                .setForkJvm();
+        return unpack("testng-multiple-method-patterns", "_" + getSettings().path());
     }
 
     @Override

@@ -18,19 +18,12 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.junit.jupiter.api.BeforeAll;
-
 /**
  * Test forkCount and reuseForks
  *
  * @author <a href="mailto:velo.br@gmail.com">Marvin Froeder</a>
  */
 public class ForkCountTestNGIT extends ForkCountIT {
-    @BeforeAll
-    public static void installDumpPidPlugin() {
-        unpack(ForkCountTestNGIT.class, "test-helper-dump-pid-plugin", "plugin").executeInstall();
-    }
-
     @Override
     protected String getProject() {
         return "fork-count-testng";

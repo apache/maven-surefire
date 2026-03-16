@@ -41,22 +41,22 @@ public class JUnit448TestCategoriesIT extends SurefireJUnit4IntegrationTestCase 
 
     @Test
     public void testCategoriesACFullyQualifiedClassName() {
-        runACFullyQualifiedClassName(unpacked().setForkJvm());
+        runACFullyQualifiedClassName(unpacked());
     }
 
     @Test
     public void testCategoriesACFullyQualifiedClassNameForkAlways() {
-        runACFullyQualifiedClassName(unpacked().setForkJvm().forkAlways());
+        runACFullyQualifiedClassName(unpacked().forkAlways());
     }
 
     @Test
     public void testCategoriesACClassNameSuffix() {
-        runACClassNameSuffix(unpacked().setForkJvm());
+        runACClassNameSuffix(unpacked());
     }
 
     @Test
     public void testCategoriesACClassNameSuffixForkAlways() {
-        runACClassNameSuffix(unpacked().setForkJvm().forkAlways());
+        runACClassNameSuffix(unpacked().forkAlways());
     }
 
     @Test

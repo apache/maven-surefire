@@ -18,10 +18,6 @@
  */
 package org.apache.maven.surefire.its.fixture;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -36,7 +32,6 @@ import org.apache.maven.shared.utils.io.FileUtils;
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.shared.verifier.Verifier;
 import org.apache.maven.shared.verifier.util.ResourceExtractor;
-import org.w3c.dom.Document;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;
@@ -49,20 +44,6 @@ import static java.util.Collections.unmodifiableList;
  */
 public final class MavenLauncher {
     private static final File SETTINGS_XML_PATH = settingsXmlPath();
-
-    /**
-     * The authoritative shared local Maven repository, read once from settings.xml at class-load
-     * time. Using a static final prevents races with concurrent embedded Maven executions that call
-     * {@code System.setProperty("maven.repo.local", ...)} and would corrupt a lazily-computed value.
-     */
-    private static final String SHARED_LOCAL_REPO = readSharedLocalRepo();
-
-    /**
-     * Set by {@link SurefireJUnit4IntegrationTestCase} via JUnit 5 TestInfo injection so that
-     * {@link #getTestMethodName()} does not need to walk the call stack. The ThreadLocal is cleared
-     * after each test, so it is safe for parallel class execution.
-     */
-    static final ThreadLocal<String> CURRENT_TEST_METHOD = new ThreadLocal<>();
 
     private final List<String> cliOptions = new ArrayList<>();
 
@@ -88,62 +69,17 @@ public final class MavenLauncher {
 
     private boolean expectFailure;
 
-    private boolean forkJvm;
-
-    private String mvnExecutable;
-
-    private MavenLauncher(Builder builder) {
-        this.testCaseBeingRun = builder.testCaseBeingRun;
-        this.resourceName = builder.resourceName;
-        this.suffix = builder.suffix != null ? builder.suffix : "";
-        this.cli = builder.cli == null ? null : builder.cli.clone();
-        this.mvnExecutable = builder.mvnExecutable;
-        this.expectFailure = builder.expectFailure;
+    MavenLauncher(Class<?> testClass, String resourceName, String suffix, String[] cli) {
+        this.testCaseBeingRun = testClass;
+        this.resourceName = resourceName;
+        this.suffix = suffix != null ? suffix : "";
+        this.cli = cli == null ? null : cli.clone();
         resetGoals();
         resetCliOptions();
     }
 
-    public static class Builder {
-        private final Class<?> testCaseBeingRun;
-
-        private final String resourceName;
-
-        private String suffix;
-
-        private String[] cli;
-
-        private boolean expectFailure;
-
-        private String mvnExecutable;
-
-        public Builder(Class<?> testCaseBeingRun, String resourceName) {
-            this.testCaseBeingRun = testCaseBeingRun;
-            this.resourceName = resourceName;
-        }
-
-        public Builder suffix(String suffix) {
-            this.suffix = suffix;
-            return this;
-        }
-
-        public Builder cli(String[] cli) {
-            this.cli = cli;
-            return this;
-        }
-
-        public Builder expectFailure(boolean expectFailure) {
-            this.expectFailure = expectFailure;
-            return this;
-        }
-
-        public Builder mvnExecutable(String mvnExecutable) {
-            this.mvnExecutable = mvnExecutable;
-            return this;
-        }
-
-        public MavenLauncher build() {
-            return new MavenLauncher(this);
-        }
+    public MavenLauncher(Class<?> testClass, String resourceName, String suffix) {
+        this(testClass, resourceName, suffix, null);
     }
 
     public File getUnpackedAt() {
@@ -210,11 +146,8 @@ public final class MavenLauncher {
     }
 
     public MavenLauncher getSubProjectLauncher(String subProject) {
-        MavenLauncher mavenLauncher = new Builder(testCaseBeingRun, resourceName + File.separator + subProject)
-                .suffix(suffix)
-                .cli(cli)
-                .mvnExecutable(mvnExecutable)
-                .build();
+        MavenLauncher mavenLauncher =
+                new MavenLauncher(testCaseBeingRun, resourceName + File.separator + subProject, suffix, cli);
         mavenLauncher.unpackedAt = new File(ensureUnpacked(), subProject);
         return mavenLauncher;
     }
@@ -222,7 +155,7 @@ public final class MavenLauncher {
     public OutputValidator getSubProjectValidator(String subProject) throws VerificationException {
         String subProjectBasedir = getValidator().getSubFile(subProject).getAbsolutePath();
         String settingsXml = settingsXmlPath().getAbsolutePath();
-        Verifier subProjectVerifier = createVerifier(subProjectBasedir, settingsXml, null, mvnExecutable);
+        Verifier subProjectVerifier = createVerifier(subProjectBasedir, settingsXml, null);
         return new OutputValidator(subProjectVerifier);
     }
 
@@ -327,37 +260,16 @@ public final class MavenLauncher {
 
     public OutputValidator executeCurrentGoals() {
         try {
-            // Add as CLI -D args (not JVM system properties) to avoid System.setProperty()
-            // races in embedded Maven execution mode when multiple IT tests run in parallel.
-            // Isolate each test class in its own local repository to prevent concurrent write
-            // conflicts between parallel test classes. maven.repo.local.tail (Maven 3.9+) chains
-            // to the original shared repository so pre-installed artifacts are still resolved.
-            // These are added first so that test-provided goals/-D options later in the list
-            // take precedence (Maven processes args left-to-right, last value wins).
-            getVerifier().addCliArguments(new String[] {
-                "-Dmaven.build.cache.enabled=false",
-                "-Dmaven.repo.local=" + getLocalRepoDir().getAbsolutePath(),
-                "-Dmaven.repo.local.tail=" + SHARED_LOCAL_REPO
-            });
+            props.put("maven.build.cache.enabled", "false");
             getVerifier().addCliArguments(cliOptions.toArray(new String[0]));
             getVerifier().addCliArguments(goals.toArray(new String[] {}));
             getVerifier().setSystemProperties(props);
             getVerifier().setEnvironmentVariables(envVars);
-            if (envVars.isEmpty()) {
-                getVerifier().setForkJvm(forkJvm);
-            } else {
-                getVerifier().setForkJvm(true);
-            }
             getVerifier().execute();
             return getValidator();
         } catch (VerificationException e) {
             throw new SurefireVerifierException(e.getLocalizedMessage(), e);
         }
-    }
-
-    private File getLocalRepoDir() {
-        String tempDirPath = System.getProperty("maven.test.tmpdir", System.getProperty("java.io.tmpdir"));
-        return new File(tempDirPath, testCaseBeingRun.getSimpleName() + "_repo");
     }
 
     public MavenLauncher activateProfile(String profile) {
@@ -402,17 +314,16 @@ public final class MavenLauncher {
     public OutputValidator getValidator() {
         if (validator == null) {
             validator = new OutputValidator(getVerifier());
-            validator.setEffectiveLocalRepository(getLocalRepoDir().getAbsolutePath());
         }
         return validator;
     }
 
     public void setForkJvm(boolean forkJvm) {
-        this.forkJvm = forkJvm;
+        getVerifier().setForkJvm(forkJvm);
     }
 
     public String getLocalRepository() {
-        return SHARED_LOCAL_REPO;
+        return getVerifier().getLocalRepository();
     }
 
     public void setAutoclean(boolean autoclean) {
@@ -428,7 +339,7 @@ public final class MavenLauncher {
             try {
                 String unpackedPath = ensureUnpacked().getAbsolutePath();
                 String settingsXml = SETTINGS_XML_PATH.getAbsolutePath();
-                verifier = createVerifier(unpackedPath, settingsXml, cli, mvnExecutable);
+                verifier = createVerifier(unpackedPath, settingsXml, cli);
             } catch (VerificationException e) {
                 throw new RuntimeException(e);
             }
@@ -444,7 +355,7 @@ public final class MavenLauncher {
         File testDir = new File(tempDir, resourcePath);
         try {
             File parentPom = new File(tempDir.getParentFile(), "pom.xml");
-            if (parentPom.createNewFile()) {
+            if (!parentPom.exists()) {
                 URL resource = cl.getResource("/pom.xml");
                 FileUtils.copyURLToFile(resource, parentPom);
             }
@@ -467,13 +378,10 @@ public final class MavenLauncher {
     }
 
     String getTestMethodName() {
-        String fromThread = CURRENT_TEST_METHOD.get();
-        if (fromThread != null) {
-            return fromThread;
-        }
-        // Fallback for static callers (e.g. @BeforeAll) where TestInfo is not available
+        // dirty. Im sure we can use junit4 rules to attach testname to thread instead
         StackTraceElement[] stackTrace = getStackTraceElements();
-        StackTraceElement topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun);
+        StackTraceElement topInTestClass;
+        topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun);
         if (topInTestClass == null) {
             // Look in superclass...
             topInTestClass = findTopElemenent(stackTrace, testCaseBeingRun.getSuperclass());
@@ -484,15 +392,12 @@ public final class MavenLauncher {
         throw new IllegalStateException("Cannot find " + testCaseBeingRun.getName() + "in stacktrace");
     }
 
-    private static Verifier createVerifier(
-            String basedir, String settingsFile, String[] defaultCliOptions, String mvnExecutable)
+    private static Verifier createVerifier(String basedir, String settingsFile, String[] defaultCliOptions)
             throws VerificationException {
 
-        return new Verifier.Builder(basedir)
-                .settingsFile(settingsFile)
-                .defaultCliArguments(defaultCliOptions)
-                .mvnExecutable(mvnExecutable)
-                .build();
+        return defaultCliOptions == null
+                ? new Verifier(basedir, settingsFile, false)
+                : new Verifier(basedir, settingsFile, false, defaultCliOptions);
     }
 
     private static File settingsXmlPath() {
@@ -501,19 +406,5 @@ public final class MavenLauncher {
         } catch (IOException e) {
             throw new IllegalStateException(e.getLocalizedMessage(), e);
         }
-    }
-
-    private static String readSharedLocalRepo() {
-        try {
-            Document doc =
-                    DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(SETTINGS_XML_PATH);
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            String localRepo = xpath.evaluate("/settings/localRepository", doc).trim();
-            if (!localRepo.isEmpty()) {
-                return localRepo;
-            }
-        } catch (Exception ignored) {
-        }
-        return new File(System.getProperty("user.home"), ".m2/repository").getAbsolutePath();
     }
 }
