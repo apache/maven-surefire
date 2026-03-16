@@ -56,7 +56,7 @@ public class JUnit448TestCategoriesIT extends SurefireJUnit4IntegrationTestCase 
 
     @Test
     public void testCategoriesACClassNameSuffixForkAlways() {
-        runACClassNameSuffix(unpacked().forkAlways());
+        runACClassNameSuffix(unpacked().setForkJvm().forkAlways());
     }
 
     @Test

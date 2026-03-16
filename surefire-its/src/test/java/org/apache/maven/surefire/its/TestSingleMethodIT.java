@@ -53,8 +53,7 @@ public class TestSingleMethodIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testJunit48Provider47() {
-        singleMethod("junit48-single-method", Collections.emptyMap(), null, "-P surefire-junit47")
-                .verifyTextInLog(RUNNING_WITH_PROVIDER47);
+        singleMethod("junit48-single-method", Collections.emptyMap(), null).verifyTextInLog(RUNNING_WITH_PROVIDER47);
     }
 
     @Test
@@ -81,20 +80,7 @@ public class TestSingleMethodIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void fullyQualifiedJunit48Provider4() {
-        singleMethod(
-                "junit48-single-method",
-                Collections.emptyMap(),
-                "junit4.BasicTest#testSuccessOne",
-                "-P surefire-junit4");
-    }
-
-    @Test
-    public void fullyQualifiedJunit48Provider47() {
-        singleMethod(
-                "junit48-single-method",
-                Collections.emptyMap(),
-                "junit4.BasicTest#testSuccessOne",
-                "-P surefire-junit47");
+        singleMethod("junit48-single-method", Collections.emptyMap(), "junit4.BasicTest#testSuccessOne");
     }
 
     @Test
