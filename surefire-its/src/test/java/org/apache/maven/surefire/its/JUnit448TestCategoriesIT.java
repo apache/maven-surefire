@@ -61,7 +61,7 @@ public class JUnit448TestCategoriesIT extends SurefireJUnit4IntegrationTestCase 
 
     @Test
     public void testCategoriesBadCategory() {
-        runBadCategory(unpacked().setForkJvm());
+        runBadCategory(unpacked());
     }
 
     @Test
