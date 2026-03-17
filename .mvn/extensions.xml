@@ -17,11 +17,11 @@
   ~ under the License.
   -->
 <extensions>
-  <extension>
+  <!--extension>
     <groupId>eu.maveniverse.maven.mimir</groupId>
     <artifactId>extension3</artifactId>
     <version>0.11.2</version>
-  </extension>
+  </extension-->
   <!--
     cannot use the cache because of shaded artifact surefire-shared-utils
     the primary artifact is in the cache but the shaded one is not replacing it

@@ -36,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -45,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests for {@link ForkedBooter}.
  */
 @SuppressWarnings("checkstyle:magicnumber")
+@Isolated
 public class ForkedBooterTest {
 
     private static Object invokeMethod(Class<?> clazz, String methodName, Object... args) throws Exception {
