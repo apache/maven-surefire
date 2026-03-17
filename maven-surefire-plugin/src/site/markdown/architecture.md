@@ -19,8 +19,6 @@ under the License.
 
 # Apache Maven Surefire — Architecture Overview
 
-> Architecture reference for the `master` branch (version 3.5.x).
-> For the upcoming 3.6.0 changes, see [PR #3179 — Unified JUnit Platform Provider](pr-3179-unified-provider.md).
 
 ## What is Surefire?
 
@@ -32,7 +30,9 @@ Apache Maven Surefire is the test execution framework for Maven. It ships three 
 | **maven-failsafe-plugin** | Runs integration tests during `integration-test` / `verify` phases |
 | **maven-surefire-report-plugin** | Generates HTML test reports from XML results |
 
-Surefire supports JUnit 3, JUnit 4, JUnit 5 (Jupiter), TestNG, and plain POJO tests — each via a dedicated **provider** module. Tests execute in a **forked JVM** that communicates results back to Maven through a binary event stream protocol.
+Surefire supports JUnit 3, JUnit 4, JUnit 5 (Jupiter), TestNG, and plain POJO tests. <br>
+Until 3.5.x, each type was executed via a dedicated provider module. From 3.6.0 on, there is only one unified provider. <br>
+Tests execute in a **forked JVM** that communicates results back to Maven through a binary event stream protocol.
 
 ---
 
@@ -71,11 +71,7 @@ graph TD
     end
 
     subgraph "Providers — Loaded in Forked JVM"
-        JP["surefire-junit-platform<br/><i>JUnit 5 / Jupiter</i>"]
-        J4["surefire-junit4"]
-        J47["surefire-junit47<br/><i>Parallel + categories</i>"]
-        J3["surefire-junit3<br/><i>JUnit 3 + POJO</i>"]
-        TNG["surefire-testng"]
+        JP["surefire-junit-platform<br/><i>unified provider for all JUnit 3+ versions</i>"]
     end
 
     subgraph "Shading"
@@ -180,6 +176,37 @@ The command line for the forked JVM is built by one of three `ForkConfiguration`
 
 ## Provider Model
 
+### old Provider Model 3.5.x
+
+```mermaid
+graph LR
+    subgraph "Before — 3.5.x (5 providers)"
+        M1["AbstractSurefireMojo"] --> PD1["ProviderDetector<br/>(priority-based)"]
+        PD1 --> JP1["surefire-junit-platform"]
+        PD1 --> TNG1["surefire-testng"]
+        PD1 --> J471["surefire-junit47"]
+        PD1 --> J41["surefire-junit4"]
+        PD1 --> J31["surefire-junit3"]
+    end
+```
+
+
+### new Provider Model since 3.6.0
+
+```mermaid
+graph LR
+    subgraph "After — 3.6.0 (1 provider)"
+        M2["AbstractSurefireMojo"] --> PD2["Simplified detection"]
+        PD2 --> JP2["surefire-junit-platform"]
+        JP2 --> VE["Vintage Engine<br/>(JUnit 3/4)"]
+        JP2 --> JE["Jupiter Engine<br/>(JUnit 5)"]
+        JP2 --> TE["TestNG Engine<br/>(TestNG)"]
+    end
+```
+
+The five `ProviderInfo` implementations (`JUnit3ProviderInfo`, `JUnit4ProviderInfo`, `JUnitCoreProviderInfo`, `TestNgProviderInfo`, `JUnitPlatformProviderInfo`) are collapsed into a unified detection path that always selects `surefire-junit-platform`. Framework-specific configuration (TestNG groups, JUnit 4 categories, parallel execution) is now **mapped to JUnit Platform launcher configuration** rather than being handled by framework-specific providers.
+
+
 ### SurefireProvider SPI
 
 Every test framework adapter implements `SurefireProvider` (in `surefire-api`):
@@ -199,6 +226,8 @@ public interface SurefireProvider {
 
 ### Provider implementations
 
+### 3.5.x: old implementation
+
 | Provider | Module | Test framework | Key classes |
 |----------|--------|---------------|-------------|
 | **JUnit 3 + POJO** | `surefire-junit3` | JUnit 3.x, plain POJOs | `JUnit3Provider`, `PojoTestSetExecutor` |
@@ -207,28 +236,68 @@ public interface SurefireProvider {
 | **TestNG** | `surefire-testng` | TestNG 4.7+ | `TestNGProvider`, `TestNGExecutor` |
 | **JUnit Platform** | `surefire-junit-platform` | JUnit 5, any JUnit Platform engine | `JUnitPlatformProvider`, `LauncherAdapter` |
 
-### Auto-detection
 
-When no provider is manually configured, Surefire scans the test classpath and selects the **first applicable** provider:
+| Framework | Before (3.5.x) | After (3.6.0) |
+|-----------|----------------|---------------|
+| **JUnit 3** | Supported natively | Requires JUnit 4.12+ dependency (runs via Vintage Engine) |
+| **JUnit 4** | 4.0+ | **4.12+** (runs via Vintage Engine) |
+| **JUnit 5** | Any | Any (unchanged) |
+| **TestNG** | 4.7+ | **6.14.3+** (runs via TestNG JUnit Platform Engine) |
+| **POJO tests** | Supported | **Removed** |
 
-```mermaid
-flowchart TD
-    Start["Scan test classpath"] --> SPI{"SPI configured?<br/>(META-INF/services)"}
-    SPI -->|Yes| UseSPI["Use SPI provider(s)"]
-    SPI -->|No| JP{"JUnit Platform<br/>on classpath?"}
-    JP -->|Yes| UseJP["Use surefire-junit-platform"]
-    JP -->|No| TNG{"TestNG<br/>on classpath?"}
-    TNG -->|Yes| UseTNG["Use surefire-testng"]
-    TNG -->|No| J47{"JUnit ≥4.7 AND<br/>(parallel OR groups)?"}
-    J47 -->|Yes| UseJ47["Use surefire-junit47"]
-    J47 -->|No| J4{"JUnit 4.x<br/>on classpath?"}
-    J4 -->|Yes| UseJ4["Use surefire-junit4"]
-    J4 -->|No| J3["Use surefire-junit3<br/>(always applicable — fallback)"]
-```
+### Breaking Changes since 3.6.0
 
-The priority order is defined in `AbstractSurefireMojo.createProviders()`. Surefire resolves the provider's dependencies at runtime via `SurefireDependencyResolver` and adds them to the forked JVM's classpath — the provider JAR is never a compile-time dependency of the plugin.
+| Change | Impact | Mitigation |
+|--------|--------|------------|
+| **JUnit 3 standalone** no longer supported | Projects using only JUnit 3 must add JUnit 4.12+ dependency | Add `junit:junit:4.12` — test code unchanged |
+| **JUnit 4 < 4.12** no longer supported | Upgrade to JUnit 4.12+ | Mechanical version bump |
+| **TestNG < 6.14.3** no longer supported | Upgrade to TestNG 6.14.3+ | Mechanical version bump |
+| **POJO tests** removed | Tests without framework annotations won't be found | Add `@Test` annotations |
+| **Category expression syntax** changed | Complex boolean group expressions may behave differently under JUnit Platform tag expressions | Review and test group filter configurations |
+| **Provider selection** changed | Manually configured legacy providers still work (via SPI) but auto-detection always chooses JUnit Platform | Pin surefire 3.5.x or add legacy provider as dependency |
 
 ---
+
+#### JUnit 3 tests still work
+
+JUnit 3 test code does not need to change. You only need to ensure your project depends on JUnit 4.12+ (which includes JUnit 3 API compatibility). The Vintage Engine executes JUnit 3 and JUnit 4 tests transparently.
+
+#### POJO tests removed
+
+The `LegacyPojoStackTraceWriter` and POJO test detection (`PojoTestSetExecutor`) are removed. Tests must use a recognized framework annotation (`@Test` from JUnit or TestNG).
+
+### Group / category filtering
+
+The custom JavaCC-based category expression parser (`surefire-grouper`) is replaced by JUnit Platform's native **tag expression** syntax. For most users, `<groups>` and `<excludedGroups>` configuration works unchanged, but the underlying evaluation engine is different. Complex boolean expressions may need review.
+
+### Backward compatibility options
+
+If upgrading causes issues, users have two fallback paths:
+
+1. **Pin Surefire 3.5.x** — stay on the previous version:
+   ```xml
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-surefire-plugin</artifactId>
+       <version>3.5.4</version>
+   </plugin>
+   ```
+
+2. **Use a legacy provider as a plugin dependency** (transitional):
+   ```xml
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-surefire-plugin</artifactId>
+       <version>3.6.0</version>
+       <dependencies>
+           <dependency>
+               <groupId>org.apache.maven.surefire</groupId>
+               <artifactId>surefire-junit3</artifactId>
+               <version>3.5.4</version>
+           </dependency>
+       </dependencies>
+   </plugin>
+   ```
 
 ## Communication Protocol
 
@@ -411,3 +480,61 @@ mvn compile -f surefire-grouper/pom.xml
 ```
 
 **Requirements**: Maven 3.6.3+, JDK 8+ (source level 8, `animal-sniffer` enforces Java 8 API).
+
+---
+
+## Stack trace filtering
+
+A new `StackTraceProvider` optimizes memory usage by truncating stack traces to 15 frames and filtering JDK packages by default. This is configurable:
+
+```xml
+<configuration>
+    <stackTraceFilterPrefixes>
+        <prefix>org.springframework.</prefix>
+        <prefix>org.junit.</prefix>
+    </stackTraceFilterPrefixes>
+</configuration>
+```
+
+When not specified or empty, the default filters (`java.`, `javax.`, `sun.`, `jdk.`) apply.
+
+---
+
+## Stack Trace Memory Optimization
+
+### Problem
+
+To associate console output with test classes, Surefire captures stack traces for every output line. With full stack traces (25–30 frames typical), this consumed 600–1,800 bytes per line.
+
+### Solution
+
+The new `StackTraceProvider` class (in `surefire-api`) introduces:
+
+- **Frame limit**: Maximum 15 frames per stack trace (sufficient to capture the test class after surefire framework frames)
+- **Package filtering**: JDK packages (`java.`, `javax.`, `sun.`, `jdk.`) filtered by default
+- **Configurable prefixes**: Users can specify custom filter prefixes that **replace** (not add to) the defaults
+
+### Memory impact
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Frames per trace | 25–30 | ≤15 |
+| Bytes per output line | 600–1,800 | 300–600 |
+| Estimated savings | — | ~50% |
+
+### Configuration
+
+```xml
+<!-- Custom prefixes (replaces defaults) -->
+<configuration>
+    <stackTraceFilterPrefixes>
+        <prefix>org.springframework.</prefix>
+        <prefix>org.junit.</prefix>
+    </stackTraceFilterPrefixes>
+</configuration>
+```
+
+```bash
+# Command line
+mvn test -Dsurefire.stackTraceFilterPrefixes=org.springframework.,org.junit.
+```
