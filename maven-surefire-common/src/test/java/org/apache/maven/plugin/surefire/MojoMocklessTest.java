@@ -36,7 +36,9 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.api.util.RunOrder;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
@@ -97,10 +99,23 @@ public class MojoMocklessTest {
     }
 
     @Test
+    public void testGetStartupReportConfigurationUsesProvidedRunStatisticsFile() throws Exception {
+        AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
+        File runStatisticsFile = SureFireFileManager.createTempFile(".surefire-", "checksum");
+        RunOrderParameters runOrderParameters = new RunOrderParameters(RunOrder.DEFAULT, runStatisticsFile);
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
+
+        assertThat(config.getStatisticsFile()).isSameAs(runStatisticsFile);
+    }
+
+    @Test
     public void testGetStartupReportConfiguration() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        StartupReportConfiguration config =
-                invokeMethod(surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class));
+        RunOrderParameters runOrderParameters =
+                new RunOrderParameters(RunOrder.DEFAULT, SureFireFileManager.createTempFile(".surefire-", "checksum"));
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
 
         assertThat(config.getXmlReporter()).isNotNull().isInstanceOf(SurefireStatelessReporter.class);
 
@@ -112,6 +127,8 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfiguration2() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
+        RunOrderParameters runOrderParameters =
+                new RunOrderParameters(RunOrder.DEFAULT, SureFireFileManager.createTempFile(".surefire-", "checksum"));
         SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter();
         SurefireConsoleOutputReporter consoleReporter = new SurefireConsoleOutputReporter();
         SurefireStatelessTestsetInfoReporter testsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
@@ -119,8 +136,8 @@ public class MojoMocklessTest {
         setInternalState(surefirePlugin, "consoleOutputReporter", consoleReporter);
         setInternalState(surefirePlugin, "statelessTestsetInfoReporter", testsetInfoReporter);
 
-        StartupReportConfiguration config =
-                invokeMethod(surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class));
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
 
         assertThat(config.getXmlReporter()).isNotNull().isSameAs(xmlReporter);
 
