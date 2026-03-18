@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,7 +78,6 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
 import org.apache.maven.plugin.surefire.util.DirectoryScanner;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.artifact.filter.PatternIncludesArtifactFilter;
@@ -882,13 +882,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @Parameter
     private Map<String, String> jdkToolchain;
 
-    @Component
+    @Inject
     private ToolchainManager toolchainManager;
 
-    @Component
+    @Inject
     private LocationManager locationManager;
 
-    @Component
+    @Inject
     private ProviderDetector providerDetector;
 
     private Toolchain toolchain;
@@ -953,7 +953,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return "**/*$*";
     }
 
-    @Component(role = SurefireDependencyResolver.class)
+    @Inject
     private SurefireDependencyResolver surefireDependencyResolver;
 
     private TestListResolver specificTests;
