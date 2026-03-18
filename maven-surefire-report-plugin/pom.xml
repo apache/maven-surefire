@@ -42,7 +42,7 @@
   </developers>
 
   <prerequisites>
-    <maven>${mavenVersion}</maven>
+    <maven>${mavenVersion.prerequisite}</maven>
   </prerequisites>
 
   <properties>
@@ -158,11 +158,6 @@
     <dependency>
       <groupId>org.apache.maven.plugin-testing</groupId>
       <artifactId>maven-plugin-testing-harness</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-compat</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

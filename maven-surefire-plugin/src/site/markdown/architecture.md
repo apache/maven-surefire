@@ -30,8 +30,8 @@ Apache Maven Surefire is the test execution framework for Maven. It ships three 
 | **maven-failsafe-plugin** | Runs integration tests during `integration-test` / `verify` phases |
 | **maven-surefire-report-plugin** | Generates HTML test reports from XML results |
 
-Surefire supports JUnit 3, JUnit 4, JUnit 5 (Jupiter), TestNG, and plain POJO tests. <br>
-Until 3.5.x, each type was executed via a dedicated provider module. From 3.6.0 on, there is only one unified provider. <br>
+Surefire supports JUnit 3, JUnit 4, JUnit 5 (Jupiter), TestNG, and plain POJO tests. <br/>
+Until 3.5.x, each type was executed via a dedicated provider module. From 3.6.0 on, there is only one unified provider. <br/>
 Tests execute in a **forked JVM** that communicates results back to Maven through a binary event stream protocol.
 
 ---
