@@ -93,7 +93,8 @@
     <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
     <junit.jupiter.execution.parallel.mode.classes.default>concurrent</junit.jupiter.execution.parallel.mode.classes.default>
     <junit.jupiter.execution.parallel.mode.default>same_thread</junit.jupiter.execution.parallel.mode.default>
-    <mavenVersion>3.9.12</mavenVersion>
+    <mavenVersion>3.9.14</mavenVersion>
+    <mavenVersion.prerequisite>3.6.3</mavenVersion.prerequisite>
     <resolverVersion>1.9.27</resolverVersion>
     <commonsLang3Version>3.20.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
