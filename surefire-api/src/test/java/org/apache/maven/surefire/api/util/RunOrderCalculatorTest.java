@@ -24,6 +24,8 @@ import java.util.Set;
 import junit.framework.TestCase;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 
+import static org.apache.maven.surefire.api.util.RunOrder.ALPHABETICAL;
+
 /**
  * @author Kristian Rosenvold
  */
@@ -32,7 +34,8 @@ public class RunOrderCalculatorTest extends TestCase {
     public void testOrderTestClasses() {
         getClassesToRun();
         TestsToRun testsToRun = new TestsToRun(getClassesToRun());
-        RunOrderCalculator runOrderCalculator = new DefaultRunOrderCalculator(RunOrderParameters.alphabetical(), 1);
+        RunOrderParameters alphabetical = new RunOrderParameters(new RunOrder[] {ALPHABETICAL}, null);
+        RunOrderCalculator runOrderCalculator = new DefaultRunOrderCalculator(alphabetical, 1);
         final TestsToRun testsToRun1 = runOrderCalculator.orderTestClasses(testsToRun);
         assertEquals(A.class, testsToRun1.iterator().next());
     }
