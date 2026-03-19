@@ -394,8 +394,13 @@ public class RunListenerAdapterTest {
         TestSkippedException t = new TestSkippedException("skipped");
         adapter.executionFinished(newClassIdentifier(), aborted(t));
         String source = MyTestClass.class.getName();
-        StackTraceWriter stw = new DefaultStackTraceWriter(source, null, t);
+        StackTraceWriter stw = new DefaultStackTraceWriter(source, "initializationError", t);
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass(SimpleReportEntry.class);
+        verify(listener).testAssumptionFailure(report.capture());
+        assertThat(report.getValue().getSourceName()).isEqualTo(source);
+        assertThat(report.getValue().getStackTraceWriter()).isEqualTo(stw);
+
+        report = ArgumentCaptor.forClass(SimpleReportEntry.class);
         verify(listener).testSetCompleted(report.capture());
         assertThat(report.getValue().getSourceName()).isEqualTo(source);
         assertThat(report.getValue().getStackTraceWriter()).isEqualTo(stw);
@@ -438,7 +443,7 @@ public class RunListenerAdapterTest {
 
         ReportEntry entry = entryCaptor.getValue();
         assertEquals(MyTestClass.class.getTypeName(), entry.getSourceName());
-        assertNull(entry.getName());
+        assertEquals("initializationError", entry.getName());
         assertNotNull(entry.getStackTraceWriter());
         assertNotNull(entry.getStackTraceWriter().getThrowable());
         assertThat(entry.getStackTraceWriter().getThrowable().getTarget()).isInstanceOf(AssertionError.class);
@@ -457,7 +462,7 @@ public class RunListenerAdapterTest {
 
         ReportEntry entry = entryCaptor.getValue();
         assertEquals(MyTestClass.class.getTypeName(), entry.getSourceName());
-        assertNull(entry.getName());
+        assertEquals("initializationError", entry.getName());
         assertNotNull(entry.getStackTraceWriter());
         assertNotNull(entry.getStackTraceWriter().getThrowable());
         assertThat(entry.getStackTraceWriter().getThrowable().getTarget()).isInstanceOf(RuntimeException.class);

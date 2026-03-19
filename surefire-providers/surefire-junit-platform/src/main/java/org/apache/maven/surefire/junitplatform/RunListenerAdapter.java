@@ -129,10 +129,11 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             Integer elapsed = computeElapsedTime(testIdentifier);
             switch (testExecutionResult.getStatus()) {
                 case ABORTED:
-                    if (isTest) {
+                    if (isTest || isClass) {
                         runListener.testAssumptionFailure(
                                 createReportEntry(testIdentifier, testExecutionResult, elapsed));
-                    } else {
+                    }
+                    if (isClass || isRootContainer) {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
                     }
@@ -236,6 +237,15 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         boolean failed = testExecutionResult == null || testExecutionResult.getStatus() == FAILED;
         String methodName = failed || testIdentifier.isTest() ? classMethodName.getMethodSignature() : null;
         String methodText = failed || testIdentifier.isTest() ? classMethodName.getMethodDisplayName() : null;
+
+        if (testExecutionResult != null
+                && testExecutionResult.getStatus() != org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL
+                && testIdentifier.isContainer()
+                && methodName == null) {
+            methodName = "initializationError";
+            methodText = "initializationError";
+        }
+
         if (Objects.equals(methodName, methodText)) {
             methodText = null;
         }
