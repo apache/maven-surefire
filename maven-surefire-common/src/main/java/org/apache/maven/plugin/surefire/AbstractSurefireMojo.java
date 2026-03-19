@@ -2099,7 +2099,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return getPluginArtifactMap().get("org.apache.maven.surefire:surefire-shadefire");
     }
 
-    private StartupReportConfiguration getStartupReportConfiguration(boolean isForking, ProviderInfo providerInfo) {
+    private StartupReportConfiguration getStartupReportConfiguration(
+            boolean isForking, ProviderInfo providerInfo, RunOrderParameters runOrderParameters) {
         SurefireStatelessReporter xmlReporter =
                 statelessTestsetReporter == null ? new SurefireStatelessReporter() : statelessTestsetReporter;
 
@@ -2127,7 +2128,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 getReportsDirectory(),
                 isTrimStackTrace(),
                 getReportNameSuffix(),
-                getStatisticsFile(),
+                runOrderParameters.getRunStatisticsFile(),
                 requiresRunHistory(),
                 getRerunFailingTestsCount(),
                 getReportSchemaLocation(),
@@ -2360,7 +2361,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 testClasspathWrapper,
                 platform,
                 resolvedJavaModularityResult);
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(true, provider);
+        StartupReportConfiguration startupReportConfiguration =
+                getStartupReportConfiguration(true, provider, runOrderParameters);
 
         ProviderConfiguration providerConfiguration = createProviderConfiguration(runOrderParameters);
         return new ForkStarter(
@@ -2388,7 +2390,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 testClasspathWrapper,
                 platform,
                 new ResolvePathResultWrapper(null, true));
-        StartupReportConfiguration startupReportConfiguration = getStartupReportConfiguration(false, provider);
+        StartupReportConfiguration startupReportConfiguration =
+                getStartupReportConfiguration(false, provider, runOrderParameters);
         ProviderConfiguration providerConfiguration = createProviderConfiguration(runOrderParameters);
         return new InPluginVMSurefireStarter(
                 startupConfiguration, providerConfiguration, startupReportConfiguration, getConsoleLogger(), platform);

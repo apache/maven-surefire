@@ -22,7 +22,6 @@ import java.io.File;
 
 import org.apache.maven.surefire.api.util.RunOrder;
 
-import static org.apache.maven.surefire.api.util.RunOrder.ALPHABETICAL;
 import static org.apache.maven.surefire.api.util.RunOrder.DEFAULT;
 
 /**
@@ -51,10 +50,6 @@ public final class RunOrderParameters {
         this.runOrder = runOrder;
         this.runStatisticsFile = runStatisticsFile;
         this.runOrderRandomSeed = runOrderRandomSeed;
-    }
-
-    public static RunOrderParameters alphabetical() {
-        return new RunOrderParameters(new RunOrder[] {ALPHABETICAL}, null);
     }
 
     public RunOrder[] getRunOrder() {
