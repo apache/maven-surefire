@@ -64,6 +64,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
                 throw new IllegalArgumentException(
                         "Unsupported configuration " + getSettings().getConfiguration());
         }
+        launcher.setForkJvm();
         return launcher;
     }
 
@@ -105,6 +106,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
         assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
         prepare("TestTwo")
                 .parallel("classes")
+                .setForkJvm()
                 .useUnlimitedThreads()
                 .executeTest()
                 .verifyErrorFree(2)

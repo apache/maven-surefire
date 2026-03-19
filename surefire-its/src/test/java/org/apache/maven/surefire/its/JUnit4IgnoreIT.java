@@ -37,6 +37,7 @@ public class JUnit4IgnoreIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testJunit47ParallelIgnore() {
         unpack().setJUnitVersion("4.8.1")
+                .setForkJvm()
                 .parallelClasses()
                 .executeTest()
                 .verifyErrorFreeLog()

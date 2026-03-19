@@ -42,6 +42,7 @@ public class Surefire995CategoryInheritanceIT extends SurefireJUnit4IntegrationT
     @Test
     public void junit411ShouldRunExplicitCategory() {
         final OutputValidator outputValidator = unpack().addGoal("-Ppositive-tests")
+                .setForkJvm()
                 .sysProp("version.junit", "4.11")
                 .executeTest();
 
@@ -52,6 +53,7 @@ public class Surefire995CategoryInheritanceIT extends SurefireJUnit4IntegrationT
     public void junit411ShouldExcludeExplicitCategory() {
         final OutputValidator outputValidator = unpack().addGoal("-Ppositive-tests-excluded-categories")
                 .sysProp("version.junit", "4.11")
+                .setForkJvm()
                 .executeTest();
         // SpecialCategorizedTest inherits the excluded annotation but should still run as
         // until junit 4.11, the Category annotation is not inherited
@@ -82,6 +84,7 @@ public class Surefire995CategoryInheritanceIT extends SurefireJUnit4IntegrationT
                 .sysProp("version.junit", "4.11")
                 // AND the tests marked with CategoryB are marked for execution
                 .setGroups("jiras.surefire955.group.marker.CategoryB")
+                .setForkJvm()
                 // WHEN the tests are executed
                 .executeTest();
 
@@ -107,6 +110,7 @@ public class Surefire995CategoryInheritanceIT extends SurefireJUnit4IntegrationT
                 .sysProp("version.junit", "4.12")
                 // AND the tests marked with CategoryB are marked for execution
                 .setGroups("jiras.surefire955.group.marker.CategoryB")
+                .setForkJvm()
                 // WHEN the tests are executed
                 .executeTest();
 
