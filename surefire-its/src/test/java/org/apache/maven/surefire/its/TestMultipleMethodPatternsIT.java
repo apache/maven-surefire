@@ -56,7 +56,6 @@ public class TestMultipleMethodPatternsIT extends AbstractTestMultipleMethodPatt
 
     @Override
     protected SurefireLauncher unpack() {
-        return unpack("junit48-multiple-method-patterns", "_" + settings.path())
-                .setForkJvm();
+        return unpack("junit48-multiple-method-patterns", "_" + settings.path()).setForkJvm();
     }
 }

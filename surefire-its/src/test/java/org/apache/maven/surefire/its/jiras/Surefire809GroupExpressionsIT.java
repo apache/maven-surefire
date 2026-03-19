@@ -29,8 +29,10 @@ import org.junit.Test;
 public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void categoryAB() {
-        OutputValidator validator =
-                unpackJUnit().groups("junit4.CategoryA AND junit4.CategoryB").executeTest();
+        OutputValidator validator = unpackJUnit()
+                .setForkJvm()
+                .groups("junit4.CategoryA AND junit4.CategoryB")
+                .executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults(2, 0, 0, 0);
         validator.verifyTextInLog("catA: 1");
@@ -45,6 +47,7 @@ public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTest
     @Test
     public void incorrectJUnitVersions() {
         unpackJUnit()
+                .setForkJvm()
                 .setJUnitVersion("4.5")
                 .groups("junit4.CategoryA AND junit4.CategoryB")
                 .maven()
@@ -54,7 +57,8 @@ public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTest
 
     @Test
     public void testJUnitRunCategoryNotC() {
-        OutputValidator validator = unpackJUnit().groups("!junit4.CategoryC").executeTest();
+        OutputValidator validator =
+                unpackJUnit().setForkJvm().groups("!junit4.CategoryC").executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults(5, 0, 0, 0);
         validator.verifyTextInLog("catA: 2");
@@ -67,7 +71,7 @@ public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTest
     @Test
     public void testExcludedGroups() {
         OutputValidator validator =
-                unpackJUnit().setExcludedGroups("junit4.CategoryC").executeTest();
+                unpackJUnit().setForkJvm().setExcludedGroups("junit4.CategoryC").executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults(5, 0, 0, 0);
         validator.verifyTextInLog("catA: 2");
@@ -79,8 +83,11 @@ public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTest
 
     @Test
     public void testNGRunCategoryAB() {
-        OutputValidator validator =
-                unpackTestNG().groups("CategoryA AND CategoryB").debugLogging().executeTest();
+        OutputValidator validator = unpackTestNG()
+                .setForkJvm()
+                .groups("CategoryA AND CategoryB")
+                .debugLogging()
+                .executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults(2, 0, 0, 0);
         validator.verifyTextInLog("BasicTest.testInCategoriesAB()");
@@ -90,7 +97,7 @@ public class Surefire809GroupExpressionsIT extends SurefireJUnit4IntegrationTest
     @Test
     public void testNGRunCategoryNotC() {
         OutputValidator validator =
-                unpackTestNG().groups("!CategoryC").debugLogging().executeTest();
+                unpackTestNG().setForkJvm().groups("!CategoryC").debugLogging().executeTest();
         validator.verifyErrorFreeLog();
         validator.assertTestSuiteResults(8, 0, 0, 0);
         validator.verifyTextInLog("catA: 2");

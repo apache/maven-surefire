@@ -95,7 +95,7 @@ public abstract class AbstractFailFastIT extends SurefireJUnit4IntegrationTestCa
         if (failures != 0 || errors != 0) {
             launcher.withFailure();
         }
-
+        launcher.setForkJvm(true);
         return launcher.sysProp(properties).executeTest();
     }
 
