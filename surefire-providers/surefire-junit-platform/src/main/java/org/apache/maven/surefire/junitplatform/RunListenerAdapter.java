@@ -58,6 +58,8 @@ import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
  * @since 2.22.0
  */
 final class RunListenerAdapter implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter {
+    private static final String INITIALIZATION_ERROR = "initializationError";
+
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
@@ -242,8 +244,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 && testExecutionResult.getStatus() != org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL
                 && testIdentifier.isContainer()
                 && methodName == null) {
-            methodName = "initializationError";
-            methodText = "initializationError";
+            methodName = INITIALIZATION_ERROR;
+            methodText = INITIALIZATION_ERROR;
         }
 
         if (Objects.equals(methodName, methodText)) {
@@ -314,7 +316,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8.
+     * Checks if the test identifier has a parent ID but using reflection as it's
+     * only available from 1.8.
      *
      * @param testIdentifier the test identifier to check
      * @return true if the test identifier has a parent ID, false otherwise
@@ -352,10 +355,10 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
     /**
      * <ul>
-     *     <li>[0] class name - used in stacktrace parser</li>
-     *     <li>[1] class display name</li>
-     *     <li>[2] method signature - used in stacktrace parser</li>
-     *     <li>[3] method display name</li>
+     * <li>[0] class name - used in stacktrace parser</li>
+     * <li>[1] class display name</li>
+     * <li>[2] method signature - used in stacktrace parser</li>
+     * <li>[3] method display name</li>
      * </ul>
      *
      * @param testIdentifier a class or method
@@ -363,7 +366,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
      */
     private ResultDisplay toClassMethodName(TestIdentifier testIdentifier) {
 
-        // find the first class or method source in the hierarchy just below the root level
+        // find the first class or method source in the hierarchy just below the root
+        // level
         // without parent and with ClassSource
         Optional<String> classLevelName = Optional.empty();
         TestIdentifier parent = findTopParent(testIdentifier);
@@ -423,18 +427,18 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             String methodDisp = hasDisplayName ? methodDisplay : methodDesc;
 
             // The behavior of methods getLegacyReportingName() and getDisplayName().
-            //     junit4    ||  legacy  |  display
+            // junit4 || legacy | display
             // ==============||==========|==========
-            //     normal    ||     m    |     m
-            //     param     ||   m[0]   |   m[0]
-            //  param+displ  || m[displ] | m[displ]
+            // normal || m | m
+            // param || m[0] | m[0]
+            // param+displ || m[displ] | m[displ]
 
-            //     junit5    ||  legacy  |  display
+            // junit5 || legacy | display
             // ==============||==========|==========
-            //    normal     ||    m()   |    m()
-            //  normal+displ ||    m()   |   displ
-            //     param     ||  m()[1]  | [1] <param>
-            //  param+displ  ||  m()[1]  |   displ
+            // normal || m() | m()
+            // normal+displ || m() | displ
+            // param || m()[1] | [1] <param>
+            // param+displ || m()[1] | displ
 
             return new ResultDisplay(
                     classLevelName.orElse(source.getClassName()),
