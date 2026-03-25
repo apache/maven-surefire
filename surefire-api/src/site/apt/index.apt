@@ -43,8 +43,6 @@ Surefire API
 
   * TestNG XML test suite: this constructs a single suite from a <<<testng.xml>>> file. The definitions inside the file will match those above.
 
-  * JUnit 3.x: Groups are not supported.
-
   []
 
   See {{{../surefire-providers/index.html}Surefire Providers}} for more information on specific providers.

@@ -148,8 +148,8 @@ Fork Options and Parallel Test Execution
   <dependency>
     <groupId>junit</groupId>
     <artifactId>junit</artifactId>
-    <!-- 4.7 or higher -->
-    <version>4.7</version>
+    <!-- 4.12 or higher -->
+    <version>4.13.2</version>
     <scope>test</scope>
   </dependency>
   <dependency>

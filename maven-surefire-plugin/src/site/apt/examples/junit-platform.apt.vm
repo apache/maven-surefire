@@ -166,8 +166,8 @@ Using JUnit 5 Platform
 *** JUnit4 API in test dependencies
 
   This is similar example with JUnit4 in test dependencies of your project POM.
-  The Vintage engine artifact has to be in the plugin dependencies; otherwise the plugin would use
-  <<<surefire-junit4>>> provider instead of the <<<surefire-junit-platform>>> provider.
+  Since 3.6.0, the JUnit Platform provider is always used. Add the Vintage Engine as a plugin
+  dependency to ensure JUnit 4 tests are executed.
 
 +---+
 <dependencies>

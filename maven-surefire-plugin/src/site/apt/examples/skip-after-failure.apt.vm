@@ -40,25 +40,9 @@ Skipping Tests After the Nth Failure or Error
  
  
 Prerequisite
- 
- Use ${project.artifactId} 2.19 or higher, JUnit 4.0 or higher, TestNG 5.10 or
- higher, or JUnit Platform 6.0 or higher.
- 
- If version of TestNG is lower than 5.10 while the parameter 
- <<<skipAfterFailureCount>>> is set, the plugin fails with error:
- 
- <<<[ERROR] Failed to execute goal ...: Parameter "skipAfterFailureCount"
- expects TestNG Version 5.10 or higher. java.lang.NoClassDefFoundError:
- org/testng/IInvokedMethodListener>>>
 
- 
- 
- If version of JUnit is lower than 4.0 while the parameter 
- <<<skipAfterFailureCount>>> is set, the plugin fails with error:
- 
- <<<[ERROR] Failed to execute goal ...: Parameter "skipAfterFailureCount"
- expects JUnit Version 4.0 or higher. java.lang.NoSuchMethodError:
- org.junit.runner.notification.RunNotifier.pleaseStop()V>>>
+ Use ${project.artifactId} 2.19 or higher, JUnit 4.12 or higher, or TestNG 6.14.3 or higher.
+ Since 3.6.0, all test frameworks run via the unified JUnit Platform provider.
  
  
 Notices
@@ -80,6 +64,6 @@ Other features
 * Re-run and skip execution
 
   Since of 2.19.1 you can use parameters <<<skipAfterFailureCount>>> and <<<rerunFailingTestsCount>>> together.
-  This is enabled by providers <<<surefire-junit4>>> and <<<surefire-junit47>>>. You can run again failed tests
-  and skip the rest of the test-set if errors or failures reached <<<skipAfterFailureCount>>>.
+  You can run again failed tests and skip the rest of the test-set if errors or failures
+  reached <<<skipAfterFailureCount>>>.
   Notice that failed tests within re-run phase are not included in <<<skipAfterFailureCount>>>.

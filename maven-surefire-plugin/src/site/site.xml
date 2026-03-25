@@ -30,7 +30,6 @@
       <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
       <item name="Overall Archive" href="architecture.html"/>
-      <item name="Unified Providers changes" href="pr-3179-unified-provider"/>
       <item name="Developing" href="developing.html"/>
       <!-- According to https://issues.apache.org/jira/browse/MNGSITE-152 -->
       <item name="License" href="http://www.apache.org/licenses/"/>

@@ -54,9 +54,8 @@ Maven Surefire Provider API
 
   []
 
-  There are four well-known providers within Surefire that are also implemented this way, so
-  examples can be found by looking at the Surefire source code itself. <<<surefire-junit47>>> is
-  the showcase implementation.
+  Since 3.6.0, there is one unified provider within Surefire, <<<surefire-junit-platform>>>,
+  which is the showcase implementation. Examples can be found by looking at the Surefire source code itself.
 
   The javadoc on the intefaces mentioned in this article should otherwise be sufficient to write a provider.
   Providers are added as dependencies to the Surefire and Failsafe plugins.
