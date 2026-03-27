@@ -276,10 +276,21 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         switch (resultType) {
             case SUCCESS:
                 for (WrappedReportEntry methodEntry : methodEntries) {
-                    if (methodEntry.getReportEntryType() == SUCCESS) {
-                        startTestElement(ppw, methodEntry);
-                        ppw.endElement();
+                    // ALWAYS write testcase
+                    startTestElement(ppw, methodEntry);
+
+                    if (methodEntry.getReportEntryType() != SUCCESS) {
+                        getTestProblems(
+                            fw,
+                            ppw,
+                            methodEntry,
+                            trimStackTrace,
+                            outputStream,
+                            methodEntry.getReportEntryType().getXmlTag(),
+                            false);
                     }
+
+                    ppw.endElement();
                 }
                 break;
             case ERROR:
