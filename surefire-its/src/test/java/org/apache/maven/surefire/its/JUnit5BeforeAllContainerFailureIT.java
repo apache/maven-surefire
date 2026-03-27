@@ -39,7 +39,7 @@ public class JUnit5BeforeAllContainerFailureIT extends SurefireJUnit4Integration
                 .executeTest();
 
         // One test fails at the container level: meaning tests run = 1, errors = 1, failures = 0, skipped = 0
-        outputValidator.assertTestSuiteResults(1, 0, 1, 0);
+        outputValidator.assertTestSuiteResults(1, 1, 0, 0);
 
         outputValidator
                 .getSurefireReportsXmlFile("TEST-junitplatform.AlwaysFailingBeforeAllTest.xml")

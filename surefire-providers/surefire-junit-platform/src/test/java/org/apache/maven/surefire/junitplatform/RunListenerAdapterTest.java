@@ -396,11 +396,6 @@ public class RunListenerAdapterTest {
         String source = MyTestClass.class.getName();
         StackTraceWriter stw = new DefaultStackTraceWriter(source, "initializationError", t);
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass(SimpleReportEntry.class);
-        verify(listener).testAssumptionFailure(report.capture());
-        assertThat(report.getValue().getSourceName()).isEqualTo(source);
-        assertThat(report.getValue().getStackTraceWriter()).isEqualTo(stw);
-
-        report = ArgumentCaptor.forClass(SimpleReportEntry.class);
         verify(listener).testSetCompleted(report.capture());
         assertThat(report.getValue().getSourceName()).isEqualTo(source);
         assertThat(report.getValue().getStackTraceWriter()).isEqualTo(stw);

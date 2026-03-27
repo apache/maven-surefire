@@ -406,9 +406,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             Map<String, List<WrappedReportEntry>> methodStatistics) {
         TestResultType resultType = getTestResultType(methodRuns);
 
-        // Special handling for @BeforeAll failures (null method name or method name is "null")
+        // Special handling for @BeforeAll failures (null method name or method name is "null" or "initializationError")
         // If @BeforeAll failed but any actual test methods succeeded, treat it as a flake
-        if ((methodName == null || methodName.equals("null"))
+        if ((methodName == null || methodName.equals("null") || methodName.equals("initializationError"))
                 && (resultType == TestResultType.ERROR || resultType == TestResultType.FAILURE)) {
             // Check if any actual test methods (non-null and not "null" names) succeeded
             boolean hasSuccessfulTestMethods = methodStatistics.entrySet().stream()

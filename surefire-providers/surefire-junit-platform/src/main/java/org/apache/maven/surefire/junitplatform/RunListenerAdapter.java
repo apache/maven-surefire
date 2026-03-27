@@ -131,11 +131,10 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             Integer elapsed = computeElapsedTime(testIdentifier);
             switch (testExecutionResult.getStatus()) {
                 case ABORTED:
-                    if (isTest || isClass) {
+                    if (isTest) {
                         runListener.testAssumptionFailure(
                                 createReportEntry(testIdentifier, testExecutionResult, elapsed));
-                    }
-                    if (isClass || isRootContainer) {
+                    } else {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
                     }
