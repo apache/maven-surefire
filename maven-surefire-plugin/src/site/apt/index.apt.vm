@@ -167,6 +167,6 @@ mvn verify
 
   * {{{./java9.html}Run tests with Java 9}}
 
-  * {{{./docker.html}Run tests in Docker}}
+  * {{{./whats-new-3-6-0.html}What's New in 3.6.0}}
 
   []
