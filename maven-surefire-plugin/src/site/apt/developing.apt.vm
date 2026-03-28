@@ -129,7 +129,7 @@ ForkedBooter#main
 
   The <<<surefire-providers>>> module contains the <<<common-java5>>> module and the
   unified <<<surefire-junit-platform>>> provider. Since 3.6.0, all test frameworks
-  (JUnit 4.12+, JUnit 5, TestNG 6.14.3+) are executed via the JUnit Platform provider.
+  (JUnit 4.12+, JUnit 5/6, TestNG 6.14.3+) are executed via the JUnit Platform provider.
 
 * Shadefire
 

@@ -30,7 +30,7 @@ Apache Maven Surefire is the test execution framework for Maven. It ships three 
 | **maven-failsafe-plugin** | Runs integration tests during `integration-test` / `verify` phases |
 | **maven-surefire-report-plugin** | Generates HTML test reports from XML results |
 
-Surefire supports JUnit 4 (4.12+), JUnit 5 (Jupiter), and TestNG (6.14.3+). <br/>
+Surefire supports JUnit 4 (4.12+), JUnit 5/6 (Jupiter), and TestNG (6.14.3+). <br/>
 Until 3.5.x, each type was executed via a dedicated provider module. From 3.6.0 on, there is only one unified provider. <br/>
 Tests execute in a **forked JVM** that communicates results back to Maven through a binary event stream protocol.
 
@@ -446,7 +446,7 @@ Since 3.6.0, test filtering by groups, categories, or tags is handled via the JU
 1. Users configure `<groups>` and `<excludedGroups>` in the plugin configuration
 2. For **JUnit 4**: `@Category` annotations are mapped to JUnit Platform tags via the Vintage Engine
 3. For **TestNG**: groups are mapped to JUnit Platform tags via the TestNG Engine
-4. For **JUnit 5**: `@Tag` annotations are used natively
+4. For **JUnit 5/6**: `@Tag` annotations are used natively
 
 Tag filter expressions are passed directly to the JUnit Platform Launcher.
 
