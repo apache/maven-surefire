@@ -279,8 +279,4 @@ public class BooterDeserializerProviderConfigurationTest {
     private File getTestSourceDirectory() {
         return new File("TestSrc");
     }
-
-    private List<String> getSuiteXmlFileStrings() {
-        return Arrays.asList("A1", "A2");
-    }
 }
