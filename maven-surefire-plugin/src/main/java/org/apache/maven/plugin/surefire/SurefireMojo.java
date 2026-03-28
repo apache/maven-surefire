@@ -287,7 +287,6 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     private int failOnFlakeCount;
 
     /**
-     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
      * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
      * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
      * {@code includes} and {@code excludes}.<br>
@@ -295,6 +294,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * instead of an entire suite).
      *
      * @since 2.2
+     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
      */
     @Deprecated
     @Parameter(property = "surefire.suiteXmlFiles")
