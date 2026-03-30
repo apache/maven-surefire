@@ -3167,7 +3167,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 if (!testDeps.containsKey(testNgEngineCoordinates)
                         && !pluginDeps.containsKey(testNgEngineCoordinates)) {
                     addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
-                    consoleLogger.info("TestNG is present. Adding per default " + testNgEngineCoordinates + ":" + version);
+                    consoleLogger.info(
+                            "TestNG is present. Adding per default " + testNgEngineCoordinates + ":" + version);
                 }
             }
 
