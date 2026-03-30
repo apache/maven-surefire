@@ -130,7 +130,7 @@ public class JUnitPlatformProviderTest {
 
         assertThat(testCaptor.getValue().getSourceName()).isEqualTo(FailingBeforeAllJupiterTest.class.getName());
 
-        assertThat(testCaptor.getValue().getName()).isNull();
+        assertThat(testCaptor.getValue().getName()).isEqualTo("initializationError");
 
         assertThat(testSetCaptor.getAllValues().get(1).getSourceName())
                 .isEqualTo(FailingBeforeAllJupiterTest.class.getName());
@@ -171,7 +171,7 @@ public class JUnitPlatformProviderTest {
         assertThat(testCaptor.getValue().getSourceName())
                 .isEqualTo(FailingWithErrorBeforeAllJupiterTest.class.getName());
 
-        assertThat(testCaptor.getValue().getName()).isNull();
+        assertThat(testCaptor.getValue().getName()).isEqualTo("initializationError");
 
         assertThat(testSetCaptor.getAllValues().get(1).getSourceName())
                 .isEqualTo(FailingWithErrorBeforeAllJupiterTest.class.getName());

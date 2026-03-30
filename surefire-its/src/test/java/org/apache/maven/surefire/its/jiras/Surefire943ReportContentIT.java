@@ -69,7 +69,7 @@ public class Surefire943ReportContentIT extends SurefireJUnit4IntegrationTestCas
         Xpp3Dom child = children[0];
 
         Assertions.assertEquals(className, child.getAttribute("classname"));
-        Assertions.assertEquals("", child.getAttribute("name"));
+        Assertions.assertEquals("initializationError", child.getAttribute("name"));
 
         Assertions.assertEquals(
                 1,
