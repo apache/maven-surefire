@@ -3159,18 +3159,15 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 }
             }
             if (testNgArtifact != null) {
-                // FIXME support only from TestNG 6.14.3
-                // FIXME check if already present as plugin dependency or project dependency
+                // minimum testng version tested via getTestNgArtifact
                 String junitSupportGroupId = "org.junit.support";
                 String testNgEngineArtifactId = "testng-engine";
                 String testNgEngineCoordinates = junitSupportGroupId + ":" + testNgEngineArtifactId;
-                // FIXME configurable?
-                // or picked from test dependencies
-                String version = "1.0.6";
-                consoleLogger.debug("TestNG is present. Resolving " + testNgEngineCoordinates + ":" + version);
+                String version = "1.1.0";
                 if (!testDeps.containsKey(testNgEngineCoordinates)
                         && !pluginDeps.containsKey(testNgEngineCoordinates)) {
                     addEngineByApi(junitSupportGroupId, testNgEngineArtifactId, version, providerArtifacts);
+                    consoleLogger.info("TestNG is present. Adding per default " + testNgEngineCoordinates + ":" + version);
                 }
             }
 
