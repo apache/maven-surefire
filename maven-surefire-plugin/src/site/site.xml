@@ -25,12 +25,12 @@
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
+      <item name="What's New in 3.6.0" href="whats-new-3-6-0.html"/>
       <item name="Plugin Documentation" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
       <item name="Overall Archive" href="architecture.html"/>
-      <item name="Unified Providers changes" href="pr-3179-unified-provider"/>
       <item name="Developing" href="developing.html"/>
       <!-- According to https://issues.apache.org/jira/browse/MNGSITE-152 -->
       <item name="License" href="http://www.apache.org/licenses/"/>
@@ -62,7 +62,6 @@
       <item name="Using Console Logs" href="examples/logging.html"/>
       <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
-      <item name="Run tests in Docker" href="docker.html"/>
       <item name="Run tests in a different JVM using toolchains" href="examples/toolchains.html"/>
     </menu>
   </body>

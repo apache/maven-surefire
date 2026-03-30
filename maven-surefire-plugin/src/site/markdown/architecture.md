@@ -30,7 +30,7 @@ Apache Maven Surefire is the test execution framework for Maven. It ships three 
 | **maven-failsafe-plugin** | Runs integration tests during `integration-test` / `verify` phases |
 | **maven-surefire-report-plugin** | Generates HTML test reports from XML results |
 
-Surefire supports JUnit 3, JUnit 4, JUnit 5 (Jupiter), TestNG, and plain POJO tests. <br/>
+Surefire supports JUnit 4 (4.12+), JUnit 5/6 (Jupiter), and TestNG (6.14.3+). <br/>
 Until 3.5.x, each type was executed via a dedicated provider module. From 3.6.0 on, there is only one unified provider. <br/>
 Tests execute in a **forked JVM** that communicates results back to Maven through a binary event stream protocol.
 
@@ -80,10 +80,6 @@ graph TD
 
     subgraph "Reporting"
         SRP["surefire-report-parser"]
-    end
-
-    subgraph "Filtering"
-        SG["surefire-grouper<br/><i>JavaCC category expression parser</i>"]
     end
 
     MSP --> MSC
@@ -443,16 +439,16 @@ The `maven-surefire-report-plugin` reads the XML files (via `surefire-report-par
 
 ## Group / Category Filtering
 
-The `surefire-grouper` module provides test filtering by JUnit 4 categories or TestNG groups.
+Since 3.6.0, test filtering by groups, categories, or tags is handled via the JUnit Platform's native **tag expression** syntax.
 
 ### How it works
 
 1. Users configure `<groups>` and `<excludedGroups>` in the plugin configuration
-2. For **JUnit 4.7+**: the `surefire-junit47` provider uses `GroupMatcherCategoryFilter` to filter tests by `@Category` annotations
-3. For **TestNG**: groups are passed directly to TestNG's native group filtering
-4. For **JUnit Platform**: tag filter expressions are passed to the JUnit Platform Launcher
+2. For **JUnit 4**: `@Category` annotations are mapped to JUnit Platform tags via the Vintage Engine
+3. For **TestNG**: groups are mapped to JUnit Platform tags via the TestNG Engine
+4. For **JUnit 5/6**: `@Tag` annotations are used natively
 
-The module includes a **JavaCC-generated parser** (`category-expression.jj`) that parses boolean expressions over group names (e.g., `"fast AND NOT slow"`), producing a `GroupMatcher` tree (`AndGroupMatcher`, `OrGroupMatcher`, `InverseGroupMatcher`, `SingleGroupMatcher`).
+Tag filter expressions are passed directly to the JUnit Platform Launcher.
 
 ---
 

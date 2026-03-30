@@ -139,8 +139,6 @@ mvn verify
 
   * {{{./examples/junit.html}Using JUnit}}
 
-  * {{{./examples/pojo-test.html}Using POJO Tests}}
-
   * {{{./examples/skipping-tests.html}Skipping Tests}}
 
   * {{{./examples/skip-after-failure.html}Skip After Failure}}
@@ -169,6 +167,6 @@ mvn verify
 
   * {{{./java9.html}Run tests with Java 9}}
 
-  * {{{./docker.html}Run tests in Docker}}
+  * {{{./whats-new-3-6-0.html}What's New in 3.6.0}}
 
   []

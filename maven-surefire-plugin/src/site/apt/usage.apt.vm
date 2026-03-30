@@ -106,8 +106,6 @@ mvn verify
 
    * JUnit (4.12+ or 5.x)
 
-   * POJO
-
   Since Surefire 3.6.0, all tests run via the JUnit Platform. The appropriate engine is automatically selected
   based on your dependencies:
 
@@ -122,20 +120,11 @@ mvn verify
   Since the test framework dependency is required to compile the test classes anyway, no additional configuration is required.
 
   Note that any normal Surefire integration works identically no matter which
-  providers are in use - so you can still produce a Cobertura report and a
+  test framework is in use - so you can still produce a Cobertura report and a
   Surefire results report on your project web site for your TestNG tests,
   for example.
 
-  The POJO provider above allows you to write tests that do not depend on either of
-  JUnit and TestNG. It behaves in the same way, running all <<<test*>>> methods that are
-  public in the class, but the API dependency is not required. To perform
-  assertions, the JDK 1.4 <<<assert>>> keyword can be used.
-  See {{{./examples/pojo-test.html} Using POJO Tests}} for more information.
-
-  All of the providers support the Surefire Plugin parameter configurations.
-  However, there are additional options available if you are running TestNG
-  tests (including if you are using TestNG to execute your JUnit tests, which
-  occurs by default if both are present in Surefire).
+  There are additional options available if you are running TestNG tests.
 
   See {{{./examples/testng.html} Using TestNG}} for more information.
 
