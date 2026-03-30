@@ -73,10 +73,6 @@ Only one provider module remains: `surefire-junit-platform` (the unified provide
 - **JUnit 4 versions before 4.12** are no longer supported.
 - **TestNG versions before 6.14.3** are no longer supported.
 
-### Removed suite xml file configuration
-
-The `suiteXmlFiles` configuration for TestNG is no longer supported. You must now use groups or Junit suite support
-
 ### Reimplemented Stack Trace Handling
 
 Stack trace handling has been completely reimplemented as part of the provider unification. The previous
@@ -134,6 +130,8 @@ Ensure your TestNG version is **6.14.3 or later**. Surefire will automatically u
 
 TestNG configuration (groups, listeners, suites, etc.) continues to work through Surefire's plugin
 configuration and is mapped to the JUnit Platform infrastructure.
+
+The `suiteXmlFiles` configuration for TestNG is no longer supported. You must now use groups or Junit suite support
 
 
 
