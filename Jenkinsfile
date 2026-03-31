@@ -35,7 +35,7 @@ final def mavens = ['3.x.x']
 // final def jdks = [21, 17, 11, 8]
 final def jdks = [21]
 
-final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its']
+final def options = ['-e', '-V', '-B', '-nsu', '-P', 'run-its', '-T2']
 final def goals = ['clean', 'install']
 final def goalsDepl = ['clean', 'deploy']
 final Map stages = [:]
