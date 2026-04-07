@@ -18,39 +18,45 @@
  */
 package org.apache.maven.surefire.its;
 
-import java.util.Arrays;
-
 import org.apache.maven.surefire.its.fixture.Settings;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * TestNG test project using multiple method patterns, including wildcards in class and method names.
+ * Uses {@link Settings#TestNG_TEST}.
+ *
+ * @see TestMultipleMethodPatternsTestNGIncludesIT
+ * @see TestMultipleMethodPatternsTestNGIncludesExcludesIT
  */
-@RunWith(Parameterized.class)
 public class TestMultipleMethodPatternsTestNGIT extends AbstractTestMultipleMethodPatterns {
-    private final Settings settings;
-
-    public TestMultipleMethodPatternsTestNGIT(Settings settings) {
-        this.settings = settings;
-    }
-
-    @Parameters
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(
-                new Object[][] {{Settings.TestNG_TEST}, {Settings.TestNG_INCLUDES}, {Settings.TestNG_INCLUDES_EXCLUDES}
-                });
-    }
 
     @Override
     protected Settings getSettings() {
-        return settings;
+        return Settings.TestNG_TEST;
     }
 
     @Override
     protected SurefireLauncher unpack() {
-        return unpack("testng-multiple-method-patterns", "_" + settings.path());
+        return unpack("testng-multiple-method-patterns", "_" + getSettings().path());
+    }
+
+    @Override
+    @Test
+    @Disabled("TestNG does not support regex method patterns")
+    public void regexClassAndMethod() {
+        super.regexClassAndMethod();
+    }
+
+    @Override
+    @Test
+    @Disabled("TestNG does not support regex method patterns")
+    public void testRegexSuccessTwo() {
+        assumeTrue(getSettings().getConfiguration() == TEST, "Configuration is TEST");
+        super.regexClassAndMethod();
     }
 }

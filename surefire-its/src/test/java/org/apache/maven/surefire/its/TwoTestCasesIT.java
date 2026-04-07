@@ -27,10 +27,10 @@ import org.apache.maven.surefire.its.fixture.HelperAssertions;
 import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test running two test cases; confirms reporting works correctly
@@ -40,31 +40,7 @@ import static org.junit.Assert.fail;
 public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void testTwoTestCases() {
-        unpack("junit-twoTestCases")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
-                .executeTest()
-                .verifyErrorFreeLog()
-                .assertTestSuiteResults(2, 0, 0, 0);
-    }
-
-    /**
-     * Runs two tests encapsulated in a suite
-     */
-    @Test
-    public void testTwoTestCaseSuite() {
-        final OutputValidator outputValidator = unpack("junit-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
-                .executeTest();
-        outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
-        List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
-        Set<String> classNames = extractClassNames(reports);
-        assertContains(classNames, "junit.twoTestCaseSuite.BasicTest");
-        assertContains(classNames, "junit.twoTestCaseSuite.TestTwo");
-        assertEquals("wrong number of classes", 2, classNames.size());
-        IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
-        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
+        unpack("junit-twoTestCases").executeTest().verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
     }
 
     private void assertContains(Set<String> set, String expected) {
@@ -84,33 +60,15 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testJunit4Suite() {
-        final OutputValidator outputValidator = unpack("junit4-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
-                .executeTest();
+        final OutputValidator outputValidator =
+                unpack("junit4-twoTestCaseSuite").executeTest();
         outputValidator.verifyErrorFreeLog().assertTestSuiteResults(2, 0, 0, 0);
 
         List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
         Set<String> classNames = extractClassNames(reports);
         assertContains(classNames, "twoTestCaseSuite.BasicTest");
         assertContains(classNames, "twoTestCaseSuite.Junit4TestTwo");
-        assertEquals("wrong number of classes", 2, classNames.size());
-        IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
-        HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
-    }
-
-    @Test
-    public void testTestNGSuite() {
-        final OutputValidator outputValidator = unpack("testng-twoTestCaseSuite")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
-                .executeTest();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0);
-        List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
-        Set<String> classNames = extractClassNames(reports);
-        assertContains(classNames, "testng.two.TestNGTestTwo");
-        assertContains(classNames, "testng.two.TestNGSuiteTest");
-        assertEquals("wrong number of classes", 2, classNames.size());
+        assertEquals(2, classNames.size(), "wrong number of classes");
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
         HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
     }

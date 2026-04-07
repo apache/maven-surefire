@@ -23,10 +23,10 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -78,17 +78,17 @@ public class Surefire772NoFailsafeReportsIT extends SurefireJUnit4IntegrationTes
 
     private void assertNoFailsafeReport(OutputValidator validator) {
         TestFile reportFile = validator.getReportsFile("failsafe.html");
-        assertFalse("Expecting no failsafe report file", reportFile.isFile());
+        assertFalse(reportFile.isFile(), "Expecting no failsafe report file");
     }
 
     private void assertFailsafeReport(OutputValidator validator) {
         TestFile reportFile = validator.getReportsFile("failsafe.html");
-        assertTrue("Expecting no failsafe report file", reportFile.isFile());
+        assertTrue(reportFile.isFile(), "Expecting no failsafe report file");
     }
 
     private void assertSurefireReportPresent(OutputValidator validator) {
         TestFile reportFile = validator.getReportsFile("surefire.html");
-        assertTrue("Expecting surefire report file", reportFile.isFile());
+        assertTrue(reportFile.isFile(), "Expecting surefire report file");
     }
 
     private SurefireLauncher unpack() throws VerificationException {

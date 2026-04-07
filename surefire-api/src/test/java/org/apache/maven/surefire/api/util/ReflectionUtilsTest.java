@@ -20,9 +20,10 @@ package org.apache.maven.surefire.api.util;
 
 import java.lang.reflect.Constructor;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Unit test for {@link ReflectionUtils}.
@@ -52,9 +53,12 @@ public class ReflectionUtilsTest {
         assertThat(ReflectionUtils.reloadClass(cl, new B())).isEqualTo(B.class);
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void shouldNotInvokeStaticMethod() {
-        ReflectionUtils.invokeStaticMethod(ReflectionUtilsTest.class, "notCallable", new Class<?>[0], new Object[0]);
+        assertThrows(
+                RuntimeException.class,
+                () -> ReflectionUtils.invokeStaticMethod(
+                        ReflectionUtilsTest.class, "notCallable", new Class<?>[0], new Object[0]));
     }
 
     @Test

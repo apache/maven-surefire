@@ -216,7 +216,13 @@ public class SmartStackTraceParser {
         StringBuilder result = new StringBuilder();
         if (t != null) {
             result.append(t.getClass().getName());
-            String msg = t.getMessage();
+            String msg;
+            // SUREFIRE-818
+            try {
+                msg = t.getMessage();
+            } catch (NullPointerException npe) {
+                msg = "";
+            }
             if (msg != null) {
                 result.append(": ");
                 if (isMultiLine(msg)) {

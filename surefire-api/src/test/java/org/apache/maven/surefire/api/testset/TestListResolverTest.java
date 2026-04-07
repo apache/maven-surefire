@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.addAll;
@@ -36,49 +36,43 @@ import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.api.testset.TestListResolver.newTestListResolver;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public class TestListResolverTest extends TestCase {
+public class TestListResolverTest {
     private static final String DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS =
             "**/Test*.java, **/*Test.java, **/*TestCase.java";
 
     private static final String DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS = "**/*$*";
 
+    @Test
     public void testRegexSanity1() {
-        try {
-            TestListResolver.isRegexPrefixedPattern("#%regex[]");
-            fail("#%regex[]");
-        } catch (IllegalArgumentException e) {
-            // expected in junit 3.x
-        }
+        assertThrows(IllegalArgumentException.class, () -> TestListResolver.isRegexPrefixedPattern("#%regex[]"));
     }
 
+    @Test
     public void testRegexSanity2() {
-        try {
-            TestListResolver.isRegexPrefixedPattern("%regex[]#");
-            fail("%regex[]#");
-        } catch (IllegalArgumentException e) {
-            // expected in junit 3.x
-        }
+        assertThrows(IllegalArgumentException.class, () -> TestListResolver.isRegexPrefixedPattern("%regex[]#"));
     }
 
+    @Test
     public void testRegexSanity3() {
-        try {
-            TestListResolver.isRegexPrefixedPattern("%regex[]%regex[]");
-            fail("%regex[]%regex[]");
-        } catch (IllegalArgumentException e) {
-            // expected in junit 3.x
-        }
+        assertThrows(IllegalArgumentException.class, () -> TestListResolver.isRegexPrefixedPattern("%regex[]%regex[]"));
     }
 
+    @Test
     public void testMinRegexLength() {
         assertFalse(TestListResolver.isRegexMinLength("%regex[]"));
         assertFalse(TestListResolver.isRegexMinLength("%regex[ ]"));
         assertTrue(TestListResolver.isRegexMinLength("%regex[*Test]"));
     }
 
+    @Test
     public void testRemoveExclamationMark() {
         String pattern = TestListResolver.removeExclamationMark("!%regex[]");
         assertEquals("%regex[]", pattern);
@@ -86,6 +80,7 @@ public class TestListResolverTest extends TestCase {
         assertEquals("%regex[]", pattern);
     }
 
+    @Test
     public void testUnwrapped() {
         String[] classAndMethod = TestListResolver.unwrap(" MyTest ");
         assertEquals("MyTest", classAndMethod[0]);
@@ -98,6 +93,7 @@ public class TestListResolverTest extends TestCase {
         assertEquals("test", classAndMethod[1]);
     }
 
+    @Test
     public void testUnwrappedRegex() {
         String[] classAndMethod = TestListResolver.unwrapRegex("%regex[ .*.MyTest.class ]");
         assertEquals(".*.MyTest.class", classAndMethod[0]);
@@ -110,11 +106,13 @@ public class TestListResolverTest extends TestCase {
         assertEquals("myMethod|secondTest", classAndMethod[1]);
     }
 
+    @Test
     public void testMakeRegex() {
         String regex = ResolvedTest.wrapRegex(".*.MyTest.class");
         assertEquals("%regex[.*.MyTest.class]", regex);
     }
 
+    @Test
     public void testNonRegexClassAndMethod() {
         Collection<ResolvedTest> includedFilters = new ArrayList<>();
         Collection<ResolvedTest> excludedFilters = new ArrayList<>();
@@ -138,6 +136,7 @@ public class TestListResolverTest extends TestCase {
         assertFalse(test.matchAsInclusive("MyTest", "otherTest"));
     }
 
+    @Test
     public void testNonRegexClassAndMethods() {
         Collection<ResolvedTest> includedFilters = new ArrayList<>();
         Collection<ResolvedTest> excludedFilters = new ArrayList<>();
@@ -171,6 +170,7 @@ public class TestListResolverTest extends TestCase {
         assertFalse(second.matchAsInclusive("your/pkg/MyTest.class", "thirdTest"));
     }
 
+    @Test
     public void testNegativeNonRegexClassAndMethod() {
         Collection<ResolvedTest> includedFilters = new ArrayList<>();
         Collection<ResolvedTest> excludedFilters = new ArrayList<>();
@@ -195,6 +195,7 @@ public class TestListResolverTest extends TestCase {
         assertFalse(test.matchAsInclusive("pkg/OtherTest.class", "myTest"));
     }
 
+    @Test
     public void testResolveTestRequest() {
         Collection<ResolvedTest> includedFilters = new ArrayList<>();
         Collection<ResolvedTest> excludedFilters = new ArrayList<>();
@@ -213,20 +214,24 @@ public class TestListResolverTest extends TestCase {
         assertFalse(test.matchAsInclusive("pkg/OtherTest.class", "myTest"));
     }
 
+    @Test
     public void testShouldRunTestWithoutMethod() {
         new TestListResolver("**/*Test.class, !%regex[.*.MyTest.class#myTest]").shouldRun("pkg/MyTest.class", null);
     }
 
+    @Test
     public void testShouldNotRunExcludedMethods() {
         TestListResolver resolver = new TestListResolver("!#*Fail*, !%regex[#.*One], !#testSuccessThree");
         assertTrue(resolver.shouldRun("pkg/MyTest.class", null));
     }
 
+    @Test
     public void testShouldRunSuiteWithIncludedMethods() {
         TestListResolver resolver = new TestListResolver("#*Fail*, %regex[#.*One], #testSuccessThree");
         assertTrue(resolver.shouldRun("pkg/MyTest.class", null));
     }
 
+    @Test
     public void testShouldRunAny() {
         TestListResolver resolver = TestListResolver.getEmptyTestListResolver();
         assertTrue(resolver.shouldRun("pkg/MyTest.class", null));
@@ -235,6 +240,7 @@ public class TestListResolverTest extends TestCase {
         assertTrue(resolver.shouldRun("pkg/MyTest.class", null));
     }
 
+    @Test
     public void testClassFilter() {
         TestListResolver resolver = new TestListResolver("#test");
         assertTrue(resolver.shouldRun("pkg/MyTest.class", null));
@@ -246,20 +252,18 @@ public class TestListResolverTest extends TestCase {
         assertFalse(resolver.shouldRun("pkg/MyTest.class", null));
     }
 
+    @Test
     public void testBrokenPatternThrowsException() {
         Collection<String> included = emptySet();
         Collection<String> excluded = asList("BasicTest, !**/TestTwo, **/TestThree.java");
-        try {
-            new TestListResolver(included, excluded);
-            fail("Expected: IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
-            // JUnit 3.x style
-            assertEquals(
-                    "Exclamation mark not expected in 'exclusion': BasicTest, !**/TestTwo, **/TestThree.java",
-                    e.getLocalizedMessage());
-        }
+        IllegalArgumentException e =
+                assertThrows(IllegalArgumentException.class, () -> new TestListResolver(included, excluded));
+        assertEquals(
+                "Exclamation mark not expected in 'exclusion': BasicTest, !**/TestTwo, **/TestThree.java",
+                e.getLocalizedMessage());
     }
 
+    @Test
     public void testMultipleExcludedClassesOnly() {
         Collection<String> included = emptySet();
         Collection<String> excluded = asList("BasicTest, **/TestTwo, **/TestThree.java");
@@ -270,6 +274,7 @@ public class TestListResolverTest extends TestCase {
         assertTrue(resolver.shouldRun("jiras/surefire745/TestFour.class", null));
     }
 
+    @Test
     public void testMultipleExcludedClasses() {
         Collection<String> included = singleton(DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS);
         Collection<String> excluded = asList("BasicTest, **/TestTwo, **/TestThree.java");
@@ -280,6 +285,7 @@ public class TestListResolverTest extends TestCase {
         assertTrue(resolver.shouldRun("jiras/surefire745/TestFour.class", null));
     }
 
+    @Test
     public void testAndFilters() {
         TestListResolver firstFilter = new TestListResolver("BasicTest, **/TestTwo, **/TestThree.java");
         TestListResolver secondFilter = new TestListResolver("*icTest, Test???*");
@@ -291,6 +297,7 @@ public class TestListResolverTest extends TestCase {
         assertFalse(filter.shouldRun("jiras/surefire745/TestFour.class", null));
     }
 
+    @Test
     public void testTestListResolverWithoutMethods() {
         ResolvedTest inc1 = new ResolvedTest("A?Test.java", null, false);
         ResolvedTest inc2 = new ResolvedTest("**/?Test", null, false);
@@ -310,6 +317,7 @@ public class TestListResolverTest extends TestCase {
         assertFalse(resolver.hasMethodPatterns());
     }
 
+    @Test
     public void testTestListResolverWithMethods() {
         ResolvedTest inc1 = new ResolvedTest("A?Test.java", null, false);
         ResolvedTest inc2 = new ResolvedTest("*?Test", null, false);
@@ -336,6 +344,7 @@ public class TestListResolverTest extends TestCase {
         return set;
     }
 
+    @Test
     public void testDefaultPatternsMatching() {
         Set<ResolvedTest> inclusions = resolveClass(DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS);
         Set<ResolvedTest> exclusions = resolveClass(DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS);
@@ -344,6 +353,7 @@ public class TestListResolverTest extends TestCase {
         assertTrue(shouldRun);
     }
 
+    @Test
     public void testDefaultPatternsNotMatching() {
         Set<ResolvedTest> inclusions = resolveClass(DEFAULT_SUREFIRE_INCLUDED_TEST_PATTERNS);
         Set<ResolvedTest> exclusions = resolveClass(DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS);
@@ -352,6 +362,7 @@ public class TestListResolverTest extends TestCase {
         assertFalse(shouldRun);
     }
 
+    @Test
     public void testInclusiveWithDefaultExclusivePattern() {
         Set<ResolvedTest> defaultExclusions = resolveClass(DEFAULT_SUREFIRE_EXCLUDED_TEST_PATTERNS);
         boolean runnable = newTestListResolver(resolveClass("A*Test"), defaultExclusions)
@@ -359,6 +370,7 @@ public class TestListResolverTest extends TestCase {
         assertTrue(runnable);
     }
 
+    @Test
     public void testWildcard() {
         TestListResolver tlr = TestListResolver.optionallyWildcardFilter(new TestListResolver((String) null));
         assertThat(tlr, is(new TestListResolver("**/*.class")));
@@ -371,58 +383,34 @@ public class TestListResolverTest extends TestCase {
         assertThat(tlr.isEmpty(), is(false));
     }
 
+    @Test
     public void testRegexRuleViolationQuotedHashMark() {
-        try {
-            new TestListResolver("%regex[.\\Q#\\E.]");
-            fail("IllegalArgumentException is expected");
-        } catch (IllegalArgumentException iea) {
-            // expected
-        }
+        assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[.\\Q#\\E.]"));
     }
 
+    @Test
     public void testRegexRuleViolationEnclosedMethodSeparator() {
-        try {
-            new TestListResolver("%regex[(.|.#.)]");
-            fail("IllegalArgumentException is expected");
-        } catch (IllegalArgumentException iea) {
-            // expected
-        }
+        assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[(.|.#.)]"));
     }
 
+    @Test
     public void testRegexRuleViolationMultipleHashmarkWithClassConstraint() {
-        try {
-            new TestListResolver("%regex[.*#.|#.]");
-            fail("IllegalArgumentException is expected");
-        } catch (IllegalArgumentException iea) {
-            // expected
-        }
+        assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[.*#.|#.]"));
     }
 
+    @Test
     public void testRegexRuleViolationMultipleHashmarkForMethods() {
-        try {
-            new TestListResolver("%regex[#.|#.]");
-            fail("IllegalArgumentException is expected");
-        } catch (IllegalArgumentException iea) {
-            // expected
-        }
+        assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[#.|#.]"));
     }
 
+    @Test
     public void testRegexRuleViolationInvalidClassPattern() {
-        try {
-            new TestListResolver("%regex[.(.]").shouldRun("x", "x");
-            fail("IllegalArgumentException is expected");
-        } catch (IllegalArgumentException iea) {
-            // expected
-        }
+        assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[.(.]").shouldRun("x", "x"));
     }
 
+    @Test
     public void testRegexRuleViolationInvalidMethodPattern() {
-        try {
-            new TestListResolver("%regex[#.(.]");
-            fail("IllegalArgumentException is expected");
-        } catch (IllegalArgumentException iea) {
-            // expected
-        }
+        assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[#.(.]"));
     }
 
     private static Set<ResolvedTest> resolveClass(String patterns) {

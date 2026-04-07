@@ -27,7 +27,7 @@ public final class Utils {
     }
 
     public static String toSystemNewLine(String s) {
-        String newLine = System.getProperty("line.separator");
+        String newLine = System.lineSeparator();
         StringBuilder b = new StringBuilder(s);
         for (int i = 0; i < b.length(); i++) {
             if (b.charAt(i) == '\n') {

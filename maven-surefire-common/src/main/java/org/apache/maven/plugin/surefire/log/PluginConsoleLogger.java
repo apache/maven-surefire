@@ -22,6 +22,9 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.slf4j.Logger;
 
 /**
+ *
+ * TODO remove this as thread safety should be handled by the underlying logging framework no need to add complexity
+ *
  * Wrapper logger of miscellaneous implementations of {@link Logger}.
  *
  * This instance is synchronized. The logger operations are mutually exclusive to standard out, standard err and console
@@ -29,8 +32,8 @@ import org.slf4j.Logger;
  * {@link org.apache.maven.plugin.surefire.report.TestSetRunListener}.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
- * @since 2.20
  * @see ConsoleLogger
+ * @since 2.20
  */
 public final class PluginConsoleLogger implements ConsoleLogger {
     private final Logger logger;

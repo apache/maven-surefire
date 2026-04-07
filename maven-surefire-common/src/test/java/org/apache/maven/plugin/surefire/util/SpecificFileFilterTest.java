@@ -18,30 +18,35 @@
  */
 package org.apache.maven.plugin.surefire.util;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kristian Rosenvold
  */
 @Deprecated
-public class SpecificFileFilterTest extends TestCase {
+public class SpecificFileFilterTest {
+    @Test
     public void testMatchSingleCharacterWildcard() {
         SpecificFileFilter filter = createFileFilter("org/apache/maven/surefire/?pecificTestClassFilter.class");
         assertTrue(filter.accept(getFile()));
     }
 
+    @Test
     public void testMatchSingleSegmentWordWildcard() {
         SpecificFileFilter filter = createFileFilter("org/apache/maven/surefire/*TestClassFilter.class");
         assertTrue(filter.accept(getFile()));
     }
 
+    @Test
     public void testMatchMultiSegmentWildcard() {
         SpecificFileFilter filter = createFileFilter("org/**/SpecificTestClassFilter.class");
         assertTrue(filter.accept(getFile()));
     }
 
+    @Test
     public void testMatchSingleSegmentWildcard() {
         SpecificFileFilter filter = createFileFilter("org/*/maven/surefire/SpecificTestClassFilter.class");
         assertTrue(filter.accept(getFile()));

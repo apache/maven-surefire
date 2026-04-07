@@ -22,9 +22,9 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * Test failIfNoTests
@@ -47,15 +47,6 @@ public class CheckTestFailIfNoTestsIT extends SurefireJUnit4IntegrationTestCase 
         final OutputValidator outputValidator = unpack().failIfNoTests(false).executeTest();
         outputValidator.verifyErrorFreeLog();
         TestFile reportsDir = outputValidator.getSurefireReportsFile("");
-        assertFalse("Unexpected reports directory", reportsDir.exists());
-    }
-
-    @Test
-    public void jUnit48CategoriesFailWhenNoTests() {
-        unpack().failIfNoTests(false)
-                .activateProfile("junit47")
-                .setJUnitVersion("4.8.1")
-                .executeTest()
-                .verifyErrorFreeLog();
+        assertFalse(reportsDir.exists(), "Unexpected reports directory");
     }
 }

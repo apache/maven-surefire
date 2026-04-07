@@ -24,13 +24,12 @@ import java.util.Map;
 import org.apache.maven.surefire.its.fixture.MavenLauncher;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.runners.Parameterized.Parameter;
 
 /**
  * Base test class for SUREFIRE-580, configuration parameter {@code skipAfterFailureCount}.
@@ -38,48 +37,21 @@ import static org.junit.runners.Parameterized.Parameter;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-@RunWith(Parameterized.class)
 public abstract class AbstractFailFastIT extends SurefireJUnit4IntegrationTestCase {
     private static final String LEGACY_FORK_NODE = "org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory";
 
     private static final String SUREFIRE_FORK_NODE =
             "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
 
-    @Parameter(0)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String description;
-
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String profile;
-
-    @Parameter(2)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public Map<String, String> properties;
-
-    @Parameter(3)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public int total;
-
-    @Parameter(4)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public int failures;
-
-    @Parameter(5)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public int errors;
-
-    @Parameter(6)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public int skipped;
-
-    @Parameter(7)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public boolean useProcessPipes;
-
     protected abstract String withProvider();
 
-    private OutputValidator prepare(String description, String profile, Map<String, String> properties) {
+    private OutputValidator prepare(
+            String description,
+            String profile,
+            Map<String, String> properties,
+            boolean useProcessPipes,
+            int failures,
+            int errors) {
         MavenLauncher launcher = unpack("/fail-fast-" + withProvider(), "_" + description)
                 .maven()
                 .debugLogging();
@@ -107,10 +79,22 @@ public abstract class AbstractFailFastIT extends SurefireJUnit4IntegrationTestCa
         return props;
     }
 
-    @Test
-    public void test() throws Exception {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("data")
+    void test(
+            String description,
+            String profile,
+            Map<String, String> properties,
+            int total,
+            int failures,
+            int errors,
+            int skipped,
+            boolean useProcessPipes)
+            throws Exception {
+        // JUnit 6.0.0 requires Java 17+
+        assumeJavaVersion(17);
         String cls = useProcessPipes ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        OutputValidator validator = prepare(description, profile, properties);
+        OutputValidator validator = prepare(description, profile, properties, useProcessPipes, failures, errors);
         validator
                 .assertTestSuiteResults(total, errors, failures, skipped)
                 .assertThatLogLine(containsString("Found implementation of fork node factory: " + cls), equalTo(1));

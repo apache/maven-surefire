@@ -21,9 +21,9 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test Surefire-740 Truncated comma with non us locale
@@ -40,7 +40,7 @@ public class Surefire740TruncatedCommaIT extends SurefireJUnit4IntegrationTestCa
                 .executeCurrentGoals();
 
         TestFile reportFile = validator.getReportsFile("surefire.html");
-        assertTrue("Expecting file", reportFile.exists());
+        assertTrue(reportFile.exists(), "Expecting file");
         reportFile.assertContainsText("027"); // Avoid asserting with the "," or "." ;)
     }
 }

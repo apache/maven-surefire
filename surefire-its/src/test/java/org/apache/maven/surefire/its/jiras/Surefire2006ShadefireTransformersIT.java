@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringContains.containsString;
@@ -41,7 +41,6 @@ public class Surefire2006ShadefireTransformersIT extends SurefireJUnit4Integrati
                         containsString(
                                 "[INFO] Using configured provider org.apache.maven.shadefire.surefire.junitplatform.JUnitPlatformProvider"),
                         is(1))
-                .assertThatLogLine(containsString("[INFO] Running PojoTest"), is(0))
                 .assertThatLogLine(containsString("[INFO] Running JUnit4Test"), is(1))
                 .assertThatLogLine(containsString("[INFO] Running JUnit5Test"), is(1));
     }

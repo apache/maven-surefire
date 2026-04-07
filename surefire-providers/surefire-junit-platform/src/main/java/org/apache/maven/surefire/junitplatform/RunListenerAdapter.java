@@ -38,7 +38,6 @@ import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
-import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
@@ -289,7 +288,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private StackTraceWriter toStackTraceWriter(String realClassName, String realMethodName, Throwable throwable) {
-        return new PojoStackTraceWriter(realClassName, realMethodName, throwable);
+        return new DefaultStackTraceWriter(realClassName, realMethodName, throwable);
     }
 
     private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
@@ -305,7 +304,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8
+     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8.
      *
      * @param testIdentifier the test identifier to check
      * @return true if the test identifier has a parent ID, false otherwise
@@ -514,7 +513,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * @return Map of tests that failed.
+     * @return map of tests that failed
      */
     Map<TestIdentifier, TestExecutionResult> getFailures() {
         return failures;

@@ -27,26 +27,27 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import junit.framework.TestCase;
 import org.apache.maven.shared.utils.io.DirectoryScanner;
-import org.junit.Assert;
+import org.junit.jupiter.api.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationProblem;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public class SurefireSchemaValidationTest extends TestCase {
+class SurefireSchemaValidationTest {
     @SuppressWarnings("checkstyle:methodname")
-    public void testValidate_XMLs_against_schema() throws Exception {
+    @Test
+    void testValidate_XMLs_against_schema() throws Exception {
         File basedir = getProjectBasedir();
 
         File xsd = getSchemaFile(basedir);
-        Assert.assertTrue("XSD schema validation not found", xsd.exists());
+        assertTrue(xsd.exists(), "XSD schema validation not found");
 
         // looks for all xml surefire report in test resources
         DirectoryScanner ds = new DirectoryScanner();
@@ -79,7 +80,7 @@ public class SurefireSchemaValidationTest extends TestCase {
                             .append(problem.getMessage());
                 }
             }
-            Assert.assertTrue(Utils.toSystemNewLine(msg.toString()), vr.isValid());
+            assertTrue(vr.isValid(), Utils.toSystemNewLine(msg.toString()));
         }
     }
 

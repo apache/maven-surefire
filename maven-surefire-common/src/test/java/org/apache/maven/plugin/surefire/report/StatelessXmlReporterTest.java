@@ -24,6 +24,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
@@ -32,13 +34,15 @@ import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.shared.utils.xml.Xpp3Dom;
 import org.apache.maven.surefire.shared.utils.xml.Xpp3DomBuilder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllLines;
@@ -51,19 +55,22 @@ import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProp
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.getInternalState;
-import static org.powermock.reflect.Whitebox.invokeMethod;
-import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  *
  */
 @SuppressWarnings({"ResultOfMethodCallIgnored", "checkstyle:magicnumber"})
+HEAD
 public class StatelessXmlReporterTest extends TestCase {
     public void testSkippedTestcaseIsStillWritten() throws Exception {
         // Create a skipped test entry
@@ -105,6 +112,9 @@ public class StatelessXmlReporterTest extends TestCase {
 
         assertEquals("skippedTest", testcases[0].getAttribute("name"));
     }
+
+public class StatelessXmlReporterTest {
+ origin/master
     private static final String XSD =
             "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     private static final String TEST_ONE = "aTestMethod";
@@ -117,7 +127,60 @@ public class StatelessXmlReporterTest extends TestCase {
     private File expectedReportFile;
     private File reportDir;
 
-    @Override
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return (T) field.get(target);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void setInternalState(Object target, String fieldName, Object value) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    field.set(target, value);
+                    return;
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target.getClass();
+        while (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    return (T) method.invoke(target, args);
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchMethodException(methodName);
+    }
+
+    @BeforeEach
     protected void setUp() throws Exception {
         stats = new TestSetStats(false, true);
         rerunStats = new TestSetStats(false, true);
@@ -130,13 +193,14 @@ public class StatelessXmlReporterTest extends TestCase {
         reportDir.mkdir();
     }
 
-    @Override
+    @AfterEach
     protected void tearDown() {
         if (expectedReportFile != null) {
             expectedReportFile.delete();
         }
     }
 
+    @Test
     public void testFileNameWithoutSuffix() {
         StatelessXmlReporter reporter = new StatelessXmlReporter(
                 reportDir,
@@ -151,27 +215,29 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 true,
-                true);
+                true,
+                false);
         reporter.cleanTestHistoryMap();
 
         ReportEntry reportEntry = new SimpleReportEntry(
                 NORMAL_RUN, 0L, getClass().getName(), null, getClass().getName(), null, 12);
-        WrappedReportEntry testSetReportEntry =
-                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 12, null, null, systemProps());
+        WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
+                reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null, systemProps());
         stats.testSucceeded(testSetReportEntry);
         reporter.testSetCompleted(testSetReportEntry, stats);
 
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
         assertTrue(
-                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist",
-                expectedReportFile.exists());
+                expectedReportFile.exists(),
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
     }
 
+    @Test
     public void testAllFieldsSerialized() throws IOException {
         ReportEntry reportEntry =
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, 12);
         WrappedReportEntry testSetReportEntry =
-                new WrappedReportEntry(reportEntry, SUCCESS, 12, null, null, systemProps());
+                new WrappedReportEntry(reportEntry, SUCCESS, 1771085631L, 12, null, null, systemProps());
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
 
         stats.testSucceeded(testSetReportEntry);
@@ -187,14 +253,15 @@ public class StatelessXmlReporterTest extends TestCase {
             stdOutPrefix = "st]]>d-out";
         }
 
-        stdOut.write(stdOutPrefix + "<null>!\u0020\u0000\u001F", false);
+        stdOut.write(stdOutPrefix + "<null>!\u0020\u0000\u001F", false, null);
 
         Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream("fds");
 
-        stdErr.write(stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false);
+        stdErr.write(stdErrPrefix + "?&-&amp;&#163;\u0020\u0000\u001F", false, null);
         WrappedReportEntry t2 = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_TWO, null, stackTraceWriter, 13),
                 ReportEntryType.ERROR,
+                1771085631L,
                 13,
                 stdOut,
                 stdErr);
@@ -213,7 +280,8 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 true,
-                true);
+                true,
+                false);
         reporter.testSetCompleted(testSetReportEntry, stats);
 
         FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
@@ -249,10 +317,12 @@ public class StatelessXmlReporterTest extends TestCase {
                 tcb.getChild("system-err").getValue());
     }
 
+    @Test
     public void testOutputRerunFlakyFailure() throws IOException {
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, 12),
                 ReportEntryType.SUCCESS,
+                1771085631L,
                 12,
                 null,
                 null,
@@ -273,6 +343,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testTwoFirstError = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, cls, null, TEST_TWO, null, stackTraceWriterOne, 5),
                 ReportEntryType.ERROR,
+                1771085631L,
                 5,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -280,6 +351,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testTwoSecondError = new WrappedReportEntry(
                 new SimpleReportEntry(RERUN_TEST_AFTER_FAILURE, 1L, cls, null, TEST_TWO, null, stackTraceWriterTwo, 13),
                 ReportEntryType.ERROR,
+                1771085631L,
                 13,
                 createStdOutput(secondRunOut),
                 createStdOutput(secondRunErr));
@@ -287,6 +359,7 @@ public class StatelessXmlReporterTest extends TestCase {
         WrappedReportEntry testThreeFirstRun = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 2L, cls, null, TEST_THREE, null, stackTraceWriterOne, 13),
                 ReportEntryType.FAILURE,
+                1771085631L,
                 13,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -295,6 +368,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 new SimpleReportEntry(
                         RERUN_TEST_AFTER_FAILURE, 3L, cls, null, TEST_THREE, null, stackTraceWriterTwo, 2),
                 ReportEntryType.SUCCESS,
+                1771085631L,
                 2,
                 createStdOutput(secondRunOut),
                 createStdOutput(secondRunErr));
@@ -317,7 +391,8 @@ public class StatelessXmlReporterTest extends TestCase {
                 false,
                 false,
                 true,
-                true);
+                true,
+                false);
 
         reporter.testSetCompleted(testSetReportEntry, stats);
         reporter.testSetCompleted(testSetReportEntry, rerunStats);
@@ -375,6 +450,7 @@ public class StatelessXmlReporterTest extends TestCase {
         assertNull(testCaseThree.getChild("system-err"));
     }
 
+    @Test
     public void testOutputRerunFlakyAssumption() throws IOException {
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
 
@@ -392,6 +468,7 @@ public class StatelessXmlReporterTest extends TestCase {
                 new SimpleReportEntry(
                         NORMAL_RUN, 1L, getClass().getName(), null, TEST_TWO, null, stackTraceWriterOne, 5),
                 ERROR,
+                1771085631L,
                 5,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -409,6 +486,7 @@ public class StatelessXmlReporterTest extends TestCase {
                         stackTraceWriterTwo,
                         13),
                 SKIPPED,
+                1771085631L,
                 13,
                 createStdOutput(secondRunOut),
                 createStdOutput(secondRunErr));
@@ -416,12 +494,26 @@ public class StatelessXmlReporterTest extends TestCase {
         rerunStats.testSucceeded(testTwoSecondError);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.2", false, false, false, false, true, true);
+                reportDir,
+                null,
+                false,
+                1,
+                new HashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
 
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(
                         RERUN_TEST_AFTER_FAILURE, 1L, getClass().getName(), null, null, null, stackTraceWriterOne, 5),
                 ERROR,
+                1771085631L,
                 20,
                 createStdOutput(firstRunOut),
                 createStdOutput(firstRunErr));
@@ -453,13 +545,15 @@ public class StatelessXmlReporterTest extends TestCase {
         assertEquals(1, linesWithComments);
     }
 
+    @Test
     public void testNoWritesOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         out.free();
-        out.write("a", false);
+        out.write("a", false, null);
         assertThat((boolean) getInternalState(out, "isDirty")).isFalse();
     }
 
+    @Test
     public void testLengthOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
 
@@ -479,15 +573,16 @@ public class StatelessXmlReporterTest extends TestCase {
         out.free();
     }
 
+    @Test
     @SuppressWarnings("checkstyle:magicnumber")
     public void testWritesOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         for (int i = 0; i < 33_000; i++) {
-            out.write("A", false);
-            out.write("B", true);
+            out.write("A", false, null);
+            out.write("B", true, null);
         }
-        out.write(null, false);
-        out.write(null, true);
+        out.write(null, false, null);
+        out.write(null, true, null);
 
         assertThat(out.getByteCount()).isEqualTo(33_000 * (1 + 1 + NL.length()) + 4 + 4 + NL.length());
 
@@ -503,6 +598,7 @@ public class StatelessXmlReporterTest extends TestCase {
         out.free();
     }
 
+    @Test
     public void testFreeOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         setInternalState(out, "cache", ByteBuffer.allocate(0));
@@ -518,6 +614,7 @@ public class StatelessXmlReporterTest extends TestCase {
         verify(file, times(1)).deleteOnExit();
     }
 
+    @Test
     public void testCacheOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         byte[] b1 = invokeMethod(out, "getLargeCache", 1);
@@ -534,6 +631,7 @@ public class StatelessXmlReporterTest extends TestCase {
         assertThat(b3).hasSize(2);
     }
 
+    @Test
     public void testSyncOnDeferredFile() throws Exception {
         Utf8RecodingDeferredFileOutputStream out = new Utf8RecodingDeferredFileOutputStream("test");
         Buffer cache = ByteBuffer.wrap(new byte[] {1, 2, 3});
@@ -568,6 +666,7 @@ public class StatelessXmlReporterTest extends TestCase {
         assertThat((boolean) getInternalState(out, "closed")).isTrue();
     }
 
+    @Test
     public void testReporterHandlesATestWithoutMessageAndWithEmptyStackTrace() {
         StackTraceWriter stackTraceWriterOne = new DeserializedStacktraceWriter(null, null, "");
 
@@ -575,12 +674,26 @@ public class StatelessXmlReporterTest extends TestCase {
                 new SimpleReportEntry(
                         NORMAL_RUN, 1L, getClass().getName(), null, "a test name", null, stackTraceWriterOne, 5),
                 ERROR,
+                1771085631L,
                 5,
                 null,
                 null);
 
         StatelessXmlReporter reporter = new StatelessXmlReporter(
-                reportDir, null, false, 1, new HashMap<>(), XSD, "3.0.2", false, false, false, false, true, true);
+                reportDir,
+                null,
+                false,
+                1,
+                new HashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
 
         reporter.testSetCompleted(testReport, stats);
     }
@@ -592,7 +705,7 @@ public class StatelessXmlReporterTest extends TestCase {
 
     private Utf8RecodingDeferredFileOutputStream createStdOutput(String content) throws IOException {
         Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream("fds2");
-        stdOut.write(content, false);
+        stdOut.write(content, false, null);
         return stdOut;
     }
 }

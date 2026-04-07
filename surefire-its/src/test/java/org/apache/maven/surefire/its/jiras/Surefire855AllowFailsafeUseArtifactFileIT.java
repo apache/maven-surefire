@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -29,7 +29,11 @@ import org.junit.Test;
 public class Surefire855AllowFailsafeUseArtifactFileIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void warShouldUseClasses() {
-        unpack("surefire-855-failsafe-use-war").maven().executeVerify().verifyErrorFree(2);
+        unpack("surefire-855-failsafe-use-war")
+                .setForkJvm()
+                .maven()
+                .executeVerify()
+                .verifyErrorFree(2);
     }
 
     @Test
@@ -45,6 +49,7 @@ public class Surefire855AllowFailsafeUseArtifactFileIT extends SurefireJUnit4Int
     @Test
     public void jarNotForkingShouldUseFile() {
         unpack("surefire-855-failsafe-use-jar")
+                .setForkJvm()
                 .maven()
                 .sysProp("forkCount", 0)
                 .executeVerify()

@@ -21,10 +21,10 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.AbstractJava9PlusIT;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -33,7 +33,8 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT extends AbstractJava9Pl
 
     @Test
     public void testExecuteWithReuseForksFalseWithJavaModule() {
-        OutputValidator validator = assumeJava9().reuseForks(false).forkCount(1).executeTest();
+        OutputValidator validator =
+                assumeJava9().setForkJvm().reuseForks(false).forkCount(1).executeTest();
 
         validator.assertTestSuiteResults(2, 0, 0, 0);
         validator.verifyErrorFreeLog();
@@ -49,6 +50,7 @@ public class Surefire1534ReuseForksFalseWithJavaModuleIT extends AbstractJava9Pl
     @Test
     public void testExecuteWithReuseForksFalseWithJavaModuleWithFilter() {
         OutputValidator validator = assumeJava9()
+                .setForkJvm()
                 .reuseForks(false)
                 .forkCount(1)
                 .setTestToRun("MainTest")

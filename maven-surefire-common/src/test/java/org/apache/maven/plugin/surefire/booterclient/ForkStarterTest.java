@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire.booterclient;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,18 +58,16 @@ import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.shared.compress.archivers.zip.Zip64Mode;
 import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveOutputStream;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.commons.io.FileUtils.deleteQuietly;
-import static org.hamcrest.Matchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  *
@@ -77,10 +76,7 @@ public class ForkStarterTest {
     private static String baseDir = System.getProperty("user.dir");
     private static File tmp;
 
-    @Rule
-    public final ExpectedException e = ExpectedException.none();
-
-    @BeforeClass
+    @BeforeAll
     public static void prepareFiles() throws IOException {
         File target = new File(baseDir, "target");
         tmp = new File(target, "tmp");
@@ -114,7 +110,7 @@ public class ForkStarterTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void deleteTmp() {
         deleteQuietly(tmp);
     }
@@ -165,6 +161,7 @@ public class ForkStarterTest {
                 true,
                 true,
                 true,
+                false,
                 xmlReporter,
                 outputReporter,
                 statelessTestsetInfoReporter,
@@ -177,11 +174,6 @@ public class ForkStarterTest {
 
         DefaultReporterFactory reporterFactory = new DefaultReporterFactory(startupReportConfiguration, logger, 1);
 
-        e.expect(SurefireBooterForkException.class);
-        e.expectMessage(containsString("Process Exit Code: 1"));
-        e.expectMessage(containsString("The forked VM terminated without properly saying goodbye."));
-        e.expectMessage(containsString("VM crash or System.exit called?"));
-
         Class<?>[] types = {
             Object.class,
             PropertiesWrapper.class,
@@ -193,18 +185,24 @@ public class ForkStarterTest {
             boolean.class
         };
         TestProvidingInputStream testProvidingInputStream = new TestProvidingInputStream(new ArrayDeque<String>());
-        invokeMethod(
-                forkStarter,
-                "fork",
-                types,
-                null,
-                new PropertiesWrapper(Collections.<String, String>emptyMap()),
-                new ForkClient(reporterFactory, null, 1),
-                new SurefireProperties(),
-                1,
-                testProvidingInputStream,
-                new LegacyForkNodeFactory(),
-                true);
+        SurefireBooterForkException ex = assertThrows(
+                SurefireBooterForkException.class,
+                () -> invokeMethod(
+                        forkStarter,
+                        "fork",
+                        types,
+                        null,
+                        new PropertiesWrapper(Collections.<String, String>emptyMap()),
+                        new ForkClient(reporterFactory, null, 1),
+                        new SurefireProperties(),
+                        1,
+                        testProvidingInputStream,
+                        new LegacyForkNodeFactory(),
+                        true));
+        assertThat(ex.getMessage())
+                .contains("Process Exit Code: 1")
+                .contains("The forked VM terminated without properly saying goodbye.")
+                .contains("VM crash or System.exit called?");
         testProvidingInputStream.close();
     }
 
@@ -253,6 +251,7 @@ public class ForkStarterTest {
                 true,
                 true,
                 true,
+                false,
                 xmlReporter,
                 outputReporter,
                 statelessTestsetInfoReporter,
@@ -289,6 +288,30 @@ public class ForkStarterTest {
                 new LegacyForkNodeFactory(),
                 true);
         testLessInputStream.close();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Class<?>[] paramTypes, Object... args)
+            throws Exception {
+        Class<?> clazz = target.getClass();
+        while (clazz != null) {
+            try {
+                Method method = clazz.getDeclaredMethod(methodName, paramTypes);
+                method.setAccessible(true);
+                try {
+                    return (T) method.invoke(target, args);
+                } catch (java.lang.reflect.InvocationTargetException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof Exception) {
+                        throw (Exception) cause;
+                    }
+                    throw e;
+                }
+            } catch (NoSuchMethodException e) {
+                clazz = clazz.getSuperclass();
+            }
+        }
+        throw new NoSuchMethodException(methodName);
     }
 
     private static class ClasspathConfig extends AbstractPathConfiguration {

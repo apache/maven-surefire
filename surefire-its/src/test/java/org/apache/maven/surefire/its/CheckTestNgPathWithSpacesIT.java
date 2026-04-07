@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test TestNG test in a directory with spaces
@@ -30,8 +30,7 @@ public class CheckTestNgPathWithSpacesIT extends SurefireJUnit4IntegrationTestCa
     @Test
     public void testWithSpaces() {
         unpack("testng-path with spaces")
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(1);
     }

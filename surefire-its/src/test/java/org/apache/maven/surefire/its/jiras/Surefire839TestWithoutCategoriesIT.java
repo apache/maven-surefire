@@ -19,7 +19,7 @@
 package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -27,14 +27,14 @@ import org.junit.Test;
 public class Surefire839TestWithoutCategoriesIT extends SurefireJUnit4IntegrationTestCase {
     @Test
     public void classWithoutCategory() {
-        unpack("junit48-categories").setJUnitVersion("4.11").executeTest().verifyErrorFree(3);
+        unpack("junit48-categories").setJUnitVersion("4.12").executeTest().verifyErrorFree(3);
     }
 
     @Test
     public void classWithoutCategoryForked() {
         int threadCount = 2;
         unpack("junit48-categories")
-                .setJUnitVersion("4.11")
+                .setJUnitVersion("4.12")
                 .forkPerThread(threadCount)
                 .threadCount(threadCount)
                 .executeTest()

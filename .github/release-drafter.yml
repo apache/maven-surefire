@@ -16,4 +16,4 @@
 # under the License.
 
 _extends: maven-gh-actions-shared
-tag-template: maven-surefire-$RESOLVED_VERSION
+tag-template: surefire-$RESOLVED_VERSION

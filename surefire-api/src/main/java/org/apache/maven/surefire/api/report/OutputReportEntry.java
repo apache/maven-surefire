@@ -40,4 +40,10 @@ public interface OutputReportEntry {
     boolean isStdOut();
 
     boolean isNewLine();
+
+    /**
+     * The stack trace of the thread that produced the output.
+     * claasName#method;className#method;...
+     */
+    String getStack();
 }

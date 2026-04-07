@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.its.fixture;
 
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Abstract test class for Jigsaw tests.
@@ -30,7 +30,7 @@ public abstract class AbstractJava9PlusIT extends SurefireJUnit4IntegrationTestC
     protected abstract String getProjectDirectoryName();
 
     protected SurefireLauncher assumeJava9() {
-        assumeTrue("There's no JDK 9 provided.", IS_JAVA9_PLUS);
+        assumeTrue(IS_JAVA9_PLUS, "There's no JDK 9 provided.");
         return unpack();
     }
 

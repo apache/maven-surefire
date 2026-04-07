@@ -44,9 +44,9 @@ import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.String.join;
 import static java.nio.file.Files.readAllBytes;
@@ -57,9 +57,9 @@ import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.ProcessCheckerType.ALL;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -77,7 +77,7 @@ public class ForkConfigurationTest {
 
     private File basedir;
 
-    @Before
+    @BeforeEach
     public void setupDirectories() throws IOException {
         File target = new File(System.getProperty("user.dir"), "target");
         basedir = new File(target, "SUREFIRE-1136-" + ++idx);
@@ -85,7 +85,7 @@ public class ForkConfigurationTest {
         assertTrue(basedir.mkdirs());
     }
 
-    @After
+    @AfterEach
     public void deleteDirectories() throws IOException {
         FileUtils.deleteDirectory(basedir);
     }

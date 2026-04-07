@@ -28,9 +28,9 @@ import java.util.List;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugins.surefire.report.ReportTestCase.FlakyError;
 import org.apache.maven.plugins.surefire.report.ReportTestCase.FlakyFailure;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,26 +38,26 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:linelength"})
-public class TestSuiteXmlParserTest {
+class TestSuiteXmlParserTest {
     private static final String[] LINE_PATTERNS = {"at org.apache.Test.", "at org.apache.Test$"};
 
     private final Collection<String> loggedErrors = new ArrayList<>();
 
     private ConsoleLogger consoleLogger;
 
-    @Before
-    public void instantiateLogger() {
+    @BeforeEach
+    void instantiateLogger() {
         consoleLogger = new ConsoleLogger() {
             @Override
             public boolean isDebugEnabled() {
@@ -107,13 +107,13 @@ public class TestSuiteXmlParserTest {
         };
     }
 
-    @After
-    public void verifyErrorFreeLogger() {
+    @AfterEach
+    void verifyErrorFreeLogger() {
         assertThat(loggedErrors, is(empty()));
     }
 
     @Test
-    public void testParse() throws Exception {
+    void testParse() throws Exception {
         TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser(consoleLogger);
         String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
                 + "<testsuite failures=\"4\" time=\"0.00005\" errors=\"0\" skipped=\"0\" tests=\"4\" name=\"wellFormedXmlFailures.TestSurefire3\">\n"
@@ -221,7 +221,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void testParser() throws Exception {
+    void testParser() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
 
         Collection<ReportTestSuite> oldResult = parser.parse(
@@ -235,7 +235,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void successfulSurefireTestReport() throws Exception {
+    void successfulSurefireTestReport() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
         File surefireReport = new File("src/test/resources/junit-pathWithÜmlaut/TEST-umlautTest.BasicTest.xml");
         assumeTrue(surefireReport.isFile());
@@ -266,7 +266,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void testParserHitsFailsafeSummary() throws Exception {
+    void testParserHitsFailsafeSummary() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
 
         parser.parse("src/test/resources/fixture/testsuitexmlparser/failsafe-summary.xml");
@@ -280,7 +280,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void lastIndexOfPatternOfOrdinalTest() {
+    void lastIndexOfPatternOfOrdinalTest() {
         final StringBuilder stackTrace = new StringBuilder("\tat org.apache.Test.util(Test.java:60)\n"
                 + "\tat org.apache.Test.test(Test.java:30)\n" + "\tat com.sun.Impl.xyz(Impl.java:258)\n");
 
@@ -292,7 +292,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void lastIndexOfPatternOfOrdinalTestWithCause() {
+    void lastIndexOfPatternOfOrdinalTestWithCause() {
         final StringBuilder stackTrace = new StringBuilder(
                 "\tat org.apache.Test.util(Test.java:60)\n" + "\tat org.apache.Test.test(Test.java:30)\n"
                         + "\tat com.sun.Impl.xyz(Impl.java:258)\n"
@@ -307,7 +307,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void lastIndexOfPatternOfEnclosedTest() {
+    void lastIndexOfPatternOfEnclosedTest() {
         final StringBuilder source = new StringBuilder("\tat org.apache.Test.util(Test.java:60)\n"
                 + "\tat org.apache.Test$Nested.test(Test.java:30)\n"
                 + "\tat com.sun.Impl.xyz(Impl.java:258)\n");
@@ -320,7 +320,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void lastIndexOfPatternOfEnclosedTestWithCause() {
+    void lastIndexOfPatternOfEnclosedTestWithCause() {
         final StringBuilder source = new StringBuilder(
                 "\tat org.apache.Test.util(Test.java:60)\n" + "\tat org.apache.Test$Nested.test(Test.java:30)\n"
                         + "\tat com.sun.Impl.xyz(Impl.java:258)\n"
@@ -335,7 +335,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldParserEverythingInOrdinalTest() throws Exception {
+    void shouldParserEverythingInOrdinalTest() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
         List<ReportTestSuite> tests =
                 parser.parse("src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest.xml");
@@ -399,7 +399,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldParserEverythingInEnclosedTest() throws Exception {
+    void shouldParserEverythingInEnclosedTest() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
         List<ReportTestSuite> tests =
                 parser.parse("src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-enclosed.xml");
@@ -473,7 +473,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldParserEverythingInEnclosedTrimStackTraceTest() throws Exception {
+    void shouldParserEverythingInEnclosedTrimStackTraceTest() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
         List<ReportTestSuite> tests = parser.parse(
                 "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-enclosed-trimStackTrace.xml");
@@ -513,7 +513,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldParserEverythingInNestedClassTest() throws Exception {
+    void shouldParserEverythingInNestedClassTest() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
         List<ReportTestSuite> tests =
                 parser.parse("src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-nestedClass.xml");
@@ -578,7 +578,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldParserEverythingInNestedClassTrimStackTraceTest() throws Exception {
+    void shouldParserEverythingInNestedClassTrimStackTraceTest() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
         List<ReportTestSuite> tests = parser.parse(
                 "src/test/resources/fixture/testsuitexmlparser/TEST-surefire.MyTest-nestedClass-trimStackTrace.xml");
@@ -619,7 +619,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldTestNotBlank() {
+    void shouldTestNotBlank() {
         assertFalse(TestSuiteXmlParser.isNotBlank(1, 2, ' ', ' ', ' ', '\n'));
         assertFalse(TestSuiteXmlParser.isNotBlank(1, 2, ' ', '\t', ' ', '\n'));
         assertFalse(TestSuiteXmlParser.isNotBlank(1, 2, ' ', ' ', '\r', '\n'));
@@ -630,14 +630,14 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldTestIsNumeric() {
+    void shouldTestIsNumeric() {
         assertFalse(TestSuiteXmlParser.isNumeric(new StringBuilder("0?5142"), 1, 3));
         assertTrue(TestSuiteXmlParser.isNumeric(new StringBuilder("0?51M2"), 2, 4));
         assertFalse(TestSuiteXmlParser.isNumeric(new StringBuilder("0?51M2"), 2, 5));
     }
 
     @Test
-    public void shouldParseLargeFile() throws Exception {
+    void shouldParseLargeFile() throws Exception {
         // Create test file
         Path tempFile = Files.createTempFile("largeReport", ".xml");
 
@@ -714,7 +714,7 @@ public class TestSuiteXmlParserTest {
     }
 
     @Test
-    public void shouldParseFlakes() throws Exception {
+    void shouldParseFlakes() throws Exception {
         // Parse test file
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
 

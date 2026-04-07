@@ -28,9 +28,9 @@ import java.util.Iterator;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.extensions.CommandReader;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -54,7 +54,7 @@ public class StreamFeederTest {
     private final CommandReader commandReader = mock(CommandReader.class);
     private StreamFeeder streamFeeder;
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException {
         final Iterator<Command> it =
                 asList(new Command(RUN_CLASS, "pkg.ATest"), TEST_SET_FINISHED).iterator();
@@ -66,7 +66,7 @@ public class StreamFeederTest {
         });
     }
 
-    @After
+    @AfterEach
     public void close() throws IOException {
         if (streamFeeder != null) {
             streamFeeder.disable();
@@ -117,7 +117,7 @@ public class StreamFeederTest {
 
         assertThat(streamFeeder.getException()).isNull();
 
-        verifyZeroInteractions(logger);
+        verifyNoInteractions(logger);
     }
 
     @Test
@@ -141,6 +141,6 @@ public class StreamFeederTest {
 
         assertThat(streamFeeder.getException()).isNotNull().isInstanceOf(IOException.class);
 
-        verifyZeroInteractions(logger);
+        verifyNoInteractions(logger);
     }
 }

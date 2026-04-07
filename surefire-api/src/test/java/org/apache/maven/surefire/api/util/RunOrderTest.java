@@ -18,41 +18,37 @@
  */
 package org.apache.maven.surefire.api.util;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public class RunOrderTest extends TestCase {
-    public void testShouldReturnRunOrderForLowerCaseName() {
-        assertEquals(RunOrder.HOURLY, RunOrder.valueOfMulti("hourly")[0]);
-    }
+public class RunOrderTest {
 
+    @Test
     public void testMultiValue() {
         final RunOrder[] hourlies = RunOrder.valueOfMulti("failedfirst,balanced");
         assertEquals(RunOrder.FAILEDFIRST, hourlies[0]);
         assertEquals(RunOrder.BALANCED, hourlies[1]);
     }
 
+    @Test
     public void testAsString() {
         RunOrder[] orders = new RunOrder[] {RunOrder.FAILEDFIRST, RunOrder.ALPHABETICAL};
         assertEquals("failedfirst,alphabetical", RunOrder.asString(orders));
     }
 
-    public void testShouldReturnRunOrderForUpperCaseName() {
-        assertEquals(RunOrder.HOURLY, RunOrder.valueOfMulti("HOURLY")[0]);
-    }
-
+    @Test
     public void testShouldReturnNullForNullName() {
         assertTrue(RunOrder.valueOfMulti(null).length == 0);
     }
 
+    @Test
     public void testShouldThrowExceptionForInvalidName() {
-        try {
-            RunOrder.valueOfMulti("arbitraryName");
-            fail("IllegalArgumentException not thrown.");
-        } catch (IllegalArgumentException expected) {
-
-        }
+        assertThrows(IllegalArgumentException.class, () -> RunOrder.valueOfMulti("arbitraryName"));
     }
 }

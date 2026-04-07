@@ -18,44 +18,25 @@
  */
 package org.apache.maven.surefire.its;
 
-import java.util.Arrays;
-
 import org.apache.maven.surefire.its.fixture.Settings;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit test project using multiple method patterns, including wildcards in class and method names.
+ * Uses {@link Settings#JUNIT4_INCLUDES}.
+ *
+ * @see TestMultipleMethodPatternsIncludesExcludesIT
  */
-@RunWith(Parameterized.class)
 public class TestMultipleMethodPatternsIT extends AbstractTestMultipleMethodPatterns {
-    private final Settings settings;
-
-    public TestMultipleMethodPatternsIT(Settings settings) {
-        this.settings = settings;
-    }
-
-    @Parameters
-    public static Iterable<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-            {Settings.JUNIT4_TEST},
-            {Settings.JUNIT47_TEST},
-            {Settings.JUNIT4_INCLUDES},
-            {Settings.JUNIT47_INCLUDES},
-            {Settings.JUNIT4_INCLUDES_EXCLUDES},
-            {Settings.JUNIT47_INCLUDES_EXCLUDES}
-        });
-    }
 
     @Override
     protected Settings getSettings() {
-        return settings;
+        return Settings.JUNIT4_INCLUDES;
     }
 
     @Override
     protected SurefireLauncher unpack() {
-        return unpack("junit48-multiple-method-patterns", "_" + settings.path());
+        return unpack("junit4-multiple-method-patterns", "_" + getSettings().path())
+                .setForkJvm();
     }
 }

@@ -60,17 +60,11 @@ import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -82,10 +76,10 @@ import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedCh
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.rules.ExpectedException.none;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for {@link ForkedProcessEventNotifier}.
@@ -93,16 +87,12 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 3.0.0-M4
  */
-@RunWith(Enclosed.class)
 public class ForkedProcessEventNotifierTest {
     /**
      *
      */
-    @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
-    public static class DecoderOperationsTest {
-        @Rule
-        public final ExpectedException rule = none();
+    @Nested
+    public class DecoderOperationsTest {
 
         @Test
         public void shouldSendByeEvent() throws Exception {
@@ -676,8 +666,7 @@ public class ForkedProcessEventNotifierTest {
         public void shouldHandleErrorAfterNullLine() {
             ForkedProcessEventNotifier decoder = new ForkedProcessEventNotifier();
             decoder.setSystemPropertiesListener(new PropertyEventAssertionListener());
-            rule.expect(NullPointerException.class);
-            decoder.notifyEvent(null);
+            assertThrows(NullPointerException.class, () -> decoder.notifyEvent(null));
         }
 
         @Test
@@ -754,54 +743,20 @@ public class ForkedProcessEventNotifierTest {
     /**
      *
      */
-    @RunWith(Theories.class)
-    public static class ReportEntryTest {
-        @DataPoints(value = "operation")
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public static String[][] operations = {
-            {"testSetStarting", "setTestSetStartingListener"},
-            {"testSetCompleted", "setTestSetCompletedListener"},
-            {"testStarting", "setTestStartingListener"},
-            {"testSucceeded", "setTestSucceededListener"},
-            {"testFailed", "setTestFailedListener"},
-            {"testSkipped", "setTestSkippedListener"},
-            {"testError", "setTestErrorListener"},
-            {"testAssumptionFailure", "setTestAssumptionFailureListener"}
-        };
+    @Nested
+    public class ReportEntryTest {
 
-        @DataPoints(value = "reportedMessage")
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public static String[] reportedMessage = {null, "skipped test"};
-
-        @DataPoints(value = "elapsed")
-        @SuppressWarnings({"checkstyle:visibilitymodifier", "checkstyle:magicnumber"})
-        public static Integer[] elapsed = {null, 102};
-
-        @DataPoints(value = "trim")
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public static boolean[] trim = {false, true};
-
-        @DataPoints(value = "msg")
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public static boolean[] msg = {false, true};
-
-        @DataPoints(value = "smart")
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public static boolean[] smart = {false, true};
-
-        @DataPoints(value = "trace")
-        @SuppressWarnings("checkstyle:visibilitymodifier")
-        public static boolean[] trace = {false, true};
-
-        @Theory
+        @ParameterizedTest
+        @MethodSource(
+                "org.apache.maven.plugin.surefire.extensions.ForkedProcessEventNotifierTest#reportEntryOperationsData")
         public void testReportEntryOperations(
-                @FromDataPoints("operation") String[] operation,
-                @FromDataPoints("reportedMessage") String reportedMessage,
-                @FromDataPoints("elapsed") Integer elapsed,
-                @FromDataPoints("trim") boolean trim,
-                @FromDataPoints("msg") boolean msg,
-                @FromDataPoints("smart") boolean smart,
-                @FromDataPoints("trace") boolean trace)
+                String[] operation,
+                String reportedMessage,
+                Integer elapsed,
+                boolean trim,
+                boolean msg,
+                boolean smart,
+                boolean trace)
                 throws Exception {
             String exceptionMessage = msg ? "msg" : null;
             String smartStackTrace = smart ? "MyTest:86 >> Error" : null;
@@ -867,6 +822,45 @@ public class ForkedProcessEventNotifierTest {
 
             assertThat(arguments.isCalled()).isFalse();
         }
+    }
+
+    private static final String[][] OPERATIONS = {
+        {"testSetStarting", "setTestSetStartingListener"},
+        {"testSetCompleted", "setTestSetCompletedListener"},
+        {"testStarting", "setTestStartingListener"},
+        {"testSucceeded", "setTestSucceededListener"},
+        {"testFailed", "setTestFailedListener"},
+        {"testSkipped", "setTestSkippedListener"},
+        {"testError", "setTestErrorListener"},
+        {"testAssumptionFailure", "setTestAssumptionFailureListener"}
+    };
+
+    private static final String[] REPORTED_MESSAGES = {null, "skipped test"};
+
+    @SuppressWarnings("checkstyle:magicnumber")
+    private static final Integer[] ELAPSED_VALUES = {null, 102};
+
+    private static final boolean[] BOOL_VALUES = {false, true};
+
+    static java.util.stream.Stream<Arguments> reportEntryOperationsData() {
+        java.util.stream.Stream.Builder<Arguments> builder = java.util.stream.Stream.builder();
+        for (String[] operation : OPERATIONS) {
+            for (String reportedMessage : REPORTED_MESSAGES) {
+                for (Integer elapsed : ELAPSED_VALUES) {
+                    for (boolean trim : BOOL_VALUES) {
+                        for (boolean msg : BOOL_VALUES) {
+                            for (boolean smart : BOOL_VALUES) {
+                                for (boolean trace : BOOL_VALUES) {
+                                    builder.accept(
+                                            Arguments.of(operation, reportedMessage, elapsed, trim, msg, smart, trace));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return builder.build();
     }
 
     private static class ProcessExitErrorListener implements ForkedProcessExitErrorListener {
@@ -956,7 +950,8 @@ public class ForkedProcessEventNotifierTest {
             this.newLine = newLine;
         }
 
-        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId) {
+        @Override
+        public void handle(String output, boolean newLine, RunMode runMode, Long testRunId, String stack) {
             called.set(true);
 
             assertThat(runMode).isEqualTo(this.runMode);

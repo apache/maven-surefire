@@ -52,7 +52,7 @@ import static org.apache.maven.surefire.api.util.ReflectionUtils.newInstance;
 /**
  * Does reflection based invocation of the surefire methods.
  * <br>
- * This is to avoid complications with linkage issues
+ * This is to avoid complications with linkage issues.
  *
  * @author Kristian Rosenvold
  */
@@ -117,11 +117,10 @@ public final class SurefireReflector {
             return null;
         } else {
             Object resolver = createTestListResolver(suiteDefinition.getTestListResolver());
-            Class<?>[] arguments = {List.class, File.class, testListResolver, int.class};
+            Class<?>[] arguments = {File.class, testListResolver, int.class};
             Constructor<?> constructor = getConstructor(testRequest, arguments);
             return newInstance(
                     constructor,
-                    suiteDefinition.getSuiteXmlFiles(),
                     suiteDefinition.getTestSourceDirectory(),
                     resolver,
                     suiteDefinition.getRerunFailingTestsCount());

@@ -19,8 +19,6 @@
 package org.apache.maven.surefire.api.testset;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Information about the requested test.
@@ -28,39 +26,23 @@ import java.util.List;
  * @author Kristian Rosenvold
  */
 public class TestRequest {
-    private final List<File> suiteXmlFiles;
 
     private final File testSourceDirectory;
 
-    private final TestListResolver requestedTests;
+    private final TestListResolver testListResolver;
 
     private final int rerunFailingTestsCount;
 
-    public TestRequest(List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests) {
-        this(createFiles(suiteXmlFiles), testSourceDirectory, requestedTests, 0);
-    }
-
-    public TestRequest(
-            List suiteXmlFiles, File testSourceDirectory, TestListResolver requestedTests, int rerunFailingTestsCount) {
-        this.suiteXmlFiles = createFiles(suiteXmlFiles);
+    public TestRequest(File testSourceDirectory, TestListResolver testListResolver, int rerunFailingTestsCount) {
         this.testSourceDirectory = testSourceDirectory;
-        this.requestedTests = requestedTests;
+        this.testListResolver = testListResolver;
         this.rerunFailingTestsCount = rerunFailingTestsCount;
-    }
-
-    /**
-     * Represents suitexmlfiles that define the test-run request
-     *
-     * @return A list of java.io.File objects.
-     */
-    public List<File> getSuiteXmlFiles() {
-        return suiteXmlFiles;
     }
 
     /**
      * Test source directory, normally ${project.build.testSourceDirectory}
      *
-     * @return A file pointing to test sources
+     * @return a file pointing to test sources
      */
     public File getTestSourceDirectory() {
         return testSourceDirectory;
@@ -72,28 +54,15 @@ public class TestRequest {
      * @return filter
      */
     public TestListResolver getTestListResolver() {
-        return requestedTests;
+        return testListResolver;
     }
 
     /**
      * How many times to rerun failing tests, issued with -Dsurefire.rerunFailingTestsCount from the command line.
      *
-     * @return The int parameter to indicate how many times to rerun failing tests
+     * @return the int parameter to indicate how many times to rerun failing tests
      */
     public int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
-    }
-
-    private static List<File> createFiles(List suiteXmlFiles) {
-        if (suiteXmlFiles != null) {
-            List<File> files = new ArrayList<>();
-            Object element;
-            for (Object suiteXmlFile : suiteXmlFiles) {
-                element = suiteXmlFile;
-                files.add(element instanceof String ? new File((String) element) : (File) element);
-            }
-            return files;
-        }
-        return null;
     }
 }

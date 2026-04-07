@@ -26,15 +26,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.util.internal.ImmutableMap.Node;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * @since 2.20
@@ -42,7 +43,7 @@ import static org.junit.Assert.assertThat;
 public class ImmutableMapTest {
     private ImmutableMap<String, String> map;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Map<String, String> backingMap = new LinkedHashMap<>();
         backingMap.put("a", "1");
@@ -77,9 +78,9 @@ public class ImmutableMapTest {
         assertThat(map.get(null), is("1"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldNotModifyEntries() {
-        map.entrySet().clear();
+        assertThrows(UnsupportedOperationException.class, () -> map.entrySet().clear());
     }
 
     @Test
@@ -119,19 +120,21 @@ public class ImmutableMapTest {
         assertThat(it.hasNext(), is(false));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldNotSetEntries() {
-        map.entrySet().iterator().next().setValue("");
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> map.entrySet().iterator().next().setValue(""));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldNotRemove() {
-        map.remove("a");
+        assertThrows(UnsupportedOperationException.class, () -> map.remove("a"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void shouldNotRemoveNull() {
-        map.remove(null);
+        assertThrows(UnsupportedOperationException.class, () -> map.remove(null));
     }
 
     @Test

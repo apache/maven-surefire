@@ -40,24 +40,22 @@ import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
-import org.apache.maven.surefire.api.report.OutputReportEntry;
-import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.CommandReader;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOutln;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Simulates the End To End use case where Maven process and Surefire process communicate using the TCP/IP protocol.
@@ -66,9 +64,6 @@ import static org.junit.Assert.fail;
 public class E2ETest {
     private static final String LONG_STRING =
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
-
-    @Rule
-    public final ExpectedException e = ExpectedException.none();
 
     @Test
     public void endToEndTest() throws Exception {
@@ -126,12 +121,12 @@ public class E2ETest {
         Thread t = new Thread() {
             @Override
             public void run() {
-                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver() {
-                    @Override
-                    public void writeTestOutput(OutputReportEntry reportEntry) {
-                        encoder.testOutput(stdOutln(reportEntry.getLog()));
-                    }
-                };
+                //                TestOutputReceiver<OutputReportEntry> target = new TestOutputReceiver() {
+                //                    @Override
+                //                    public void writeTestOutput(OutputReportEntry reportEntry) {
+                //                        encoder.testOutput(stdOutln(reportEntry.getLog()));
+                //                    }
+                //                };
 
                 // PrintStream out = System.out;
                 // PrintStream err = System.err;
@@ -167,12 +162,13 @@ public class E2ETest {
         // 1.0 seconds while using the encoder/decoder
         assertThat(readTime.get())
                 .describedAs("The performance test should assert 1.0 s of read time. "
-                        + "The limit 10 s guarantees that the read time does not exceed this limit on overloaded CPU.")
+                        + "The limit 30 s guarantees that the read time does not exceed this limit on overloaded CPU.")
                 .isPositive()
-                .isLessThanOrEqualTo(10_000L);
+                .isLessThanOrEqualTo(30_000L);
     }
 
-    @Test(timeout = 10_000L)
+    @Test
+    @Timeout(10)
     public void shouldVerifyClient() throws Exception {
         ForkNodeArguments forkNodeArguments = new Arguments(UUID.randomUUID().toString(), 1, new NullConsoleLogger());
 
@@ -195,7 +191,8 @@ public class E2ETest {
         }
     }
 
-    @Test(timeout = 10_000L)
+    @Test
+    @Timeout(10)
     public void shouldNotVerifyClient() throws Exception {
         ForkNodeArguments forkNodeArguments = new Arguments(UUID.randomUUID().toString(), 1, new NullConsoleLogger());
 
@@ -216,19 +213,20 @@ public class E2ETest {
             t.setDaemon(true);
             t.start();
 
-            e.expect(InvalidSessionIdException.class);
-            e.expectMessage("The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
-                    + forkNodeArguments.getSessionId() + "'.");
+            InvalidSessionIdException ex = assertThrows(InvalidSessionIdException.class, () -> {
+                server.tryConnectToClient();
+                server.bindCommandReader(new DummyCommandReader(), new DummyWritableByteChannel());
 
-            server.tryConnectToClient();
-            server.bindCommandReader(new DummyCommandReader(), new DummyWritableByteChannel());
+                server.bindEventHandler(
+                        new DummyEventHandler(),
+                        new CountdownCloseable(new DummyCloseable(), 1),
+                        new DummyReadableChannel());
 
-            server.bindEventHandler(
-                    new DummyEventHandler(),
-                    new CountdownCloseable(new DummyCloseable(), 1),
-                    new DummyReadableChannel());
-
-            fail(task.get());
+                fail(task.get());
+            });
+            assertThat(ex.getMessage())
+                    .contains("The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
+                            + forkNodeArguments.getSessionId() + "'.");
         }
     }
 

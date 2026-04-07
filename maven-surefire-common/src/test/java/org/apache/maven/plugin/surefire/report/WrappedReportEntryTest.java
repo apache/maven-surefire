@@ -18,24 +18,34 @@
  */
 package org.apache.maven.plugin.surefire.report;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.ERROR;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.FAILURE;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kristian Rosenvold
  */
-public class WrappedReportEntryTest extends TestCase {
+public class WrappedReportEntryTest {
+    @Test
     public void testClassNameOnly() {
         String className = "surefire.testcase.JunitParamsTest";
         WrappedReportEntry wr = new WrappedReportEntry(
-                new SimpleReportEntry(NORMAL_RUN, 1L, className, null, null, null), SUCCESS, 12, null, null);
+                new SimpleReportEntry(NORMAL_RUN, 1L, className, null, null, null),
+                SUCCESS,
+                1771085631L,
+                12,
+                null,
+                null);
         final String reportName = wr.getReportSourceName();
         assertEquals("surefire.testcase.JunitParamsTest.null", wr.getClassMethodName());
         assertEquals("surefire.testcase.JunitParamsTest", reportName);
@@ -44,10 +54,11 @@ public class WrappedReportEntryTest extends TestCase {
         assertFalse(wr.isSkipped());
     }
 
+    @Test
     public void testRegular() {
         ReportEntry reportEntry =
                 new SimpleReportEntry(NORMAL_RUN, 1L, "surefire.testcase.JunitParamsTest", null, "testSum", null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, null, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, null, 1771085631L, 12, null, null);
         assertEquals("surefire.testcase.JunitParamsTest.testSum", wr.getClassMethodName());
         assertEquals("surefire.testcase.JunitParamsTest", wr.getReportSourceName());
         assertEquals("surefire.testcase.JunitParamsTest", wr.getReportSourceName(""));
@@ -63,10 +74,11 @@ public class WrappedReportEntryTest extends TestCase {
         assertEquals("surefire.testcase.JunitParamsTest", wr.getNameWithGroup());
     }
 
+    @Test
     public void testDisplayNames() {
         ReportEntry reportEntry = new SimpleReportEntry(
                 NORMAL_RUN, 0L, "surefire.testcase.JunitParamsTest", "dn1", "testSum", "dn2", "exception");
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, ERROR, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, ERROR, 1771085631L, 12, null, null);
         assertEquals("surefire.testcase.JunitParamsTest.testSum", wr.getClassMethodName());
         assertEquals("dn1", wr.getReportSourceName());
         assertEquals("dn1(BDD)", wr.getReportSourceName("BDD"));
@@ -82,6 +94,7 @@ public class WrappedReportEntryTest extends TestCase {
         assertEquals("exception", wr.getMessage());
     }
 
+    @Test
     public void testEqualDisplayNames() {
         ReportEntry reportEntry = new SimpleReportEntry(
                 NORMAL_RUN,
@@ -90,7 +103,7 @@ public class WrappedReportEntryTest extends TestCase {
                 "surefire.testcase.JunitParamsTest",
                 "testSum",
                 "testSum");
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, FAILURE, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, FAILURE, 1771085631L, 12, null, null);
         assertEquals("surefire.testcase.JunitParamsTest", wr.getReportSourceName());
         assertEquals("surefire.testcase.JunitParamsTest(BDD)", wr.getReportSourceName("BDD"));
         assertEquals("testSum", wr.getReportName());
@@ -99,10 +112,11 @@ public class WrappedReportEntryTest extends TestCase {
         assertFalse(wr.isSkipped());
     }
 
+    @Test
     public void testGetReportNameWithParams() {
         String className = "[0] 1\u002C 2\u002C 3 (testSum)";
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, null, null, null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 1771085631L, 12, null, null);
         final String reportName = wr.getReportSourceName();
         assertEquals("[0] 1, 2, 3 (testSum)", reportName);
         assertFalse(wr.isSucceeded());
@@ -110,42 +124,47 @@ public class WrappedReportEntryTest extends TestCase {
         assertTrue(wr.isSkipped());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsNull() {
         String className = "ClassName";
         String classText = null;
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, classText, null, null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 1771085631L, 12, null, null);
         assertEquals(className, wr.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsEmpty() {
         String className = "ClassName";
         String classText = "";
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, classText, null, null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 1771085631L, 12, null, null);
         assertEquals(className, wr.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsBlank() {
         String className = "ClassName";
         String classText = "  ";
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, classText, null, null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 1771085631L, 12, null, null);
         assertEquals(className, wr.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsProvided() {
         String className = "ClassName";
         String classText = "The Class Name";
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, classText, null, null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, SKIPPED, 1771085631L, 12, null, null);
         assertEquals(classText, wr.getReportNameWithGroup());
     }
 
+    @Test
     public void testElapsed() {
         String className = "[0] 1\u002C 2\u002C 3 (testSum)";
         ReportEntry reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, className, null, null, null);
-        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, null, 12, null, null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, null, 1771085631L, 12, null, null);
         String elapsedTimeSummary = wr.getElapsedTimeSummary();
         assertEquals("[0] 1, 2, 3 (testSum) -- Time elapsed: 0.012 s", elapsedTimeSummary);
     }

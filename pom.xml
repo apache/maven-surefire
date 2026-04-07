@@ -28,7 +28,7 @@
 
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
-  <version>3.5.5-SNAPSHOT</version>
+  <version>3.6.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
@@ -54,7 +54,6 @@
     <module>surefire-extensions-api</module>
     <module>surefire-extensions-spi</module>
     <module>surefire-booter</module>
-    <module>surefire-grouper</module>
     <module>surefire-providers</module>
     <module>surefire-shadefire</module>
     <module>maven-surefire-common</module>
@@ -88,15 +87,21 @@
 
   <properties>
     <javaVersion>8</javaVersion>
-    <mavenVersion>3.6.3</mavenVersion>
-    <resolverVersion>1.4.1</resolverVersion>
+    <junit.jupiter.execution.parallel.config.dynamic.factor>0.8</junit.jupiter.execution.parallel.config.dynamic.factor>
+    <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
+    <junit.jupiter.execution.parallel.config.strategy>dynamic</junit.jupiter.execution.parallel.config.strategy>
+    <junit.jupiter.execution.parallel.enabled>true</junit.jupiter.execution.parallel.enabled>
+    <junit.jupiter.execution.parallel.mode.classes.default>concurrent</junit.jupiter.execution.parallel.mode.classes.default>
+    <junit.jupiter.execution.parallel.mode.default>same_thread</junit.jupiter.execution.parallel.mode.default>
+    <mavenVersion>3.9.14</mavenVersion>
+    <mavenVersion.prerequisite>3.6.3</mavenVersion.prerequisite>
+    <resolverVersion>1.9.27</resolverVersion>
     <commonsLang3Version>3.20.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
     <commonsIoVersion>2.21.0</commonsIoVersion>
     <plexus-java-version>1.5.2</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
-    <mavenSharedUtilsVersion>3.3.4</mavenSharedUtilsVersion>
-    <powermockVersion>2.0.9</powermockVersion>
+    <mavenSharedUtilsVersion>3.4.2</mavenSharedUtilsVersion>
     <jacocoVersion>0.8.14</jacocoVersion>
     <testngVersion>5.11</testngVersion>
     <maven.surefire.scm.devConnection>scm:git:https://github.com/apache/maven-surefire.git</maven.surefire.scm.devConnection>
@@ -105,10 +110,9 @@
     <maven.compiler.testTarget>${javaVersion}</maven.compiler.testTarget>
     <jvm9ArgsTests />
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
-    <project.build.outputTimestamp>2025-09-10T02:02:34Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-02-18T05:18:14Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
-
-    <versions.junit5>5.12.2</versions.junit5>
+    <junit.version>5.14.1</junit.version>
   </properties>
 
   <dependencyManagement>
@@ -118,6 +122,14 @@
         <artifactId>slf4j-simple</artifactId>
         <version>${slf4jVersion}</version>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -165,11 +177,6 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
-        <artifactId>maven-compat</artifactId>
-        <version>${mavenVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
         <artifactId>maven-settings</artifactId>
         <version>${mavenVersion}</version>
       </dependency>
@@ -210,7 +217,6 @@
         <version>2.4.2</version>
       </dependency>
       <dependency>
-        <!-- Do not upgrade, needs code changes -->
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-verifier</artifactId>
         <version>2.0.0-M1</version>
@@ -222,45 +228,11 @@
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>3.12.4</version>
+        <artifactId>mockito-bom</artifactId>
+        <version>4.11.0</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
-      <!-- PowerMock@Java9 and Java11
-      org.powermock for java9, see https://github.com/powermock/powermock/issues/783
-      These dependencies substitute org.powermock:powermock-mockito-release-full:jar:full:1.6.4 in java9.
-      -->
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-core</artifactId>
-        <version>${powermockVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${powermockVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito2</artifactId>
-        <version>${powermockVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-reflect</artifactId>
-        <version>${powermockVersion}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.objenesis</groupId>
-            <artifactId>objenesis</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.javassist</groupId>
-        <artifactId>javassist</artifactId>
-        <version>3.30.2-GA</version>
-      </dependency>
-      <!-- END: PowerMock@Java9 -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -320,10 +292,22 @@
           <version>1.27</version>
         </plugin>
         <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.5.5</version>
+        </plugin>
+        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.2</version>
+          <version>3.5.5</version>
           <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
           <configuration>
+            <properties>
+              <configurationParameters>junit.jupiter.execution.parallel.enabled=${junit.jupiter.execution.parallel.enabled}
+                junit.jupiter.execution.parallel.mode.default=${junit.jupiter.execution.parallel.mode.default}
+                junit.jupiter.execution.parallel.mode.classes.default=${junit.jupiter.execution.parallel.mode.classes.default}
+                junit.jupiter.execution.parallel.config.strategy=${junit.jupiter.execution.parallel.config.strategy}
+                junit.jupiter.execution.parallel.config.fixed.parallelism=${junit.jupiter.execution.parallel.config.fixed.parallelism}
+                junit.jupiter.execution.parallel.config.dynamic.factor=${junit.jupiter.execution.parallel.config.dynamic.factor}</configurationParameters>
+            </properties>
             <!-- NOTE: Be sure to isolate the Surefire version under test from the version running the tests! -->
             <useSystemClassLoader>false</useSystemClassLoader>
             <argLine>${jvm.args.tests}</argLine>
@@ -331,6 +315,14 @@
             <useFile>false</useFile>
             <redirectTestOutputToFile>false</redirectTestOutputToFile>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.surefire</groupId>
+              <artifactId>surefire-shadefire</artifactId>
+              <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
+              <version>3.5.5</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
@@ -363,6 +355,7 @@
             <jmx>false</jmx>-->
             <formats>
               <format>HTML</format>
+              <format>XML</format>
             </formats>
             <includes>
               <include>**/failsafe/*</include>
@@ -376,7 +369,22 @@
               <exclude>org/jacoco/**/*</exclude>
               <exclude>com/vladium/emma/rt/*</exclude>
             </excludes>
+            <includeCurrentProject>true</includeCurrentProject>
           </configuration>
+          <executions>
+            <execution>
+              <id>jacoco-agent</id>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>jacoco-report</id>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -394,6 +402,7 @@
               <excludes combine.children="append">
                 <exclude>Jenkinsfile</exclude>
                 <exclude>README.md</exclude>
+                <exclude>CLAUDE.md</exclude>
                 <exclude>.editorconfig</exclude>
                 <exclude>.gitignore</exclude>
                 <exclude>.git/**/*</exclude>
@@ -470,7 +479,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
         <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-        <version>3.5.2</version>
+        <version>3.5.5</version>
       </plugin>
     </plugins>
   </reporting>

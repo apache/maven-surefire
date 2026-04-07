@@ -18,19 +18,24 @@
  */
 package org.apache.maven.surefire.api.suite;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RunResultTest extends TestCase {
+public class RunResultTest {
 
+    @Test
     public void testEmptySummaryShouldBeErrorFree() {
         RunResult summary = RunResult.noTestsRun();
         assertTrue(summary.isErrorFree());
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
+    @Test
     public void testFailuresInFirstRun() {
         RunResult resultOne = new RunResult(10, 1, 3, 2);
         RunResult resultTwo = new RunResult(20, 0, 0, 0);

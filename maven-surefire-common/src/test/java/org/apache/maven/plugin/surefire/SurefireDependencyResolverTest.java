@@ -44,10 +44,8 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static java.util.Collections.singletonList;
@@ -55,7 +53,8 @@ import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.PROVIDER_GROUP_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -67,8 +66,6 @@ import static org.mockito.Mockito.when;
  *
  */
 public class SurefireDependencyResolverTest {
-    @Rule
-    public final ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void shouldNotBeWithinRangeNullArtifact() {
@@ -100,13 +97,13 @@ public class SurefireDependencyResolverTest {
     @Test
     public void shouldBeFailWithinRange() throws InvalidVersionSpecificationException {
         Artifact api = createArtifact("junit", "junit", "");
-        expectedException.expect(RuntimeException.class);
-        expectedException.expectMessage("Bug in plugin. Please report with stacktrace");
-        SurefireDependencyResolver.isWithinVersionSpec(api, "[4.7,)");
+        RuntimeException ex = assertThrows(
+                RuntimeException.class, () -> SurefireDependencyResolver.isWithinVersionSpec(api, "[4.7,)"));
+        assertThat(ex.getMessage()).contains("Bug in plugin. Please report with stacktrace");
     }
 
     @Test
-    @Ignore("old not executing tests - to review")
+    @Disabled("old not executing tests - to review")
     public void testResolveArtifact()
             throws InvalidVersionSpecificationException, MojoExecutionException, DependencyResolutionException {
 

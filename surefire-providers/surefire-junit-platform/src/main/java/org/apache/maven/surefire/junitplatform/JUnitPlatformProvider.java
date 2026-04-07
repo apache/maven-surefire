@@ -21,18 +21,25 @@ package org.apache.maven.surefire.junitplatform;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
@@ -43,28 +50,35 @@ import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
+import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.discovery.ClassNameFilter;
+import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TagFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_EXCLUDEDGROUPS_PROP;
-import static org.apache.maven.surefire.api.booter.ProviderParameterNames.TESTNG_GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
@@ -72,6 +86,7 @@ import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyW
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.match;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
@@ -90,7 +105,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private final Filter<?>[] filters;
 
-    private final Map<String, String> configurationParameters;
+    private Map<String, String> configurationParameters = new HashMap<>();
 
     private final CommandChainReader commandsReader;
 
@@ -102,9 +117,71 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.parameters = parameters;
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
-        configurationParameters = newConfigurationParameters();
+        setupRunOrder();
+        parameters.getProviderProperties().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
+                .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
+        getConfigurationParameters().putAll(newConfigurationParameters());
+
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
+
+        parameters.getProviderProperties().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("testng."))
+                .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
+        // testng compatibility parameters
+        String groups = parameters.getProviderProperties().get(GROUPS_PROP);
+        if (groups != null) {
+            getConfigurationParameters().put("testng.groups", groups);
+        }
+
+        //        configurationParameters.put("testng.useDefaultListeners", "true");
+
+        Optional.ofNullable(parameters.getProviderProperties().get("listener"))
+                .ifPresent(listener -> getConfigurationParameters().put("testng.listeners", listener));
+
+        Optional.ofNullable(parameters.getProviderProperties().get("reporter"))
+                .ifPresent(reporter -> getConfigurationParameters()
+                        .compute(
+                                "testng.listeners", (key, value) -> value == null ? reporter : value + "," + reporter));
+
+        String excludeGroups = parameters.getProviderProperties().get(EXCLUDEDGROUPS_PROP);
+        if (excludeGroups != null) {
+            getConfigurationParameters().put("testng.excludedGroups", excludeGroups);
+        }
+
+        // dataproviderthreadcount
+        Optional.ofNullable(parameters.getProviderProperties().get("dataproviderthreadcount"))
+                .ifPresent(dataproviderthreadcount ->
+                        getConfigurationParameters().put("testng.dataProviderThreadCount", dataproviderthreadcount));
+    }
+
+    private void setupRunOrder() {
+        String runOrder = parameters.getProviderProperties().get("runOrder");
+        if (runOrder != null) {
+            if (runOrder.equals("random")) {
+                getConfigurationParameters()
+                        .put("junit.jupiter.testmethod.order.default", "org.junit.jupiter.api.MethodOrderer$Random");
+                getConfigurationParameters()
+                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$Random");
+            } else if (runOrder.equals("alphabetical")) {
+                getConfigurationParameters()
+                        .put(
+                                "junit.jupiter.testmethod.order.default",
+                                "org.junit.jupiter.api.MethodOrderer$MethodName");
+                getConfigurationParameters()
+                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$ClassName");
+            } else if (runOrder.equals("reversealphabetical")) {
+                getConfigurationParameters()
+                        .put(
+                                "junit.jupiter.testmethod.order.default",
+                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder");
+                getConfigurationParameters()
+                        .put(
+                                "junit.jupiter.testclass.order.default",
+                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
+            }
+        }
     }
 
     @Override
@@ -186,27 +263,51 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void execute(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
-        // parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS)
-        // add this LegacyXmlReportGeneratingListener ?
-        //            adapter,
-        //            new LegacyXmlReportGeneratingListener(
-        //                    new File("target", "junit-platform").toPath(), new PrintWriter(System.out))
-        //        };
+        List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
+        testExecutionListeners.add(adapter);
 
-        TestExecutionListener[] testExecutionListeners = new TestExecutionListener[] {adapter};
+        TestExecutionListener customListeners = createJUnit4Listeners();
+        if (customListeners != null) {
+            testExecutionListeners.add(customListeners);
+        }
 
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
 
             LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectors);
-            launcher.execute(builder.build(), testExecutionListeners);
+            launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
         } else {
             testsToRun.iterator().forEachRemaining(c -> {
                 LauncherDiscoveryRequestBuilder builder = newRequest().selectors(selectClass(c.getName()));
-                launcher.execute(builder.build(), testExecutionListeners);
+                launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
             });
         }
+    }
+
+    /* Takes care for JUnit 4 RunListener execution.
+     * The problem we have here is that testng's listeners are being configured with the same name in the project's pom.
+     * So we have to try wether we can instantiate something from JUnit 4 or not.
+     */
+    private TestExecutionListener createJUnit4Listeners() {
+
+        String listeners = parameters.getProviderProperties().get("listener");
+        if (listeners != null) {
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            List<Object> runListeners = new ArrayList<>();
+            for (String listener : listeners.split(",")) {
+                try {
+                    Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
+                    runListeners.add(ReflectionUtils.instantiate(cl, listener, runListenerClass));
+                } catch (ClassCastException | ClassNotFoundException c) {
+                    // ignored as we may be in not-JUnit 4 context like testng
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return new JUnit4ListenersAdapter(runListeners);
+        }
+        return null;
     }
 
     private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
@@ -220,18 +321,148 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private LauncherDiscoveryRequestBuilder newRequest() {
-        return request().filters(filters).configurationParameters(configurationParameters);
+
+        return request().filters(filters).configurationParameters(getConfigurationParameters());
     }
 
+    private boolean matchClassName(String className, String pattern) {
+        boolean reverse = pattern.startsWith("!");
+        if (reverse) {
+            pattern = pattern.substring(1);
+        }
+        // pattern can be either fully qualified or simple class name or package + simple class name + #method
+        int hashIndex = pattern.indexOf('#');
+        // we receive only -Dtest=#method (weird but possible)
+        if (hashIndex == 0) {
+            return true;
+        }
+        if (hashIndex != -1) {
+            pattern = pattern.substring(0, hashIndex);
+        }
+
+        boolean match = className.endsWith("." + pattern)
+                || SelectorUtils.matchPath(pattern, className)
+                || matchAntPathPattern(pattern, className, true);
+
+        if (className.contains(".")) {
+            String simpleName = className.substring(className.lastIndexOf('.') + 1);
+            match = match || SelectorUtils.matchPath(pattern, simpleName);
+        }
+
+        if (pattern.contains("/")) {
+            String pkgStylePattern = pattern.replace('/', '.');
+            match = match || SelectorUtils.matchPath(pkgStylePattern, className);
+        }
+
+        boolean testMatch = match
+                || className.equals(pattern)
+                || className.endsWith("." + pattern)
+                || SelectorUtils.matchPath(pattern, className);
+        return reverse != testMatch;
+    }
+
+    // TODO this could be simplified/optimized
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
-        getPropertiesList(TESTNG_GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+        // includeClassNamePatterns support only regex patterns
+        Optional<String> includesList =
+                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.INCLUDES_SCAN_LIST));
+        if (includesList.isPresent()) {
+            String[] includesRegex = Stream.of(includesList.get().split(","))
+                    .filter(s -> s.startsWith("%regex["))
+                    .map(s -> StringUtils.replace(s, "%regex[", ""))
+                    .map(s -> s.substring(0, s.length() - 1))
+                    .toArray(String[]::new);
+            if (includesRegex.length > 0) {
+                filters.add(ClassNameFilter.includeClassNamePatterns(includesRegex));
+            }
+        }
 
-        getPropertiesList(TESTNG_EXCLUDEDGROUPS_PROP)
-                .map(TagFilter::excludeTags)
-                .ifPresent(filters::add);
+        // excludeClassNamePatterns support only regex patterns
+        Optional<String> excludesList =
+                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.EXCLUDES_SCAN_LIST));
+        if (excludesList.isPresent()) {
+            String[] excludesRegex = Stream.of(excludesList.get().split(","))
+                    .filter(s -> s.startsWith("%regex["))
+                    .map(s -> StringUtils.replace(s, "%regex[", ""))
+                    .map(s -> s.substring(0, s.length() - 1))
+                    .toArray(String[]::new);
+            if (excludesRegex.length > 0) {
+                filters.add(ClassNameFilter.excludeClassNamePatterns(excludesRegex));
+            }
+        }
 
+        if (includesList.isPresent()) {
+            // usual include/exclude are scanner style patterns
+            List<String> includes = Stream.of(includesList.get().split(","))
+                    .filter(s -> !s.startsWith("%regex["))
+                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
+                    // .map(pattern -> StringUtils.replace(pattern, "/", "."))
+                    .collect(toList());
+            if (!includes.isEmpty()) {
+                // use of CompositeFilter?
+                ClassNameFilter classNameFilter = clasName -> {
+                    FilterResult result = includes.stream()
+                            .map(pattern -> FilterResult.includedIf(
+                                    match(pattern, clasName) || matchClassName(clasName, pattern)))
+                            .filter(FilterResult::included)
+                            .findAny()
+                            .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
+                    return result;
+                };
+                filters.add(classNameFilter);
+            }
+        }
+
+        if (excludesList.isPresent()) {
+
+            List<String> excludes = Stream.of(excludesList.get().split(","))
+                    .filter(s -> !s.startsWith("%regex["))
+                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
+                    // .map(pattern -> StringUtils.replace(pattern, "/", "."))
+                    .collect(toList());
+            if (!excludes.isEmpty()) {
+                // use of CompositeFilter?
+                ClassNameFilter classNameFilter = className -> {
+                    FilterResult result = excludes.stream()
+                            .map(pattern -> {
+                                boolean inclusive = match(pattern, className);
+                                return !inclusive
+                                        ? FilterResult.included("Not excluded by pattern: " + pattern)
+                                        : FilterResult.excluded("Excluded by pattern: " + pattern);
+                            })
+                            .filter(FilterResult::excluded)
+                            .findAny()
+                            .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
+                    return result;
+                };
+                filters.add(classNameFilter);
+            }
+        }
+
+        boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
+
+        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED)) && !useTestNG) {
+            getPropertiesList(GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
+            getPropertiesList(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags).ifPresent(filters::add);
+        } else if (!useTestNG) {
+            Optional<Class<?>> categoryClass = getCategoryClass();
+            if (categoryClass.isPresent()) {
+                getPropertiesList(GROUPS_PROP)
+                        .map(strings -> getIncludeCategoryFilter(strings, categoryClass))
+                        .ifPresent(filters::add);
+            }
+        }
+
+        if (!useTestNG) {
+            Optional<Class<?>> categoryClass = getCategoryClass();
+            if (categoryClass.isPresent()) {
+                getPropertiesList(EXCLUDEDGROUPS_PROP)
+                        .map(strings -> getExcludeCategoryFilter(strings, categoryClass))
+                        .ifPresent(filters::add);
+            }
+        }
         of(optionallyWildcardFilter(parameters.getTestRequest().getTestListResolver()))
                 .filter(f -> !f.isEmpty())
                 .filter(f -> !f.isWildcard())
@@ -253,10 +484,140 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return filters;
     }
 
+    PostDiscoveryFilter getIncludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
+
+        return testDescriptor -> {
+            Optional<MethodSource> methodSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof MethodSource)
+                    .map(testSource -> (MethodSource) testSource);
+            boolean hasCategoryClass = false, hasCategoryMethod = false;
+            if (methodSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryMethod = hasCategoryAnnotationValue(
+                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
+                            || hasCategoryAnnotationValue(
+                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            Optional<ClassSource> classSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof ClassSource)
+                    .map(testSource -> (ClassSource) testSource);
+            if (classSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryClass = hasCategoryAnnotationValue(
+                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            return hasCategoryClass || hasCategoryMethod
+                    ? FilterResult.included("Category found")
+                    : FilterResult.excluded("Does not have category annotation");
+        };
+    }
+
+    PostDiscoveryFilter getExcludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
+
+        return testDescriptor -> {
+            Optional<MethodSource> methodSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof MethodSource)
+                    .map(testSource -> (MethodSource) testSource);
+            boolean hasCategoryClass = false, hasCategoryMethod = false;
+            if (methodSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryMethod = hasCategoryAnnotationValue(
+                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
+                            || hasCategoryAnnotationValue(
+                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            Optional<ClassSource> classSource = testDescriptor
+                    .getSource()
+                    .filter(testSource -> testSource instanceof ClassSource)
+                    .map(testSource -> (ClassSource) testSource);
+            if (classSource.isPresent()) {
+                if (categoryClass.isPresent()) {
+                    hasCategoryClass = hasCategoryAnnotationValue(
+                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                }
+            }
+
+            return hasCategoryClass || hasCategoryMethod
+                    ? FilterResult.excluded("Does have exclude category annotation")
+                    : FilterResult.included("Does not have category excluded found");
+        };
+    }
+
+    private boolean hasCategoryAnnotationValue(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
+        return hasCategoryAnnotationValue(clazz.getAnnotations(), categoryClass, categories);
+    }
+
+    private boolean hasCategoryAnnotationValue(Method method, Class<?> categoryClass, List<String> categories) {
+        return hasCategoryAnnotationValue(method.getAnnotations(), categoryClass, categories);
+    }
+
+    private boolean hasCategoryAnnotationValue(
+            Annotation[] annotations, Class<?> categoryClass, List<String> categories) {
+        Optional<Annotation> anno = stream(annotations)
+                .filter(annotation -> annotation.annotationType().equals(categoryClass))
+                .findFirst();
+        if (anno.isPresent()) {
+            List<String> catValues = getCategoryValueClassName(of(anno.get()));
+            catValues.addAll(getCategoryValueClassSimpleName(of(anno.get())));
+            return catValues.stream().anyMatch(categories::contains);
+        }
+        return false;
+    }
+
+    private Optional<Class<?>> getCategoryClass() {
+        return getClass("org.junit.experimental.categories.Category");
+    }
+
+    private Optional<Class<?>> getClass(String className) {
+        Thread currentThread = Thread.currentThread();
+        try {
+            return Optional.of(currentThread.getContextClassLoader().loadClass(className));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    private List<String> getCategoryValueClassName(Optional<Object> instance) {
+        Optional<Class<?>> optionalClass = getCategoryClass();
+        if (optionalClass.isPresent()) {
+            try {
+                Class<?>[] classes =
+                        (Class<?>[]) optionalClass.get().getMethod("value").invoke(instance.get());
+                return stream(classes).map(Class::getName).collect(Collectors.toList());
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private List<String> getCategoryValueClassSimpleName(Optional<Object> instance) {
+        Optional<Class<?>> optionalClass = getCategoryClass();
+        if (optionalClass.isPresent()) {
+            try {
+                Class<?>[] classes =
+                        (Class<?>[]) optionalClass.get().getMethod("value").invoke(instance.get());
+                return stream(classes).map(Class::getSimpleName).collect(Collectors.toList());
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return Collections.emptyList();
+    }
+
     private Map<String, String> newConfigurationParameters() {
         String content = parameters.getProviderProperties().get(CONFIGURATION_PARAMETERS);
         if (content == null) {
-            return emptyMap();
+            return new HashMap<>();
         }
         try (StringReader reader = new StringReader(content)) {
             Map<String, String> result = new HashMap<>();
@@ -321,5 +682,125 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     + "However, the version of JUnit Platform on the runtime classpath does not support cancellation. "
                     + "Please update to 6.0.0 or later!");
         }
+    }
+
+    private static boolean matchAntPathPattern(String pattern, String str, boolean isCaseSensitive) {
+        if (str.startsWith("/") != pattern.startsWith("/")) {
+            return false;
+        }
+
+        List<String> patDirs = tokenizePath(pattern, "/");
+        List<String> strDirs = tokenizePath(str, "/");
+
+        int patIdxStart = 0;
+        int patIdxEnd = patDirs.size() - 1;
+        int strIdxStart = 0;
+        int strIdxEnd = strDirs.size() - 1;
+
+        // up to first '**'
+        while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
+            String patDir = patDirs.get(patIdxStart);
+            if ("**".equals(patDir)) {
+                break;
+            }
+            if (!match(patDir, strDirs.get(strIdxStart), isCaseSensitive)) {
+                return false;
+            }
+            patIdxStart++;
+            strIdxStart++;
+        }
+        if (strIdxStart > strIdxEnd) {
+            // String is exhausted
+            for (int i = patIdxStart; i <= patIdxEnd; i++) {
+                if (!"**".equals(patDirs.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            if (patIdxStart > patIdxEnd) {
+                // String not exhausted, but pattern is. Failure.
+                return false;
+            }
+        }
+
+        // up to last '**'
+        while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
+            String patDir = patDirs.get(patIdxEnd);
+            if ("**".equals(patDir)) {
+                break;
+            }
+            if (!match(patDir, strDirs.get(strIdxEnd), isCaseSensitive)) {
+                return false;
+            }
+            patIdxEnd--;
+            strIdxEnd--;
+        }
+        if (strIdxStart > strIdxEnd) {
+            // String is exhausted
+            for (int i = patIdxStart; i <= patIdxEnd; i++) {
+                if (!"**".equals(patDirs.get(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        while (patIdxStart != patIdxEnd && strIdxStart <= strIdxEnd) {
+            int patIdxTmp = -1;
+            for (int i = patIdxStart + 1; i <= patIdxEnd; i++) {
+                if ("**".equals(patDirs.get(i))) {
+                    patIdxTmp = i;
+                    break;
+                }
+            }
+            if (patIdxTmp == patIdxStart + 1) {
+                // '**/**' situation, so skip one
+                patIdxStart++;
+                continue;
+            }
+            // Find the pattern between padIdxStart & padIdxTmp in str between
+            // strIdxStart & strIdxEnd
+            int patLength = (patIdxTmp - patIdxStart - 1);
+            int strLength = (strIdxEnd - strIdxStart + 1);
+            int foundIdx = -1;
+            strLoop:
+            for (int i = 0; i <= strLength - patLength; i++) {
+                for (int j = 0; j < patLength; j++) {
+                    String subPat = patDirs.get(patIdxStart + j + 1);
+                    String subStr = strDirs.get(strIdxStart + i + j);
+                    if (!match(subPat, subStr, isCaseSensitive)) {
+                        continue strLoop;
+                    }
+                }
+
+                foundIdx = strIdxStart + i;
+                break;
+            }
+
+            if (foundIdx == -1) {
+                return false;
+            }
+
+            patIdxStart = patIdxTmp;
+            strIdxStart = foundIdx + patLength;
+        }
+
+        for (int i = patIdxStart; i <= patIdxEnd; i++) {
+            if (!"**".equals(patDirs.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static List<String> tokenizePath(String path, String separator) {
+        List<String> ret = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(path, separator);
+        while (st.hasMoreTokens()) {
+            ret.add(st.nextToken());
+        }
+        return ret;
     }
 }

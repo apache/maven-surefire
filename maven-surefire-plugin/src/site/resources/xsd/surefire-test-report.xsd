@@ -116,16 +116,19 @@
             <xs:attribute name="classname" type="xs:string"/>
             <xs:attribute name="group" type="xs:string"/>
             <xs:attribute name="time" type="xs:float" use="required"/>
+            <xs:attribute name="timestamp" type="xs:dateTime"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
       <xs:attribute name="version" type="xs:string"/>
       <xs:attribute name="name" type="xs:string" use="required"/>
       <xs:attribute name="time" type="xs:float"/>
+      <xs:attribute name="timestamp" type="xs:dateTime"/>
       <xs:attribute name="tests" type="xs:string" use="required"/>
       <xs:attribute name="errors" type="xs:string" use="required"/>
       <xs:attribute name="skipped" type="xs:string" use="required"/>
       <xs:attribute name="failures" type="xs:string" use="required"/>
+      <xs:attribute name="flakes" type="xs:string"/>
       <xs:attribute name="group" type="xs:string"/>
     </xs:complexType>
   </xs:element>

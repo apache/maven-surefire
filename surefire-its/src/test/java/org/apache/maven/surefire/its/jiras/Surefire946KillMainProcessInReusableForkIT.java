@@ -24,15 +24,13 @@ import javax.xml.xpath.XPathFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.w3c.dom.Document;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,24 +38,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  *
  */
-@RunWith(Parameterized.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class Surefire946KillMainProcessInReusableForkIT extends SurefireJUnit4IntegrationTestCase {
     // there are 10 test classes that each would wait 3.5 seconds.
     private static final int TEST_SLEEP_TIME = 3_500;
 
-    private String classifierOfDummyDependency;
-
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String shutdownMavenMethod;
-
-    @Parameter(1)
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String shutdownSurefireMethod;
-
-    @Parameters(name = "{0}-{1}")
-    public static Iterable<Object[]> data() {
+    static Iterable<Object[]> data() {
         ArrayList<Object[]> args = new ArrayList<>();
         args.add(new Object[] {"halt", "exit"});
         args.add(new Object[] {"halt", "kill"});
@@ -68,22 +54,21 @@ public class Surefire946KillMainProcessInReusableForkIT extends SurefireJUnit4In
         return args;
     }
 
-    @BeforeClass
-    public static void installSelfdestructPlugin() {
+    @BeforeAll
+    static void installSelfdestructPlugin() {
         unpack(Surefire946KillMainProcessInReusableForkIT.class, "surefire-946-self-destruct-plugin", "plugin")
                 .executeInstall();
     }
 
-    @Before
-    public void dummyDep() {
-        classifierOfDummyDependency = shutdownMavenMethod + shutdownSurefireMethod;
+    @ParameterizedTest(name = "{0}-{1}")
+    @MethodSource("data")
+    @Timeout(value = 60_000, unit = TimeUnit.MILLISECONDS)
+    void test(String shutdownMavenMethod, String shutdownSurefireMethod) throws Exception {
+        String classifierOfDummyDependency = shutdownMavenMethod + shutdownSurefireMethod;
         unpack("surefire-946-dummy-dependency", classifierOfDummyDependency)
                 .sysProp("distinct.classifier", classifierOfDummyDependency)
                 .executeInstall();
-    }
 
-    @Test(timeout = 60_000)
-    public void test() throws Exception {
         unpack("surefire-946-killMainProcessInReusableFork", "-" + shutdownMavenMethod + "-" + shutdownSurefireMethod)
                 .sysProp("distinct.classifier", classifierOfDummyDependency)
                 .sysProp("surefire.shutdown", shutdownSurefireMethod)

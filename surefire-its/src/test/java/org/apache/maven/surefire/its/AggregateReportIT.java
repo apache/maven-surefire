@@ -24,11 +24,11 @@ import org.apache.maven.surefire.its.fixture.IntegrationTestSuiteResults;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assertTestSuiteResults;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.parseTestResults;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test report aggregation
@@ -43,7 +43,7 @@ public class AggregateReportIT extends SurefireJUnit4IntegrationTestCase {
         OutputValidator outputValidator =
                 unpack("/aggregate-report").addSurefireReportGoal().executeCurrentGoals();
         TestFile reportFile = outputValidator.getReportsFile("surefire.html");
-        assertTrue("surefire report missing: " + reportFile.getAbsolutePath(), reportFile.exists());
+        assertTrue(reportFile.exists(), "surefire report missing: " + reportFile.getAbsolutePath());
 
         // TODO HtmlUnit tests on the surefire report
 

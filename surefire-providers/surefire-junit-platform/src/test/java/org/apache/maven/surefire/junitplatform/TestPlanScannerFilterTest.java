@@ -39,37 +39,37 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class TestPlanScannerFilterTest {
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void emptyClassIsNotAccepted() {
         assertFalse(newFilter().accept(EmptyClass.class), "does not accept empty class");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void classWithNoTestMethodsIsNotAccepted() {
         assertFalse(newFilter().accept(ClassWithMethods.class), "does not accept class with no @Test methods");
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void classWithTestMethodsIsAccepted() {
         assertTrue(newFilter().accept(ClassWithTestMethods.class));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void classWithNestedTestClassIsAccepted() {
         assertTrue(newFilter().accept(ClassWithNestedTestClass.class));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void classWithDeeplyNestedTestClassIsAccepted() {
         assertTrue(newFilter().accept(ClassWithDeeplyNestedTestClass.class));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void classWithTestFactoryIsAccepted() {
         assertTrue(newFilter().accept(ClassWithTestFactory.class));
     }
 
-    @Test
+    @org.junit.jupiter.api.Test
     public void classWithNestedTestFactoryIsAccepted() {
         assertTrue(newFilter().accept(ClassWithNestedTestFactory.class));
     }

@@ -20,7 +20,9 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
  * Allow rerunFailingTestsCount, skipAfterFailureCount together
@@ -30,14 +32,11 @@ import org.junit.Test;
  * @since 2.19.1
  */
 public class Surefire1202RerunAndSkipIT extends SurefireJUnit4IntegrationTestCase {
-    @Test
-    public void junit47() {
-        unpack().executeTest().assertTestSuiteResults(5, 0, 0, 3, 4);
-    }
 
     @Test
     public void junit4() {
-        unpack().addGoal("-Pjunit4").executeTest().assertTestSuiteResults(5, 0, 0, 3, 4);
+        assumeJavaVersion(17);
+        unpack().executeTest().assertTestSuiteResults(5, 0, 0, 3, 4);
     }
 
     private SurefireLauncher unpack() {

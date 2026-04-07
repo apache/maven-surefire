@@ -21,18 +21,16 @@ package org.apache.maven.surefire.its;
 import org.apache.maven.surefire.its.fixture.Settings;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES;
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES;
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_EXCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.INCLUDES_FILE;
 import static org.apache.maven.surefire.its.fixture.Configuration.TEST;
-import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT47;
+import static org.apache.maven.surefire.its.fixture.TestFramework.JUNIT4;
 import static org.apache.maven.surefire.its.fixture.TestFramework.TestNG;
-import static org.hamcrest.core.AnyOf.anyOf;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Test project using multiple method patterns, including wildcards in class and method names.
@@ -102,7 +100,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void simpleNameTestAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
+        assumeTrue(getSettings().getFramework() == JUNIT4 || getSettings().getFramework() == TestNG);
         prepare("TestTwo")
                 .parallel("classes")
                 .useUnlimitedThreads()
@@ -155,7 +153,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchSimpleClassNameAndMethod() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("BasicTest#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -168,7 +166,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
      */
     @Test
     public void matchSimpleClassAndMethodWithJavaExt() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("BasicTest.java#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -181,7 +179,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
      */
     @Test
     public void matchSimpleClassAndMethodWithWildcardPkg() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("**/BasicTest#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -194,7 +192,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
      */
     @Test
     public void matchSimpleClassAndMethodWithJavaExtWildcardPkg() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("**/BasicTest.java#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -204,7 +202,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchWildcardPackageAndClassAndMethod() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("jiras/**/BasicTest#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -224,7 +222,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void testSuccessTwo() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("#testSuccessTwo")
                 .maven()
                 .debugLogging()
@@ -235,13 +233,13 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void testRegexSuccessTwo() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("%regex[#testSuccessTwo]").executeTest().verifyErrorFree(5).verifyErrorFreeLog();
     }
 
     @Test
     public void regexClassAndMethod() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("%regex[.*.BasicTest.*#testSuccessTwo]")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -251,7 +249,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchExactClassAndMethodWildcard() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("BasicTest#test*One")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -261,7 +259,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchExactClassAndMethodsWildcard() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("BasicTest#testSuccess*")
                 .executeTest()
                 .verifyErrorFree(2)
@@ -272,7 +270,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchExactClassAndMethodCharacters() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("BasicTest#test???????One")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -282,7 +280,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchExactClassAndMethodsPostfix() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("TestFive#testSuccess???")
                 .executeTest()
                 .verifyErrorFree(2)
@@ -293,7 +291,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchExactClassAndMethodPostfix() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("TestFive#testSuccess?????")
                 .executeTest()
                 .verifyErrorFree(1)
@@ -303,7 +301,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchExactClassAndMultipleMethods() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("TestFive#testSuccessOne+testSuccessThree")
                 .executeTest()
                 .verifyErrorFree(2)
@@ -314,7 +312,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatterns() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2
                 + ',' + "jiras/surefire745/TestThree#testSuccess*" // 2
@@ -326,8 +324,8 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getFramework() == JUNIT4 || getSettings().getFramework() == TestNG);
+        assumeTrue(getSettings().getConfiguration() == TEST);
         String test = "jiras/surefire745/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2
                 + ',' + "jiras/surefire745/TestThree#testSuccess*" // 2
@@ -344,7 +342,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsComplex() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         String test = "**/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2
                 + ',' + "?????/surefire745/TestThree#testSuccess*" // 2
@@ -356,8 +354,8 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldMatchMultiplePatternsComplexAsParallel() {
-        assumeThat(getSettings().getFramework(), anyOf(is(JUNIT47), is(TestNG)));
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getFramework() == JUNIT4 || getSettings().getFramework() == TestNG);
+        assumeTrue(getSettings().getConfiguration() == TEST);
         String test = "**/BasicTest#testSuccessOne+testSuccessTwo" // 2
                 + ',' + "jiras/**/TestTwo" // 2
                 + ',' + "?????/surefire745/TestThree#testSuccess*" // 2
@@ -390,7 +388,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldNotRunExcludedMethods() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("!#*Fail*, !%regex[#.*One], !#testSuccessThree")
                 .executeTest()
                 .verifyErrorFree(5)
@@ -399,7 +397,7 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldNotRunExcludedClassesAndMethods() {
-        assumeThat(getSettings().getConfiguration(), is(TEST));
+        assumeTrue(getSettings().getConfiguration() == TEST);
         prepare("!#*Fail*, !TestFour#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(11)
@@ -408,11 +406,10 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void negativeTest() {
-        assumeThat(
-                getSettings().getConfiguration(),
-                anyOf(
-                        is(INCLUDES), is(INCLUDES_EXCLUDES),
-                        is(INCLUDES_FILE), is(INCLUDES_EXCLUDES_FILE)));
+        assumeTrue(getSettings().getConfiguration() == INCLUDES
+                || getSettings().getConfiguration() == INCLUDES_EXCLUDES
+                || getSettings().getConfiguration() == INCLUDES_FILE
+                || getSettings().getConfiguration() == INCLUDES_EXCLUDES_FILE);
         String pattern = "TestFive#testSuccessOne+testSuccessThree";
         prepare(pattern)
                 .failNever()

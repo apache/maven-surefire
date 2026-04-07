@@ -18,13 +18,19 @@
  */
 package org.apache.maven.surefire.api.report;
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
+ * TODO see the Disabled annotation
  * @author Ashley Scopes
  */
+@Disabled("This test class was not running for long, hard to know if it's still valid or not")
 public class CategorizedReportEntryTest {
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsNull() {
         String className = "ClassName";
         String classText = null;
@@ -34,6 +40,7 @@ public class CategorizedReportEntryTest {
         assertEquals("ClassName (of The Group Name)", reportEntry.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsEmpty() {
         String className = "ClassName";
         String classText = "";
@@ -43,6 +50,7 @@ public class CategorizedReportEntryTest {
         assertEquals("ClassName (of The Group Name)", reportEntry.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsBlank() {
         String className = "ClassName";
         String classText = "  ";
@@ -52,6 +60,7 @@ public class CategorizedReportEntryTest {
         assertEquals("ClassName (of The Group Name)", reportEntry.getReportNameWithGroup());
     }
 
+    @Test
     public void testGetReportNameWithGroupWhenSourceTextIsProvided() {
         String className = "ClassName";
         String classText = "The Class Name";

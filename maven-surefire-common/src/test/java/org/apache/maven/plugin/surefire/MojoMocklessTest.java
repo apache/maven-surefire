@@ -19,7 +19,9 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
-import java.io.FileOutputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -34,30 +36,86 @@ import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.api.util.RunOrder;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
-import static org.powermock.reflect.Whitebox.invokeMethod;
-import static org.powermock.reflect.Whitebox.setInternalState;
 
 /**
  *
  */
 public class MojoMocklessTest {
+
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target.getClass();
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                return (T) method.invoke(target, args);
+            }
+        }
+        // search superclasses
+        clazz = clazz.getSuperclass();
+        while (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    return (T) method.invoke(target, args);
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchMethodException(methodName);
+    }
+
+    private static void setInternalState(Object target, String fieldName, Object value) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    field.set(target, value);
+                    return;
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    public void testGetStartupReportConfigurationUsesProvidedRunStatisticsFile() throws Exception {
+        AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
+        File runStatisticsFile = SureFireFileManager.createTempFile(".surefire-", "checksum");
+        RunOrderParameters runOrderParameters = new RunOrderParameters(RunOrder.DEFAULT, runStatisticsFile);
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
+
+        assertThat(config.getStatisticsFile()).isSameAs(runStatisticsFile);
+    }
+
     @Test
     public void testGetStartupReportConfiguration() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        StartupReportConfiguration config =
-                invokeMethod(surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class));
+        RunOrderParameters runOrderParameters =
+                new RunOrderParameters(RunOrder.DEFAULT, SureFireFileManager.createTempFile(".surefire-", "checksum"));
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
 
         assertThat(config.getXmlReporter()).isNotNull().isInstanceOf(SurefireStatelessReporter.class);
 
@@ -69,6 +127,8 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfiguration2() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
+        RunOrderParameters runOrderParameters =
+                new RunOrderParameters(RunOrder.DEFAULT, SureFireFileManager.createTempFile(".surefire-", "checksum"));
         SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter();
         SurefireConsoleOutputReporter consoleReporter = new SurefireConsoleOutputReporter();
         SurefireStatelessTestsetInfoReporter testsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
@@ -76,8 +136,8 @@ public class MojoMocklessTest {
         setInternalState(surefirePlugin, "consoleOutputReporter", consoleReporter);
         setInternalState(surefirePlugin, "statelessTestsetInfoReporter", testsetInfoReporter);
 
-        StartupReportConfiguration config =
-                invokeMethod(surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class));
+        StartupReportConfiguration config = invokeMethod(
+                surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
 
         assertThat(config.getXmlReporter()).isNotNull().isSameAs(xmlReporter);
 
@@ -174,7 +234,7 @@ public class MojoMocklessTest {
 
         File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
         testDeps.setFile(artifactFile);
-        try (ZipOutputStream os = new ZipOutputStream(new FileOutputStream(artifactFile))) {
+        try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
             os.closeEntry();
             os.putNextEntry(new ZipEntry("pkg/MyTest.class"));
@@ -203,7 +263,7 @@ public class MojoMocklessTest {
 
         File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
         testDeps.setFile(artifactFile);
-        try (ZipOutputStream os = new ZipOutputStream(new FileOutputStream(artifactFile))) {
+        try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
             os.closeEntry();
             os.finish();
@@ -268,7 +328,7 @@ public class MojoMocklessTest {
         Artifact testDep2 = new DefaultArtifact("g", "a", version, "test", "jar", null, handler);
         File artifactFile2 = SureFireFileManager.createTempFile("surefire", ".jar");
         testDep2.setFile(artifactFile2);
-        try (ZipOutputStream os = new ZipOutputStream(new FileOutputStream(artifactFile2))) {
+        try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile2.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
             os.closeEntry();
             os.putNextEntry(new ZipEntry("pkg/MyTest.class"));
@@ -507,27 +567,9 @@ public class MojoMocklessTest {
         }
 
         @Override
-        protected List<File> suiteXmlFiles() {
-            return null;
-        }
-
-        @Override
-        protected boolean hasSuiteXmlFiles() {
-            return false;
-        }
-
-        @Override
         protected String[] getExcludedEnvironmentVariables() {
             return new String[0];
         }
-
-        @Override
-        public File[] getSuiteXmlFiles() {
-            return new File[0];
-        }
-
-        @Override
-        public void setSuiteXmlFiles(File[] suiteXmlFiles) {}
 
         @Override
         public String getRunOrder() {

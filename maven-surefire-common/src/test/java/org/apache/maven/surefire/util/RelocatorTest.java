@@ -18,19 +18,23 @@
  */
 package org.apache.maven.surefire.util;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.util.Relocator;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RelocatorTest extends TestCase {
+public class RelocatorTest {
 
+    @Test
     public void testFoo() {
         String cn = "org.apache.maven.surefire.report.ForkingConsoleReporter";
         assertEquals("org.apache.maven.shadefire.surefire.report.ForkingConsoleReporter", Relocator.relocate(cn));
     }
 
+    @Test
     public void testRelocation() {
         String org1 = "org.apache.maven.surefire.fooz.Baz";
         assertEquals("org.apache.maven.shadefire.surefire.fooz.Baz", Relocator.relocate(org1));

@@ -51,7 +51,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
     private final Queue<TestMethodStats> testMethodStats = new ConcurrentLinkedQueue<>();
 
     /**
-     * will be used only if report entry have a sourceName other than that #currentTestSetStats will be used
+     * Will be used only if report entry have a sourceName other than that #currentTestSetStats will be used
      * it looks some provider doesn't provide enough information so we assume to use previous technique
      * class field (this is definitely hackish)
      */
@@ -175,7 +175,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         try {
             synchronized (lock) {
                 Utf8RecodingDeferredFileOutputStream stream = reportEntry.isStdOut() ? testStdOut : testStdErr;
-                stream.write(reportEntry.getLog(), reportEntry.isNewLine());
+                stream.write(reportEntry.getLog(), reportEntry.isNewLine(), reportEntry.getStack());
                 testOutputReceiver.writeTestOutput(reportEntry);
             }
         } catch (IOException e) {
@@ -288,21 +288,26 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
 
     private WrappedReportEntry wrap(ReportEntry other, ReportEntryType reportEntryType) {
         int estimatedElapsed = 0;
+        // Skipped tests don't call testStart, and thus fallback on current time
+        long startTimestamp = System.currentTimeMillis();
+        TestSetStats testSetStats = getTestSetStats(other);
+
         if (reportEntryType != SKIPPED) {
             Integer etime = other.getElapsed();
-            estimatedElapsed = etime == null ? getTestSetStats(other).getElapsedSinceLastStart() : etime;
+            estimatedElapsed = etime == null ? testSetStats.getElapsedSinceLastStart() : etime;
+            startTimestamp = testSetStats.getTestStartAt();
         }
 
-        return new WrappedReportEntry(other, reportEntryType, estimatedElapsed, testStdOut, testStdErr);
+        return new WrappedReportEntry(other, reportEntryType, startTimestamp, estimatedElapsed, testStdOut, testStdErr);
     }
 
     private WrappedReportEntry wrapTestSet(TestSetReportEntry other) {
+        TestSetStats testSetStats = getTestSetStats(other);
         return new WrappedReportEntry(
                 other,
                 null,
-                other.getElapsed() != null
-                        ? other.getElapsed()
-                        : getTestSetStats(other).getElapsedSinceTestSetStart(),
+                testSetStats.getTestSetStartAt(),
+                other.getElapsed() != null ? other.getElapsed() : testSetStats.getElapsedSinceTestSetStart(),
                 testStdOut,
                 testStdErr,
                 other.getSystemProperties());

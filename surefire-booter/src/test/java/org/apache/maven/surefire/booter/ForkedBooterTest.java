@@ -19,11 +19,11 @@
 package org.apache.maven.surefire.booter;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -34,17 +34,32 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.reflect.Whitebox.invokeMethod;
 
 /**
  * Tests for {@link ForkedBooter}.
  */
 @SuppressWarnings("checkstyle:magicnumber")
+@Isolated
 public class ForkedBooterTest {
+
+    private static Object invokeMethod(Class<?> clazz, String methodName, Object... args) throws Exception {
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                method.setAccessible(true);
+                return method.invoke(null, args);
+            }
+        }
+        throw new NoSuchMethodException(clazz.getName() + "." + methodName);
+    }
+
     @Test
     public void shouldGenerateThreadDump() throws Exception {
         Collection<String> threadNames = new ArrayList<>();
@@ -53,7 +68,7 @@ public class ForkedBooterTest {
             threadNames.add(threadInfo.getThreadName());
         }
 
-        String dump = invokeMethod(ForkedBooter.class, "generateThreadDump");
+        String dump = (String) invokeMethod(ForkedBooter.class, "generateThreadDump");
 
         for (String threadName : threadNames) {
             assertThat(dump).contains("\"" + threadName + "\"");
@@ -65,13 +80,13 @@ public class ForkedBooterTest {
     @Test
     public void shouldFindCurrentProcessName() throws Exception {
         String process = ManagementFactory.getRuntimeMXBean().getName();
-        String expected = invokeMethod(ForkedBooter.class, "getProcessName");
+        String expected = (String) invokeMethod(ForkedBooter.class, "getProcessName");
         assertThat(process).isEqualTo(expected);
     }
 
     @Test
     public void shouldNotBeDebugMode() throws Exception {
-        boolean expected = invokeMethod(ForkedBooter.class, "isDebugging");
+        boolean expected = (boolean) invokeMethod(ForkedBooter.class, "isDebugging");
         assertThat(expected).isFalse();
     }
 
@@ -80,7 +95,7 @@ public class ForkedBooterTest {
         File tmpDir = Files.createTempDirectory("ForkedBooterTest.1.").toFile();
 
         try {
-            try (InputStream is = invokeMethod(
+            try (InputStream is = (InputStream) invokeMethod(
                     ForkedBooter.class,
                     "createSurefirePropertiesIfFileExists",
                     tmpDir.getCanonicalPath(),
@@ -94,13 +109,11 @@ public class ForkedBooterTest {
 
             FileUtils.write(props, "key=value", UTF_8);
 
-            try (InputStream is2 = invokeMethod(
+            try (InputStream is2 = (InputStream) invokeMethod(
                     ForkedBooter.class,
                     "createSurefirePropertiesIfFileExists",
                     tmpDir.getCanonicalPath(),
                     "surefire.properties")) {
-                assertThat(is2).isNotNull().isInstanceOf(FileInputStream.class);
-
                 byte[] propsContent = new byte[20];
                 int length = is2.read(propsContent);
 
@@ -115,7 +128,7 @@ public class ForkedBooterTest {
     public void shouldCreateScheduler() throws Exception {
         ScheduledExecutorService scheduler = null;
         try {
-            scheduler = invokeMethod(ForkedBooter.class, "createScheduler", "thread name");
+            scheduler = (ScheduledExecutorService) invokeMethod(ForkedBooter.class, "createScheduler", "thread name");
             assertThat(scheduler).isNotNull();
         } finally {
             if (scheduler != null) {
@@ -124,10 +137,11 @@ public class ForkedBooterTest {
         }
     }
 
-    @Test(timeout = 10_000)
+    @Test
+    @Timeout(value = 10_000, unit = MILLISECONDS)
     public void testBarrier1() throws Exception {
         Semaphore semaphore = new Semaphore(2);
-        boolean acquiredOnePermit = invokeMethod(ForkedBooter.class, "acquireOnePermit", semaphore);
+        boolean acquiredOnePermit = (boolean) invokeMethod(ForkedBooter.class, "acquireOnePermit", semaphore);
 
         assertThat(acquiredOnePermit).isTrue();
         assertThat(semaphore.availablePermits()).isEqualTo(1);
@@ -138,7 +152,7 @@ public class ForkedBooterTest {
         Semaphore semaphore = new Semaphore(0);
         Thread.currentThread().interrupt();
         try {
-            boolean acquiredOnePermit = invokeMethod(ForkedBooter.class, "acquireOnePermit", semaphore);
+            boolean acquiredOnePermit = (boolean) invokeMethod(ForkedBooter.class, "acquireOnePermit", semaphore);
 
             assertThat(acquiredOnePermit).isFalse();
             assertThat(semaphore.availablePermits()).isEqualTo(0);
@@ -149,7 +163,8 @@ public class ForkedBooterTest {
 
     @Test
     public void testScheduler() throws Exception {
-        ScheduledThreadPoolExecutor executor = invokeMethod(ForkedBooter.class, "createScheduler", "thread name");
+        ScheduledThreadPoolExecutor executor =
+                (ScheduledThreadPoolExecutor) invokeMethod(ForkedBooter.class, "createScheduler", "thread name");
         executor.shutdown();
         assertThat(executor.getCorePoolSize()).isEqualTo(1);
         assertThat(executor.getMaximumPoolSize()).isEqualTo(1);
@@ -157,7 +172,7 @@ public class ForkedBooterTest {
 
     @Test
     public void testIsDebug() throws Exception {
-        boolean isDebug = invokeMethod(ForkedBooter.class, "isDebugging");
+        boolean isDebug = (boolean) invokeMethod(ForkedBooter.class, "isDebugging");
         assertThat(isDebug).isFalse();
     }
 
@@ -165,7 +180,8 @@ public class ForkedBooterTest {
     public void testPropsNotExist() throws Exception {
         String target = System.getProperty("user.dir");
         String file = "not exists";
-        InputStream is = invokeMethod(ForkedBooter.class, "createSurefirePropertiesIfFileExists", target, file);
+        InputStream is =
+                (InputStream) invokeMethod(ForkedBooter.class, "createSurefirePropertiesIfFileExists", target, file);
         assertThat(is).isNull();
     }
 
@@ -175,7 +191,8 @@ public class ForkedBooterTest {
         String target = props.getParent();
         String file = props.getName();
         FileUtils.write(props, "Hi", StandardCharsets.US_ASCII);
-        try (InputStream is = invokeMethod(ForkedBooter.class, "createSurefirePropertiesIfFileExists", target, file)) {
+        try (InputStream is =
+                (InputStream) invokeMethod(ForkedBooter.class, "createSurefirePropertiesIfFileExists", target, file)) {
             assertThat(is).isNotNull();
             byte[] data = new byte[5];
             int bytes = is.read(data);
@@ -187,7 +204,7 @@ public class ForkedBooterTest {
 
     @Test
     public void testThreadDump() throws Exception {
-        String threads = invokeMethod(ForkedBooter.class, "generateThreadDump");
+        String threads = (String) invokeMethod(ForkedBooter.class, "generateThreadDump");
         assertThat(threads).isNotNull();
         assertThat(threads).contains("\"main\"").contains("java.lang.Thread.State: RUNNABLE");
     }

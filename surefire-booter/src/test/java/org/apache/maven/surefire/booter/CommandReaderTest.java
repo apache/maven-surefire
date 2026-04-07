@@ -40,20 +40,20 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.CommandChannelDecoder;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Testing singleton {@code MasterProcessReader} in multiple class loaders.
@@ -61,7 +61,6 @@ import static org.junit.Assert.fail;
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.19
  */
-@RunWith(NewClassLoaderRunner.class)
 @SuppressWarnings("checkstyle:magicnumber")
 public class CommandReaderTest {
     private static final long DELAY = 200L;
@@ -78,7 +77,7 @@ public class CommandReaderTest {
 
     static class D {}
 
-    @Before
+    @BeforeEach
     public void init() {
         //noinspection ResultOfMethodCallIgnored
         Thread.interrupted();
@@ -90,7 +89,7 @@ public class CommandReaderTest {
         reader = new CommandReader(decoder, Shutdown.DEFAULT, logger);
     }
 
-    @After
+    @AfterEach
     public void deinit() {
         reader.stop();
     }
@@ -100,7 +99,7 @@ public class CommandReaderTest {
         Iterator<String> it =
                 reader.getIterableClasses(new EventChannelEncoder(nul())).iterator();
         assertTrue(it.hasNext());
-        assertThat(it.next(), is(getClass().getName()));
+        assertThat(it.next()).isEqualTo(getClass().getName());
         reader.stop();
         assertFalse(it.hasNext());
         try {
@@ -115,13 +114,13 @@ public class CommandReaderTest {
     public void manyClasses() {
         Iterator<String> it1 =
                 reader.getIterableClasses(new EventChannelEncoder(nul())).iterator();
-        assertThat(it1.next(), is(getClass().getName()));
+        assertThat(it1.next()).isEqualTo(getClass().getName());
         addTestToPipeline(A.class.getName());
-        assertThat(it1.next(), is(A.class.getName()));
+        assertThat(it1.next()).isEqualTo(A.class.getName());
         addTestToPipeline(B.class.getName());
-        assertThat(it1.next(), is(B.class.getName()));
+        assertThat(it1.next()).isEqualTo(B.class.getName());
         addTestToPipeline(C.class.getName());
-        assertThat(it1.next(), is(C.class.getName()));
+        assertThat(it1.next()).isEqualTo(C.class.getName());
         addEndOfPipeline();
         addTestToPipeline(D.class.getName());
         assertFalse(it1.hasNext());
@@ -132,48 +131,50 @@ public class CommandReaderTest {
         Iterator<String> it1 =
                 reader.getIterableClasses(new EventChannelEncoder(nul())).iterator();
 
-        assertThat(it1.next(), is(getClass().getName()));
+        assertThat(it1.next()).isEqualTo(getClass().getName());
         addTestToPipeline(A.class.getName());
-        assertThat(it1.next(), is(A.class.getName()));
+        assertThat(it1.next()).isEqualTo(A.class.getName());
         addTestToPipeline(B.class.getName());
 
         TimeUnit.MILLISECONDS.sleep(DELAY); // give the test chance to fail
 
         Iterator<String> it2 = reader.iterated();
 
-        assertThat(it1.next(), is(B.class.getName()));
+        assertThat(it1.next()).isEqualTo(B.class.getName());
         addTestToPipeline(C.class.getName());
 
-        assertThat(it2.hasNext(), is(true));
-        assertThat(it2.next(), is(getClass().getName()));
-        assertThat(it2.hasNext(), is(true));
-        assertThat(it2.next(), is(A.class.getName()));
+        assertThat(it2.hasNext()).isTrue();
+        assertThat(it2.next()).isEqualTo(getClass().getName());
+        assertThat(it2.hasNext()).isTrue();
+        assertThat(it2.next()).isEqualTo(A.class.getName());
         assertThat(it2.hasNext()).isFalse();
 
-        assertThat(it1.next(), is(C.class.getName()));
+        assertThat(it1.next()).isEqualTo(C.class.getName());
         addEndOfPipeline();
         assertThat(it1.hasNext()).isFalse();
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void stopBeforeReadInThread() throws Throwable {
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                Iterator<String> it = reader.getIterableClasses(new EventChannelEncoder(nul()))
-                        .iterator();
-                assertThat(it.next(), is(CommandReaderTest.class.getName()));
+        assertThrows(NoSuchElementException.class, () -> {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    Iterator<String> it = reader.getIterableClasses(new EventChannelEncoder(nul()))
+                            .iterator();
+                    assertThat(it.next()).isEqualTo(CommandReaderTest.class.getName());
+                }
+            };
+            FutureTask<Object> futureTask = new FutureTask<>(runnable, null);
+            Thread t = new Thread(futureTask);
+            reader.stop();
+            t.start();
+            try {
+                futureTask.get();
+            } catch (ExecutionException e) {
+                throw e.getCause();
             }
-        };
-        FutureTask<Object> futureTask = new FutureTask<>(runnable, null);
-        Thread t = new Thread(futureTask);
-        reader.stop();
-        t.start();
-        try {
-            futureTask.get();
-        } catch (ExecutionException e) {
-            throw e.getCause();
-        }
+        });
     }
 
     @Test
@@ -184,9 +185,9 @@ public class CommandReaderTest {
             public void run() {
                 Iterator<String> it = reader.getIterableClasses(new EventChannelEncoder(nul()))
                         .iterator();
-                assertThat(it.next(), is(CommandReaderTest.class.getName()));
+                assertThat(it.next()).isEqualTo(CommandReaderTest.class.getName());
                 counter.countDown();
-                assertThat(it.next(), is(Foo.class.getName()));
+                assertThat(it.next()).isEqualTo(Foo.class.getName());
             }
         };
         FutureTask<Object> futureTask = new FutureTask<>(runnable, null);
@@ -201,7 +202,8 @@ public class CommandReaderTest {
         }
     }
 
-    @Test(timeout = TEST_TIMEOUT)
+    @Test
+    @Timeout(value = TEST_TIMEOUT, unit = MILLISECONDS)
     public void shouldAwaitReaderUp() throws TestSetFailedException {
         assertTrue(reader.awaitStarted());
         reader.stop();

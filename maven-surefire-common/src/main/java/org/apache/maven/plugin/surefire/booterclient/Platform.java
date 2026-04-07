@@ -29,7 +29,7 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
 
 /**
  * Loads platform specifics.
- *
+ * TODO simplify or remove when Java 8 support is dropped
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
  */
@@ -80,11 +80,6 @@ public final class Platform {
     }
 
     private static Callable<Long> pidJob() {
-        return new Callable<Long>() {
-            @Override
-            public Long call() throws Exception {
-                return SystemUtils.pid();
-            }
-        };
+        return SystemUtils::pid;
     }
 }

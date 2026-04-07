@@ -24,13 +24,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test of the directory scanner.
  */
-public class DefaultDirectoryScannerTest extends TestCase {
+public class DefaultDirectoryScannerTest {
+    @Test
     public void testLocateTestClasses() throws IOException, TestSetFailedException {
         // use target as people can configure ide to compile in an other place than maven
         File baseDir = new File(new File("target").getCanonicalPath());

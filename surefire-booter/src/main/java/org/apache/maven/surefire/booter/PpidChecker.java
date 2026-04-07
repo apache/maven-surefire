@@ -57,11 +57,18 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 
 /**
  * Recognizes PID of Plugin process and determines lifetime.
+ * <p>
+ * This implementation uses native commands ({@code ps} on Unix, {@code powershell} on Windows)
+ * to check the parent process status. On Java 9+, consider using {@code ProcessHandleChecker}
+ * instead, which uses the Java {@code ProcessHandle} API and doesn't require spawning external processes.
  *
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
  * @since 2.20.1
+ * @see ProcessChecker
+ * @deprecated Use {@code ProcessHandleChecker} via {@link ProcessChecker#of(String)} instead
  */
-final class PpidChecker {
+@Deprecated
+final class PpidChecker implements ProcessChecker {
     private static final long MINUTES_TO_MILLIS = 60L * 1000L;
     // 25 chars https://superuser.com/questions/937380/get-creation-time-of-file-in-milliseconds/937401#937401
     private static final int WMIC_CREATION_DATE_VALUE_LENGTH = 25;
@@ -95,7 +102,8 @@ final class PpidChecker {
         this.ppid = ppid;
     }
 
-    boolean canUse() {
+    @Override
+    public boolean canUse() {
         if (isStopped()) {
             return false;
         }
@@ -111,7 +119,8 @@ final class PpidChecker {
      *                               or this object has been {@link #destroyActiveCommands() destroyed}
      * @throws NullPointerException if extracted e-time is null
      */
-    boolean isProcessAlive() {
+    @Override
+    public boolean isProcessAlive() {
         if (!canUse()) {
             throw new IllegalStateException("irrelevant to call isProcessAlive()");
         }
@@ -119,8 +128,9 @@ final class PpidChecker {
         final ProcessInfo previousInfo = parentProcessInfo;
         if (IS_OS_WINDOWS) {
             parentProcessInfo = windows();
-            checkProcessInfo();
-
+            if (!checkProcessInfo()) {
+                return false;
+            }
             // let's compare creation time, should be same unless killed or PID is reused by OS into another process
             return !parentProcessInfo.isInvalid()
                     && (previousInfo == null || parentProcessInfo.isTimeEqualTo(previousInfo));
@@ -136,15 +146,22 @@ final class PpidChecker {
         throw new IllegalStateException("unknown platform or you did not call canUse() before isProcessAlive()");
     }
 
-    private void checkProcessInfo() {
+    /**
+     *
+     * @return true if process info is valid to use; false if this object has been {@link #destroyActiveCommands() destroyed}
+     * @throws IllegalStateException if process info cannot be used
+     */
+    private boolean checkProcessInfo() {
         if (isStopped()) {
-            throw new IllegalStateException("error [STOPPED] to read process " + ppid);
+            //            throw new IllegalStateException("error [STOPPED] to read process " + this);
+            return false;
         }
 
         if (!parentProcessInfo.canUse()) {
             throw new IllegalStateException(
                     "Cannot use PPID " + ppid + " process information. " + "Going to use NOOP events.");
         }
+        return true;
     }
 
     // https://www.freebsd.org/cgi/man.cgi?ps(1)
@@ -226,14 +243,16 @@ final class PpidChecker {
         return reader.execute(psPath + "powershell", "-NoProfile", "-NonInteractive", "-Command", psCommand);
     }
 
-    void destroyActiveCommands() {
+    @Override
+    public void destroyActiveCommands() {
         stopped = true;
         for (Process p = destroyableCommands.poll(); p != null; p = destroyableCommands.poll()) {
             p.destroy();
         }
     }
 
-    boolean isStopped() {
+    @Override
+    public boolean isStopped() {
         return stopped;
     }
 
@@ -317,7 +336,7 @@ final class PpidChecker {
      * https://technet.microsoft.com/en-us/library/ee198928.aspx <br>
      * We use UTC time zone which avoids DST changes, see SUREFIRE-1512.
      *
-     * @return Windows WMIC format yyyymmddHHMMSS.xxx
+     * @return windows WMIC format yyyymmddHHMMSS.xxx
      */
     private static SimpleDateFormat createWindowsCreationDateFormat() {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss'.'SSS");
@@ -325,8 +344,14 @@ final class PpidChecker {
         return formatter;
     }
 
+    @Override
     public void stop() {
         stopped = true;
+    }
+
+    @Override
+    public ProcessInfo processInfo() {
+        return parentProcessInfo;
     }
 
     /**

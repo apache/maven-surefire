@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,21 +36,20 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.util.ScanResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Aslak Knutsen
  */
 public class DependenciesScannerTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    Path tempFolder;
 
     @Test
     public void testLocateTestClasses() throws Exception {
@@ -238,7 +238,7 @@ public class DependenciesScannerTest {
     }
 
     private File writeTestFile(String fileName, String... entries) throws Exception {
-        File output = tempFolder.newFile(fileName);
+        File output = tempFolder.resolve(fileName).toFile();
 
         try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(output))) {
             for (String entry : entries) {

@@ -26,12 +26,12 @@ import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Test forkCount and reuseForks
@@ -42,17 +42,17 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
 
     private OutputValidator outputValidator;
 
-    @BeforeClass
+    @BeforeAll
     public static void installDumpPidPlugin() {
         unpack(ForkCountIT.class, "test-helper-dump-pid-plugin", "plugin").executeInstall();
     }
 
     @Test
     public void testForkNever() {
-        String[] pids = doTest(unpack(getProject()).forkNever());
+        String[] pids = doTest(unpack(getProject()).setForkJvm().forkNever());
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
-        assertEquals("my pid is equal to pid 1 of the test", getMainPID(), pids[0]);
+        assertEquals(getMainPID(), pids[0], "my pid is equal to pid 1 of the test");
     }
 
     @Test
@@ -62,18 +62,19 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
                 unpack(getProject()).setForkJvm().forkPerThread(threadCount).threadCount(threadCount));
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     @Test
     public void testForkOncePerThreadTwoThreads() {
         int threadCount = 2;
         String[] pids = doTest(unpack(getProject())
+                .setForkJvm()
                 .forkPerThread(threadCount)
                 .threadCount(threadCount)
                 .addGoal("-DsleepLength=7200"));
         assertDifferentPids(pids, 2);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     @Test
@@ -81,7 +82,7 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
         String[] pids = doTest(unpack(getProject()).setForkJvm().forkCount(1).reuseForks(false));
         assertDifferentPids(pids);
         assertEndWith(pids, "_1_1", 3);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     @Test
@@ -89,7 +90,7 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
         String[] pids = doTest(unpack(getProject()).setForkJvm().forkCount(1).reuseForks(true));
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     @Test
@@ -97,15 +98,15 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
         String[] pids = doTest(
                 unpack(getProject()).setForkJvm().forkCount(2).reuseForks(false).addGoal("-DsleepLength=7200"));
         assertDifferentPids(pids);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     @Test
     public void testForkCountTwoReuse() {
-        String[] pids =
-                doTest(unpack(getProject()).forkCount(2).reuseForks(true).addGoal("-DsleepLength=7200"));
+        String[] pids = doTest(
+                unpack(getProject()).setForkJvm().forkCount(2).reuseForks(true).addGoal("-DsleepLength=7200"));
         assertDifferentPids(pids, 2);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     private void assertEndWith(String[] pids, String suffix, int expectedMatches) {
@@ -116,19 +117,19 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
             }
         }
 
-        assertEquals("suffix " + suffix + " matched the correct number of pids", expectedMatches, matches);
+        assertEquals(expectedMatches, matches, "suffix " + suffix + " matched the correct number of pids");
     }
 
     private void assertDifferentPids(String[] pids, int numOfDifferentPids) {
         Set<String> pidSet = new HashSet<>(Arrays.asList(pids));
-        assertEquals("number of different pids is not as expected", numOfDifferentPids, pidSet.size());
+        assertEquals(numOfDifferentPids, pidSet.size(), "number of different pids is not as expected");
     }
 
     @Test
     public void testForkOnce() {
-        String[] pids = doTest(unpack(getProject()).forkOnce());
+        String[] pids = doTest(unpack(getProject()).setForkJvm().forkOnce());
         assertSamePids(pids);
-        assertNotEquals("pid 1 is not the same as the main process' pid", pids[0], getMainPID());
+        assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
     private String getMainPID() {
@@ -138,8 +139,8 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     private void assertSamePids(String[] pids) {
-        assertEquals("pid 1 didn't match pid 2", pids[0], pids[1]);
-        assertEquals("pid 1 didn't match pid 3", pids[0], pids[2]);
+        assertEquals(pids[0], pids[1], "pid 1 didn't match pid 2");
+        assertEquals(pids[0], pids[2], "pid 1 didn't match pid 3");
     }
 
     private void assertDifferentPids(String[] pids) {

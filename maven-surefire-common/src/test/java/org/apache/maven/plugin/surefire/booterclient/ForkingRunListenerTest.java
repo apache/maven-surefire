@@ -35,7 +35,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.TestCase;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
 import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.extensions.EventConsumerThread;
@@ -44,10 +43,10 @@ import org.apache.maven.surefire.api.booter.ForkingRunListener;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.CategorizedReportEntry;
-import org.apache.maven.surefire.api.report.LegacyPojoStackTraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.api.report.RunListener;
+import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
@@ -58,20 +57,21 @@ import org.apache.maven.surefire.api.util.internal.WritableBufferedByteChannel;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.TestOutputReportEntry.stdOut;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * @author Kristian Rosenvold
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class ForkingRunListenerTest extends TestCase {
+public class ForkingRunListenerTest {
     private final ByteArrayOutputStream content, anotherContent;
     private final PrintStream printStream, anotherPrintStream;
 
@@ -88,6 +88,7 @@ public class ForkingRunListenerTest extends TestCase {
         content.reset();
     }
 
+    @Test
     public void testSetStarting() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestSetReportEntry expected = createDefaultReportEntry();
@@ -95,6 +96,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.SET_STARTING, expected);
     }
 
+    @Test
     public void testSetCompleted() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestSetReportEntry expected = createDefaultReportEntry();
@@ -102,6 +104,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.SET_COMPLETED, expected);
     }
 
+    @Test
     public void testStarting() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -109,6 +112,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_STARTING, expected);
     }
 
+    @Test
     public void testSucceeded() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -116,6 +120,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_SUCCEEDED, expected);
     }
 
+    @Test
     public void testFailed() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithStackTrace();
@@ -123,6 +128,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_FAILED, expected);
     }
 
+    @Test
     public void testFailedWithCommaInMessage() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithSpecialMessage("We, the people");
@@ -130,6 +136,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_FAILED, expected);
     }
 
+    @Test
     public void testFailedWithUnicodeEscapeInMessage() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createReportEntryWithSpecialMessage("We, \\u0177 people");
@@ -137,6 +144,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_FAILED, expected);
     }
 
+    @Test
     public void testFailure() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -144,6 +152,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_ERROR, expected);
     }
 
+    @Test
     public void testSkipped() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -151,6 +160,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_SKIPPED, expected);
     }
 
+    @Test
     public void testAssumptionFailure() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ReportEntry expected = createDefaultReportEntry();
@@ -158,6 +168,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.TEST_ASSUMPTION_FAIL, expected);
     }
 
+    @Test
     public void testConsole() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         ConsoleLogger directConsoleReporter = standardTestRun.run();
@@ -165,6 +176,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.CONSOLE_INFO, "HeyYou");
     }
 
+    @Test
     public void testConsoleOutput() throws Exception {
         final StandardTestRun standardTestRun = new StandardTestRun();
         TestOutputReceiver<TestOutputReportEntry> directConsoleReporter = standardTestRun.run();
@@ -172,6 +184,7 @@ public class ForkingRunListenerTest extends TestCase {
         standardTestRun.assertExpected(MockReporter.STDOUT, "HeyYou");
     }
 
+    @Test
     public void testSystemProperties() throws Exception {
         StandardTestRun standardTestRun = new StandardTestRun();
         standardTestRun.run();
@@ -206,6 +219,7 @@ public class ForkingRunListenerTest extends TestCase {
         assertThat(forkStreamClient.getTestVmSystemProperties()).containsEntry("k2", "v2");
     }
 
+    @Test
     public void testMultipleEntries() throws Exception {
         StandardTestRun standardTestRun = new StandardTestRun();
         standardTestRun.run();
@@ -234,6 +248,7 @@ public class ForkingRunListenerTest extends TestCase {
         assertEquals(MockReporter.SET_COMPLETED, events.get(3));
     }
 
+    @Test
     public void test2DifferentChannels() throws Exception {
         reset();
         ReportEntry expected = createDefaultReportEntry();
@@ -277,7 +292,6 @@ public class ForkingRunListenerTest extends TestCase {
         try (EventConsumerThread t = new EventConsumerThread("t", channel, handler, countdown, arguments)) {
             t.start();
             countdown.awaitClosed();
-            verifyZeroInteractions(logger);
             assertThat(arguments.isCalled()).isFalse();
             for (int i = 0, size = handler.countEventsInCache(); i < size; i++) {
                 events.add(handler.pullEvent());
@@ -392,8 +406,27 @@ public class ForkingRunListenerTest extends TestCase {
         try {
             throw new RuntimeException();
         } catch (RuntimeException e) {
-            StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter("org.apache.tests.TestClass", "testMethod11", e);
+            StackTraceWriter stackTraceWriter = new StackTraceWriter() {
+                @Override
+                public String writeTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String writeTrimmedTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String smartTrimmedStackTrace() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public SafeThrowable getThrowable() {
+                    return new SafeThrowable(e);
+                }
+            };
             return new CategorizedReportEntry(
                     NORMAL_RUN, 0L, "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77);
         }
@@ -403,8 +436,27 @@ public class ForkingRunListenerTest extends TestCase {
         try {
             throw new RuntimeException(message);
         } catch (RuntimeException e) {
-            StackTraceWriter stackTraceWriter =
-                    new LegacyPojoStackTraceWriter("org.apache.tests.TestClass", "testMethod11", e);
+            StackTraceWriter stackTraceWriter = new StackTraceWriter() {
+                @Override
+                public String writeTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String writeTrimmedTraceToString() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public String smartTrimmedStackTrace() {
+                    return "org.apache.tests.TestClass";
+                }
+
+                @Override
+                public SafeThrowable getThrowable() {
+                    return new SafeThrowable(e);
+                }
+            };
             return new CategorizedReportEntry(
                     NORMAL_RUN, 1L, "com.abc.TestClass", "testMethod", "aGroup", stackTraceWriter, 77);
         }

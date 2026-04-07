@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -31,15 +32,9 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.slf4j.Logger;
 
 import static java.io.File.separatorChar;
@@ -47,22 +42,16 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.reflect.Whitebox.invokeMethod;
+import static org.mockito.Mockito.when;
 
 /**
  * Test for {@link AbstractSurefireMojo}. jdkToolchain parameter
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({AbstractSurefireMojo.class})
-@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
 public class AbstractSurefireMojoToolchainsTest {
-    @Rule
-    public final ExpectedException e = ExpectedException.none();
 
     /**
      * Ensure that we use the toolchain found by getToolchain()
@@ -95,15 +84,15 @@ public class AbstractSurefireMojoToolchainsTest {
     }
 
     // TODO Is this still required?
-    @Test(expected = MojoFailureException.class)
-    @Ignore
+    @Test
+    @Disabled
     public void shouldThrowToolchain() throws Exception {
-        invokeMethod(AbstractSurefireMojo.class, "getToolchain");
+        assertThrows(MojoFailureException.class, () -> invokeMethod(AbstractSurefireMojo.class, "getToolchain"));
     }
 
     // TODO Is this still required?
     @Test
-    @Ignore
+    @Disabled
     public void shouldGetToolchain() throws Exception {
         Toolchain expected = mock(Toolchain.class);
         Toolchain actual = invokeMethod(AbstractSurefireMojo.class, "getToolchain");
@@ -216,10 +205,31 @@ public class AbstractSurefireMojoToolchainsTest {
         mojo.setLogger(mock(Logger.class));
         mojo.setJvm(System.getProperty("user.dir"));
 
-        e.expect(MojoFailureException.class);
-        e.expectMessage(startsWith("Given path does not end with java executor"));
+        MojoFailureException ex = assertThrows(MojoFailureException.class, () -> invokeMethod(mojo, "getEffectiveJvm"));
+        assertThat(ex.getMessage()).startsWith("Given path does not end with java executor");
+    }
 
-        invokeMethod(mojo, "getEffectiveJvm");
+    @SuppressWarnings("unchecked")
+    private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
+        Class<?> clazz = target instanceof Class ? (Class<?>) target : target.getClass();
+        while (clazz != null) {
+            for (Method method : clazz.getDeclaredMethods()) {
+                if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                    method.setAccessible(true);
+                    try {
+                        return (T) method.invoke(target instanceof Class ? null : target, args);
+                    } catch (java.lang.reflect.InvocationTargetException e) {
+                        Throwable cause = e.getCause();
+                        if (cause instanceof Exception) {
+                            throw (Exception) cause;
+                        }
+                        throw e;
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        throw new NoSuchMethodException(methodName);
     }
 
     /**

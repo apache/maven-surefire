@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.api.util.internal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_17;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;

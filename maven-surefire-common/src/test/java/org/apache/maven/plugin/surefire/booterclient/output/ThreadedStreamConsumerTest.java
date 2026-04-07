@@ -28,7 +28,7 @@ import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsum
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.event.StandardStreamOutWithNewLineEvent;
 import org.apache.maven.surefire.extensions.EventHandler;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
@@ -94,7 +94,7 @@ public class ThreadedStreamConsumerTest {
 
         long t1 = System.currentTimeMillis();
 
-        Event event = new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "");
+        Event event = new StandardStreamOutWithNewLineEvent(NORMAL_RUN, 1L, "", null);
         for (int i = 0; i < 5_000_000; i++) {
             streamConsumer.handleEvent(event);
         }

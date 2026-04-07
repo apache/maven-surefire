@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven.surefire</groupId>
     <artifactId>surefire</artifactId>
-    <version>3.5.5-SNAPSHOT</version>
+    <version>3.6.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.maven.plugins</groupId>
@@ -34,7 +34,7 @@
   <description>Maven Failsafe MOJO in maven-failsafe-plugin.</description>
 
   <prerequisites>
-    <maven>${mavenVersion}</maven>
+    <maven>${mavenVersion.prerequisite}</maven>
   </prerequisites>
 
   <properties>
@@ -145,31 +145,28 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <configuration>
-          <propertyName>jacoco.agent</propertyName>
-        </configuration>
         <executions>
           <execution>
             <id>jacoco-agent</id>
             <goals>
               <goal>prepare-agent</goal>
+              <goal>prepare-agent-integration</goal>
             </goals>
+          </execution>
+          <execution>
+            <id>jacoco-report</id>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${jvm.args.tests} ${jacoco.agent}</argLine>
+          <argLine>${jvm.args.tests} @{argLine}</argLine>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.maven.surefire</groupId>
-            <artifactId>surefire-shadefire</artifactId>
-            <!-- ${shadedVersion}, but resolved due to https://issues.apache.org/jira/browse/MRELEASE-799 -->
-            <version>3.5.2</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -299,6 +296,7 @@
                     <integration-test-stop-port>${failsafe-integration-test-stop-port}</integration-test-stop-port>
                   </properties>
                   <debug>true</debug>
+                  <mavenOpts>@{argLine}</mavenOpts>
                 </configuration>
               </execution>
             </executions>

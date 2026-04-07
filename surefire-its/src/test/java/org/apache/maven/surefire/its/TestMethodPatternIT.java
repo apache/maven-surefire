@@ -27,11 +27,8 @@ import java.util.Map.Entry;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,7 +38,6 @@ import static org.hamcrest.Matchers.equalTo;
  *
  * @author Olivier Lamy
  */
-@RunWith(Parameterized.class)
 public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
     private static final String RUNNING_WITH_PROVIDER47 = "parallel='none', perCoreThreadCount=true, threadCount=0";
 
@@ -50,20 +46,15 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
     private static final String SUREFIRE_FORK_NODE =
             "org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory";
 
-    @Parameters
-    public static Iterable<Object[]> data() {
+    static Iterable<Object[]> data() {
         ArrayList<Object[]> args = new ArrayList<>();
         args.add(new Object[] {"tcp"});
         args.add(new Object[] {null});
         return args;
     }
 
-    @Parameter
-    @SuppressWarnings("checkstyle:visibilitymodifier")
-    public String profileId;
-
-    private OutputValidator runMethodPattern(String projectName, Map<String, String> props, String... goals)
-            throws Exception {
+    private OutputValidator runMethodPattern(
+            String profileId, String projectName, Map<String, String> props, String... goals) throws Exception {
         SurefireLauncher launcher = unpack(projectName, profileId == null ? "" : "-" + profileId);
 
         if (profileId != null) {
@@ -84,26 +75,17 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
                 .assertThatLogLine(containsString("Found implementation of fork node factory: " + cls), equalTo(1));
     }
 
-    @Test
-    public void testJUnit44() throws Exception {
-        runMethodPattern("junit44-method-pattern", Collections.emptyMap());
+    @ParameterizedTest
+    @MethodSource("data")
+    void testJUnit4(String profileId) throws Exception {
+        runMethodPattern(profileId, "junit4-method-pattern", Collections.emptyMap());
     }
 
-    @Test
-    public void testJUnit48Provider4() throws Exception {
-        runMethodPattern("junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit4");
-    }
-
-    @Test
-    public void testJUnit48Provider47() throws Exception {
-        runMethodPattern("junit48-method-pattern", Collections.emptyMap(), "-P surefire-junit47")
-                .verifyTextInLog(RUNNING_WITH_PROVIDER47);
-    }
-
-    @Test
-    public void testJUnit48WithCategoryFilter() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testJUnit4WithCategoryFilter(String profileId) throws Exception {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
-        SurefireLauncher launcher = unpack("junit48-method-pattern", profileId == null ? "" : "-" + profileId);
+        SurefireLauncher launcher = unpack("junit4-method-pattern", profileId == null ? "" : "-" + profileId);
 
         if (profileId != null) {
             launcher.activateProfile(profileId);
@@ -116,24 +98,25 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
                 .assertThatLogLine(containsString("Found implementation of fork node factory: " + cls), equalTo(1));
     }
 
-    @Test
-    public void testTestNgMethodBefore() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testTestNgMethodBefore(String profileId) throws Exception {
         Map<String, String> props = new HashMap<>();
-        props.put("testNgVersion", "5.7");
-        props.put("testNgClassifier", "jdk15");
-        runMethodPattern("testng-method-pattern-before", props);
+        props.put("testNgVersion", "6.14.3");
+        runMethodPattern(profileId, "testng-method-pattern-before", props);
     }
 
-    @Test
-    public void testTestNGMethodPattern() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testTestNGMethodPattern(String profileId) throws Exception {
         Map<String, String> props = new HashMap<>();
-        props.put("testNgVersion", "5.7");
-        props.put("testNgClassifier", "jdk15");
-        runMethodPattern("/testng-method-pattern", props);
+        props.put("testNgVersion", "6.14.3");
+        runMethodPattern(profileId, "/testng-method-pattern", props);
     }
 
-    @Test
-    public void testMethodPatternAfter() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    void testMethodPatternAfter(String profileId) throws Exception {
         String cls = profileId == null ? LEGACY_FORK_NODE : SUREFIRE_FORK_NODE;
         SurefireLauncher launcher = unpack("testng-method-pattern-after", profileId == null ? "" : "-" + profileId);
 
@@ -142,8 +125,7 @@ public class TestMethodPatternIT extends SurefireJUnit4IntegrationTestCase {
         }
 
         launcher.debugLogging()
-                .sysProp("testNgVersion", "5.7")
-                .sysProp("testNgClassifier", "jdk15")
+                .sysProp("testNgVersion", "6.14.3")
                 .executeTest()
                 .verifyErrorFree(2)
                 .verifyTextInLog("Called tearDown")

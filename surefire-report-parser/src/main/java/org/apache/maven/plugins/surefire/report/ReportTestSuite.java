@@ -21,11 +21,10 @@ package org.apache.maven.plugins.surefire.report;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
 public final class ReportTestSuite {
     private final List<ReportTestCase> testCases = new ArrayList<>();
+
+    private long lastModified;
 
     private int numberOfErrors;
 
@@ -158,6 +157,15 @@ public final class ReportTestSuite {
     ReportTestSuite setTestCases(List<ReportTestCase> testCases) {
         this.testCases.clear();
         this.testCases.addAll(testCases);
+        return this;
+    }
+
+    public long getLastModified() {
+        return lastModified;
+    }
+
+    public ReportTestSuite lastModified(long lastModified) {
+        this.lastModified = lastModified;
         return this;
     }
 

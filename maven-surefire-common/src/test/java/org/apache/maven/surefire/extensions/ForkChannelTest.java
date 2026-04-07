@@ -43,7 +43,8 @@ import org.apache.maven.surefire.api.event.ControlByeEvent;
 import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -60,7 +61,8 @@ public class ForkChannelTest {
 
     private final AtomicBoolean hasError = new AtomicBoolean();
 
-    @Test(timeout = TESTCASE_TIMEOUT)
+    @Test
+    @Timeout(30)
     public void shouldRequestReplyMessagesViaTCP() throws Exception {
         final MockReporter reporter = new MockReporter();
         final String sessionId = UUID.randomUUID().toString();

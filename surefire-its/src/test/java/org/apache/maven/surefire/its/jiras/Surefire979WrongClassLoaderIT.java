@@ -20,7 +20,7 @@ package org.apache.maven.surefire.its.jiras;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  *
@@ -29,6 +29,16 @@ public class Surefire979WrongClassLoaderIT extends SurefireJUnit4IntegrationTest
     @Test
     public void wrongClassloaderUSedInSmartStacktraceparser() {
         OutputValidator outputValidator = unpack("surefire-979-smartStackTrace-wrongClassloader")
+                .failNever()
+                .executeTest();
+
+        outputValidator.verifyTextInLog(
+                "java.lang.NoClassDefFoundError: org/apache/commons/io/input/AutoCloseInputStream");
+    }
+
+    @Test
+    public void wrongClassloaderUSedInSmartStacktraceparserJunit5() {
+        OutputValidator outputValidator = unpack("surefire-979-smartStackTrace-wrongClassloader-junit5")
                 .failNever()
                 .executeTest();
 

@@ -127,10 +127,9 @@ public class TestListResolver implements GenericTestPattern<ResolvedTest, String
     }
 
     /**
-     *
      * @param resolver    filter possibly having method patterns
      * @return {@code resolver} if {@link TestListResolver#hasMethodPatterns() resolver.hasMethodPatterns()}
-     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned.
+     * returns {@code true}; Otherwise wildcard filter {@code *.class} is returned
      */
     public static TestListResolver optionallyWildcardFilter(TestListResolver resolver) {
         return resolver.hasMethodPatterns() ? resolver : WILDCARD;
@@ -155,13 +154,8 @@ public class TestListResolver implements GenericTestPattern<ResolvedTest, String
     }
 
     public TestFilter<String, String> or(final TestListResolver another) {
-        return new TestFilter<String, String>() {
-            @Override
-            public boolean shouldRun(String testClass, String methodName) {
-                return TestListResolver.this.shouldRun(testClass, methodName)
-                        || another.shouldRun(testClass, methodName);
-            }
-        };
+        return (testClass, methodName) ->
+                TestListResolver.this.shouldRun(testClass, methodName) || another.shouldRun(testClass, methodName);
     }
 
     public boolean shouldRun(Class<?> testClass, String methodName) {

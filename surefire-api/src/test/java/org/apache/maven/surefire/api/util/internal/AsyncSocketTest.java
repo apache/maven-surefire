@@ -41,8 +41,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static java.net.StandardSocketOptions.SO_KEEPALIVE;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
@@ -55,7 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Low level Java benchmark test.
  */
 @SuppressWarnings("checkstyle:magicnumber")
-@Ignore("Can be flaky on slow machine")
+@Disabled("Can be flaky on slow machine")
 public class AsyncSocketTest {
     private static final String LONG_STRING =
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
@@ -66,7 +67,8 @@ public class AsyncSocketTest {
 
     private volatile InetSocketAddress address;
 
-    @Test(timeout = 10_000L)
+    @Test
+    @Timeout(value = 10_000L, unit = TimeUnit.MILLISECONDS)
     public void test() throws Exception {
         int forks = 2;
         ThreadFactory factory = DaemonThreadFactory.newDaemonThreadFactory();

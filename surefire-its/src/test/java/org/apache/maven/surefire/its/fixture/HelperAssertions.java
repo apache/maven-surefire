@@ -20,6 +20,7 @@ package org.apache.maven.surefire.its.fixture;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
@@ -29,10 +30,10 @@ import org.apache.maven.plugins.surefire.report.SurefireReportParser;
 
 import static java.lang.Double.parseDouble;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  *
@@ -78,20 +79,20 @@ public final class HelperAssertions {
 
     public static void assertTestSuiteResults(
             int total, int errors, int failures, int skipped, IntegrationTestSuiteResults actualSuite) {
-        assertEquals("wrong number of tests", total, actualSuite.getTotal());
-        assertEquals("wrong number of errors", errors, actualSuite.getErrors());
-        assertEquals("wrong number of failures", failures, actualSuite.getFailures());
-        assertEquals("wrong number of skipped", skipped, actualSuite.getSkipped());
+        assertEquals(total, actualSuite.getTotal(), "wrong number of tests");
+        assertEquals(errors, actualSuite.getErrors(), "wrong number of errors");
+        assertEquals(failures, actualSuite.getFailures(), "wrong number of failures");
+        assertEquals(skipped, actualSuite.getSkipped(), "wrong number of skipped");
     }
 
     public static void assertTestSuiteResults(int total, IntegrationTestSuiteResults actualSuite) {
-        assertEquals("wrong number of tests", total, actualSuite.getTotal());
+        assertEquals(total, actualSuite.getTotal(), "wrong number of tests");
     }
 
     public static void assertTestSuiteResults(
             int total, int errors, int failures, int skipped, int flakes, IntegrationTestSuiteResults actualSuite) {
         assertTestSuiteResults(total, errors, failures, skipped, actualSuite);
-        assertEquals("wrong number of flaky tests", flakes, actualSuite.getFlakes());
+        assertEquals(flakes, actualSuite.getFlakes(), "wrong number of flaky tests");
     }
 
     public static IntegrationTestSuiteResults parseTestResults(File... testDirs) {
@@ -108,7 +109,7 @@ public final class HelperAssertions {
      * Converts a list of ReportTestSuites into an IntegrationTestSuiteResults object, suitable for summary assertions
      */
     public static IntegrationTestSuiteResults parseReportList(List<ReportTestSuite> reports) {
-        assertFalse("No reports!", reports.isEmpty());
+        assertFalse(reports.isEmpty(), "No reports!");
         int total = 0, errors = 0, failures = 0, skipped = 0, flakes = 0;
         for (ReportTestSuite report : reports) {
             total += report.getNumberOfTests();
@@ -124,13 +125,15 @@ public final class HelperAssertions {
         List<File> reportsDirs = new ArrayList<>();
         for (File testDir : testDirs) {
             File reportsDir = new File(testDir, "target/surefire-reports");
-            assertTrue("Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists());
+            assertTrue(reportsDir.exists(), "Reports directory is missing: " + reportsDir.getAbsolutePath());
             reportsDirs.add(reportsDir);
         }
         ConsoleLogger logger = new PrintStreamLogger(System.out);
         SurefireReportParser parser = new SurefireReportParser(reportsDirs, logger);
         try {
-            return parser.parseXMLReportFiles();
+            List<ReportTestSuite> suites = parser.parseXMLReportFiles();
+            suites.sort(Comparator.comparing(ReportTestSuite::getLastModified));
+            return suites;
         } catch (Exception e) {
             throw new RuntimeException("Couldn't parse XML reports", e);
         }
@@ -140,7 +143,7 @@ public final class HelperAssertions {
         List<File> reportsDirs = new ArrayList<>();
         for (File testDir : testDirs) {
             File reportsDir = new File(testDir, "target/failsafe-reports");
-            assertTrue("Reports directory is missing: " + reportsDir.getAbsolutePath(), reportsDir.exists());
+            assertTrue(reportsDir.exists(), "Reports directory is missing: " + reportsDir.getAbsolutePath());
             reportsDirs.add(reportsDir);
         }
         ConsoleLogger logger = new PrintStreamLogger(System.out);
@@ -154,17 +157,17 @@ public final class HelperAssertions {
 
     public static void assumeJavaVersion(double expectedVersion) {
         String thisVersion = System.getProperty("java.specification.version");
-        assumeTrue("java.specification.version: " + thisVersion, parseDouble(thisVersion) >= expectedVersion);
+        assumeTrue(parseDouble(thisVersion) >= expectedVersion, "java.specification.version: " + thisVersion);
     }
 
     public static void assumeJavaMaxVersion(double expectedMaxVersion) {
         String thisVersion = System.getProperty("java.specification.version");
-        assumeTrue("java.specification.version: " + thisVersion, parseDouble(thisVersion) <= expectedMaxVersion);
+        assumeTrue(parseDouble(thisVersion) <= expectedMaxVersion, "java.specification.version: " + thisVersion);
     }
 
     public static void assumeJavaVersionExcluded(double excludedVersion) {
         String thisVersion = System.getProperty("java.specification.version");
-        assumeTrue("java.specification.version: " + thisVersion, parseDouble(thisVersion) != excludedVersion);
+        assumeTrue(parseDouble(thisVersion) != excludedVersion, "java.specification.version: " + thisVersion);
     }
 
     public static String convertUnicodeToUTF8(String unicode) {

@@ -21,25 +21,25 @@ package org.apache.maven.plugins.surefire.report;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  *
  */
 @SuppressWarnings("checkstyle:magicnumber")
-public class ReportTestSuiteTest extends TestCase {
+class ReportTestSuiteTest {
     private ReportTestSuite tSuite;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @BeforeEach
+    void setUp() {
         tSuite = new ReportTestSuite();
     }
 
-    public void testSetTestCases() {
+    @Test
+    void testSetTestCases() {
         ReportTestCase tCase = new ReportTestCase();
 
         List<ReportTestCase> tCaseList = new ArrayList<>();
@@ -51,43 +51,50 @@ public class ReportTestSuiteTest extends TestCase {
         assertEquals(tCase, tSuite.getTestCases().get(0));
     }
 
-    public void testSetNumberedOfErrors() {
+    @Test
+    void testSetNumberedOfErrors() {
         tSuite.setNumberOfErrors(9);
 
         assertEquals(9, tSuite.getNumberOfErrors());
     }
 
-    public void testSetNumberOfFailures() {
+    @Test
+    void testSetNumberOfFailures() {
         tSuite.setNumberOfFailures(10);
 
         assertEquals(10, tSuite.getNumberOfFailures());
     }
 
-    public void testSetNumberOfSkipped() {
+    @Test
+    void testSetNumberOfSkipped() {
         tSuite.setNumberOfSkipped(5);
 
         assertEquals(5, tSuite.getNumberOfSkipped());
     }
 
-    public void testSetNumberOfTests() {
+    @Test
+    void testSetNumberOfTests() {
         tSuite.setNumberOfTests(11);
 
         assertEquals(11, tSuite.getNumberOfTests());
     }
 
-    public void testSetName() {
+    @Test
+    void testSetName() {
         tSuite.setName("Suite Name");
 
         assertEquals("Suite Name", tSuite.getName());
     }
 
-    public void testSetPackageName() {
+    @Test
+    void testSetPackageName() {
         tSuite.setPackageName("Suite Package Name");
 
         assertEquals("Suite Package Name", tSuite.getPackageName());
     }
 
-    public void testSetTimeElapsed() {
+    @Test
+    void testSetTimeElapsed() {
         tSuite.setTimeElapsed(.06f);
 
         assertEquals(.06f, tSuite.getTimeElapsed(), 0.0);

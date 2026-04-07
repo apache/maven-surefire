@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
@@ -28,31 +29,44 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLoggerDecorator;
 import org.apache.maven.plugin.surefire.log.api.PrintStreamLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
-import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.getMethod;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.powermock.reflect.Whitebox.getInternalState;
 
 /**
  *
  */
 public class CommonReflectorTest {
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return (T) field.get(target);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private StartupReportConfiguration startupReportConfiguration;
     private ConsoleLogger consoleLogger;
     private File reportsDirectory;
@@ -61,7 +75,7 @@ public class CommonReflectorTest {
     private SurefireConsoleOutputReporter consoleOutputReporter = new SurefireConsoleOutputReporter();
     private SurefireStatelessTestsetInfoReporter infoReporter = new SurefireStatelessTestsetInfoReporter();
 
-    @Before
+    @BeforeEach
     public void setup() {
         File target = new File(System.getProperty("user.dir"), "target");
         reportsDirectory = new File(target, "tmp6");
@@ -85,6 +99,7 @@ public class CommonReflectorTest {
                 false,
                 true,
                 true,
+                false,
                 xmlReporter,
                 consoleOutputReporter,
                 infoReporter,
@@ -127,10 +142,10 @@ public class CommonReflectorTest {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         ConsoleLogger logger = spy(new PrintStreamLogger(System.out));
         Object mirror = CommonReflector.createConsoleLogger(logger, cl);
-        MatcherAssert.assertThat(mirror, is(notNullValue()));
-        MatcherAssert.assertThat(mirror.getClass().getInterfaces()[0].getName(), is(ConsoleLogger.class.getName()));
-        MatcherAssert.assertThat(mirror, is(not(sameInstance((Object) logger))));
-        MatcherAssert.assertThat(mirror, is(instanceOf(ConsoleLoggerDecorator.class)));
+        assertThat(mirror).isNotNull();
+        assertThat(mirror.getClass().getInterfaces()[0].getName()).isEqualTo(ConsoleLogger.class.getName());
+        assertThat(mirror).isNotSameAs(logger);
+        assertThat(mirror).isInstanceOf(ConsoleLoggerDecorator.class);
         invokeMethodWithArray(mirror, getMethod(mirror, "info", String.class), "Hi There!");
         verify(logger, times(1)).info("Hi There!");
     }

@@ -22,29 +22,51 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.runorder.RunEntryStatistics;
 import org.apache.maven.surefire.api.runorder.RunEntryStatisticsMap;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.api.util.internal.ClassMethod;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.powermock.reflect.Whitebox.getInternalState;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Kristian Rosenvold
  */
-public class RunEntryStatisticsMapTest extends TestCase {
+public class RunEntryStatisticsMapTest {
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getInternalState(Object target, String fieldName) {
+        try {
+            Class<?> clazz = target.getClass();
+            while (clazz != null) {
+                try {
+                    Field field = clazz.getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    return (T) field.get(target);
+                } catch (NoSuchFieldException e) {
+                    clazz = clazz.getSuperclass();
+                }
+            }
+            throw new NoSuchFieldException(fieldName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     public void testPrioritizedClassRuntime() {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromStream(getStatisticsFile());
         final List<Class<?>> list = Arrays.asList(A.class, B.class, C.class);
@@ -55,6 +77,7 @@ public class RunEntryStatisticsMapTest extends TestCase {
         assertEquals(A.class, prioritizedTestsClassRunTime.get(2));
     }
 
+    @Test
     public void testPrioritizedFailureFirst() {
         final RunEntryStatisticsMap runEntryStatisticsMap = RunEntryStatisticsMap.fromStream(getStatisticsFile());
         final List<Class<?>> list = Arrays.asList(A.class, B.class, NewClass.class, C.class);
@@ -73,6 +96,7 @@ public class RunEntryStatisticsMapTest extends TestCase {
         return new ByteArrayInputStream(content.getBytes(UTF_8));
     }
 
+    @Test
     @SuppressWarnings("checkstyle:magicnumber")
     public void testSerializeClass() throws Exception {
         File data = SureFireFileManager.createTempFile("surefire-unit", "test");
@@ -86,6 +110,7 @@ public class RunEntryStatisticsMapTest extends TestCase {
         assertThat(lines).containsSequence("1,42,abc,");
     }
 
+    @Test
     @SuppressWarnings("checkstyle:magicnumber")
     public void testDeserializeClass() throws Exception {
         File data = SureFireFileManager.createTempFile("surefire-unit", "test");
@@ -102,6 +127,7 @@ public class RunEntryStatisticsMapTest extends TestCase {
         assertThat(statistics.getSuccessfulBuilds()).isEqualTo(1);
     }
 
+    @Test
     @SuppressWarnings("checkstyle:magicnumber")
     public void testSerialize() throws Exception {
         File data = SureFireFileManager.createTempFile("surefire-unit", "test");
@@ -138,6 +164,7 @@ public class RunEntryStatisticsMapTest extends TestCase {
         assertThat(lines).containsSequence("0,27,abc,willFail", "2,52,abc,method1", "2,110,abc,method3");
     }
 
+    @Test
     @SuppressWarnings("checkstyle:magicnumber")
     public void testMultiLineTestMethodName() throws IOException {
         File data = SureFireFileManager.createTempFile("surefire-unit", "test");
@@ -160,6 +187,7 @@ public class RunEntryStatisticsMapTest extends TestCase {
         assertThat(lines).containsSequence("1,42,abc,line1", " line2", "  line3");
     }
 
+    @Test
     @SuppressWarnings("checkstyle:magicnumber")
     public void testCombinedMethodNames() throws IOException {
         File data = SureFireFileManager.createTempFile("surefire-unit", "test");

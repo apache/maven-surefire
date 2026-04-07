@@ -19,11 +19,12 @@
 package org.apache.maven.plugin.surefire.report;
 
 import org.apache.maven.surefire.api.report.ReportEntry;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import static org.apache.maven.surefire.shared.utils.logging.MessageUtils.buffer;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,8 +37,8 @@ import static org.mockito.Mockito.when;
 /**
  * tests for {@link TestSetStats}.
  */
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"org.jacoco.agent.rt.*", "com.vladium.emma.rt.*"})
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class TestSetStatsTest {
     @Mock
     private ReportEntry reportEntry;

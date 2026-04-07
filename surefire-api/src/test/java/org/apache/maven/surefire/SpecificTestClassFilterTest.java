@@ -18,13 +18,16 @@
  */
 package org.apache.maven.surefire;
 
-import junit.framework.TestCase;
 import org.apache.maven.surefire.api.filter.SpecificTestClassFilter;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
  */
-public class SpecificTestClassFilterTest extends TestCase {
+public class SpecificTestClassFilterTest {
+    @Test
     public void testMatchSingleCharacterWildcard() {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
                 new String[] {"org/apache/maven/surefire/api/filter/?pecificTestClassFilter.class"});
@@ -32,6 +35,7 @@ public class SpecificTestClassFilterTest extends TestCase {
         assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 
+    @Test
     public void testMatchSingleSegmentWordWildcard() {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
                 new String[] {"org/apache/maven/surefire/api/filter/*TestClassFilter.class"});
@@ -39,6 +43,7 @@ public class SpecificTestClassFilterTest extends TestCase {
         assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 
+    @Test
     public void testMatchMultiSegmentWildcard() {
         SpecificTestClassFilter filter =
                 new SpecificTestClassFilter(new String[] {"org/**/SpecificTestClassFilter.class"});
@@ -46,6 +51,7 @@ public class SpecificTestClassFilterTest extends TestCase {
         assertTrue(filter.accept(SpecificTestClassFilter.class));
     }
 
+    @Test
     public void testMatchSingleSegmentWildcard() {
         SpecificTestClassFilter filter = new SpecificTestClassFilter(
                 new String[] {"org/*/maven/surefire/api/filter/SpecificTestClassFilter.class"});
