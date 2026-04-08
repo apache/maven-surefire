@@ -602,6 +602,62 @@ public class RunListenerAdapterTest {
         assertEquals("some display name", value.getNameText());
     }
 
+    @Test
+    public void notifiedWithActualTestClassNameWhenRunInsideSuite() throws Exception {
+        // Build a Suite hierarchy: SuiteEngine -> SuiteClass -> JupiterEngine -> TestClass -> method
+        // This simulates @Suite @SelectPackages("...") running tests from another class.
+        EngineDescriptor suiteEngine =
+                new EngineDescriptor(UniqueId.forEngine("junit-platform-suite"), "JUnit Platform Suite");
+
+        TestDescriptor suiteClass = new ClassTestDescriptor(
+                suiteEngine.getUniqueId().append("suite", MySuiteClass.class.getName()),
+                MySuiteClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        suiteEngine.addChild(suiteClass);
+
+        TestDescriptor jupiterEngine =
+                new AbstractTestDescriptor(
+                        suiteClass.getUniqueId().append("engine", "junit-jupiter"), "JUnit Jupiter") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        suiteClass.addChild(jupiterEngine);
+
+        TestDescriptor testClass = new ClassTestDescriptor(
+                jupiterEngine.getUniqueId().append("class", MyTestClass.class.getName()),
+                MyTestClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        jupiterEngine.addChild(testClass);
+
+        TestDescriptor method = new TestMethodTestDescriptor(
+                testClass.getUniqueId().append("method", MY_TEST_METHOD_NAME),
+                MyTestClass.class,
+                MyTestClass.class.getDeclaredMethod(MY_TEST_METHOD_NAME),
+                Collections::emptyList,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        testClass.addChild(method);
+
+        TestPlan plan = TestPlan.from(false, singletonList(suiteEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(suiteEngine));
+        adapter.executionStarted(TestIdentifier.from(suiteClass));
+        adapter.executionStarted(TestIdentifier.from(jupiterEngine));
+        adapter.executionStarted(TestIdentifier.from(testClass));
+        adapter.executionStarted(TestIdentifier.from(method));
+
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        adapter.executionFinished(TestIdentifier.from(method), failed(new AssertionError("fail")));
+        verify(listener).testFailed(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        // The source name must be the actual test class, not the Suite class
+        assertEquals(MyTestClass.class.getName(), entry.getSourceName());
+        assertEquals(MY_TEST_METHOD_NAME, entry.getName());
+    }
+
     private static TestIdentifier newMethodIdentifier() throws Exception {
         return TestIdentifier.from(newMethodDescriptor());
     }
@@ -719,6 +775,8 @@ public class RunListenerAdapterTest {
         @org.junit.jupiter.api.Test
         void myNamedTestMethod() {}
     }
+
+    private static class MySuiteClass {}
 
     static class TestMethodTestDescriptorWithDisplayName extends AbstractTestDescriptor {
         private TestMethodTestDescriptorWithDisplayName(
