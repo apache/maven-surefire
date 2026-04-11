@@ -113,6 +113,8 @@
     <project.build.outputTimestamp>2026-02-18T05:18:14Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
     <junit.version>5.14.1</junit.version>
+    <!-- doxia-sitetools 2.1.0 adds <mermaid> tag support in site.xml and bundled mermaid.js rendering -->
+    <doxia.sitetools.version>2.1.0</doxia.sitetools.version>
   </properties>
 
   <dependencyManagement>
@@ -269,6 +271,26 @@
         <artifactId>surefire-shared-utils</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-site-renderer</artifactId>
+        <version>${doxia.sitetools.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-integration-tools</artifactId>
+        <version>${doxia.sitetools.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-site-model</artifactId>
+        <version>${doxia.sitetools.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.doxia</groupId>
+        <artifactId>doxia-skin-model</artifactId>
+        <version>${doxia.sitetools.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -334,6 +356,28 @@
         </plugin>
         <plugin>
           <artifactId>maven-plugin-plugin</artifactId>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-site-renderer</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-integration-tools</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-site-model</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-skin-model</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+          </dependencies>
           <executions>
             <execution>
               <id>help-mojo</id>
@@ -342,6 +386,38 @@
               </goals>
             </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>4.0.0-M16</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-site-renderer</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-integration-tools</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-site-model</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.maven.doxia</groupId>
+              <artifactId>doxia-skin-model</artifactId>
+              <version>${doxia.sitetools.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-lang3</artifactId>
+              <version>3.20.0</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
