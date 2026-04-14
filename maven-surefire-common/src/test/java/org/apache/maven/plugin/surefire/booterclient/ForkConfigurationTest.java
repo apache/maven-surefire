@@ -30,6 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.surefire.JdkAttributes;
@@ -123,6 +125,7 @@ public class ForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -177,6 +180,7 @@ public class ForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -287,6 +291,7 @@ public class ForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -460,6 +465,83 @@ public class ForkConfigurationTest {
                 platform,
                 new NullConsoleLogger(),
                 mock(ForkNodeFactory.class));
+    }
+
+    /**
+     * Verifies that a relative {@code additionalClasspathElement} (e.g. {@code ../classes}, which is
+     * correct relative to the fork's {@code workingDirectory}) ends up at the right absolute location
+     * inside the manifest JAR's {@code Class-Path}, regardless of where the manifest JAR itself is
+     * stored.
+     *
+     * <p>Without the fix, Surefire wrote the raw relative token {@code ../classes} into the manifest,
+     * where the JVM resolved it against the manifest-JAR directory rather than against the fork's
+     * working directory – silently pointing at the wrong location.
+     */
+    @Test
+    public void testRelativeClasspathElementResolvedAgainstWorkingDirectory()
+            throws IOException, SurefireBooterForkException {
+        // Layout:
+        //   basedir/build-test-dir-1/bin/     <- workingDirectory
+        //   basedir/build-test-dir-1/classes/ <- the directory we want on the classpath
+        File forkDir = new File(basedir, "build-test-dir-1");
+        File workingDir = new File(forkDir, "bin");
+        File classesDir = new File(forkDir, "classes");
+        assertTrue(workingDir.mkdirs());
+        assertTrue(classesDir.mkdirs());
+
+        // Relative element as a user would write in pom.xml <additionalClasspathElement>../classes
+        // The JVM resolves -cp entries against its working directory, so ../classes from bin/ == classes/.
+        File cpElement = classesDir;
+        List<String> cp = singletonList(cpElement.getAbsolutePath());
+        ClasspathConfiguration cpConfig =
+                new ClasspathConfiguration(new Classpath(cp), emptyClasspath(), emptyClasspath(), true, true);
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration(true, true);
+        StartupConfiguration startup =
+                new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
+
+        ForkConfiguration config = getForkConfiguration(workingDir.getCanonicalFile());
+        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
+                config.createCommandLine(startup, 1, getTempDirectory());
+
+        // The command line must use -jar (manifest-only JAR mode)
+        String line = join(" ", cli.getCommandline());
+        assertThat(line).contains("-jar");
+
+        // Extract the path of the manifest JAR from the command line
+        String[] parts = cli.getCommandline();
+        String jarPath = null;
+        for (int i = 0; i < parts.length - 1; i++) {
+            if ("-jar".equals(parts[i])) {
+                jarPath = parts[i + 1];
+                break;
+            }
+        }
+        assertThat(jarPath).isNotNull();
+
+        // Read the Class-Path from the manifest
+        try (JarFile jar = new JarFile(new File(jarPath))) {
+            Manifest manifest = jar.getManifest();
+            String classPath = manifest.getMainAttributes().getValue("Class-Path");
+            assertThat(classPath).isNotNull();
+
+            // The Class-Path entry for classesDir must, when resolved against the manifest JAR's
+            // parent directory, yield the canonical path of classesDir.
+            File manifestJar = new File(jarPath);
+            for (String entry : classPath.split(" ")) {
+                if (entry.isEmpty()) {
+                    continue;
+                }
+                // entries are URI-encoded; decode and resolve against manifest-jar parent
+                String decoded = java.net.URLDecoder.decode(entry.replace("+", "%2B"), "UTF-8");
+                File resolved = new File(manifestJar.getParentFile(), decoded.replace('/', File.separatorChar));
+                if (resolved.getCanonicalPath().equals(classesDir.getCanonicalPath())
+                        || resolved.getCanonicalPath().equals(classesDir.getCanonicalPath() + File.separator)) {
+                    return; // found – test passes
+                }
+            }
+            fail("Class-Path in manifest JAR does not resolve to " + classesDir.getCanonicalPath()
+                    + "; actual Class-Path: " + classPath);
+        }
     }
 
     // based on http://stackoverflow.com/questions/2591083/getting-version-of-java-in-runtime

@@ -101,10 +101,12 @@ public final class JarManifestForkConfiguration extends AbstractClasspathForkCon
             @Nonnull Commandline cli,
             @Nonnull String booterThatHasMainMethod,
             @Nonnull StartupConfiguration config,
+            @Nonnull File workingDirectory,
             @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException {
         try {
-            File jar = createJar(toCompleteClasspath(config), booterThatHasMainMethod, dumpLogDirectory);
+            List<String> classpath = toCompleteClasspath(config);
+            File jar = createJar(classpath, booterThatHasMainMethod, workingDirectory, dumpLogDirectory);
             cli.createArg().setValue("-jar");
             cli.createArg().setValue(escapeToPlatformPath(jar.getAbsolutePath()));
         } catch (IOException e) {
@@ -116,20 +118,25 @@ public final class JarManifestForkConfiguration extends AbstractClasspathForkCon
      * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
-     * @param classPath      List&lt;String&gt; of all classpath elements
-     * @param startClassName the class name to start (main-class)
+     * @param classPath        List&lt;String&gt; of all classpath elements
+     * @param startClassName   the class name to start (main-class)
+     * @param workingDirectory the fork's working directory; relative classpath elements are resolved against it
      * @return file of the jar
      * @throws IOException when a file operation fails
      */
     @Nonnull
     private File createJar(
-            @Nonnull List<String> classPath, @Nonnull String startClassName, @Nonnull File dumpLogDirectory)
+            @Nonnull List<String> classPath,
+            @Nonnull String startClassName,
+            @Nonnull File workingDirectory,
+            @Nonnull File dumpLogDirectory)
             throws IOException {
         File file = TempFileManager.instance(getTempDirectory()).createTempFile("surefirebooter", ".jar");
         if (!isDebug()) {
             file.deleteOnExit();
         }
         Path parent = file.getParentFile().toPath();
+        Path workingDirectoryPath = workingDirectory.toPath().toAbsolutePath().normalize();
         OutputStream fos = new BufferedOutputStream(new FileOutputStream(file), 64 * 1024);
 
         try (ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
@@ -147,7 +154,13 @@ public final class JarManifestForkConfiguration extends AbstractClasspathForkCon
             // the end of directory entries - otherwise the jvm will ignore them.
             StringBuilder cp = new StringBuilder();
             for (Iterator<String> it = classPath.iterator(); it.hasNext(); ) {
-                Path classPathElement = Paths.get(it.next());
+                Path rawElement = Paths.get(it.next());
+                // Relative classpath elements are resolved against the fork's working directory so that
+                // the resulting manifest-JAR entry resolves to the same location as a direct -cp argument
+                // would (where the JVM resolves relative entries against its working directory).
+                Path classPathElement = rawElement.isAbsolute()
+                        ? rawElement
+                        : workingDirectoryPath.resolve(rawElement).normalize();
                 ClasspathElementUri classpathElementUri =
                         toClasspathElementUri(parent, classPathElement, dumpLogDirectory, dumpError);
                 // too many errors in dump file with the same root cause may slow down the Boot Manifest-JAR startup
