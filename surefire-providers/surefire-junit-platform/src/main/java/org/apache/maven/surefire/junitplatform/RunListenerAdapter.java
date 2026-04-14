@@ -311,7 +311,29 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 // use deprecated method
                 testPlan.getTestIdentifier(
                         testIdentifier.getParentIdObject().get().toString());
-        return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
+        if (!parent.getParentIdObject().isPresent()) {
+            return testIdentifier;
+        }
+        // Stop traversing at engine boundaries. When a test runs inside a Suite,
+        // the hierarchy contains a nested engine (e.g., junit-jupiter under junit-platform-suite).
+        // Without this check, tests would be incorrectly attributed to the Suite class
+        // instead of their actual test class.
+        if (isEngineIdentifier(parent)) {
+            return testIdentifier;
+        }
+        return findTopParent(parent);
+    }
+
+    private static boolean isEngineIdentifier(TestIdentifier testIdentifier) {
+        String uniqueId = testIdentifier.getUniqueId();
+        int lastOpen = uniqueId.lastIndexOf('[');
+        if (lastOpen >= 0) {
+            int colon = uniqueId.indexOf(':', lastOpen);
+            if (colon > lastOpen) {
+                return "engine".equals(uniqueId.substring(lastOpen + 1, colon));
+            }
+        }
+        return false;
     }
 
     /**

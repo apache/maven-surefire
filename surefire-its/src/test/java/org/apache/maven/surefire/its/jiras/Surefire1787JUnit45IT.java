@@ -143,7 +143,7 @@ public class Surefire1787JUnit45IT extends SurefireJUnit4IntegrationTestCase {
                 .verifyTextInLog("Running pkg.domain.AxTest")
                 .assertThatLogLine(containsString("Running pkg.domain.BxTest"), equalTo(0));
 
-        TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-pkg.JUnit5Tests.xml");
+        TestFile xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-pkg.domain.AxTest.xml");
         xmlReportFile.assertFileExists();
 
         Source source = Input.fromFile(xmlReportFile.getFile()).build();
