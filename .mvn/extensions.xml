@@ -17,11 +17,11 @@
   ~ under the License.
   -->
 <extensions>
-  <!--extension>
+  <extension>
     <groupId>eu.maveniverse.maven.mimir</groupId>
     <artifactId>extension3</artifactId>
     <version>0.11.2</version>
-  </extension-->
+  </extension>
   <!--
     cannot use the cache because of shaded artifact surefire-shared-utils
     the primary artifact is in the cache but the shaded one is not replacing it
@@ -31,10 +31,9 @@
 <!--    <artifactId>maven-build-cache-extension</artifactId>-->
 <!--    <version>1.2.2</version>-->
 <!--  </extension>-->
-  <!-- disable until we get the multi thread build working better -->
-<!--  <extension>-->
-<!--    <groupId>eu.maveniverse.maven.turbo-builder</groupId>-->
-<!--    <artifactId>maven-turbo-builder</artifactId>-->
-<!--    <version>0.13</version>-->
-<!--  </extension>-->
+  <extension>
+    <groupId>eu.maveniverse.maven.turbo-builder</groupId>
+    <artifactId>maven-turbo-builder</artifactId>
+    <version>0.13</version>
+  </extension>
 </extensions>
