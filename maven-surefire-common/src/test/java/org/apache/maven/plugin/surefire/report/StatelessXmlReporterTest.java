@@ -70,7 +70,51 @@ import static org.mockito.Mockito.when;
  *
  */
 @SuppressWarnings({"ResultOfMethodCallIgnored", "checkstyle:magicnumber"})
+HEAD
+public class StatelessXmlReporterTest extends TestCase {
+    public void testSkippedTestcaseIsStillWritten() throws Exception {
+        // Create a skipped test entry
+        ReportEntry reportEntry =
+            new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, "skippedTest", null, 10);
+
+        WrappedReportEntry skippedEntry =
+            new WrappedReportEntry(reportEntry, SKIPPED, 10, null, null, systemProps());
+
+        stats.testSucceeded(skippedEntry);
+
+        StatelessXmlReporter reporter = new StatelessXmlReporter(
+            reportDir,
+            null,
+            false,
+            0,
+            new ConcurrentHashMap<>(),
+            XSD,
+            "3.0.2",
+            false,
+            false,
+            false,
+            false,
+            true,
+            true);
+
+        reporter.testSetCompleted(skippedEntry, stats);
+
+        expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
+
+        FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
+
+        Xpp3Dom testSuite = Xpp3DomBuilder.build(new InputStreamReader(fileInputStream, UTF_8));
+
+        Xpp3Dom[] testcases = testSuite.getChildren("testcase");
+
+        // 🔥 THIS IS THE KEY ASSERTION
+        assertEquals(1, testcases.length);
+
+        assertEquals("skippedTest", testcases[0].getAttribute("name"));
+    }
+
 public class StatelessXmlReporterTest {
+ origin/master
     private static final String XSD =
             "https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd";
     private static final String TEST_ONE = "aTestMethod";
