@@ -36,13 +36,15 @@ Communication Channels used between the Maven Process and Surefire Process
 
 * forkNode
 
-  The configuration is done by using only one configuration parameter <<<forkNode>>>.
+  The configuration is done by using only one configuration {{{../test-mojo.html#forkNode}parameter <<<forkNode>>>}}.
 
 * The TCP/IP communication channel
 
   The ${thisPlugin} plugin uses process pipes by default. The implementation class for default configuration
-  is <<<org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory>>> and it does not have to be specified.
-  The TCP/IP channel can be selected as follows and the implementation class has to be specified:
+  is {{{../../maven-surefire-common/apidocs/org/apache/maven/plugin/surefire/extensions/LegacyForkNodeFactory.html}<<<org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory>>>}}
+  and it does not have to be specified.
+  The TCP/IP channel can be selected as follows and the implementation class has to be specified
+  {{{../../maven-surefire-common/apidocs/org/apache/maven/plugin/surefire/extensions/SurefireForkNodeFactory.html}as <<<SurefireForkNodeFactory>>>}}:
 
 +---+
 <project>
@@ -68,7 +70,7 @@ Communication Channels used between the Maven Process and Surefire Process
 * Custom implementation
 
   The custom implementation involves two implementations. The first is used by the Maven process and there you
-  should implement the interface <<<org.apache.maven.surefire.extensions.ForkNodeFactory>>>, use the implementation
+  should implement the {{{../../surefire-extensions-api/apidocs/org/apache/maven/surefire/extensions/ForkNodeFactory.html}interface <<<org.apache.maven.surefire.extensions.ForkNodeFactory>>>}}, use the implementation
   in a dependency <<<your-extension-api-impl-artifactid>>> declared below the plugin and configuration should
   specify fully qualified class name of your custom <<<ForkNodeFactory>>> in the attribute <<<implementation>>>.
 
