@@ -654,6 +654,45 @@ public class StatelessXmlReporterTest {
         reporter.testSetCompleted(testReport, stats);
     }
 
+    @Test
+    public void testClassnameUsesActualClassNameWhenPhrasedClassNameDisabled() throws IOException {
+        String actualClassName = "MyTest";
+        String displayName = "NewName";
+
+        ReportEntry reportEntry =
+                new SimpleReportEntry(NORMAL_RUN, 0L, actualClassName, displayName, TEST_ONE, null, 12);
+        WrappedReportEntry testSetReportEntry =
+                new WrappedReportEntry(reportEntry, SUCCESS, 1771085631L, 12, null, null, systemProps());
+        expectedReportFile = new File(reportDir, "TEST-" + actualClassName + ".xml");
+
+        stats.testSucceeded(testSetReportEntry);
+
+        StatelessXmlReporter reporter = new StatelessXmlReporter(
+                reportDir,
+                null,
+                false,
+                0,
+                new ConcurrentHashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false, // phrasedClassName = false
+                false,
+                true,
+                true,
+                false);
+        reporter.testSetCompleted(testSetReportEntry, stats);
+
+        FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
+        Xpp3Dom testSuite = Xpp3DomBuilder.build(new InputStreamReader(fileInputStream, UTF_8));
+        Xpp3Dom testcase = testSuite.getChildren("testcase")[0];
+        assertEquals(
+                actualClassName,
+                testcase.getAttribute("classname"),
+                "classname should be the actual class name, not the @DisplayName value");
+    }
+
     private boolean defaultCharsetSupportsSpecialChar() {
         // some charsets are not able to deal with \u0115 on both ways of the conversion
         return "\u0115\u00DC".equals(new String("\u0115\u00DC".getBytes()));
