@@ -19,8 +19,12 @@
   ~ under the License.
   -->
 
-<site xmlns="http://maven.apache.org/SITE/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd">
+<site xmlns="http://maven.apache.org/SITE/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SITE/2.1.0 https://maven.apache.org/xsd/site-2.1.0.xsd">
+
+  <mermaid>
+    <externalJsUrl integrity="sha512-/yppbXbmq0NnMz+OhfzrvQDSePwPAixE8Ywi8U7KayJPv5ZFVYo7bzBgkR5V6OQ/8YHEh/gPMarWD+6ZIuNj5A==" otherAttributes="fetchpriority=&quot;high&quot;">https://cdn.jsdelivr.net/npm/mermaid@11.12.3/dist/mermaid.min.js</externalJsUrl>
+  </mermaid>
 
   <body>
     <menu name="Overview">
