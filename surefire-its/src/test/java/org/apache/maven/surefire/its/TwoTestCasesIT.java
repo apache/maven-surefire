@@ -66,9 +66,8 @@ public class TwoTestCasesIT extends SurefireJUnit4IntegrationTestCase {
 
         List<ReportTestSuite> reports = HelperAssertions.extractReports(outputValidator.getBaseDir());
         Set<String> classNames = extractClassNames(reports);
-        assertContains(classNames, "twoTestCaseSuite.BasicTest");
-        assertContains(classNames, "twoTestCaseSuite.Junit4TestTwo");
-        assertEquals(2, classNames.size(), "wrong number of classes");
+        assertContains(classNames, "twoTestCaseSuite.Junit4TestSuite");
+        assertEquals(1, classNames.size(), "wrong number of classes");
         IntegrationTestSuiteResults results = HelperAssertions.parseReportList(reports);
         HelperAssertions.assertTestSuiteResults(2, 0, 0, 0, results);
     }

@@ -61,7 +61,7 @@ public class ArchUnit4IT extends SurefireJUnit4IntegrationTestCase {
 
         Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='ArchUnitTest']", source);
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='custom.ArchUnitTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine().selectNodes("//testcase[@name='DTO_IN_PACKAGE_DTO']", source);

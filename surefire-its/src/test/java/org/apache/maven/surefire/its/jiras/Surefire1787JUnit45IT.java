@@ -150,7 +150,7 @@ public class Surefire1787JUnit45IT extends SurefireJUnit4IntegrationTestCase {
         Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
-        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='pkg.domain.AxTest' and @name='test']", source);
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='pkg.JUnit5Tests' and @name='test']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }
 }

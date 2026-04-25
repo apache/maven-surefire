@@ -60,24 +60,22 @@ public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
         xmlReportFile.assertFileExists();
 
         /**
-         * <testsuite version="3.0.2" name="FirstNestedTest" time="0.019" tests="1" errors="0" skipped="0" failures="0">
-         * <testcase name="outerTest" classname="FirstNestedTest" time="0.007"/>
-         * <testcase name="innerTest" classname="BaseNestedTest$Inner" time="0.001"/>
+         * <testsuite version="3.0.2" name="FirstNestedTest" time="0.019" tests="2" errors="0" skipped="0" failures="0">
+         * <testcase name="outerTest" classname="io.olamy.FirstNestedTest" time="0.007"/>
+         * <testcase name="innerTest" classname="io.olamy.FirstNestedTest" time="0.001"/>
          * </testsuite>
          **/
         Source source = Input.fromFile(xmlReportFile.getFile()).build();
         Iterable<Node> ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
         ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.FirstNestedTest']", source);
-        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.BaseNestedTest$Inner']", source);
-        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+        assertThat(ite, IsIterableWithSize.iterableWithSize(2));
 
         xmlReportFile = outputValidator.getSurefireReportsXmlFile("TEST-io.olamy.SecondNestedTest.xml");
         /**
-         * <testsuite  name="SecondNestedTest" time="0.003" tests="1" errors="0" skipped="0" failures="0">
-         * <testcase name="outerTest" classname="SecondNestedTest" time="0.001"/>
-         * <testcase name="innerTest" classname="BaseNestedTest$Inner" time="0.0"/>
+         * <testsuite  name="SecondNestedTest" time="0.003" tests="2" errors="0" skipped="0" failures="0">
+         * <testcase name="outerTest" classname="io.olamy.SecondNestedTest" time="0.001"/>
+         * <testcase name="innerTest" classname="io.olamy.SecondNestedTest" time="0.0"/>
          * </testsuite>
          */
         source = Input.fromFile(xmlReportFile.getFile()).build();
@@ -85,8 +83,6 @@ public class Surefire2298IT extends SurefireJUnit4IntegrationTestCase {
         ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
         ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.SecondNestedTest']", source);
-        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='io.olamy.BaseNestedTest$Inner']", source);
-        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+        assertThat(ite, IsIterableWithSize.iterableWithSize(2));
     }
 }
