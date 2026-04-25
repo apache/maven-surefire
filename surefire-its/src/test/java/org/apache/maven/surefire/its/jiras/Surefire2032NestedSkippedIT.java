@@ -52,37 +52,35 @@ public class Surefire2032NestedSkippedIT extends SurefireJUnit4IntegrationTestCa
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
-                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']",
+                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest' and skipped]", source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest' and skipped]", source);
+        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
+
+        ite = new JAXPXPathEngine()
+                .selectNodes(
+                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
                         source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
-                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']",
+                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
                         source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
-                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
+                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest' and not(skipped)]",
                         source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
 
         ite = new JAXPXPathEngine()
                 .selectNodes(
-                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$OrangeTaggedDisabledTest']/skipped[@message='class jira2032.DisabledNestedTest$OrangeTaggedDisabledTest is @Disabled']",
-                        source);
-        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@name='test1' and @classname='jira2032.DisabledNestedTest$RedTaggedEnabledTest']",
-                        source);
-        assertThat(ite, IsIterableWithSize.iterableWithSize(1));
-
-        ite = new JAXPXPathEngine()
-                .selectNodes(
-                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest$RedTaggedEnabledTest']",
+                        "//testcase[@name='test2' and @classname='jira2032.DisabledNestedTest' and not(skipped)]",
                         source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(1));
     }

@@ -72,7 +72,7 @@ public class CucumberIT extends SurefireJUnit4IntegrationTestCase {
         ite = new JAXPXPathEngine().selectNodes("//testcase", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
 
-        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='RunCucumberTest']", source);
+        ite = new JAXPXPathEngine().selectNodes("//testcase[@classname='cz.fafejta.RunCucumberTest']", source);
         assertThat(ite, IsIterableWithSize.iterableWithSize(2));
 
         ite = new JAXPXPathEngine().selectNodes("//testcase[@name='Sum test - Valid test']", source);
