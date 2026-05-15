@@ -111,9 +111,28 @@ public abstract class AbstractStreamDecoder<M, MT extends Enum<MT>, ST extends E
 
     protected MT readMessageType(@Nonnull Memento memento) throws IOException, MalformedFrameException {
         byte[] header = getEncodedMagicNumber();
-        int readCount = DELIMITER_LENGTH + header.length + DELIMITER_LENGTH + BYTE_LENGTH + DELIMITER_LENGTH;
-        read(memento, readCount);
-        checkHeader(memento);
+        // Read the header one byte at a time so that non-protocol output (e.g. the JDWP
+        // "Listening for transport dt_socket at address: ..." line) is flushed to the console
+        // before the decoder blocks. That line contains ':' which looks like a frame start;
+        // checking each magic-number byte individually lets us bail out immediately on a
+        // mismatch instead of stalling on a 24-byte read that never completes.
+        read(memento, DELIMITER_LENGTH);
+        ByteBuffer bb = memento.getByteBuffer();
+        if ((bb.array()[bb.arrayOffset() + bb.position()] & 0xff) != ':') {
+            checkHeader(memento); // not ':', immediately throws MalformedFrameException
+        }
+        checkDelimiter(memento); // consume the ':'
+        for (int i = 0; i < header.length; i++) {
+            read(memento, DELIMITER_LENGTH);
+            bb = memento.getByteBuffer();
+            if ((bb.array()[bb.arrayOffset() + bb.position()] & 0xff) != (header[i] & 0xff)) {
+                // Mismatch: report the ':' plus all bytes read so far in this frame attempt.
+                throw new MalformedFrameException(memento.getLine().getPositionByteBuffer(), bb.position() + 1);
+            }
+            bb.position(bb.position() + 1);
+        }
+        read(memento, DELIMITER_LENGTH);
+        checkDelimiter(memento);
         return messageTypes.get(readSegment(memento));
     }
 
