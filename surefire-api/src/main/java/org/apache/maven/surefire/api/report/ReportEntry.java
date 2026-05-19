@@ -39,6 +39,17 @@ public interface ReportEntry {
     String getSourceText();
 
     /**
+     * The actual qualified Java class name of the test (e.g. including {@code $}-separated nested class names),
+     * independent of any display name. Returns {@code null} when the provider has not set this value, in which case
+     * consumers should fall back to {@link #getSourceText()} / {@link #getSourceName()}.
+     *
+     * @return qualified class name, or {@code null}
+     */
+    default String getSourceQualifiedName() {
+        return null;
+    }
+
+    /**
      * The name of the test case.
      *
      * @return a string describing the test case

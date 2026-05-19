@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -665,8 +666,18 @@ public class StatelessXmlReporterTest {
         String actualClassName = "MyTest";
         String displayName = "NewName";
 
-        ReportEntry reportEntry =
-                new SimpleReportEntry(NORMAL_RUN, 0L, actualClassName, displayName, TEST_ONE, null, 12);
+        ReportEntry reportEntry = new SimpleReportEntry(
+                NORMAL_RUN,
+                0L,
+                actualClassName,
+                displayName,
+                actualClassName,
+                TEST_ONE,
+                null,
+                null,
+                12,
+                null,
+                Collections.<String, String>emptyMap());
         WrappedReportEntry testSetReportEntry =
                 new WrappedReportEntry(reportEntry, SUCCESS, 1771085631L, 12, null, null, systemProps());
         expectedReportFile = new File(reportDir, "TEST-" + actualClassName + ".xml");

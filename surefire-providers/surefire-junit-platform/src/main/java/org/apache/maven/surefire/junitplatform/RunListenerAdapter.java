@@ -224,6 +224,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         ResultDisplay classMethodName = toClassMethodName(testIdentifier);
 
         String className = classMethodName.getClassName();
+        String qualifiedClassName = classMethodName.getQualifiedClassName();
 
         String classText = classMethodName.getDisplayName();
         if (Objects.equals(className, classText)) {
@@ -257,6 +258,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 classMethodIndexer.indexClassMethod(className, methodName),
                 className,
                 classText,
+                qualifiedClassName,
                 methodName,
                 methodText,
                 stw,
@@ -395,8 +397,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     .findFirst()
                     .map(this::toClassMethodName)
                     .map(s -> new ResultDisplay(
-                            s.getClassName(), s.getDisplayName(), null, null, s.getClassDisplayName()))
-                    .orElse(new ResultDisplay(realClassName, realClassName, null, null, classDisplayName));
+                            s.getClassName(), s.getDisplayName(), null, null, s.getClassDisplayName(), null))
+                    .orElse(new ResultDisplay(realClassName, realClassName, null, null, classDisplayName, null));
 
             String parentDisplay = collectAllTestIdentifiersInHierarchy(testIdentifier)
                     .filter(identifier -> identifier
@@ -444,7 +446,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     source.getDisplayName(),
                     methodDesc,
                     methodDisp,
-                    classDisplayName);
+                    classDisplayName,
+                    realClassName);
         } else if (testSource.filter(ClassSource.class::isInstance).isPresent()) {
             ClassSource classSource = testSource.map(ClassSource.class::cast).get();
             String className = classSource.getClassName();
@@ -454,12 +457,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     displayNameTagValue.orElse(className),
                     null,
                     null,
-                    classDisplayName); // != null ? classDisplayName : className);
+                    classDisplayName, // != null ? classDisplayName : className);
+                    className);
         } else {
             String source = testPlan.getParent(testIdentifier)
                     .map(TestIdentifier::getDisplayName)
                     .orElse(display);
-            return new ResultDisplay(classLevelName.orElse(source), source, display, display, classDisplayName);
+            return new ResultDisplay(classLevelName.orElse(source), source, display, display, classDisplayName, null);
         }
     }
 
@@ -489,19 +493,21 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private static class ResultDisplay {
-        private String className, displayName, methodSignature, methodDisplayName, classDisplayName;
+        private String className, displayName, methodSignature, methodDisplayName, classDisplayName, qualifiedClassName;
 
         ResultDisplay(
                 String className,
                 String displayName,
                 String methodSignature,
                 String methodDisplayName,
-                String classDisplayName) {
+                String classDisplayName,
+                String qualifiedClassName) {
             this.className = className;
             this.displayName = displayName;
             this.methodSignature = methodSignature;
             this.methodDisplayName = methodDisplayName;
             this.classDisplayName = classDisplayName;
+            this.qualifiedClassName = qualifiedClassName;
         }
 
         public String getClassName() {
@@ -522,6 +528,10 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         public String getClassDisplayName() {
             return classDisplayName;
+        }
+
+        public String getQualifiedClassName() {
+            return qualifiedClassName;
         }
     }
 
