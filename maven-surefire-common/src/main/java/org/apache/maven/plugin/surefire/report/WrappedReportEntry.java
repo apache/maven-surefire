@@ -181,6 +181,16 @@ public class WrappedReportEntry implements TestSetReportEntry {
         return isBlank(suffix) ? getSourceName() : getSourceName() + "(" + suffix + ")";
     }
 
+    String getSourceQualifiedName(String suffix) {
+        String qualifiedName = original.getSourceQualifiedName();
+        if (qualifiedName != null) {
+            return isBlank(suffix) ? qualifiedName : qualifiedName + "(" + suffix + ")";
+        }
+        // Fall back to pre-existing behaviour: sourceText if set, else sourceName (with suffix)
+        String sourceText = getSourceText();
+        return sourceText != null ? sourceText : getSourceName(suffix);
+    }
+
     String getReportName() {
         String name = getName();
         String nameText = getNameText();

@@ -42,6 +42,8 @@ public class SimpleReportEntry implements TestSetReportEntry {
 
     private final String sourceText;
 
+    private final String sourceQualifiedName;
+
     private final String name;
 
     private final String nameText;
@@ -122,10 +124,37 @@ public class SimpleReportEntry implements TestSetReportEntry {
             Integer elapsed,
             String message,
             Map<String, String> systemProperties) {
+        this(
+                runMode,
+                testRunId,
+                source,
+                sourceText,
+                null,
+                name,
+                nameText,
+                stackTraceWriter,
+                elapsed,
+                message,
+                systemProperties);
+    }
+
+    public SimpleReportEntry(
+            @Nonnull RunMode runMode,
+            Long testRunId,
+            String source,
+            String sourceText,
+            String sourceQualifiedName,
+            String name,
+            String nameText,
+            StackTraceWriter stackTraceWriter,
+            Integer elapsed,
+            String message,
+            Map<String, String> systemProperties) {
         this.runMode = runMode;
         this.testRunId = testRunId;
         this.source = source;
         this.sourceText = sourceText;
+        this.sourceQualifiedName = sourceQualifiedName;
         this.name = name;
         this.nameText = nameText;
         this.stackTraceWriter = stackTraceWriter;
@@ -228,6 +257,11 @@ public class SimpleReportEntry implements TestSetReportEntry {
     @Override
     public String getSourceText() {
         return sourceText;
+    }
+
+    @Override
+    public String getSourceQualifiedName() {
+        return sourceQualifiedName;
     }
 
     @Override
