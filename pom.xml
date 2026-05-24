@@ -272,13 +272,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <pluginRepositories>
-    <pluginRepository>
-      <id>staged-releases</id>
-      <url>https://repository.apache.org/content/repositories/maven-2433/</url>
-    </pluginRepository>
-  </pluginRepositories>
-
   <build>
     <pluginManagement>
       <plugins>
