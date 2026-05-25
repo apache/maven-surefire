@@ -70,6 +70,7 @@ public class ConsoleOutputFileReporter implements TestcycleConsoleOutputReceiver
     @Override
     public void testSetStarting(TestSetReportEntry reportEntry) {
         String className = usePhrasedFileName ? reportEntry.getSourceText() : reportEntry.getSourceName();
+        reportEntryName = className;
         try {
             File file = getReportFile(reportsDirectory, className, reportNameSuffix, "-output.txt");
             if (!reportsDirectory.exists()) {
