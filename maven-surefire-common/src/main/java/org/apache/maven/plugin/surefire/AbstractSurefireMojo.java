@@ -455,11 +455,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean failIfNoTests;
 
     /**
-     * Relative path to <i>temporary-surefire-boot</i> directory containing internal Surefire temporary files.
+     * Path to <i>temporary-surefire-boot</i> directory containing internal Surefire temporary files.
      * <br>
      * The <i>temporary-surefire-boot</i> directory is <i>project.build.directory</i> on most platforms or
      * <i>system default temporary-directory</i> specified by the system property {@code java.io.tmpdir}
      * on Windows (see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1400">SUREFIRE-1400</a>).
+     * Absolute paths and relative paths with directory separators are used as explicit directories on all platforms.
      * <br>
      * It is deleted after the test set has completed.
      *
@@ -3361,11 +3362,26 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     File createSurefireBootDirectoryInTemp() {
+        String tempDir = getTempDir();
+        if (isTempDirPath(tempDir)) {
+            File tmp = new File(tempDir);
+            if (!tmp.isAbsolute()) {
+                tmp = new File(getProjectBuildDirectory(), tempDir);
+            }
+            //noinspection ResultOfMethodCallIgnored
+            tmp.mkdirs();
+            return tmp;
+        }
+
         try {
-            return Files.createTempDirectory(getTempDir()).toFile();
-        } catch (IOException e) {
+            return Files.createTempDirectory(tempDir).toFile();
+        } catch (IOException | IllegalArgumentException e) {
             return createSurefireBootDirectoryInBuild();
         }
+    }
+
+    private static boolean isTempDirPath(String tempDir) {
+        return new File(tempDir).isAbsolute() || tempDir.indexOf('/') >= 0 || tempDir.indexOf('\\') >= 0;
     }
 
     @Override
