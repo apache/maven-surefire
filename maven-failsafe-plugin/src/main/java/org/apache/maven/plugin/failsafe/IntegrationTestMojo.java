@@ -455,7 +455,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     /**
      * This parameter configures the forked node. Currently, you can select the communication protocol, i.e. process
      * pipes or TCP/IP sockets.
-     * The plugin uses process pipes by default which will be turned to TCP/IP in the version 3.0.0.
+     * The plugin uses process pipes by default. The TCP/IP implementation is available as an alternative.
      * Alternatively, you can implement your own factory and SPI.
      * <br>
      * See the documentation for more details:<br>
