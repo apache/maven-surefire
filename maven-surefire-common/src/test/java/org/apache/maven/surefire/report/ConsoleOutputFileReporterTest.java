@@ -135,6 +135,31 @@ public class ConsoleOutputFileReporterTest {
     }
 
     @Test
+    public void testOutputWithoutStackTraceUsesCurrentReportFile() throws IOException {
+        File reportDir = new File(new File(System.getProperty("user.dir"), "target"), "tmp3-without-stack");
+        if (Files.exists(reportDir.toPath())) {
+            FileUtils.deleteDirectory(reportDir);
+        }
+        Files.createDirectories(reportDir.toPath());
+        TestSetReportEntry reportEntry = new SimpleReportEntry(
+                NORMAL_RUN, 1L, getClass().getName(), null, getClass().getName(), null);
+        ConsoleOutputFileReporter reporter = new ConsoleOutputFileReporter(reportDir, null, false, null, "UTF-8");
+        reporter.testSetStarting(reportEntry);
+        reporter.writeTestOutput(new TestOutputReportEntry("some text", true, false, NORMAL_RUN, 1L, null));
+        reporter.close();
+
+        File expectedReportFile = new File(reportDir, getClass().getName() + "-output.txt");
+        File nullReportFile = new File(reportDir, "null-output.txt");
+
+        assertThat(expectedReportFile).exists();
+        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some text");
+        assertThat(nullReportFile).doesNotExist();
+
+        //noinspection ResultOfMethodCallIgnored
+        expectedReportFile.delete();
+    }
+
+    @Test
     public void testConcurrentAccessReportFile() throws Exception {
         File reportDir = new File(new File(System.getProperty("user.dir"), "target"), "tmp4");
         if (Files.exists(reportDir.toPath())) {
