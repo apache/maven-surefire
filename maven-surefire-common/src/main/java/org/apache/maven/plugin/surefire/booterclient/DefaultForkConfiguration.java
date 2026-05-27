@@ -124,6 +124,7 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
             @Nonnull Commandline cli,
             @Nonnull String booterThatHasMainMethod,
             @Nonnull StartupConfiguration config,
+            @Nonnull File workingDirectory,
             @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException;
 
@@ -153,7 +154,8 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
         try {
             Commandline cli = new Commandline(getExcludedEnvironmentVariables());
 
-            cli.setWorkingDirectory(getWorkingDirectory(forkNumber).getAbsolutePath());
+            File cwd = getWorkingDirectory(forkNumber);
+            cli.setWorkingDirectory(cwd.getAbsolutePath());
 
             for (Entry<String, String> entry : getEnvironmentVariables().entrySet()) {
                 String value = entry.getValue();
@@ -174,7 +176,7 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
                 cli.createArg().setLine(getDebugLine());
             }
 
-            resolveClasspath(cli, findStartClass(config), config, dumpLogDirectory);
+            resolveClasspath(cli, findStartClass(config), config, cwd, dumpLogDirectory);
 
             return cli;
         } catch (CommandLineException e) {

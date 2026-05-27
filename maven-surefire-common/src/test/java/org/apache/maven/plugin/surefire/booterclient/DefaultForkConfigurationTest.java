@@ -112,6 +112,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -144,6 +145,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -176,6 +178,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -208,6 +211,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -241,6 +245,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -273,6 +278,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -305,6 +311,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -337,6 +344,7 @@ public class DefaultForkConfigurationTest {
                             @Nonnull Commandline cli,
                             @Nonnull String booterThatHasMainMethod,
                             @Nonnull StartupConfiguration config,
+                            @Nonnull File workingDirectory,
                             @Nonnull File dumpLogDirectory) {}
                 };
 
@@ -407,4 +415,5 @@ public class DefaultForkConfigurationTest {
         }
         throw new NoSuchMethodException(methodName);
     }
+
 }

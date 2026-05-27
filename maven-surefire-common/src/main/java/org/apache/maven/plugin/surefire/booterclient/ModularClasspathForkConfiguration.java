@@ -91,6 +91,7 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
             @Nonnull Commandline cli,
             @Nonnull String startClass,
             @Nonnull StartupConfiguration config,
+            @Nonnull File workingDirectory,
             @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException {
         try {
