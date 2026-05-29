@@ -96,11 +96,7 @@ public final class Classpath implements Iterable<String>, Cloneable {
     }
 
     public void writeToSystemProperty(@Nonnull String propertyName) {
-        StringBuilder sb = new StringBuilder();
-        for (String element : unmodifiableElements) {
-            sb.append(element).append(pathSeparatorChar);
-        }
-        System.setProperty(propertyName, sb.toString());
+        System.setProperty(propertyName, String.join(String.valueOf(pathSeparatorChar), unmodifiableElements));
     }
 
     @Override
