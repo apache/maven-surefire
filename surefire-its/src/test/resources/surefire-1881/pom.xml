@@ -27,7 +27,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>@version.maven-jar-plugin@</version>
                 <configuration>
                     <forceCreation>true</forceCreation>
                     <archive>
