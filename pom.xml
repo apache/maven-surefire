@@ -117,7 +117,7 @@
     Most common used version:
     JUnit4: 4.12 and 4.13.x
     JUnit 5: 5.9.1 / Engine 1.9.1
-    
+    but others are also used, even some JUnit 3 ones
     -->
     <junit.version>5.14.4</junit.version>
 
