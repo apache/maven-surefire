@@ -112,7 +112,19 @@
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
     <project.build.outputTimestamp>2026-02-18T05:18:14Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
+    <!-- this version is not used everywhere.
+    There are a lot of tests that rely on specific versions (JUnit 4, 5, 6) and/or combinations of api and engine, without using BOMs...
+    Most common used version:
+    JUnit4: 4.12 and 4.13.x
+    JUnit 5: 5.9.1 / Engine 1.9.1
+    
+    -->
     <junit.version>5.14.4</junit.version>
+
+    <!-- For ITs -->
+    <version.htmlunit>4.21.0</version.htmlunit>
+    <version.properties-maven-plugin>1.3.0</version.properties-maven-plugin>
+    <version.commons-email>1.6.0</version.commons-email>
   </properties>
 
   <dependencyManagement>
