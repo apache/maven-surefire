@@ -19,11 +19,10 @@
   ~ under the License.
   -->
 
-<site xmlns="http://maven.apache.org/SITE/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://maven.apache.org/SITE/2.0.0 https://maven.apache.org/xsd/site-2.0.0.xsd">
+<site xmlns="http://maven.apache.org/SITE/2.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SITE/2.1.0 https://maven.apache.org/xsd/site-2.1.0.xsd">
 
   <mermaid>
-    <externalJsUrl integrity="sha512-/yppbXbmq0NnMz+OhfzrvQDSePwPAixE8Ywi8U7KayJPv5ZFVYo7bzBgkR5V6OQ/8YHEh/gPMarWD+6ZIuNj5A==" otherAttributes="fetchpriority=&quot;high&quot;">https://cdn.jsdelivr.net/npm/mermaid@11.12.3/dist/mermaid.min.js</externalJsUrl>
   </mermaid>
 
   <body>
@@ -34,7 +33,7 @@
       <item name="Usage" href="usage.html"/>
       <item name="API" href="api.html"/>
       <item name="FAQ" href="faq.html"/>
-      <item name="Overall Archive" href="architecture.html"/>
+      <item name="Overall Architecture" href="architecture.html"/>
       <item name="Developing" href="developing.html"/>
       <!-- According to https://issues.apache.org/jira/browse/MNGSITE-152 -->
       <item name="License" href="http://www.apache.org/licenses/"/>
