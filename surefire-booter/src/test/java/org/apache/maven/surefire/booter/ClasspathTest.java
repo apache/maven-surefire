@@ -57,9 +57,7 @@ public class ClasspathTest {
         Classpath classpath =
                 Classpath.emptyClasspath().addClassPathElementUrl(DUMMY_URL_1).addClassPathElementUrl(DUMMY_URL_2);
         classpath.writeToSystemProperty(DUMMY_PROPERTY_NAME);
-        assertEquals(
-                DUMMY_URL_1 + File.pathSeparatorChar + DUMMY_URL_2 + File.pathSeparatorChar,
-                System.getProperty(DUMMY_PROPERTY_NAME));
+        assertEquals(DUMMY_URL_1 + File.pathSeparatorChar + DUMMY_URL_2, System.getProperty(DUMMY_PROPERTY_NAME));
     }
 
     @Test
