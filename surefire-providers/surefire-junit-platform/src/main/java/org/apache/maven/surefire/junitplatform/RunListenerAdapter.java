@@ -314,14 +314,19 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         if (!parent.getParentIdObject().isPresent()) {
             return testIdentifier;
         }
-        // Stop traversing at engine boundaries. When a test runs inside a Suite,
-        // the hierarchy contains a nested engine (e.g., junit-jupiter under junit-platform-suite).
-        // Without this check, tests would be incorrectly attributed to the Suite class
-        // instead of their actual test class.
-        if (isEngineIdentifier(parent)) {
+        // Inside a Suite the hierarchy contains a nested engine (like junit-jupiter under
+        // junit-platform-suite). Stop at that boundary so the test is attributed to its real test
+        // class rather than the Suite class. The ClassSource guard keeps traversing up for engines
+        // that expose no test class below them (like Cucumber features/scenarios), so those tests
+        // fall back to the enclosing Suite class instead of being dropped.
+        if (isEngineIdentifier(parent) && hasClassSource(testIdentifier)) {
             return testIdentifier;
         }
         return findTopParent(parent);
+    }
+
+    private static boolean hasClassSource(TestIdentifier testIdentifier) {
+        return testIdentifier.getSource().filter(ClassSource.class::isInstance).isPresent();
     }
 
     private static boolean isEngineIdentifier(TestIdentifier testIdentifier) {

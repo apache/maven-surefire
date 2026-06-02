@@ -658,6 +658,67 @@ public class RunListenerAdapterTest {
         assertEquals(MY_TEST_METHOD_NAME, entry.getName());
     }
 
+    @Test
+    public void notifiedWithSuiteClassNameWhenEngineHasNoTestClass() {
+        // Build a Suite hierarchy whose nested engine exposes no test class right below it, as
+        // Cucumber does: SuiteEngine -> SuiteClass -> CucumberEngine -> feature -> scenario.
+        // The feature/scenario nodes carry no ClassSource, so the test must be attributed to the
+        // enclosing Suite class instead of being dropped (see issue #3264 follow-up / Cucumber IT).
+        EngineDescriptor suiteEngine =
+                new EngineDescriptor(UniqueId.forEngine("junit-platform-suite"), "JUnit Platform Suite");
+
+        TestDescriptor suiteClass = new ClassTestDescriptor(
+                suiteEngine.getUniqueId().append("suite", MySuiteClass.class.getName()),
+                MySuiteClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        suiteEngine.addChild(suiteClass);
+
+        TestDescriptor cucumberEngine =
+                new AbstractTestDescriptor(suiteClass.getUniqueId().append("engine", "cucumber"), "Cucumber") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        suiteClass.addChild(cucumberEngine);
+
+        TestDescriptor feature =
+                new AbstractTestDescriptor(cucumberEngine.getUniqueId().append("feature", "sum.feature"), "Sum test") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        cucumberEngine.addChild(feature);
+
+        TestDescriptor scenario =
+                new AbstractTestDescriptor(feature.getUniqueId().append("scenario", "1"), "Invalid test") {
+                    @Override
+                    public Type getType() {
+                        return Type.TEST;
+                    }
+                };
+        feature.addChild(scenario);
+
+        TestPlan plan = TestPlan.from(false, singletonList(suiteEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(suiteEngine));
+        adapter.executionStarted(TestIdentifier.from(suiteClass));
+        adapter.executionStarted(TestIdentifier.from(cucumberEngine));
+        adapter.executionStarted(TestIdentifier.from(feature));
+        adapter.executionStarted(TestIdentifier.from(scenario));
+
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        adapter.executionFinished(TestIdentifier.from(scenario), failed(new AssertionError("fail")));
+        verify(listener).testFailed(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        // No test class exists below the Cucumber engine, so the Suite class is the attribution.
+        assertEquals(MySuiteClass.class.getName(), entry.getSourceName());
+        assertEquals("Invalid test", entry.getName());
+    }
+
     private static TestIdentifier newMethodIdentifier() throws Exception {
         return TestIdentifier.from(newMethodDescriptor());
     }
