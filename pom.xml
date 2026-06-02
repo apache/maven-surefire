@@ -86,6 +86,7 @@
   </distributionManagement>
 
   <properties>
+    <arguments />
     <javaVersion>8</javaVersion>
     <junit.jupiter.execution.parallel.config.dynamic.factor>0.8</junit.jupiter.execution.parallel.config.dynamic.factor>
     <junit.jupiter.execution.parallel.config.fixed.parallelism>2</junit.jupiter.execution.parallel.config.fixed.parallelism>
@@ -332,6 +333,7 @@
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
+            <arguments>${arguments}</arguments>
             <preparationGoals>clean install</preparationGoals>
             <commitByProject>false</commitByProject>
             <tagNameFormat>surefire-@{project.version}</tagNameFormat>
