@@ -166,7 +166,9 @@ under the License.
         <p>
           Surefire and Failsafe plugin may kill forked Surefire JVM when the standard-input stream is closed.
           This works when you stop Maven process by CTRL+C but it is not guaranteed on all platforms.
-          Since version 3.0.0-M5, TCP/IP sockets are used for interprocess communication.
+          By default, the plugins use process pipes for interprocess communication.
+          Since version 3.0.0-M5, TCP/IP sockets are also available and can be
+          selected with the forkNode configuration parameter.
           See the documentation of the configuration parameter
           "enableProcessChecker" for mechanisms to detect and kill orphan forked JVMs.
           These mechanisms have some drawbacks regarding your

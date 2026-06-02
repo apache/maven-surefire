@@ -42,7 +42,7 @@ Communication Channels used between the Maven Process and Surefire Process
 
   The ${thisPlugin} plugin uses process pipes by default. The implementation class for default configuration
   is <<<org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory>>> and it does not have to be specified.
-  The TCP/IP channel can be selected as follows and the implementation class has to be specified:
+  The TCP/IP channel is supported as an alternative and can be selected as follows:
 
 +---+
 <project>
