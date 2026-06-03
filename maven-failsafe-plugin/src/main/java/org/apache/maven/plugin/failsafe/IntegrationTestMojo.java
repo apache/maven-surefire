@@ -72,6 +72,22 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     private boolean skipITs;
 
     /**
+     * Set this to "true" to skip running integration tests, but still compile them. Its use is NOT RECOMMENDED, but
+     * quite convenient on occasion.
+     * <p>
+     * Unlike Surefire's {@code skipTests}, this Failsafe parameter is <strong>not</strong> bound to the
+     * {@code skipTests} user property. Use {@code -DskipITs} on the command line to skip integration tests,
+     * or {@code -Dmaven.test.skip} to skip both unit and integration tests. The {@code <skipTests>} element
+     * is still honored when set explicitly in the plugin {@code <configuration>}.
+     *
+     * @since 3.6.0
+     * @deprecated use {@code skipITs} instead
+     */
+    @Deprecated
+    @Parameter
+    private boolean skipTests;
+
+    /**
      * Base directory where all reports are written to.
      */
     @Parameter(defaultValue = "${project.build.directory}/failsafe-reports")

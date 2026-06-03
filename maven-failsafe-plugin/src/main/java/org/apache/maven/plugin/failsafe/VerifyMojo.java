@@ -54,12 +54,18 @@ import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirst
 public class VerifyMojo extends AbstractMojo implements SurefireReportParameters {
 
     /**
-     * Set this to 'true' to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
-     * convenient on occasion.
+     * Set this to 'true' to skip verifying integration test results.
+     * <p>
+     * Unlike Surefire's {@code skipTests}, this Failsafe parameter is <strong>not</strong> bound to the
+     * {@code skipTests} user property. Use {@code -DskipITs} on the command line to skip integration tests
+     * (including this verification step), or {@code -Dmaven.test.skip} to skip everything. The
+     * {@code <skipTests>} element is still honored when set explicitly in the plugin {@code <configuration>}.
      *
      * @since 2.4
+     * @deprecated use {@code skipITs} instead
      */
-    @Parameter(property = "skipTests")
+    @Deprecated
+    @Parameter
     private boolean skipTests;
 
     /**

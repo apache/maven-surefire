@@ -193,8 +193,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     /**
      * Set this to "true" to skip running tests, but still compile them. Its use is NOT RECOMMENDED, but quite
      * convenient on occasion.<br>
-     * Failsafe plugin deprecated the parameter {@code skipTests} and the parameter will be removed in
-     * <i>Failsafe 3.0.0</i> as it is a source of conflicts between Failsafe and Surefire plugin.
+     * <p>
+     * As of Failsafe 3.6.0, the Failsafe plugin no longer binds its own {@code skipTests} parameter to the
+     * {@code skipTests} user property, so {@code -DskipTests=true} now skips only Surefire (unit tests) while
+     * leaving Failsafe (integration tests) untouched. Use {@code -DskipITs} to skip integration tests, or
+     * {@code -Dmaven.test.skip} to skip both.
      *
      * @since 2.4
      */
