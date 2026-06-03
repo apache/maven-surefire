@@ -88,9 +88,15 @@ mvn install -DskipTests
 mvn install -DskipTests
 +---+
 
+#{if}(${project.artifactId}=="maven-surefire-plugin")
  Since <<<skipTests>>> is also supported by the ${thatPlugin} Plugin, this will have the effect
- of not running any tests.  If, instead, you want to skip only the integration tests
- being run by the ${thisPlugin} Plugin, you would use the <<<skipITs>>> property instead:
+ of not running any tests. If, instead, you want to skip only the integration tests
+ being run by the ${thatPlugin} Plugin, you would use the <<<skipITs>>> property instead:
+#{else}
+ The <<<-DskipTests>>> command-line property only skips tests run by the Surefire Plugin and
+ does <<not>> skip the integration tests run by the ${thisPlugin} Plugin (since 3.6.0).
+ To skip integration tests from the command line use the <<<skipITs>>> property:
+#{end}
 
 +---+
 mvn install -DskipITs
