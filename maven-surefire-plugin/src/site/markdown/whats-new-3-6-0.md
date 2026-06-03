@@ -32,12 +32,12 @@ This page summarizes the key changes and provides a migration guide for users up
 
 Starting with 3.6.0, **one provider runs all tests**:
 
-| Test Framework | Execution Engine | Minimum Version |
-|----------------|------------------|-----------------|
-| **JUnit 5** (Jupiter) | Jupiter Engine (native) | 5.x |
-| **JUnit 4** | [Vintage Engine](https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4-running) | **4.12** |
+| Test Framework | Execution Engine | Minimum Version                     |
+|----------------|------------------|-------------------------------------|
+| **JUnit 5** (Jupiter) | Jupiter Engine (native) | 5.x/6.x                             |
+| **JUnit 4** | [Vintage Engine](https://junit.org/junit5/docs/current/user-guide/#migrating-from-junit4-running) | **4.12**                            |
 | **JUnit 3** tests | Vintage Engine (via JUnit 4 compatibility) | Requires JUnit **4.12**+ dependency |
-| **TestNG** | [TestNG JUnit Platform Engine](https://github.com/junit-team/testng-engine) | **6.14.3** |
+| **TestNG** | [TestNG JUnit Platform Engine](https://github.com/junit-team/testng-engine) | **6.14.3**                          |
 
 No explicit provider configuration is needed — Surefire auto-detects which engines are on the classpath
 and delegates accordingly.
