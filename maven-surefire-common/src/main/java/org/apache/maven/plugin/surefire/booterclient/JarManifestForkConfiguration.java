@@ -118,8 +118,8 @@ public final class JarManifestForkConfiguration extends AbstractClasspathForkCon
      * Create a jar with just a manifest containing a Main-Class entry for BooterConfiguration and a Class-Path entry
      * for all classpath elements.
      *
-     * @param classPath        List&lt;String&gt; of all classpath elements
-     * @param startClassName   the class name to start (main-class)
+     * @param classPath      List&lt;String&gt; of all classpath elements
+     * @param startClassName the class name to start (main-class)
      * @param workingDirectory the fork's working directory; relative classpath elements are resolved against it
      * @return file of the jar
      * @throws IOException when a file operation fails

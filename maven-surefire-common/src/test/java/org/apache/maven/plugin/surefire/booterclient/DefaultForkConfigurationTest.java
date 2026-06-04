@@ -415,5 +415,4 @@ public class DefaultForkConfigurationTest {
         }
         throw new NoSuchMethodException(methodName);
     }
-
 }

@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -81,8 +80,7 @@ public final class ClasspathForkConfiguration extends AbstractClasspathForkConfi
             @Nonnull File workingDirectory,
             @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException {
-        List<String> classpath = toCompleteClasspath(config);
-        cli.addEnvironment("CLASSPATH", join(classpath.iterator(), File.pathSeparator));
+        cli.addEnvironment("CLASSPATH", join(toCompleteClasspath(config).iterator(), File.pathSeparator));
         cli.createArg().setValue(booterThatHasMainMethod);
     }
 }
