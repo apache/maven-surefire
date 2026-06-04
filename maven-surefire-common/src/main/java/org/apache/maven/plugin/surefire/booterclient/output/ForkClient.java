@@ -87,6 +87,14 @@ public final class ForkClient implements EventHandler<Event> {
 
     private volatile StackTraceWriter errorInFork;
 
+    /**
+     * Optional callback invoked once from {@link #tryToTimeout} when the
+     * forked-process timeout has been reached, immediately before the KILL
+     * shutdown command is sent. Used by Surefire to dispatch
+     * {@code ForkedProcessTimeoutExtension#onTimeoutDetected} callbacks.
+     */
+    private volatile Runnable timeoutDetectedListener;
+
     public ForkClient(
             DefaultReporterFactory defaultReporterFactory, NotifiableTestStream notifiableTestStream, int forkNumber) {
         this.defaultReporterFactory = defaultReporterFactory;
@@ -114,6 +122,19 @@ public final class ForkClient implements EventHandler<Event> {
 
     public void setStopOnNextTestListener(ForkedProcessEventListener listener) {
         notifier.setStopOnNextTestListener(listener);
+    }
+
+    /**
+     * Registers a one-shot callback invoked synchronously when the forked
+     * process timeout has been reached, immediately before the KILL command is
+     * sent. The forked JVM is still alive when the callback runs, so it may
+     * collect live diagnostics (for example a {@code jstack} dump).
+     *
+     * @param listener the callback to run, or {@code null} to clear; callback
+     *                 must not throw checked exceptions
+     */
+    public void setTimeoutDetectedListener(Runnable listener) {
+        this.timeoutDetectedListener = listener;
     }
 
     private final class TestSetStartingListener implements ForkedProcessReportEventListener<TestSetReportEntry> {
@@ -288,8 +309,17 @@ public final class ForkClient implements EventHandler<Event> {
             final long forkedProcessTimeoutInMillis = 1000L * forkedProcessTimeoutInSeconds;
             final long startedAt = testSetStartedAt.get();
             if (startedAt > START_TIME_ZERO && currentTimeMillis - startedAt >= forkedProcessTimeoutInMillis) {
-                testSetStartedAt.set(START_TIME_NEGATIVE_TIMEOUT);
-                notifiableTestStream.shutdown(KILL);
+                if (testSetStartedAt.compareAndSet(startedAt, START_TIME_NEGATIVE_TIMEOUT)) {
+                    Runnable listener = timeoutDetectedListener;
+                    if (listener != null) {
+                        try {
+                            listener.run();
+                        } catch (RuntimeException ignored) {
+                            // listener failures must never prevent the kill
+                        }
+                    }
+                    notifiableTestStream.shutdown(KILL);
+                }
             }
         }
     }

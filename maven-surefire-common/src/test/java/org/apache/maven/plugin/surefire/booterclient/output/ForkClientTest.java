@@ -24,10 +24,14 @@ import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.maven.plugin.surefire.booterclient.MockReporter;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
@@ -65,6 +69,7 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static java.nio.channels.Channels.newChannel;
 import static org.apache.maven.plugin.surefire.booterclient.MockReporter.CONSOLE_DEBUG;
@@ -1592,5 +1597,45 @@ public class ForkClientTest {
         synchronized boolean isCalled() {
             return called;
         }
+    }
+
+    @Test
+    public void timeoutListenerInvokedBeforeKillAndOnlyOnce() {
+        DefaultReporterFactory factory = mock(DefaultReporterFactory.class);
+        when(factory.getReportsDirectory()).thenReturn(new File("."));
+        when(factory.createTestReportListener()).thenReturn(new MockReporter());
+        NotifiableTestStream notifiableTestStream = mock(NotifiableTestStream.class);
+
+        TestSetReportEntry reportEntry = mock(TestSetReportEntry.class);
+        when(reportEntry.getRunMode()).thenReturn(NORMAL_RUN);
+        when(reportEntry.getTestRunId()).thenReturn(1L);
+        when(reportEntry.getElapsed()).thenReturn(ELAPSED_TIME);
+        when(reportEntry.getName()).thenReturn("my test");
+        when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+
+        ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
+        final AtomicInteger listenerCalls = new AtomicInteger();
+        final List<String> order = Collections.synchronizedList(new ArrayList<>());
+        client.setTimeoutDetectedListener(() -> {
+            listenerCalls.incrementAndGet();
+            order.add("listener");
+        });
+        Mockito.doAnswer(invocation -> {
+                    order.add("shutdown");
+                    return null;
+                })
+                .when(notifiableTestStream)
+                .shutdown(Shutdown.KILL);
+
+        client.handleEvent(new TestsetStartingEvent(reportEntry));
+
+        client.tryToTimeout(System.currentTimeMillis() + 1000L, 1);
+        client.tryToTimeout(System.currentTimeMillis() + 2000L, 1);
+
+        assertThat(listenerCalls).hasValue(1);
+        verify(notifiableTestStream).shutdown(Shutdown.KILL);
+        verifyNoMoreInteractions(notifiableTestStream);
+        assertThat(order).containsExactly("listener", "shutdown");
+        assertThat(client.hadTimeout()).isTrue();
     }
 }
