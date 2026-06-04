@@ -154,8 +154,7 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
         try {
             Commandline cli = new Commandline(getExcludedEnvironmentVariables());
 
-            File cwd = getWorkingDirectory(forkNumber);
-            cli.setWorkingDirectory(cwd.getAbsolutePath());
+            cli.setWorkingDirectory(getWorkingDirectory(forkNumber).getAbsolutePath());
 
             for (Entry<String, String> entry : getEnvironmentVariables().entrySet()) {
                 String value = entry.getValue();
@@ -176,7 +175,7 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
                 cli.createArg().setLine(getDebugLine());
             }
 
-            resolveClasspath(cli, findStartClass(config), config, cwd, dumpLogDirectory);
+            resolveClasspath(cli, findStartClass(config), config, getWorkingDirectory(forkNumber), dumpLogDirectory);
 
             return cli;
         } catch (CommandLineException e) {
