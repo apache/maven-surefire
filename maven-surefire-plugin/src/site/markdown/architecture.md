@@ -195,7 +195,7 @@ graph LR
         M2["AbstractSurefireMojo"] --> PD2["Simplified detection"]
         PD2 --> JP2["surefire-junit-platform"]
         JP2 --> VE["Vintage Engine<br/>(JUnit 3/4)"]
-        JP2 --> JE["Jupiter Engine<br/>(JUnit 5)"]
+        JP2 --> JE["Jupiter Engine<br/>(JUnit 5/6)"]
         JP2 --> TE["TestNG Engine<br/>(TestNG)"]
     end
 ```
@@ -224,13 +224,13 @@ public interface SurefireProvider {
 
 ### 3.5.x: old implementation
 
-| Provider | Module | Test framework | Key classes |
-|----------|--------|---------------|-------------|
-| **JUnit 3 + POJO** | `surefire-junit3` | JUnit 3.x, plain POJOs | `JUnit3Provider`, `PojoTestSetExecutor` |
-| **JUnit 4** | `surefire-junit4` | JUnit 4.0–4.6 | `JUnit4Provider` |
-| **JUnit 4.7+** | `surefire-junit47` | JUnit 4.7+ with parallel/categories | `JUnitCoreProvider`, `ParallelComputerBuilder` |
-| **TestNG** | `surefire-testng` | TestNG 4.7+ | `TestNGProvider`, `TestNGExecutor` |
-| **JUnit Platform** | `surefire-junit-platform` | JUnit 5, any JUnit Platform engine | `JUnitPlatformProvider`, `LauncherAdapter` |
+| Provider | Module | Test framework                       | Key classes |
+|----------|--------|--------------------------------------|-------------|
+| **JUnit 3 + POJO** | `surefire-junit3` | JUnit 3.x, plain POJOs               | `JUnit3Provider`, `PojoTestSetExecutor` |
+| **JUnit 4** | `surefire-junit4` | JUnit 4.0–4.6                        | `JUnit4Provider` |
+| **JUnit 4.7+** | `surefire-junit47` | JUnit 4.7+ with parallel/categories  | `JUnitCoreProvider`, `ParallelComputerBuilder` |
+| **TestNG** | `surefire-testng` | TestNG 4.7+                          | `TestNGProvider`, `TestNGExecutor` |
+| **JUnit Platform** | `surefire-junit-platform` | JUnit 5/6, any JUnit Platform engine | `JUnitPlatformProvider`, `LauncherAdapter` |
 
 
 | Framework | Before (3.5.x) | After (3.6.0) |
