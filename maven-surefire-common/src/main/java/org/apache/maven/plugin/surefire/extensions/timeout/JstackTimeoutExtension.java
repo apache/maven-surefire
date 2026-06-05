@@ -86,7 +86,7 @@ public class JstackTimeoutExtension implements ForkedProcessTimeoutExtension {
         }
         File jstack = resolveJstackBinary();
         if (jstack == null) {
-            logger.warning("JstackTimeoutExtension: cannot find jstack in JAVA_HOME or PATH; "
+            logger.warning("JstackTimeoutExtension: cannot find jstack in java.home, JAVA_HOME or PATH; "
                     + "skipping jstack for fork " + context.getForkNumber() + " (pid=" + pid + ")");
             return;
         }
