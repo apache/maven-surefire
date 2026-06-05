@@ -88,12 +88,9 @@ public final class TimeoutExtensionDispatcher {
             return;
         }
         for (final ForkedProcessTimeoutExtension extension : extensions) {
-            invokeWithTimeout(extension, "onTimeoutDetected", new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    extension.onTimeoutDetected(context);
-                    return null;
-                }
+            invokeWithTimeout(extension, "onTimeoutDetected", () -> {
+                extension.onTimeoutDetected(context);
+                return null;
             });
         }
     }
@@ -107,12 +104,9 @@ public final class TimeoutExtensionDispatcher {
             return;
         }
         for (final ForkedProcessTimeoutExtension extension : extensions) {
-            invokeWithTimeout(extension, "onForkExited", new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    extension.onForkExited(context, result);
-                    return null;
-                }
+            invokeWithTimeout(extension, "onForkExited", () -> {
+                extension.onForkExited(context, result);
+                return null;
             });
         }
     }

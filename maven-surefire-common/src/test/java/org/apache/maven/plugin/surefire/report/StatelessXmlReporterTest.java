@@ -229,7 +229,7 @@ public class StatelessXmlReporterTest {
                 null,
                 false,
                 0,
-                new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(),
+                new ConcurrentHashMap<>(),
                 XSD,
                 "3.0.2",
                 false,
