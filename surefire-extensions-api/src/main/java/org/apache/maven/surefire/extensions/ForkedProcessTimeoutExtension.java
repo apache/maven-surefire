@@ -46,13 +46,11 @@ import org.apache.maven.surefire.api.suite.RunResult;
  *   <li>{@link #onForkExited(ForkedProcessTimeoutContext, RunResult)} is
  *   invoked from the plugin after the forked JVM has actually exited.</li>
  * </ol>
- * Implementations must not throw checked exceptions; any {@link Throwable}
- * raised by a callback is caught by Surefire, logged at warn level, and does
+ * Any {@link Throwable} raised by a callback is caught by Surefire, logged at warn level, and does
  * not affect the test result.
  * <p>
- * Callbacks run on a Surefire-internal scheduler thread. Implementations
- * should complete quickly and must not block indefinitely; Surefire applies
- * an internal time limit to each callback invocation.
+ * Callbacks are executed on Surefire-managed daemon threads and are subject to an internal time
+ * limit; implementations should complete quickly and must not block indefinitely.
  *
  * @since 3.6.0
  */
