@@ -29,11 +29,14 @@ import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.surefire.api.report.ReportEntry;
@@ -248,6 +251,11 @@ public class StatelessXmlReporterTest {
         }
         assertEquals("testsuite", testSuite.getName());
         Xpp3Dom properties = testSuite.getChild("properties");
+        // <property name="java.specification.version" value="21"/>
+        Properties props = new Properties();
+        props.putAll(Arrays.stream(properties.getChildren())
+                .collect(Collectors.toMap(p -> p.getAttribute("name"), p -> p.getAttribute("value"))));
+        assertEquals(System.getProperties(), props);
         assertEquals(System.getProperties().size(), properties.getChildCount());
         Xpp3Dom child = properties.getChild(1);
         assertFalse(isEmpty(child.getAttribute("value")));
