@@ -42,8 +42,8 @@ import org.apache.maven.surefire.shared.lang3.SystemUtils;
  * set the system property {@code surefire.timeout.jstack.enabled=true} on the
  * Maven process (for example with {@code MAVEN_OPTS} or
  * {@code -Dsurefire.timeout.jstack.enabled=true}). The {@code jstack} binary
- * is resolved from {@code JAVA_HOME/bin/jstack} when {@code JAVA_HOME} is set,
- * otherwise the {@code jstack} on {@code PATH} is used.
+ * is resolved from {@code ${java.home}/bin/jstack}, the parent JDK {@code bin}
+ * (Java 8 layout), {@code $JAVA_HOME/bin/jstack}, and finally from {@code PATH}.
  *
  * @since 3.6.0
  */
