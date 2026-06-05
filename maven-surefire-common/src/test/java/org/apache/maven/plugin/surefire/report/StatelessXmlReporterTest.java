@@ -372,6 +372,10 @@ public class StatelessXmlReporterTest {
         assertEquals("testsuite", testSuite.getName());
         assertEquals("0.012", testSuite.getAttribute("time"));
         Xpp3Dom properties = testSuite.getChild("properties");
+        Properties props = new Properties();
+        props.putAll(Arrays.stream(properties.getChildren())
+                .collect(Collectors.toMap(p -> p.getAttribute("name"), p -> p.getAttribute("value"))));
+        assertEquals(System.getProperties(), props);
         assertEquals(System.getProperties().size(), properties.getChildCount());
         Xpp3Dom child = properties.getChild(1);
         assertFalse(isEmpty(child.getAttribute("value")));
