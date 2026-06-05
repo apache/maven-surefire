@@ -105,7 +105,8 @@ public final class JarManifestForkConfiguration extends AbstractClasspathForkCon
             @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException {
         try {
-            File jar = createJar(toCompleteClasspath(config), booterThatHasMainMethod, workingDirectory, dumpLogDirectory);
+            File jar =
+                    createJar(toCompleteClasspath(config), booterThatHasMainMethod, workingDirectory, dumpLogDirectory);
             cli.createArg().setValue("-jar");
             cli.createArg().setValue(escapeToPlatformPath(jar.getAbsolutePath()));
         } catch (IOException e) {
