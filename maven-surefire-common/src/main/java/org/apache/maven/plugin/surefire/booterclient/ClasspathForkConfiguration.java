@@ -77,6 +77,7 @@ public final class ClasspathForkConfiguration extends AbstractClasspathForkConfi
             @Nonnull Commandline cli,
             @Nonnull String booterThatHasMainMethod,
             @Nonnull StartupConfiguration config,
+            @Nonnull File workingDirectory,
             @Nonnull File dumpLogDirectory)
             throws SurefireBooterForkException {
         cli.addEnvironment("CLASSPATH", join(toCompleteClasspath(config).iterator(), File.pathSeparator));
