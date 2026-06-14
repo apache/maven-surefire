@@ -51,3 +51,7 @@ jobs:
       timeout-minutes: 600
       os-matrix: '[ "ubuntu-latest", "windows-latest", "macos-latest" ]'
       maven4-enabled: true
+      matrix-exclude: '[
+        { "jdk": "11", "maven": "4" }
+        { "jdk": "8", "maven": "4" }
+      ]'
