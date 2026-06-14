@@ -52,6 +52,6 @@ jobs:
       os-matrix: '[ "ubuntu-latest", "windows-latest", "macos-latest" ]'
       maven4-enabled: true
       matrix-exclude: '[
-        { "jdk": "11", "maven": "4" }
+        { "jdk": "11", "maven": "4" },
         { "jdk": "8", "maven": "4" }
       ]'
