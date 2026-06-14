@@ -46,7 +46,7 @@
   </prerequisites>
 
   <properties>
-    <doxiaVersion>2.0.0</doxiaVersion>
+    <doxiaVersion>2.1.0</doxiaVersion>
   </properties>
 
   <dependencies>
