@@ -71,7 +71,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.powermock.api.mockito.PowerMockito.doAnswer;
 import static org.powermock.api.mockito.PowerMockito.doCallRealMethod;
 import static org.powermock.api.mockito.PowerMockito.doNothing;
@@ -194,7 +194,7 @@ public class ForkedBooterMockTest {
 
         invokeMethod(booter, "closeForkChannel");
 
-        verifyZeroInteractions(channelProcessorFactory);
+        verifyNoInteractions(channelProcessorFactory);
     }
 
     @Test

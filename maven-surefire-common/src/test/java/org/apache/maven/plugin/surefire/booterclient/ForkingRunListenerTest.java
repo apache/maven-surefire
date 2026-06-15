@@ -65,7 +65,7 @@ import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedCh
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * @author Kristian Rosenvold
@@ -277,7 +277,7 @@ public class ForkingRunListenerTest extends TestCase {
         try (EventConsumerThread t = new EventConsumerThread("t", channel, handler, countdown, arguments)) {
             t.start();
             countdown.awaitClosed();
-            verifyZeroInteractions(logger);
+            verifyNoInteractions(logger);
             assertThat(arguments.isCalled()).isFalse();
             for (int i = 0, size = handler.countEventsInCache(); i < size; i++) {
                 events.add(handler.pullEvent());
