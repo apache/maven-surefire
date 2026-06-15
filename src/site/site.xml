@@ -36,6 +36,7 @@
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
+      <item name="What's New" href="index.html#What.27s_New"/>
       <!-- According to https://issues.apache.org/jira/browse/MNGSITE-152 -->
       <item name="License" href="http://www.apache.org/licenses/"/>
       <item name="Download" href="download.html"/>
