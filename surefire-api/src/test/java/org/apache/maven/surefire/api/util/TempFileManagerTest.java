@@ -65,7 +65,7 @@ public class TempFileManagerTest extends TestCase {
         File tempFile = tfm.createTempFile(prefix, suffix);
         assertThat(tempFile).exists();
         assertThat(tempFile).isWritable();
-        assertTrue(tempFile.getParentFile().equals(tfm.getTempDir()));
+        assertEquals(tempFile.getParentFile(), tfm.getTempDir());
         assertThat(tempFile.getName()).startsWith(prefix);
         assertThat(tempFile.getName()).endsWith(suffix);
         assertThat(tempFile.getName()).contains((String) getInternalState(tfm, "baseName"));

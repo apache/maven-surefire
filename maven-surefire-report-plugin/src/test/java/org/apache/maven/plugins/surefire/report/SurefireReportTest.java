@@ -156,7 +156,7 @@ public class SurefireReportTest extends AbstractMojoTestCase {
         String htmlContent = FileUtils.fileRead(report);
 
         int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
-        assertTrue(idx == -1);
+        assertEquals(-1, idx);
     }
 
     public void testBasicSurefireReportIfReportingIsNull() throws Exception {
