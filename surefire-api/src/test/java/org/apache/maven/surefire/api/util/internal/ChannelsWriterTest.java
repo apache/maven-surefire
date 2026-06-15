@@ -51,8 +51,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -278,7 +278,7 @@ public class ChannelsWriterTest {
         AsynchronousByteChannel channel = mock(AsynchronousByteChannel.class);
         OutputStream os = Channels.newOutputStream(channel);
         os.write(new byte[] {5}, 0, 0);
-        verifyZeroInteractions(channel);
+        verifyNoInteractions(channel);
     }
 
     @Test

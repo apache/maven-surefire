@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -117,7 +117,7 @@ public class StreamFeederTest {
 
         assertThat(streamFeeder.getException()).isNull();
 
-        verifyZeroInteractions(logger);
+        verifyNoInteractions(logger);
     }
 
     @Test
@@ -141,6 +141,6 @@ public class StreamFeederTest {
 
         assertThat(streamFeeder.getException()).isNotNull().isInstanceOf(IOException.class);
 
-        verifyZeroInteractions(logger);
+        verifyNoInteractions(logger);
     }
 }

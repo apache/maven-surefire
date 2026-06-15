@@ -73,8 +73,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.powermock.reflect.Whitebox.getInternalState;
 
@@ -229,7 +229,7 @@ public class RunListenerAdapterTest {
         assertThat(report.getValue().getSourceText()).isEqualTo("parent");
         assertThat(report.getValue().getName()).isNull();
         assertThat(report.getValue().getSystemProperties()).isEmpty();
-        verifyZeroInteractions(listener);
+        verifyNoInteractions(listener);
 
         adapter.executionStarted(TestIdentifier.from(child1));
         inOrder.verify(listener)
