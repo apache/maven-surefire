@@ -35,9 +35,9 @@ public class TestsToRunTest extends TestCase {
         TestsToRun testsToRun = new TestsToRun(classes);
         Iterator<Class<?>> it = testsToRun.iterator();
         assertTrue(it.hasNext());
-        assertEquals(it.next(), T1.class);
+        assertEquals(T1.class, it.next());
         assertTrue(it.hasNext());
-        assertEquals(it.next(), T2.class);
+        assertEquals(T2.class, it.next());
         assertFalse(it.hasNext());
     }
 
@@ -87,15 +87,15 @@ public class TestsToRunTest extends TestCase {
 
         Iterator<Class<?>> it1 = testsToRun.iterator();
 
-        assertEquals(it1.next(), T1.class);
+        assertEquals(T1.class, it1.next());
         assertTrue(it1.hasNext());
 
         Iterator<Class<?>> it2 = testsToRun.iterated();
 
-        assertEquals(it1.next(), T2.class);
+        assertEquals(T2.class, it1.next());
         assertFalse(it1.hasNext());
 
-        assertEquals(it2.next(), T1.class);
+        assertEquals(T1.class, it2.next());
         assertFalse(it1.hasNext());
     }
 

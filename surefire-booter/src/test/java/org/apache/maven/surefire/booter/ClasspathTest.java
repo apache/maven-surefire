@@ -177,7 +177,7 @@ public class ClasspathTest extends TestCase {
         Class<?> cls = classLoader.loadClass(target.getName());
         assertNotNull(cls);
         assertEquals(cls.getName(), target.getName());
-        assertNotSame(cls, target);
+        assertNotSame(target, cls);
     }
 
     public void testDontLoadInNewClassLoader() throws SurefireExecutionException {

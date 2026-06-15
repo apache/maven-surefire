@@ -44,7 +44,7 @@ public class RunOrderTest extends TestCase {
     }
 
     public void testShouldReturnNullForNullName() {
-        assertTrue(RunOrder.valueOfMulti(null).length == 0);
+        assertEquals(0, RunOrder.valueOfMulti(null).length);
     }
 
     public void testShouldThrowExceptionForInvalidName() {

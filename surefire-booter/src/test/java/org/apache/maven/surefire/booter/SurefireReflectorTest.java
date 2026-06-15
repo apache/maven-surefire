@@ -217,8 +217,8 @@ public class SurefireReflectorTest extends TestCase {
         TestArtifactInfo testArtifactInfo = new TestArtifactInfo("12.3", "test");
         surefireReflector.setTestArtifactInfoAware(foo, testArtifactInfo);
         assertTrue(isCalled(foo));
-        assertEquals(testArtifactInfo.getClassifier(), "test");
-        assertEquals(testArtifactInfo.getVersion(), "12.3");
+        assertEquals("test", testArtifactInfo.getClassifier());
+        assertEquals("12.3", testArtifactInfo.getVersion());
     }
 
     public void testReporterFactory() {
@@ -268,16 +268,16 @@ public class SurefireReflectorTest extends TestCase {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         RunResult obj = (RunResult) reflector.convertIfRunResult(runResult);
-        assertEquals(obj.getCompletedCount(), 20);
-        assertEquals(obj.getErrors(), 1);
-        assertEquals(obj.getFailures(), 2);
-        assertEquals(obj.getSkipped(), 3);
+        assertEquals(20, obj.getCompletedCount());
+        assertEquals(1, obj.getErrors());
+        assertEquals(2, obj.getFailures());
+        assertEquals(3, obj.getSkipped());
         assertFalse(obj.isErrorFree());
         assertFalse(obj.isInternalError());
-        assertEquals(obj.getFailsafeCode(), (Integer) RunResult.FAILURE);
+        assertEquals((Integer) RunResult.FAILURE, obj.getFailsafeCode());
 
         assertNull(reflector.convertIfRunResult(null));
-        assertEquals(reflector.convertIfRunResult(""), "");
+        assertEquals("", reflector.convertIfRunResult(""));
     }
 
     public void testInstantiateProvider() {
@@ -286,7 +286,7 @@ public class SurefireReflectorTest extends TestCase {
         Object booterParams = getFoo();
         Object provider = reflector.instantiateProvider(DummyProvider.class.getName(), booterParams);
         assertNotNull(provider);
-        assertEquals(provider.getClass(), DummyProvider.class);
+        assertEquals(DummyProvider.class, provider.getClass());
     }
 
     public void testSetMainCliOptions() {
@@ -294,18 +294,22 @@ public class SurefireReflectorTest extends TestCase {
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         Object booterParams = getFoo();
         reflector.setMainCliOptions(booterParams, asList(SHOW_ERRORS, LOGGING_LEVEL_DEBUG));
-        assertEquals(((BaseProviderFactory) booterParams).getMainCliOptions().size(), 2);
-        assertEquals(((BaseProviderFactory) booterParams).getMainCliOptions().get(0), SHOW_ERRORS);
-        assertEquals(((BaseProviderFactory) booterParams).getMainCliOptions().get(1), LOGGING_LEVEL_DEBUG);
+        assertEquals(2, ((BaseProviderFactory) booterParams).getMainCliOptions().size());
+        assertEquals(
+                SHOW_ERRORS,
+                ((BaseProviderFactory) booterParams).getMainCliOptions().get(0));
+        assertEquals(
+                LOGGING_LEVEL_DEBUG,
+                ((BaseProviderFactory) booterParams).getMainCliOptions().get(1));
     }
 
     public void testSetSkipAfterFailureCount() {
         SurefireReflector reflector =
                 new SurefireReflector(Thread.currentThread().getContextClassLoader());
         Foo booterParams = (Foo) getFoo();
-        assertEquals(booterParams.getSkipAfterFailureCount(), 0);
+        assertEquals(0, booterParams.getSkipAfterFailureCount());
         reflector.setSkipAfterFailureCount(booterParams, 5);
-        assertEquals(booterParams.getSkipAfterFailureCount(), 5);
+        assertEquals(5, booterParams.getSkipAfterFailureCount());
     }
 
     @SuppressWarnings("checkstyle:magicnumber")
@@ -315,7 +319,7 @@ public class SurefireReflectorTest extends TestCase {
         Foo booterParams = (Foo) getFoo();
         assertNull(booterParams.getSystemExitTimeout());
         reflector.setSystemExitTimeout(booterParams, 60);
-        assertEquals(booterParams.getSystemExitTimeout(), (Integer) 60);
+        assertEquals((Integer) 60, booterParams.getSystemExitTimeout());
     }
 
     public void testSetTestSuiteDefinitionAware() {
@@ -329,7 +333,7 @@ public class SurefireReflectorTest extends TestCase {
         assertTrue(booterParams.getTestRequest().getSuiteXmlFiles().isEmpty());
         assertNull(booterParams.getTestRequest().getTestSourceDirectory());
         assertNull(booterParams.getTestRequest().getTestListResolver());
-        assertEquals(booterParams.getTestRequest().getRerunFailingTestsCount(), 0);
+        assertEquals(0, booterParams.getTestRequest().getRerunFailingTestsCount());
     }
 
     public void testSetProviderPropertiesAware() {
@@ -339,8 +343,8 @@ public class SurefireReflectorTest extends TestCase {
         reflector.setProviderPropertiesAware(booterParams, Collections.singletonMap("k", "v"));
         assertTrue(booterParams.isCalled());
         assertNotNull(booterParams.getProviderProperties());
-        assertEquals(booterParams.getProviderProperties().size(), 1);
-        assertEquals(booterParams.getProviderProperties().get("k"), "v");
+        assertEquals(1, booterParams.getProviderProperties().size());
+        assertEquals("v", booterParams.getProviderProperties().get("k"));
     }
 
     private SurefireReflector getReflector() {
