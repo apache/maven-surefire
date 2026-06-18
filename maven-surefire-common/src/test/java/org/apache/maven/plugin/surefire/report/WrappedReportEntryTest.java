@@ -75,6 +75,14 @@ public class WrappedReportEntryTest {
     }
 
     @Test
+    public void sourceQualifiedNameFallsBackToSourceTextWithSuffix() {
+        ReportEntry reportEntry = new SimpleReportEntry(
+                NORMAL_RUN, 1L, "JunitParamsTest", "surefire.testcase.JunitParamsTest", "testSum", null);
+        WrappedReportEntry wr = new WrappedReportEntry(reportEntry, null, 1771085631L, 12, null, null);
+        assertEquals("surefire.testcase.JunitParamsTest(BDD)", wr.getSourceQualifiedName("BDD"));
+    }
+
+    @Test
     public void testDisplayNames() {
         ReportEntry reportEntry = new SimpleReportEntry(
                 NORMAL_RUN, 0L, "surefire.testcase.JunitParamsTest", "dn1", "testSum", "dn2", "exception");
