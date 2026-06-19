@@ -133,6 +133,7 @@ public final class ForkClient implements EventHandler<Event> {
                     reportEntry.getTestRunId(),
                     reportEntry.getSourceName(),
                     reportEntry.getSourceText(),
+                    reportEntry.getSourceQualifiedName(),
                     reportEntry.getName(),
                     reportEntry.getNameText(),
                     reportEntry.getGroup(),
