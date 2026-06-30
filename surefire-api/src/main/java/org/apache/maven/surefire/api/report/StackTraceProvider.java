@@ -93,6 +93,10 @@ public class StackTraceProvider {
      * Returns the stack trace as a list of "classname#methodname" strings.
      * Filters out framework classes and limits to {@value #DEFAULT_MAX_FRAMES} frames by default.
      * Returns an empty list if max frames is set to 0 or negative.
+     * <p>
+     * On Java 9+ this uses the lazy {@code java.lang.StackWalker} API (via {@link StackWalkerStrategy}) to reduce
+     * memory usage and improve performance; on Java 8, or if the {@code StackWalker} call fails, it falls back to
+     * {@link Thread#getStackTrace()}.
      *
      * @return the filtered and truncated stack trace
      */
@@ -100,8 +104,28 @@ public class StackTraceProvider {
         if (maxFrames <= 0) {
             return Collections.emptyList();
         }
+        if (StackWalkerStrategy.isAvailable()) {
+            List<String> stack = StackWalkerStrategy.walk(
+                    maxFrames, className -> isFrameworkClass(className) || isInternalClass(className));
+            if (stack != null) {
+                return stack;
+            }
+        }
+        return getStackLegacy();
+    }
+
+    /**
+     * Captures the stack using {@link Thread#getStackTrace()}. Used as a fallback on Java 8 or when the
+     * {@code StackWalker} call fails. Package-private for testing.
+     *
+     * @return the filtered and truncated stack trace
+     */
+    static List<String> getStackLegacy() {
+        if (maxFrames <= 0) {
+            return Collections.emptyList();
+        }
         return Arrays.stream(Thread.currentThread().getStackTrace())
-                .filter(e -> !isFrameworkClass(e.getClassName()))
+                .filter(e -> !isFrameworkClass(e.getClassName()) && !isInternalClass(e.getClassName()))
                 .limit(maxFrames)
                 .map(e -> e.getClassName() + "#" + e.getMethodName())
                 .collect(Collectors.toList());
@@ -114,5 +138,12 @@ public class StackTraceProvider {
             }
         }
         return false;
+    }
+
+    // Surefire's own stack-capture plumbing should never appear in the result; excluding it keeps both the
+    // StackWalker and the Thread.getStackTrace() paths equivalent and avoids wasting the frame budget.
+    private static boolean isInternalClass(String className) {
+        return className.equals(StackTraceProvider.class.getName())
+                || className.equals(StackWalkerStrategy.class.getName());
     }
 }

@@ -509,6 +509,7 @@ The new `StackTraceProvider` class (in `surefire-api`) introduces:
 - **Frame limit**: Maximum 15 frames per stack trace (sufficient to capture the test class after surefire framework frames)
 - **Package filtering**: JDK packages (`java.`, `javax.`, `sun.`, `jdk.`) filtered by default
 - **Configurable prefixes**: Users can specify custom filter prefixes that **replace** (not add to) the defaults
+- **Lazy capture on Java 9+**: When running on Java 9 or later, capture uses the JDK `java.lang.StackWalker` API (accessed via reflection in `StackWalkerStrategy`, so the code still compiles and runs on Java 8). Combined with the frame limit, `StackWalker` walks the stack lazily and stops once the limit is reached instead of materializing the whole stack, and its default options skip reflection and synthetic (lambda) frames. On Java 8, or if the `StackWalker` call fails, it transparently falls back to `Thread.getStackTrace()`.
 
 ### Memory impact
 
