@@ -126,6 +126,11 @@ public class WrappedReportEntry implements TestSetReportEntry {
     }
 
     @Override
+    public String getSourceQualifiedName() {
+        return getSourceQualifiedName(null);
+    }
+
+    @Override
     public String getName() {
         return original.getName();
     }

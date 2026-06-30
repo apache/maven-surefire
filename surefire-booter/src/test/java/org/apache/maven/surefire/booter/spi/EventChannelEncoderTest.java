@@ -84,6 +84,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -106,6 +107,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -164,6 +169,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(':');
         expectedFrame.write(0);
         expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
+        expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
         expectedFrame.write(reportEntry.getName().getBytes(UTF_8));
@@ -221,6 +230,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(':');
         expectedFrame.write(0);
         expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
+        expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
         expectedFrame.write(reportEntry.getName().getBytes(UTF_8));
@@ -276,6 +289,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -337,6 +354,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
         when(reportEntry.getSystemProperties()).thenReturn(props);
 
@@ -390,6 +408,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -450,6 +472,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -474,6 +497,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -533,6 +560,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -556,6 +584,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -615,6 +647,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -638,6 +671,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -696,6 +733,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -719,6 +757,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -777,6 +819,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -799,6 +842,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
@@ -856,6 +903,7 @@ public class EventChannelEncoderTest {
         when(reportEntry.getName()).thenReturn("my test");
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         Stream out = Stream.newStream();
@@ -879,6 +927,10 @@ public class EventChannelEncoderTest {
         expectedFrame.write(new byte[] {0, 0, 0, 1});
         expectedFrame.write(':');
         expectedFrame.write(0);
+        expectedFrame.write(':');
+        expectedFrame.write(new byte[] {0, 0, 0, 21});
+        expectedFrame.write(':');
+        expectedFrame.write(reportEntry.getSourceQualifiedName().getBytes(UTF_8));
         expectedFrame.write(':');
         expectedFrame.write(new byte[] {0, 0, 0, 7});
         expectedFrame.write(':');
