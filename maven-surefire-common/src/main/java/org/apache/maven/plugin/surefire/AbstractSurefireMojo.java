@@ -882,6 +882,33 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @Parameter
     private Map<String, String> jdkToolchain;
 
+    /**
+     * Configuration map passed to every registered
+     * {@link org.apache.maven.surefire.extensions.ForkedProcessTimeoutExtension}
+     * via
+     * {@link org.apache.maven.surefire.extensions.ForkedProcessTimeoutContext#getExtensionContext()}.
+     * <br>
+     * Extension implementations read implementation-specific keys from this
+     * map. For instance the built-in jstack extension honors the
+     * {@code jstack.output.location} key (a directory path where the
+     * {@code surefire-timeout-jstack-*.txt} files are written).
+     * <br>
+     * Example:
+     * <pre>
+     * {@code
+     *    <configuration>
+     *        <forkedProcessTimeoutExtensionContext>
+     *            <jstack.output.location>${project.build.directory}/jstacks</jstack.output.location>
+     *        </forkedProcessTimeoutExtensionContext>
+     *    </configuration>
+     *    }
+     * </pre>
+     *
+     * @since 3.6.0
+     */
+    @Parameter
+    private Map<String, String> forkedProcessTimeoutExtensionContext;
+
     @Inject
     private ToolchainManager toolchainManager;
 
@@ -2371,7 +2398,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 forkConfiguration,
                 getForkedProcessTimeoutInSeconds(),
                 startupReportConfiguration,
-                log);
+                log,
+                forkedProcessTimeoutExtensionContext);
     }
 
     private InPluginVMSurefireStarter createInprocessStarter(

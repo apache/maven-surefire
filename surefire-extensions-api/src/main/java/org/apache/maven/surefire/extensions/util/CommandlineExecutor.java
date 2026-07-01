@@ -87,6 +87,15 @@ public class CommandlineExecutor implements Closeable {
         }
     }
 
+    /**
+     * @return the underlying {@link Process}, or {@code null} when
+     *         {@link #execute()} has not yet been called or has failed
+     * @since 3.6.0
+     */
+    public Process getProcess() {
+        return process;
+    }
+
     @Override
     public void close() {
         if (shutdownHook != null) {
