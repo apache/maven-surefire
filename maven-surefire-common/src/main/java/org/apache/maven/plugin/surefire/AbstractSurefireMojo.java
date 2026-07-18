@@ -1064,7 +1064,18 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private DefaultScanResult scanDirectories() throws MojoFailureException {
-        DirectoryScanner scanner = new DirectoryScanner(getTestClassesDirectory(), getIncludedAndExcludedTests());
+        File scanDir = getTestClassesDirectory();
+        // Maven 4 Module Source Hierarchy: test classes may be nested under <module>/
+        if (scanDir != null && isNestedModuleLayout(getMainBuildPath())) {
+            File nestedModule = findNestedModuleDescriptor(getMainBuildPath());
+            if (nestedModule != null) {
+                File nestedTestDir = new File(scanDir, nestedModule.getName());
+                if (nestedTestDir.isDirectory()) {
+                    scanDir = nestedTestDir;
+                }
+            }
+        }
+        DirectoryScanner scanner = new DirectoryScanner(scanDir, getIncludedAndExcludedTests());
         return scanner.scan();
     }
 
@@ -1443,6 +1454,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         boolean isJpmsModule =
                 buildPath.isDirectory() ? new File(buildPath, "module-info.class").exists() : isModule(buildPath);
 
+        // Maven 4 Module Source Hierarchy: classes may be in target/classes/<module>/
+        if (!isJpmsModule && buildPath.isDirectory()) {
+            File nestedModuleDir = findNestedModuleDescriptor(buildPath);
+            if (nestedModuleDir != null) {
+                return findModuleDescriptor(jdkHome, nestedModuleDir, isMainDescriptor);
+            }
+        }
+
         if (!isJpmsModule) {
             return new ResolvePathResultWrapper(null, isMainDescriptor);
         }
@@ -1455,6 +1474,43 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         } catch (Exception e) {
             return new ResolvePathResultWrapper(null, isMainDescriptor);
         }
+    }
+
+    /**
+     * Whether the main build output uses the Maven 4 Module Source Hierarchy layout:
+     * no module-info.class at the root of the build output directory, but at least one
+     * immediate subdirectory containing one ({@code target/classes/<module>/}).
+     * A classic modular build (module-info.class at the root) is never nested, even if
+     * a subdirectory happens to share the module's name.
+     *
+     * @param buildPath the build output directory (e.g., target/classes)
+     * @return {@code true} for the nested module source hierarchy layout
+     */
+    private static boolean isNestedModuleLayout(File buildPath) {
+        return buildPath != null
+                && buildPath.isDirectory()
+                && !new File(buildPath, "module-info.class").exists()
+                && findNestedModuleDescriptor(buildPath) != null;
+    }
+
+    /**
+     * Searches for a module-info.class in immediate subdirectories of the given directory.
+     * This supports Maven 4 Module Source Hierarchy where compiled classes are placed
+     * in {@code target/classes/<module>/} instead of directly in {@code target/classes/}.
+     *
+     * @param buildPath the build output directory (e.g., target/classes)
+     * @return the subdirectory containing module-info.class, or null if not found
+     */
+    private static File findNestedModuleDescriptor(File buildPath) {
+        File[] subdirs = buildPath.listFiles(File::isDirectory);
+        if (subdirs != null) {
+            for (File subdir : subdirs) {
+                if (new File(subdir, "module-info.class").exists()) {
+                    return subdir;
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean isModule(File jar) {
@@ -2025,12 +2081,22 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
+        File patchFile = null;
+        if (isMainDescriptor) {
+            File testDir = getTestClassesDirectory();
+            if (testDir != null && testDir.isDirectory() && isNestedModuleLayout(getMainBuildPath())) {
+                // Maven 4 Module Source Hierarchy: test classes nested under <module>/.
+                // Only the main output layout decides — a test-classes subdirectory merely
+                // sharing the module name (module named after its root package) must not.
+                File nestedTestDir = new File(testDir, javaModuleDescriptor.name());
+                patchFile = nestedTestDir.isDirectory() ? nestedTestDir : testDir;
+            } else {
+                patchFile = testDir;
+            }
+        }
+
         ModularClasspath modularClasspath = new ModularClasspath(
-                javaModuleDescriptor.name(),
-                testModulepath.getClassPath(),
-                packages,
-                isMainDescriptor ? getTestClassesDirectory() : null,
-                isMainDescriptor);
+                javaModuleDescriptor.name(), testModulepath.getClassPath(), packages, patchFile, isMainDescriptor);
 
         Artifact[] additionalInProcArtifacts = {
             getCommonArtifact(),
