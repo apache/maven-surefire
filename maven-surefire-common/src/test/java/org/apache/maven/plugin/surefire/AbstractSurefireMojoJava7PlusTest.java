@@ -577,6 +577,34 @@ public class AbstractSurefireMojoJava7PlusTest {
         }
     }
 
+    @Test
+    public void shouldFindAllNestedModuleDescriptors() throws Exception {
+        // target/classes/{com.example.one,com.example.two}/module-info.class plus a non-module dir
+        File tempDir = Files.createTempDirectory("surefire-test-nested-modules").toFile();
+        try {
+            for (String module : new String[] {"com.example.two", "com.example.one"}) {
+                File moduleDir = new File(tempDir, module);
+                moduleDir.mkdirs();
+                new File(moduleDir, "module-info.class").createNewFile();
+            }
+            File plainDir = new File(tempDir, "META-INF");
+            plainDir.mkdirs();
+
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            assertThat(result).hasSize(2);
+            // sorted by name for deterministic module ordering
+            assertThat(result.get(0).getName()).isEqualTo("com.example.one");
+            assertThat(result.get(1).getName()).isEqualTo("com.example.two");
+        } finally {
+            for (String module : new String[] {"com.example.one", "com.example.two"}) {
+                new File(new File(tempDir, module), "module-info.class").delete();
+                new File(tempDir, module).delete();
+            }
+            new File(tempDir, "META-INF").delete();
+            tempDir.delete();
+        }
+    }
+
     private static File mockFile(String absolutePath) {
         File f = mock(File.class);
         when(f.getAbsolutePath()).thenReturn(absolutePath);
