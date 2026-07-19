@@ -24,9 +24,10 @@ import javax.annotation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -282,7 +283,8 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
      */
     private static void appendModuleInfoPatchArgs(StringBuilder args, File patchArgs, String moduleName)
             throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(patchArgs))) {
+        // explicit charset: the compiler writes the args file as UTF-8, the platform default may differ
+        try (BufferedReader reader = Files.newBufferedReader(patchArgs.toPath(), StandardCharsets.UTF_8)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
