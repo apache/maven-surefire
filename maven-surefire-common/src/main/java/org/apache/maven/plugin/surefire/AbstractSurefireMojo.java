@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -1504,6 +1505,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private static File findNestedModuleDescriptor(File buildPath) {
         File[] subdirs = buildPath.listFiles(File::isDirectory);
         if (subdirs != null) {
+            // deterministic pick independent of filesystem iteration order
+            Arrays.sort(subdirs);
             for (File subdir : subdirs) {
                 if (new File(subdir, "module-info.class").exists()) {
                     return subdir;
