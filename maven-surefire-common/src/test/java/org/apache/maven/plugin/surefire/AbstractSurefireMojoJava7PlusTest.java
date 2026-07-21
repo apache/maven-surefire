@@ -21,8 +21,11 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +62,7 @@ import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -236,7 +240,8 @@ public class AbstractSurefireMojoJava7PlusTest {
 
             verify(mojo, times(1)).effectiveIsEnableAssertions();
             verify(mojo, times(1)).isChildDelegation();
-            verify(mojo, times(1)).getTestClassesDirectory();
+            // once for the patch directory, once probing for module-info-patch.args
+            verify(mojo, times(2)).getTestClassesDirectory();
             verify(scanResult, times(1)).getClasses();
             ArgumentCaptor<String> argument1 = ArgumentCaptor.forClass(String.class);
             ArgumentCaptor<Exception> argument2 = ArgumentCaptor.forClass(Exception.class);
@@ -588,6 +593,56 @@ public class AbstractSurefireMojoJava7PlusTest {
             moduleDir.delete();
             tempDir.delete();
         }
+    }
+
+    @Test
+    public void shouldMoveHandoffModulesWithTransitiveRequires() {
+        JavaModuleDescriptor api = JavaModuleDescriptor.newModule("org.junit.jupiter.api")
+                .requires("org.junit.platform.commons")
+                .build();
+        JavaModuleDescriptor commons =
+                JavaModuleDescriptor.newModule("org.junit.platform.commons").build();
+
+        List<String> classpath = new ArrayList<>(asList("api.jar", "commons.jar", "plain.jar"));
+        List<String> modulepath = new ArrayList<>(singletonList("classes"));
+        Map<String, JavaModuleDescriptor> descriptors = new HashMap<>();
+        descriptors.put("api.jar", api);
+        descriptors.put("commons.jar", commons);
+
+        Collection<String> moved = AbstractSurefireMojo.moveHandoffModulesToModulePath(
+                new LinkedHashSet<>(singletonList("org.junit.jupiter.api")), classpath, modulepath, descriptors);
+
+        // the requested module and its transitive requires available on the classpath move
+        assertThat(moved).containsExactly("org.junit.jupiter.api", "org.junit.platform.commons");
+        assertThat(classpath).containsExactly("plain.jar");
+        assertThat(modulepath).containsExactly("classes", "api.jar", "commons.jar");
+    }
+
+    @Test
+    public void shouldMoveClasspathModulesRequiringMovedModules() {
+        JavaModuleDescriptor launcher = JavaModuleDescriptor.newModule("org.junit.platform.launcher")
+                .requires("org.junit.platform.commons")
+                .build();
+        List<String> classpath = new ArrayList<>(asList("launcher.jar", "provider.jar"));
+        List<String> modulepath = new ArrayList<>(singletonList("commons.jar"));
+        Map<String, JavaModuleDescriptor> descriptors = new HashMap<>();
+        descriptors.put("launcher.jar", launcher);
+
+        Set<String> onModulePath = new LinkedHashSet<>(singletonList("org.junit.platform.commons"));
+        AbstractSurefireMojo.moveModulesRequiringMovedModules(onModulePath, classpath, modulepath, descriptors);
+
+        // launcher requires a moved module and must follow it to the module path;
+        // the automatic-module provider jar (no requires) stays on the classpath
+        assertThat(classpath).containsExactly("provider.jar");
+        assertThat(modulepath).containsExactly("commons.jar", "launcher.jar");
+        assertThat(onModulePath).contains("org.junit.platform.launcher");
+    }
+
+    @Test
+    public void shouldBuildOpensTargetsFromAddedAndMovedModules() {
+        String targets =
+                AbstractSurefireMojo.opensTargets(new LinkedHashSet<>(asList("a.b", "c.d")), asList("c.d", "e.f"));
+        assertThat(targets).isEqualTo("ALL-UNNAMED,a.b,c.d,e.f");
     }
 
     private static File mockFile(String absolutePath) {

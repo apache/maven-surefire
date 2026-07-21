@@ -27,13 +27,17 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -2129,19 +2133,46 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         final ProviderRequirements providerRequirements;
         final Classpath testModulepath;
         List<ResolvePathResult> additionalModules = moduleDescriptor.getAdditionalResults();
+        ModuleInfoPatchArgsFile moduleInfoPatchArgs = null;
+        String reflectiveOpensTargets = null;
+        Set<String> movedTestScopeModules = new LinkedHashSet<>();
         if (isMainDescriptor) {
             providerRequirements = new ProviderRequirements(true, true, false);
+            moduleInfoPatchArgs = ModuleInfoPatchArgsFile.load(getTestClassesDirectory());
+
+            List<String> classpathElements;
+            List<String> modulepathElements;
+            Map<String, JavaModuleDescriptor> elementDescriptors;
             if (additionalModules.isEmpty()) {
                 ResolvePathsResult<String> result =
                         resolveTestClasspath(testClasspath.getClassPath(), javaModuleDescriptor, javaHome);
-                testClasspath = new Classpath(result.getClasspathElements());
-                testModulepath = new Classpath(result.getModulepathElements().keySet());
+                classpathElements = new ArrayList<>(result.getClasspathElements());
+                modulepathElements =
+                        new ArrayList<>(result.getModulepathElements().keySet());
+                elementDescriptors = result.getPathElements();
             } else {
                 ModulePathSplit split = resolveModulePathSplitForAllModules(
                         testClasspath.getClassPath(), javaModuleDescriptor, additionalModules, javaHome);
-                testClasspath = split.classpath;
-                testModulepath = split.modulepath;
+                classpathElements = new ArrayList<>(split.classpath.getClassPath());
+                modulepathElements = new ArrayList<>(split.modulepath.getClassPath());
+                elementDescriptors = split.elementDescriptors;
             }
+
+            if (moduleInfoPatchArgs != null) {
+                List<String> providerClasspathElements = new ArrayList<>(providerClasspath.getClassPath());
+                movedTestScopeModules = moveTestScopeModulesToModulePath(
+                        moduleInfoPatchArgs,
+                        classpathElements,
+                        modulepathElements,
+                        providerClasspathElements,
+                        elementDescriptors,
+                        javaModuleDescriptor,
+                        javaHome);
+                providerClasspath = new Classpath(providerClasspathElements);
+                reflectiveOpensTargets = opensTargets(moduleInfoPatchArgs.getAddedModules(), movedTestScopeModules);
+            }
+            testClasspath = new Classpath(classpathElements);
+            testModulepath = new Classpath(modulepathElements);
 
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
@@ -2177,7 +2208,25 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 // of sibling modules scanned from the other nested test directories.
                 packages.clear();
                 packages.addAll(scanTestPackages(patchFile));
-                additionalModuleArgs = createAdditionalModuleArgs(testDir, additionalModules);
+                additionalModuleArgs = createAdditionalModuleArgs(testDir, additionalModules, reflectiveOpensTargets);
+            }
+
+            if (moduleInfoPatchArgs != null) {
+                if (!movedTestScopeModules.isEmpty()) {
+                    // Classpath consumers (e.g. the surefire provider using the JUnit
+                    // launcher API) can only reach boot-layer modules that are resolved —
+                    // make every moved module a resolution root.
+                    additionalModuleArgs.add(new String[] {"--add-modules", String.join(",", movedTestScopeModules)});
+                }
+                // With the handoff file present the fork configuration emits no --add-opens
+                // itself — generate them here, where the moved module closure is known
+                // (the reflecting engine, e.g. org.junit.platform.commons, may only be on
+                // the module path via a transitive requires of the file's added modules).
+                for (String pkg : packages) {
+                    additionalModuleArgs.add(new String[] {
+                        "--add-opens", javaModuleDescriptor.name() + "/" + pkg + "=" + reflectiveOpensTargets
+                    });
+                }
             }
         }
 
@@ -2240,6 +2289,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             throws IOException {
         Set<String> modulepathElements = new LinkedHashSet<>();
         Set<String> classpathElements = new LinkedHashSet<>();
+        Map<String, JavaModuleDescriptor> elementDescriptors = new LinkedHashMap<>();
         List<JavaModuleDescriptor> allDescriptors = new ArrayList<>();
         allDescriptors.add(primary);
         for (ResolvePathResult additional : additionalModules) {
@@ -2249,23 +2299,74 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ResolvePathsResult<String> result = resolveTestClasspath(testClasspathElements, descriptor, javaHome);
             modulepathElements.addAll(result.getModulepathElements().keySet());
             classpathElements.addAll(result.getClasspathElements());
+            elementDescriptors.putAll(result.getPathElements());
         }
         classpathElements.removeAll(modulepathElements);
         return new ModulePathSplit(
-                new Classpath(new ArrayList<>(classpathElements)), new Classpath(new ArrayList<>(modulepathElements)));
+                new Classpath(new ArrayList<>(classpathElements)),
+                new Classpath(new ArrayList<>(modulepathElements)),
+                elementDescriptors);
     }
 
     /**
-     * Classpath and module path resulting from {@link #resolveModulePathSplitForAllModules}.
+     * Classpath, module path and per-element module descriptors resulting from
+     * {@link #resolveModulePathSplitForAllModules}.
      */
     private static final class ModulePathSplit {
         private final Classpath classpath;
         private final Classpath modulepath;
+        private final Map<String, JavaModuleDescriptor> elementDescriptors;
 
-        private ModulePathSplit(Classpath classpath, Classpath modulepath) {
+        private ModulePathSplit(
+                Classpath classpath, Classpath modulepath, Map<String, JavaModuleDescriptor> elementDescriptors) {
             this.classpath = classpath;
             this.modulepath = modulepath;
+            this.elementDescriptors = elementDescriptors;
         }
+    }
+
+    /**
+     * Moves the classpath elements providing the requested modules — plus the transitive
+     * {@code requires} closure available on the classpath — to the module path. Requested
+     * modules without a matching classpath element (unknown, or already on the module path)
+     * are skipped silently.
+     *
+     * @param requestedModules module names from the handoff file's {@code --add-modules}
+     * @param classpathElements mutable classpath element list (elements are removed)
+     * @param modulepathElements mutable module path element list (elements are added)
+     * @param elementDescriptors module descriptor per element, from the path resolution
+     * @return the names of the modules actually moved, in resolution order
+     */
+    static Collection<String> moveHandoffModulesToModulePath(
+            Set<String> requestedModules,
+            List<String> classpathElements,
+            List<String> modulepathElements,
+            Map<String, JavaModuleDescriptor> elementDescriptors) {
+        Map<String, String> classpathElementByModule = new LinkedHashMap<>();
+        for (String element : classpathElements) {
+            JavaModuleDescriptor descriptor = elementDescriptors.get(element);
+            if (descriptor != null && descriptor.name() != null) {
+                classpathElementByModule.putIfAbsent(descriptor.name(), element);
+            }
+        }
+
+        List<String> moved = new ArrayList<>();
+        Deque<String> queue = new ArrayDeque<>(requestedModules);
+        while (!queue.isEmpty()) {
+            String moduleName = queue.removeFirst();
+            String element = classpathElementByModule.remove(moduleName);
+            if (element == null) {
+                continue;
+            }
+            classpathElements.remove(element);
+            modulepathElements.add(element);
+            moved.add(moduleName);
+            for (JavaModuleDescriptor.JavaRequires requires :
+                    elementDescriptors.get(element).requires()) {
+                queue.addLast(requires.name());
+            }
+        }
+        return moved;
     }
 
     /**
@@ -2280,7 +2381,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * @return the Java Modules arguments, one option/value pair per entry
      * @throws MojoExecutionException if scanning a nested test directory fails
      */
-    private List<String[]> createAdditionalModuleArgs(File testDir, List<ResolvePathResult> additionalModules)
+    private List<String[]> createAdditionalModuleArgs(
+            File testDir, List<ResolvePathResult> additionalModules, String reflectiveOpensTargets)
             throws MojoExecutionException {
         List<String[]> args = new ArrayList<>();
         for (ResolvePathResult additional : additionalModules) {
@@ -2289,13 +2391,125 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             if (additionalTestDir.isDirectory()) {
                 String escapedPath = additionalTestDir.getPath().replace("\\", "\\\\");
                 args.add(new String[] {"--patch-module", additionalName + "=\"" + escapedPath + "\""});
-                args.add(new String[] {"--add-reads", additionalName + "=ALL-UNNAMED"});
+                if (reflectiveOpensTargets == null) {
+                    args.add(new String[] {"--add-reads", additionalName + "=ALL-UNNAMED"});
+                } else {
+                    // the handoff file carries the developer's --add-reads; surefire only
+                    // has to make the patched sibling a resolution root
+                    args.add(new String[] {"--add-modules", additionalName});
+                }
+                String opensTargets = reflectiveOpensTargets == null ? "ALL-UNNAMED" : reflectiveOpensTargets;
                 for (String pkg : scanTestPackages(additionalTestDir)) {
-                    args.add(new String[] {"--add-opens", additionalName + "/" + pkg + "=ALL-UNNAMED"});
+                    args.add(new String[] {"--add-opens", additionalName + "/" + pkg + "=" + opensTargets});
                 }
             }
         }
         return args;
+    }
+
+    /**
+     * #3090: with a {@code module-info-patch.args} handoff file present, the
+     * modules listed by its {@code --add-modules} (test-scope dependencies, e.g. the JUnit
+     * engine) must be named modules in the fork's boot layer, so their elements move to the
+     * module path — together with their transitive {@code requires} closure and every
+     * classpath element (test or provider classpath) requiring one of the moved modules.
+     *
+     * @return the names of all moved modules
+     * @throws IOException if the provider classpath cannot be resolved
+     */
+    private Set<String> moveTestScopeModulesToModulePath(
+            ModuleInfoPatchArgsFile moduleInfoPatchArgs,
+            List<String> classpathElements,
+            List<String> modulepathElements,
+            List<String> providerClasspathElements,
+            Map<String, JavaModuleDescriptor> elementDescriptors,
+            JavaModuleDescriptor javaModuleDescriptor,
+            String javaHome)
+            throws IOException {
+        Set<String> movedModules = new LinkedHashSet<>(moveHandoffModulesToModulePath(
+                moduleInfoPatchArgs.getAddedModules(), classpathElements, modulepathElements, elementDescriptors));
+
+        // No classpath element may require a module that just moved (e.g.
+        // junit-platform-launcher uses internals of org.junit.platform.commons; the two
+        // must stay in the same world) — move the reverse requires closure as well,
+        // including the provider classpath.
+        Map<String, JavaModuleDescriptor> providerDescriptors = resolveTestClasspath(
+                        providerClasspathElements, javaModuleDescriptor, javaHome)
+                .getPathElements();
+        boolean changed = true;
+        while (changed) {
+            int before = movedModules.size();
+            moveModulesRequiringMovedModules(movedModules, classpathElements, modulepathElements, elementDescriptors);
+            moveModulesRequiringMovedModules(
+                    movedModules, providerClasspathElements, modulepathElements, providerDescriptors);
+            changed = movedModules.size() > before;
+        }
+
+        if (!movedModules.isEmpty()) {
+            getConsoleLogger().debug("Moved test-scope modules to the module path: " + movedModules);
+        }
+        return movedModules;
+    }
+
+    /**
+     * Moves every classpath element whose module {@code requires} one of the given
+     * module-path modules to the module path as well, until a fixpoint is reached.
+     * Named modules accessing each other's internals (e.g. junit-platform-launcher and
+     * org.junit.platform.commons) must live in the same world; splitting them between
+     * classpath and module path fails with {@code IllegalAccessError} at runtime.
+     * Automatic modules have no {@code requires} and are never moved by this rule.
+     *
+     * @param modulePathModules module names already on the module path; moved names are added
+     * @param classpathElements mutable classpath element list (elements are removed)
+     * @param modulepathElements mutable module path element list (elements are added)
+     * @param elementDescriptors module descriptor per element, from the path resolution
+     */
+    static void moveModulesRequiringMovedModules(
+            Set<String> modulePathModules,
+            List<String> classpathElements,
+            List<String> modulepathElements,
+            Map<String, JavaModuleDescriptor> elementDescriptors) {
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Iterator<String> it = classpathElements.iterator(); it.hasNext(); ) {
+                String element = it.next();
+                JavaModuleDescriptor descriptor = elementDescriptors.get(element);
+                if (descriptor == null || descriptor.name() == null) {
+                    continue;
+                }
+                for (JavaModuleDescriptor.JavaRequires requires : descriptor.requires()) {
+                    if (modulePathModules.contains(requires.name())) {
+                        it.remove();
+                        modulepathElements.add(element);
+                        modulePathModules.add(descriptor.name());
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Target list for the auto-generated {@code --add-opens} of test packages when the
+     * handoff file is present: the unnamed module (provider/booter on the classpath) plus
+     * the file's added modules and every module moved to the module path with them — the
+     * reflecting engine (e.g. {@code org.junit.platform.commons}) may only be there via a
+     * transitive {@code requires}.
+     *
+     * @param addedModules module names from the handoff file's {@code --add-modules}
+     * @param movedModules module names moved by {@link #moveHandoffModulesToModulePath}
+     * @return comma-separated target module list, starting with ALL-UNNAMED
+     */
+    static String opensTargets(Set<String> addedModules, Collection<String> movedModules) {
+        Set<String> targets = new LinkedHashSet<>(addedModules);
+        targets.addAll(movedModules);
+        StringBuilder result = new StringBuilder("ALL-UNNAMED");
+        for (String target : targets) {
+            result.append(',').append(target);
+        }
+        return result.toString();
     }
 
     private ResolvePathsResult<String> resolveTestClasspath(
