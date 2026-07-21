@@ -488,50 +488,60 @@ public class AbstractSurefireMojoJava7PlusTest {
     }
 
     @Test
-    public void shouldFindNestedModuleDescriptor() throws Exception {
-        // Create a temp directory structure: target/classes/com.example/module-info.class
-        File tempDir = Files.createTempDirectory("surefire-test-nested-module").toFile();
+    public void shouldFindNestedModuleDescriptors() throws Exception {
+        // target/classes/{com.example.one,com.example.two}/module-info.class plus a non-module dir
+        File tempDir = Files.createTempDirectory("surefire-test-nested-modules").toFile();
+        File moduleOne = new File(tempDir, "com.example.one");
+        File moduleTwo = new File(tempDir, "com.example.two");
+        File descriptorOne = new File(moduleOne, "module-info.class");
+        File descriptorTwo = new File(moduleTwo, "module-info.class");
+        File plainDir = new File(tempDir, "META-INF");
         try {
-            File moduleDir = new File(tempDir, "com.example");
-            moduleDir.mkdirs();
-            new File(moduleDir, "module-info.class").createNewFile();
+            moduleOne.mkdirs();
+            moduleTwo.mkdirs();
+            descriptorOne.createNewFile();
+            descriptorTwo.createNewFile();
+            plainDir.mkdirs();
 
-            File result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptor", tempDir);
-            assertThat(result).isNotNull();
-            assertThat(result.getName()).isEqualTo("com.example");
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            // sorted by name for deterministic module ordering
+            assertThat(result).extracting(File::getName).containsExactly("com.example.one", "com.example.two");
         } finally {
-            // Cleanup
-            new File(new File(tempDir, "com.example"), "module-info.class").delete();
-            new File(tempDir, "com.example").delete();
+            descriptorOne.delete();
+            descriptorTwo.delete();
+            moduleOne.delete();
+            moduleTwo.delete();
+            plainDir.delete();
             tempDir.delete();
         }
     }
 
     @Test
-    public void shouldNotFindNestedModuleDescriptorInFlatLayout() throws Exception {
-        // Create a temp directory structure without nested module-info.class
+    public void shouldFindNoNestedModuleDescriptorsInFlatLayout() throws Exception {
+        // plain package directories without module-info.class must not count as modules
         File tempDir = Files.createTempDirectory("surefire-test-flat").toFile();
+        File pkgDir = new File(tempDir, "com/example");
+        File classFile = new File(pkgDir, "Foo.class");
         try {
-            File pkgDir = new File(tempDir, "com/example");
             pkgDir.mkdirs();
-            new File(pkgDir, "Foo.class").createNewFile();
+            classFile.createNewFile();
 
-            File result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptor", tempDir);
-            assertThat(result).isNull();
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            assertThat(result).isEmpty();
         } finally {
-            new File(new File(tempDir, "com/example"), "Foo.class").delete();
-            new File(tempDir, "com/example").delete();
-            new File(tempDir, "com").delete();
+            classFile.delete();
+            pkgDir.delete();
+            pkgDir.getParentFile().delete();
             tempDir.delete();
         }
     }
 
     @Test
-    public void shouldReturnNullForEmptyDirectory() throws Exception {
+    public void shouldFindNoNestedModuleDescriptorsInEmptyDirectory() throws Exception {
         File tempDir = Files.createTempDirectory("surefire-test-empty").toFile();
         try {
-            File result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptor", tempDir);
-            assertThat(result).isNull();
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            assertThat(result).isEmpty();
         } finally {
             tempDir.delete();
         }
@@ -544,18 +554,20 @@ public class AbstractSurefireMojoJava7PlusTest {
         // directory sharing the module name must NOT switch surefire to the nested layout.
         File tempDir =
                 Files.createTempDirectory("surefire-test-classic-modular").toFile();
+        File rootDescriptor = new File(tempDir, "module-info.class");
+        File pkgDir = new File(tempDir, "it");
+        File classFile = new File(pkgDir, "Main.class");
         try {
-            new File(tempDir, "module-info.class").createNewFile();
-            File pkgDir = new File(tempDir, "it");
+            rootDescriptor.createNewFile();
             pkgDir.mkdirs();
-            new File(pkgDir, "Main.class").createNewFile();
+            classFile.createNewFile();
 
-            boolean result = invokeMethod(AbstractSurefireMojo.class, "isNestedModuleLayout", tempDir);
-            assertThat(result).isFalse();
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "nestedModuleDirectories", tempDir);
+            assertThat(result).isEmpty();
         } finally {
-            new File(new File(tempDir, "it"), "Main.class").delete();
-            new File(tempDir, "it").delete();
-            new File(tempDir, "module-info.class").delete();
+            classFile.delete();
+            pkgDir.delete();
+            rootDescriptor.delete();
             tempDir.delete();
         }
     }
@@ -563,44 +575,17 @@ public class AbstractSurefireMojoJava7PlusTest {
     @Test
     public void shouldTreatModuleSourceHierarchyLayoutAsNested() throws Exception {
         File tempDir = Files.createTempDirectory("surefire-test-nested-layout").toFile();
+        File moduleDir = new File(tempDir, "com.example");
+        File descriptor = new File(moduleDir, "module-info.class");
         try {
-            File moduleDir = new File(tempDir, "com.example");
             moduleDir.mkdirs();
-            new File(moduleDir, "module-info.class").createNewFile();
+            descriptor.createNewFile();
 
-            boolean result = invokeMethod(AbstractSurefireMojo.class, "isNestedModuleLayout", tempDir);
-            assertThat(result).isTrue();
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "nestedModuleDirectories", tempDir);
+            assertThat(result).extracting(File::getName).containsExactly("com.example");
         } finally {
-            new File(new File(tempDir, "com.example"), "module-info.class").delete();
-            new File(tempDir, "com.example").delete();
-            tempDir.delete();
-        }
-    }
-
-    @Test
-    public void shouldFindAllNestedModuleDescriptors() throws Exception {
-        // target/classes/{com.example.one,com.example.two}/module-info.class plus a non-module dir
-        File tempDir = Files.createTempDirectory("surefire-test-nested-modules").toFile();
-        try {
-            for (String module : new String[] {"com.example.two", "com.example.one"}) {
-                File moduleDir = new File(tempDir, module);
-                moduleDir.mkdirs();
-                new File(moduleDir, "module-info.class").createNewFile();
-            }
-            File plainDir = new File(tempDir, "META-INF");
-            plainDir.mkdirs();
-
-            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
-            assertThat(result).hasSize(2);
-            // sorted by name for deterministic module ordering
-            assertThat(result.get(0).getName()).isEqualTo("com.example.one");
-            assertThat(result.get(1).getName()).isEqualTo("com.example.two");
-        } finally {
-            for (String module : new String[] {"com.example.one", "com.example.two"}) {
-                new File(new File(tempDir, module), "module-info.class").delete();
-                new File(tempDir, module).delete();
-            }
-            new File(tempDir, "META-INF").delete();
+            descriptor.delete();
+            moduleDir.delete();
             tempDir.delete();
         }
     }
