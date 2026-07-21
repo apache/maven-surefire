@@ -2140,23 +2140,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerRequirements = new ProviderRequirements(true, true, false);
             moduleInfoPatchArgs = ModuleInfoPatchArgsFile.load(getTestClassesDirectory());
 
-            List<String> classpathElements;
-            List<String> modulepathElements;
-            Map<String, JavaModuleDescriptor> elementDescriptors;
-            if (additionalModules.isEmpty()) {
-                ResolvePathsResult<String> result =
-                        resolveTestClasspath(testClasspath.getClassPath(), javaModuleDescriptor, javaHome);
-                classpathElements = new ArrayList<>(result.getClasspathElements());
-                modulepathElements =
-                        new ArrayList<>(result.getModulepathElements().keySet());
-                elementDescriptors = result.getPathElements();
-            } else {
-                ModulePathSplit split = resolveModulePathSplitForAllModules(
-                        testClasspath.getClassPath(), javaModuleDescriptor, additionalModules, javaHome);
-                classpathElements = new ArrayList<>(split.classpath.getClassPath());
-                modulepathElements = new ArrayList<>(split.modulepath.getClassPath());
-                elementDescriptors = split.elementDescriptors;
-            }
+            ModulePathSplit split =
+                    resolveModulePathSplit(testClasspath, javaModuleDescriptor, additionalModules, javaHome);
+            List<String> classpathElements = new ArrayList<>(split.classpath.getClassPath());
+            List<String> modulepathElements = new ArrayList<>(split.modulepath.getClassPath());
+            Map<String, JavaModuleDescriptor> elementDescriptors = split.elementDescriptors;
 
             if (moduleInfoPatchArgs != null) {
                 List<String> providerClasspathElements = new ArrayList<>(providerClasspath.getClassPath());
@@ -2189,19 +2177,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         List<String[]> additionalModuleArgs = new ArrayList<>();
         if (isMainDescriptor) {
             File testDir = getTestClassesDirectory();
-            boolean nestedLayout = false;
-            if (testDir != null
-                    && testDir.isDirectory()
-                    && !nestedModuleDirectories(getMainBuildPath()).isEmpty()) {
-                // Maven 4 Module Source Hierarchy: test classes nested under <module>/.
-                // Only the main output layout decides — a test-classes subdirectory merely
-                // sharing the module name (module named after its root package) must not.
-                File nestedTestDir = new File(testDir, javaModuleDescriptor.name());
-                nestedLayout = nestedTestDir.isDirectory();
-                patchFile = nestedLayout ? nestedTestDir : testDir;
-            } else {
-                patchFile = testDir;
-            }
+            patchFile = resolveModularPatchDirectory(testDir, javaModuleDescriptor.name());
+            boolean nestedLayout = patchFile != null && !patchFile.equals(testDir);
 
             if (nestedLayout) {
                 // The primary module should only open its own test packages, not those
@@ -2212,21 +2189,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             }
 
             if (moduleInfoPatchArgs != null) {
-                if (!movedTestScopeModules.isEmpty()) {
-                    // Classpath consumers (e.g. the surefire provider using the JUnit
-                    // launcher API) can only reach boot-layer modules that are resolved —
-                    // make every moved module a resolution root.
-                    additionalModuleArgs.add(new String[] {"--add-modules", String.join(",", movedTestScopeModules)});
-                }
-                // With the handoff file present the fork configuration emits no --add-opens
-                // itself — generate them here, where the moved module closure is known
-                // (the reflecting engine, e.g. org.junit.platform.commons, may only be on
-                // the module path via a transitive requires of the file's added modules).
-                for (String pkg : packages) {
-                    additionalModuleArgs.add(new String[] {
-                        "--add-opens", javaModuleDescriptor.name() + "/" + pkg + "=" + reflectiveOpensTargets
-                    });
-                }
+                additionalModuleArgs.addAll(createHandoffPassThroughArgs(
+                        movedTestScopeModules, packages, javaModuleDescriptor.name(), reflectiveOpensTargets));
             }
         }
 
@@ -2270,6 +2234,90 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     /**
+     * Splits the test classpath into classpath and module path: a plain resolution
+     * against the primary module descriptor for the single-module case, the union split
+     * over all modules for a multi-module source hierarchy build.
+     *
+     * @param testClasspath the unsplit test classpath
+     * @param javaModuleDescriptor the primary module descriptor
+     * @param additionalModules the sibling module descriptors, empty for a single module
+     * @param javaHome the JDK used for path resolution
+     * @return the classpath/module-path split
+     * @throws IOException if the location manager fails to resolve the paths
+     */
+    private ModulePathSplit resolveModulePathSplit(
+            Classpath testClasspath,
+            JavaModuleDescriptor javaModuleDescriptor,
+            List<ResolvePathResult> additionalModules,
+            String javaHome)
+            throws IOException {
+        if (additionalModules.isEmpty()) {
+            ResolvePathsResult<String> result =
+                    resolveTestClasspath(testClasspath.getClassPath(), javaModuleDescriptor, javaHome);
+            return new ModulePathSplit(
+                    new Classpath(new ArrayList<>(result.getClasspathElements())),
+                    new Classpath(new ArrayList<>(result.getModulepathElements().keySet())),
+                    result.getPathElements());
+        }
+        return resolveModulePathSplitForAllModules(
+                testClasspath.getClassPath(), javaModuleDescriptor, additionalModules, javaHome);
+    }
+
+    /**
+     * The directory patched into the module under test: the per-module nested test
+     * output directory ({@code target/test-classes/<module>/}) for a Maven 4 Module
+     * Source Hierarchy build, the test output directory itself otherwise. Only the main
+     * build output layout decides — a test-classes subdirectory merely sharing the
+     * module name (module named after its root package) must not switch the layout.
+     *
+     * @param testDir the test output directory, may be null
+     * @param moduleName the name of the module under test
+     * @return the patch directory, or null without a test output directory
+     */
+    private File resolveModularPatchDirectory(File testDir, String moduleName) {
+        if (testDir != null
+                && testDir.isDirectory()
+                && !nestedModuleDirectories(getMainBuildPath()).isEmpty()) {
+            File nestedTestDir = new File(testDir, moduleName);
+            if (nestedTestDir.isDirectory()) {
+                return nestedTestDir;
+            }
+        }
+        return testDir;
+    }
+
+    /**
+     * The pass-through arguments accompanying a verbatim {@code module-info-patch.args}
+     * emission. Two cases: every moved module becomes an explicit resolution root
+     * (classpath consumers, e.g. the surefire provider using the JUnit launcher API, can
+     * only reach boot-layer modules that are resolved), and the {@code --add-opens} for
+     * reflective test access are generated here — not in the fork configuration — because
+     * only this side knows the moved module closure (the reflecting engine, e.g.
+     * org.junit.platform.commons, may only be on the module path via a transitive
+     * requires of the file's added modules).
+     *
+     * @param movedTestScopeModules the module names moved to the module path
+     * @param packages the test packages of the module under test
+     * @param moduleName the name of the module under test
+     * @param reflectiveOpensTargets the target module list for {@code --add-opens}
+     * @return the pass-through arguments for the forked JVM
+     */
+    private static List<String[]> createHandoffPassThroughArgs(
+            Set<String> movedTestScopeModules,
+            Collection<String> packages,
+            String moduleName,
+            String reflectiveOpensTargets) {
+        List<String[]> args = new ArrayList<>();
+        if (!movedTestScopeModules.isEmpty()) {
+            args.add(new String[] {"--add-modules", String.join(",", movedTestScopeModules)});
+        }
+        for (String pkg : packages) {
+            args.add(new String[] {"--add-opens", moduleName + "/" + pkg + "=" + reflectiveOpensTargets});
+        }
+        return args;
+    }
+
+    /**
      * Splits the test classpath of a multi-module source hierarchy build into classpath
      * and module path. The fork has a single boot layer, so an element required on the
      * module path by ANY of the modules must end up there.
@@ -2310,7 +2358,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     /**
      * Classpath, module path and per-element module descriptors resulting from
-     * {@link #resolveModulePathSplitForAllModules}.
+     * {@link #resolveModulePathSplit}.
      */
     private static final class ModulePathSplit {
         private final Classpath classpath;
