@@ -96,6 +96,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <!-- explicit 3.5.1: the Maven 3.10.0(-rc-1) super-POM pins 3.5.0, which
+                     breaks modular JARs on Windows with JDK < 14 (plexus-archiver 4.10.4
+                     NPE), see https://github.com/apache/maven-jar-plugin/issues/555 -->
+                <version>3.5.1</version>
+            </plugin>
         </plugins>
     </build>
 
