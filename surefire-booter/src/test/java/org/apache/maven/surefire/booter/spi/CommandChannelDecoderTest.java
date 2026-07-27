@@ -28,12 +28,14 @@ import java.io.InputStream;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
 import org.apache.maven.surefire.api.booter.Shutdown;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.booter.ForkedNodeArg;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -61,15 +63,26 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class CommandChannelDecoderTest {
     private static final Random RND = new Random();
 
+    File reportsDir = new File("target", "decoder-dumps");
+
     @BeforeEach
     public void initTmpFile() {
         // Not a JUnit @TempDir: the decoder writes .dumpstream files into this directory,
         // and on Windows a freshly written file can be transiently locked (antivirus,
         // indexer) right when the @TempDir cleanup runs, failing the whole test class
         // with DirectoryNotEmptyException. target/ needs no post-test cleanup.
-        File reportsDir = new File("target", "decoder-dumps");
+
         String dumpFileName = "surefire-" + RND.nextLong();
         DumpErrorSingleton.getSingleton().init(reportsDir, dumpFileName);
+    }
+
+    @AfterEach
+    public void cleanTmpFile() {
+        try {
+            FileUtils.deleteDirectory(reportsDir);
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
     @Test
