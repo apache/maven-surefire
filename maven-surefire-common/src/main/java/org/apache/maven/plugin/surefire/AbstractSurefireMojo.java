@@ -172,12 +172,60 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private final ClasspathCache classpathCache = new ClasspathCache();
 
+    /**
+     * Configures the XML report, i.e. the {@code TEST-*.xml} files written to the reports directory.
+     * The nested element {@code disable} turns the report off and {@code version} selects the XSD schema
+     * version of the generated files.
+     * <br>
+     * Note: the deprecated parameter <em>disableXmlReport</em> takes precedence over {@code disable}
+     * whenever it is explicitly set, no matter which value: {@code true} disables the report and
+     * {@code false} keeps it enabled even if {@code disable} is {@code true}.
+     * <br>
+     * The XML attribute {@code implementation} may select another extension, e.g.
+     * {@link org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter
+     * JUnit5Xml30StatelessReporter} which phrases names after the JUnit 5 annotation <em>DisplayName</em>.
+     * For the complete list of nested elements, including those added by the JUnit 5
+     * variants, see <a href="https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#Surefire_Extensions_and_Reports_Configuration_for_.40DisplayName">Surefire Extensions and Reports Configuration for @DisplayName</a>.
+     *
+     * @see SurefireStatelessReporter
+     * @since 3.0.0-M4
+     */
     @Parameter
     private SurefireStatelessReporter statelessTestsetReporter;
 
+    /**
+     * Configures the reporter of the standard output and error streams captured from the tests. The streams
+     * are written to the {@code *-output.txt} files in the reports directory if
+     * {@code redirectTestOutputToFile} is enabled, and printed to the console otherwise. The nested element
+     * {@code disable} drops the captured output altogether and {@code encoding} selects the charset of the
+     * output files.
+     * <br>
+     * The XML attribute {@code implementation} may select another extension, e.g.
+     * {@link org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter
+     * JUnit5ConsoleOutputReporter} which phrases the file names after the JUnit 5 annotation
+     * <em>DisplayName</em>. For the complete list of nested elements, including those added by the JUnit 5
+     * variants, see <a href="https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#Surefire_Extensions_and_Reports_Configuration_for_.40DisplayName">Surefire Extensions and Reports Configuration for @DisplayName</a>.
+     *
+     * @see SurefireConsoleOutputReporter
+     * @since 3.0.0-M4
+     */
     @Parameter
     private SurefireConsoleOutputReporter consoleOutputReporter;
 
+    /**
+     * Configures the reporter of the per test-set summary, i.e. the <em>Running</em> and <em>Tests run</em>
+     * lines printed to the console and written to the plain text {@code *.txt} files in the reports
+     * directory. The nested element {@code disable} turns off both the console and the file summary.
+     * <br>
+     * The XML attribute {@code implementation} may select another extension, e.g.
+     * {@link org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter
+     * JUnit5StatelessTestsetInfoReporter} which phrases names after the JUnit 5 annotation
+     * <em>DisplayName</em>. For the complete list of nested elements, including those added by the JUnit 5
+     * variants, see <a href="https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#Surefire_Extensions_and_Reports_Configuration_for_.40DisplayName">Surefire Extensions and Reports Configuration for @DisplayName</a>.
+     *
+     * @see SurefireStatelessTestsetInfoReporter
+     * @since 3.0.0-M4
+     */
     @Parameter
     private SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter;
 
