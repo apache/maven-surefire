@@ -24,6 +24,7 @@ import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that {@code -DskipTests} only skips Surefire (unit tests) and no longer skips
@@ -33,6 +34,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  * @see <a href="https://github.com/apache/maven-surefire/issues/1766">Surefire #1766 / SUREFIRE-823</a>
  */
 public class Surefire1766SkipTestsDecoupledIT extends SurefireJUnit4IntegrationTestCase {
+
+    @Test
+    public void noSkipShouldRunBoth() {
+        FailsafeOutputValidator validator = unpack().executeVerify();
+
+        validator.verifyErrorFreeLog();
+        // Baseline: with no skip flag, both Surefire (unit tests) and Failsafe (integration tests) run
+        validator.assertTestSuiteResults(1, 0, 0, 0);
+        validator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
+    }
 
     @Test
     public void skipTestsShouldOnlySkipSurefireNotFailsafe() {
@@ -47,6 +58,9 @@ public class Surefire1766SkipTestsDecoupledIT extends SurefireJUnit4IntegrationT
                 validator.getSubFile("target/surefire-reports").exists(),
                 "surefire-reports should not exist when -DskipTests is used");
         // Failsafe (integration tests) still runs the IT
+        assertTrue(
+                validator.getSubFile("target/failsafe-reports").exists(),
+                "failsafe-reports should exist when -DskipTests is used (ITs still run)");
         validator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
     }
 
@@ -57,6 +71,9 @@ public class Surefire1766SkipTestsDecoupledIT extends SurefireJUnit4IntegrationT
         validator.verifyErrorFreeLog();
         // Surefire still runs the unit test
         validator.assertTestSuiteResults(1, 0, 0, 0);
+        assertTrue(
+                validator.getSubFile("target/surefire-reports").exists(),
+                "surefire-reports should exist when -DskipITs is used (unit tests still run)");
         // Failsafe is skipped: no failsafe-reports directory is produced
         assertFalse(
                 validator.getSubFile("target/failsafe-reports").exists(),
