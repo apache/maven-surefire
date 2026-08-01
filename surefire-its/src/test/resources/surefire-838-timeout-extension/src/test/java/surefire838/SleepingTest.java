@@ -24,6 +24,6 @@ public class SleepingTest {
 
     @Test
     public void sleepsLongerThanTimeout() throws Exception {
-        Thread.sleep(120_000L);
+        Thread.sleep(30_000L);
     }
 }
