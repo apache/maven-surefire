@@ -31,9 +31,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Marked {@link Isolated} because these tests mutate the global {@code surefire.timeout.jstack.enabled}
+ * system property; running concurrently with other test classes that read {@link System#getProperties()}
+ * (for example {@code StatelessXmlReporterTest}) would be unsafe.
+ */
+@Isolated
 class JstackTimeoutExtensionTest {
 
     @TempDir
