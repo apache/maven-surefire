@@ -46,6 +46,7 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -177,6 +178,37 @@ public class JUnitPlatformProviderTest {
                 .isEqualTo(FailingWithErrorBeforeAllJupiterTest.class.getName());
 
         assertThat(testSetCaptor.getAllValues().get(1).getName()).isNull();
+    }
+
+    @Test
+    public void shouldErrorClassOnAfterAll() throws Exception {
+        TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
+
+        RunListenerAdapter adapter = new RunListenerAdapter(listener, Stoppable.NOOP);
+        adapter.setRunMode(NORMAL_RUN);
+
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(providerParametersMock(), createLauncherSessionWithListeners(adapter));
+
+        ArgumentCaptor<ReportEntry> testCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        ArgumentCaptor<TestSetReportEntry> testSetCaptor = ArgumentCaptor.forClass(TestSetReportEntry.class);
+
+        TestsToRun testsToRun = newTestsToRun(FailingWithErrorAfterAllJupiterTest.class);
+        invokeProvider(provider, testsToRun);
+        InOrder inOrder = inOrder(listener);
+        inOrder.verify(listener, times(1)).testSetStarting(testSetCaptor.capture());
+        inOrder.verify(listener, times(1)).testStarting(any(ReportEntry.class));
+        inOrder.verify(listener, times(1)).testSucceeded(any(ReportEntry.class));
+        inOrder.verify(listener, times(1)).testError(testCaptor.capture());
+        inOrder.verify(listener, times(1)).testSetCompleted(testSetCaptor.capture());
+
+        assertThat(testCaptor.getValue().getSourceName())
+                .isEqualTo(FailingWithErrorAfterAllJupiterTest.class.getName());
+        // AfterAll must be reported as executionError (not initializationError) so reporters
+        // keep it as a real error instead of a flaky BeforeAll (#3412).
+        assertThat(testCaptor.getValue().getName()).isEqualTo("executionError");
+        // Teardown failures must not be recorded for rerun of already-passing tests
+        assertThat(adapter.hasFailingTests()).isFalse();
     }
 
     @Test
@@ -1430,6 +1462,17 @@ public class JUnitPlatformProviderTest {
         @BeforeAll
         static void oneTimeSetUp() {
             throw new RuntimeException("oneTimeSetUp() threw an exception");
+        }
+
+        @org.junit.jupiter.api.Test
+        void test() {}
+    }
+
+    static class FailingWithErrorAfterAllJupiterTest {
+
+        @AfterAll
+        static void oneTimeTearDown() {
+            throw new RuntimeException("oneTimeTearDown() threw an exception");
         }
 
         @org.junit.jupiter.api.Test

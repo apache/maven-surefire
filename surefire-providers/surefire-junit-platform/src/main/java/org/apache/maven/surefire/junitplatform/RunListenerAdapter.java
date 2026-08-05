@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -58,12 +59,28 @@ import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
  * @since 2.22.0
  */
 final class RunListenerAdapter implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter {
+    /**
+     * Report name for class-level failures that happen before any test method runs
+     * (e.g. {@code @BeforeAll} / {@code @BeforeClass}). Eligible for flaky-BeforeAll
+     * special-casing when a later rerun succeeds.
+     */
     private static final String INITIALIZATION_ERROR = "initializationError";
+
+    /**
+     * Report name for class-level failures that happen after at least one test method
+     * already succeeded (e.g. {@code @AfterAll} / {@code @AfterClass}). Must not be
+     * treated as a flaky BeforeAll — these are real errors and must not trigger
+     * needless re-execution of already-passing tests (#3412).
+     */
+    private static final String EXECUTION_ERROR = "executionError";
 
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
+    /** Class names that had at least one successful test method in the current adapter cycle. */
+    private final Set<String> classesWithSuccessfulTests = ConcurrentHashMap.newKeySet();
+
     private final TestReportListener<TestOutputReportEntry> runListener;
     private final Stoppable stoppable;
     private volatile TestPlan testPlan;
@@ -153,12 +170,21 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
-                    failures.put(testIdentifier, testExecutionResult);
+                    // Do not record AfterAll/AfterClass container failures for rerun: the test
+                    // methods already passed, and re-executing them cannot fix a deterministic
+                    // teardown failure (#3412).
+                    if (!(isClass && EXECUTION_ERROR.equals(reportEntry.getName()))) {
+                        failures.put(testIdentifier, testExecutionResult);
+                    }
                     fireStopEvent();
                     break;
                 default:
                     if (isTest) {
-                        runListener.testSucceeded(createReportEntry(testIdentifier, null, elapsed));
+                        SimpleReportEntry succeeded = createReportEntry(testIdentifier, null, elapsed);
+                        runListener.testSucceeded(succeeded);
+                        if (succeeded.getSourceName() != null) {
+                            classesWithSuccessfulTests.add(succeeded.getSourceName());
+                        }
                     } else {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
@@ -244,8 +270,16 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 && testExecutionResult.getStatus() != org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL
                 && testIdentifier.isContainer()
                 && methodName == null) {
-            methodName = INITIALIZATION_ERROR;
-            methodText = INITIALIZATION_ERROR;
+            // BeforeAny tests ran → setup failure; after tests succeeded → teardown failure.
+            // Distinguishing them keeps AfterAll/AfterClass errors from being misclassified as
+            // flaky BeforeAll failures (#3412 / regression since 3.5.5).
+            if (className != null && classesWithSuccessfulTests.contains(className)) {
+                methodName = EXECUTION_ERROR;
+                methodText = EXECUTION_ERROR;
+            } else {
+                methodName = INITIALIZATION_ERROR;
+                methodText = INITIALIZATION_ERROR;
+            }
         }
 
         if (Objects.equals(methodName, methodText)) {
@@ -549,6 +583,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     void reset() {
         getFailures().clear();
         testPlan = null;
+        classesWithSuccessfulTests.clear();
     }
 
     @Override

@@ -464,6 +464,37 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void notifiedWithExecutionErrorWhenClassFailsAfterSuccessfulTest() throws Exception {
+        // Simulates @AfterAll: a test method already succeeded, then the class container fails.
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        EngineDescriptor engineDescriptor = newEngineDescriptor();
+        TestDescriptor classDescriptor = newClassDescriptor();
+        TestDescriptor methodDescriptor = newMethodDescriptor();
+        engineDescriptor.addChild(classDescriptor);
+        classDescriptor.addChild(methodDescriptor);
+
+        TestPlan testPlan = TestPlan.from(false, singleton(engineDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(testPlan);
+
+        TestIdentifier classIdentifier = TestIdentifier.from(classDescriptor);
+        TestIdentifier methodIdentifier = TestIdentifier.from(methodDescriptor);
+
+        adapter.executionStarted(classIdentifier);
+        adapter.executionStarted(methodIdentifier);
+        adapter.executionFinished(methodIdentifier, successful());
+        adapter.executionFinished(classIdentifier, failed(new RuntimeException("AfterAll always fails")));
+
+        verify(listener).testSucceeded(any());
+        verify(listener).testError(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        assertEquals(MyTestClass.class.getTypeName(), entry.getSourceName());
+        assertEquals("executionError", entry.getName());
+        // AfterAll must not be queued for rerun of already-passing tests (#3412)
+        assertThat(adapter.hasFailingTests()).isFalse();
+    }
+
+    @Test
     public void notifiedWithCorrectNamesWhenContainerFailed() throws Exception {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
         TestPlan testPlan = TestPlan.from(
