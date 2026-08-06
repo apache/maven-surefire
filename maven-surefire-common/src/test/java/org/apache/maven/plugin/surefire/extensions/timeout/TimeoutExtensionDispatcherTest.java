@@ -47,8 +47,7 @@ class TimeoutExtensionDispatcherTest {
 
     @Test
     void hasExtensionsReportsEmptyList() {
-        TimeoutExtensionDispatcher d =
-                new TimeoutExtensionDispatcher(logger, Collections.emptyList());
+        TimeoutExtensionDispatcher d = new TimeoutExtensionDispatcher(logger, Collections.emptyList());
         assertThat(d.hasExtensions()).isFalse();
         d.fireTimeoutDetected(context());
         d.fireForkExited(context(), new RunResult(0, 0, 0, 0));
@@ -184,8 +183,7 @@ class TimeoutExtensionDispatcherTest {
         Map<String, String> config = Collections.singletonMap("jstack.output.location", "/tmp/dumps");
         ForkedProcessTimeoutContext ctx =
                 new DefaultForkedProcessTimeoutContext(123L, 2, new File("/java"), new File("."), 60, logger, config);
-        TimeoutExtensionDispatcher d =
-                new TimeoutExtensionDispatcher(logger, Collections.singletonList(ext));
+        TimeoutExtensionDispatcher d = new TimeoutExtensionDispatcher(logger, Collections.singletonList(ext));
         try {
             d.fireTimeoutDetected(ctx);
         } finally {
