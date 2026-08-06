@@ -24,6 +24,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -53,6 +55,8 @@ import org.apache.maven.plugin.surefire.booterclient.output.ForkClient;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdErrStreamConsumer;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
+import org.apache.maven.plugin.surefire.extensions.timeout.DefaultForkedProcessTimeoutContext;
+import org.apache.maven.plugin.surefire.extensions.timeout.TimeoutExtensionDispatcher;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.plugin.surefire.report.ReportsMerger;
@@ -72,6 +76,7 @@ import org.apache.maven.surefire.booter.SurefireExecutionException;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
+import org.apache.maven.surefire.extensions.ForkedProcessTimeoutContext;
 import org.apache.maven.surefire.extensions.Stoppable;
 import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 import org.apache.maven.surefire.extensions.util.CommandlineStreams;
@@ -103,6 +108,7 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
+import static org.apache.maven.surefire.booter.SystemUtils.pidOf;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
@@ -144,6 +150,10 @@ public class ForkStarter {
     private final Queue<ForkClient> currentForkClients;
 
     private final int forkedProcessTimeoutInSeconds;
+
+    private final TimeoutExtensionDispatcher timeoutExtensionDispatcher;
+
+    private final Map<String, String> forkedProcessTimeoutExtensionContext;
 
     private final ProviderConfiguration providerConfiguration;
 
@@ -227,17 +237,39 @@ public class ForkStarter {
             int forkedProcessTimeoutInSeconds,
             StartupReportConfiguration startupReportConfiguration,
             ConsoleLogger log) {
+        this(
+                providerConfiguration,
+                startupConfiguration,
+                forkConfiguration,
+                forkedProcessTimeoutInSeconds,
+                startupReportConfiguration,
+                log,
+                null);
+    }
+
+    public ForkStarter(
+            ProviderConfiguration providerConfiguration,
+            StartupConfiguration startupConfiguration,
+            ForkConfiguration forkConfiguration,
+            int forkedProcessTimeoutInSeconds,
+            StartupReportConfiguration startupReportConfiguration,
+            ConsoleLogger log,
+            Map<String, String> forkedProcessTimeoutExtensionContext) {
         this.forkConfiguration = forkConfiguration;
         this.providerConfiguration = providerConfiguration;
         this.forkedProcessTimeoutInSeconds = forkedProcessTimeoutInSeconds;
         this.startupConfiguration = startupConfiguration;
         this.startupReportConfiguration = startupReportConfiguration;
         this.log = log;
+        this.forkedProcessTimeoutExtensionContext = forkedProcessTimeoutExtensionContext == null
+                ? Collections.<String, String>emptyMap()
+                : Collections.unmodifiableMap(new HashMap<>(forkedProcessTimeoutExtensionContext));
         reportMerger = new DefaultReporterFactory(startupReportConfiguration, log);
         reportMerger.runStarting();
         defaultReporterFactories = new ConcurrentLinkedQueue<>();
         currentForkClients = new ConcurrentLinkedQueue<>();
         timeoutCheckScheduler = createTimeoutCheckScheduler();
+        timeoutExtensionDispatcher = new TimeoutExtensionDispatcher(log);
         triggerTimeoutCheck();
     }
 
@@ -252,6 +284,7 @@ public class ForkStarter {
             reportMerger.close();
             pingThreadScheduler.shutdownNow();
             timeoutCheckScheduler.shutdownNow();
+            timeoutExtensionDispatcher.close();
             for (String line : logsAtEnd) {
                 log.warning(line);
             }
@@ -549,6 +582,7 @@ public class ForkStarter {
         currentForkClients.add(forkClient);
         CountdownCloseable countdownCloseable =
                 new CountdownCloseable(eventConsumer, forkChannel.getCountdownCloseablePermits());
+        final ForkedProcessTimeoutContext[] timeoutContextHolder = new ForkedProcessTimeoutContext[1];
         try (CommandlineExecutor exec = new CommandlineExecutor(cli, countdownCloseable)) {
             forkChannel.tryConnectToClient();
             CommandlineStreams streams = exec.execute();
@@ -561,6 +595,21 @@ public class ForkStarter {
             forkChannel.bindEventHandler(eventConsumer, countdownCloseable, streams.getStdOutChannel());
 
             log.debug("Fork Channel [" + forkNumber + "] connected to the client.");
+
+            if (timeoutExtensionDispatcher.hasExtensions() && forkedProcessTimeoutInSeconds > 0) {
+                Long pid = pidOf(exec.getProcess());
+                File javaExecutable = cli.getExecutable() == null ? null : new File(cli.getExecutable());
+                final ForkedProcessTimeoutContext context = new DefaultForkedProcessTimeoutContext(
+                        pid == null ? -1L : pid,
+                        forkNumber,
+                        javaExecutable,
+                        startupReportConfiguration.getReportsDirectory(),
+                        forkedProcessTimeoutInSeconds,
+                        log,
+                        forkedProcessTimeoutExtensionContext);
+                timeoutContextHolder[0] = context;
+                forkClient.setTimeoutDetectedListener(() -> timeoutExtensionDispatcher.fireTimeoutDetected(context));
+            }
 
             result = exec.awaitExit();
 
@@ -594,6 +643,10 @@ public class ForkStarter {
                 runResult = reporter.getGlobalRunStatistics().getRunResult();
             }
             forkClient.close(runResult.isTimeout());
+
+            if (runResult.isTimeout() && timeoutContextHolder[0] != null) {
+                timeoutExtensionDispatcher.fireForkExited(timeoutContextHolder[0], runResult);
+            }
 
             if (!runResult.isTimeout()) {
                 Throwable cause = booterForkException == null ? null : booterForkException.getCause();

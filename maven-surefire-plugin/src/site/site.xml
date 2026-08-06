@@ -64,6 +64,8 @@
       <item name="Fork Options and Parallel Test Execution" href="examples/fork-options-and-parallel-execution.html"/>
       <item name="Using Console Logs" href="examples/logging.html"/>
       <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
+      <item name="Forked Process Timeout Extension" href="examples/timeout-extension.html"/>
+      <item name="Forked Process Timeout Extension — Guide" href="timeout-extension-guide.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
       <item name="Run tests in a different JVM using toolchains" href="examples/toolchains.html"/>
     </menu>
