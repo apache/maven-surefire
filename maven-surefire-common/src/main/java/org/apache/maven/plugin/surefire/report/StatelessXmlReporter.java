@@ -460,7 +460,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         ppw.addAttribute("name", name == null ? "" : extraEscapeAttribute(name));
 
         if (report.getGroup() != null) {
-            ppw.addAttribute("group", report.getGroup());
+            ppw.addAttribute("group", extraEscapeAttribute(report.getGroup()));
         }
 
         String className = phrasedClassName
@@ -488,8 +488,8 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         ppw.startElement("testsuite");
 
         ppw.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        ppw.addAttribute("xsi:noNamespaceSchemaLocation", xsdSchemaLocation);
-        ppw.addAttribute("version", xsdVersion);
+        ppw.addAttribute("xsi:noNamespaceSchemaLocation", extraEscapeAttribute(xsdSchemaLocation));
+        ppw.addAttribute("version", extraEscapeAttribute(xsdVersion));
 
         String reportName = phrasedSuiteName
                 ? report.getReportSourceName(reportNameSuffix)
@@ -497,7 +497,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         ppw.addAttribute("name", reportName == null ? "" : extraEscapeAttribute(reportName));
 
         if (report.getGroup() != null) {
-            ppw.addAttribute("group", report.getGroup());
+            ppw.addAttribute("group", extraEscapeAttribute(report.getGroup()));
         }
 
         if (report.getElapsed() != null) {
@@ -575,10 +575,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 if (t.getMessage() != null) {
                     int delimiter = stackTrace.indexOf(":");
                     String type = delimiter == -1 ? stackTrace : stackTrace.substring(0, delimiter);
-                    ppw.addAttribute("type", type);
+                    ppw.addAttribute("type", extraEscapeAttribute(type));
                 } else {
                     if (isNotBlank(stackTrace)) {
-                        ppw.addAttribute("type", new StringTokenizer(stackTrace).nextToken());
+                        ppw.addAttribute("type", extraEscapeAttribute(new StringTokenizer(stackTrace).nextToken()));
                     }
                 }
             }
@@ -607,25 +607,26 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     private static void createOutErrElements(
             OutputStreamWriter outputStreamWriter, XMLWriter ppw, WrappedReportEntry report, OutputStream fw)
             throws IOException {
-        EncodingOutputStream eos = new EncodingOutputStream(fw);
-        addOutputStreamElement(outputStreamWriter, eos, ppw, report.getStdout(), "system-out");
-        addOutputStreamElement(outputStreamWriter, eos, ppw, report.getStdErr(), "system-err");
+        addOutputStreamElement(outputStreamWriter, ppw, report.getStdout(), "system-out", fw);
+        addOutputStreamElement(outputStreamWriter, ppw, report.getStdErr(), "system-err", fw);
     }
 
     private static void addOutputStreamElement(
             OutputStreamWriter outputStreamWriter,
-            EncodingOutputStream eos,
             XMLWriter xmlWriter,
             Utf8RecodingDeferredFileOutputStream utf8RecodingDeferredFileOutputStream,
-            String name)
+            String name,
+            OutputStream fw)
             throws IOException {
         if (utf8RecodingDeferredFileOutputStream != null && utf8RecodingDeferredFileOutputStream.getByteCount() > 0) {
+            EncodingOutputStream eos = new EncodingOutputStream(fw);
             xmlWriter.startElement(name);
             xmlWriter.writeText(""); // Cheat sax to emit element
             outputStreamWriter.flush();
             eos.getUnderlying().write(ByteConstantsHolder.CDATA_START_BYTES); // emit cdata
             utf8RecodingDeferredFileOutputStream.writeTo(eos);
             utf8RecodingDeferredFileOutputStream.free();
+            eos.finish();
             eos.getUnderlying().write(ByteConstantsHolder.CDATA_END_BYTES);
             eos.flush();
             xmlWriter.endElement();
@@ -650,7 +651,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
             xmlWriter.startElement("property");
 
-            xmlWriter.addAttribute("name", key);
+            xmlWriter.addAttribute("name", extraEscapeAttribute(key));
 
             xmlWriter.addAttribute("value", extraEscapeAttribute(value));
 
@@ -687,6 +688,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             outputStreamWriter.flush();
             eos.getUnderlying().write(ByteConstantsHolder.CDATA_START_BYTES);
             eos.write(message.getBytes(UTF_8));
+            eos.finish();
             eos.getUnderlying().write(ByteConstantsHolder.CDATA_END_BYTES);
             eos.flush();
         }
@@ -710,9 +712,25 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     }
 
     private static final class EncodingOutputStream extends FilterOutputStream {
-        private int c1;
+        private int c1 = -1;
 
-        private int c2;
+        private int c2 = -1;
+
+        private int codePoint;
+
+        private int expectedBytes;
+
+        private int sequenceLength;
+
+        private int sequenceByte1;
+
+        private int sequenceByte2;
+
+        private int sequenceByte3;
+
+        private int sequenceByte4;
+
+        private int minimumCodePoint;
 
         EncodingOutputStream(OutputStream out) {
             super(out);
@@ -728,17 +746,126 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
         @Override
         public void write(int b) throws IOException {
+            int value = b & 0xFF;
+            if (expectedBytes == 0) {
+                if (value <= 0x7F) {
+                    writeCodePoint(value);
+                } else if (value >= 0xC2 && value <= 0xDF) {
+                    startSequence(value, 2, 0x80);
+                } else if (value >= 0xE0 && value <= 0xEF) {
+                    startSequence(value, 3, 0x800);
+                } else if (value >= 0xF0 && value <= 0xF4) {
+                    startSequence(value, 4, 0x10000);
+                } else {
+                    writeReplacementCharacter();
+                }
+            } else if ((value & 0xC0) == 0x80) {
+                appendSequenceByte(value);
+                if (sequenceLength == expectedBytes) {
+                    finishSequence();
+                }
+            } else {
+                writeReplacementCharacter();
+                resetSequence();
+                write(value);
+            }
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            for (int i = off; i < off + len; i++) {
+                write(b[i] & 0xFF);
+            }
+        }
+
+        void finish() throws IOException {
+            if (expectedBytes != 0) {
+                writeReplacementCharacter();
+                resetSequence();
+            }
+        }
+
+        private void startSequence(int firstByte, int length, int minimumCodePoint) {
+            expectedBytes = length;
+            sequenceLength = 1;
+            sequenceByte1 = firstByte;
+            codePoint = firstByte & (0x7F >> length);
+            this.minimumCodePoint = minimumCodePoint;
+        }
+
+        private void appendSequenceByte(int value) {
+            sequenceLength++;
+            if (sequenceLength == 2) {
+                sequenceByte2 = value;
+            } else if (sequenceLength == 3) {
+                sequenceByte3 = value;
+            } else {
+                sequenceByte4 = value;
+            }
+            codePoint = (codePoint << 6) | (value & 0x3F);
+        }
+
+        private void finishSequence() throws IOException {
+            int completedCodePoint = codePoint;
+            int completedSequenceLength = sequenceLength;
+            int completedMinimumCodePoint = minimumCodePoint;
+            int byte1 = sequenceByte1;
+            int byte2 = sequenceByte2;
+            int byte3 = sequenceByte3;
+            int byte4 = sequenceByte4;
+            resetSequence();
+
+            if (completedCodePoint < completedMinimumCodePoint
+                    || completedCodePoint > 0x10FFFF
+                    || (completedCodePoint >= 0xD800 && completedCodePoint <= 0xDFFF)) {
+                writeReplacementCharacter();
+            } else if (isIllegalEscape(completedCodePoint)) {
+                writeEscapedCodePoint(completedCodePoint);
+            } else {
+                writeCdataByte(byte1);
+                if (completedSequenceLength >= 2) {
+                    writeCdataByte(byte2);
+                }
+                if (completedSequenceLength >= 3) {
+                    writeCdataByte(byte3);
+                }
+                if (completedSequenceLength == 4) {
+                    writeCdataByte(byte4);
+                }
+            }
+        }
+
+        private void resetSequence() {
+            codePoint = 0;
+            expectedBytes = 0;
+            sequenceLength = 0;
+            minimumCodePoint = 0;
+        }
+
+        private void writeCodePoint(int codePoint) throws IOException {
+            if (isIllegalEscape(codePoint)) {
+                writeEscapedCodePoint(codePoint);
+            } else {
+                writeCdataByte(codePoint);
+            }
+        }
+
+        private void writeReplacementCharacter() throws IOException {
+            for (byte b : ByteConstantsHolder.REPLACEMENT_CHARACTER_BYTES) {
+                writeCdataByte(b & 0xFF);
+            }
+        }
+
+        private void writeEscapedCodePoint(int codePoint) throws IOException {
+            byte[] escaped = ("&amp#" + codePoint + ";").getBytes(UTF_8);
+            for (byte b : escaped) {
+                writeCdataByte(b & 0xFF);
+            }
+        }
+
+        private void writeCdataByte(int b) throws IOException {
             if (isCdataEndBlock(b)) {
                 out.write(ByteConstantsHolder.CDATA_ESCAPE_STRING_BYTES);
-            } else if (isIllegalEscape(b)) {
-                // uh-oh!  This character is illegal in XML 1.0!
-                // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
-                // we're going to deliberately doubly-XML escape it...
-                // there's nothing better we can do! :-(
-                // SUREFIRE-456
-                out.write(ByteConstantsHolder.AMP_BYTES);
-                out.write(String.valueOf(b).getBytes(UTF_8));
-                out.write(';'); // & Will be encoded to amp inside xml encodingSHO
             } else {
                 out.write(b);
             }
@@ -748,21 +875,23 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     }
 
     private static boolean containsEscapesIllegalXml10(String message) {
-        int size = message.length();
-        for (int i = 0; i < size; i++) {
-            if (isIllegalEscape(message.charAt(i))) {
+        for (int i = 0; i < message.length(); ) {
+            int codePoint = message.codePointAt(i);
+            if (isIllegalEscape(codePoint)) {
                 return true;
             }
+            i += Character.charCount(codePoint);
         }
         return false;
     }
 
-    private static boolean isIllegalEscape(char c) {
-        return isIllegalEscape((int) c);
-    }
-
     private static boolean isIllegalEscape(int c) {
-        return c >= 0 && c < 32 && c != '\n' && c != '\r' && c != '\t';
+        return !(c == 0x9
+                || c == 0xA
+                || c == 0xD
+                || (c >= 0x20 && c <= 0xD7FF)
+                || (c >= 0xE000 && c <= 0xFFFD)
+                || (c >= 0x10000 && c <= 0x10FFFF));
     }
 
     /**
@@ -774,20 +903,21 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
      */
     private static String escapeXml(String text, boolean attribute) {
         StringBuilder sb = new StringBuilder(text.length() * 2);
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (isIllegalEscape(c)) {
+        for (int i = 0; i < text.length(); ) {
+            int codePoint = text.codePointAt(i);
+            if (isIllegalEscape(codePoint)) {
                 // uh-oh!  This character is illegal in XML 1.0!
                 // http://www.w3.org/TR/1998/REC-xml-19980210#charsets
                 // we're going to deliberately doubly-XML escape it...
                 // there's nothing better we can do! :-(
                 // SUREFIRE-456
                 sb.append(attribute ? "&#" : "&amp#")
-                        .append((int) c)
+                        .append(codePoint)
                         .append(';'); // & Will be encoded to amp inside xml encodingSHO
             } else {
-                sb.append(c);
+                sb.appendCodePoint(codePoint);
             }
+            i += Character.charCount(codePoint);
         }
         return sb.toString();
     }
@@ -799,7 +929,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
         private static final byte[] CDATA_ESCAPE_STRING_BYTES = "]]><![CDATA[>".getBytes(UTF_8);
 
-        private static final byte[] AMP_BYTES = "&amp#".getBytes(UTF_8);
+        private static final byte[] REPLACEMENT_CHARACTER_BYTES = "\uFFFD".getBytes(UTF_8);
 
         private static final byte[] COMMENT_START = "<!-- ".getBytes(UTF_8);
 
