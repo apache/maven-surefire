@@ -817,6 +817,21 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void shouldUseAbsoluteTmpDirectory() throws IOException {
+        File targetDir = Files.createTempDirectory(tempFolder, "target").toFile();
+        File absoluteTempDir = tempFolder.resolve("surefire-tmp").toFile();
+
+        Mojo mojo = new Mojo();
+        mojo.setProjectBuildDirectory(targetDir);
+        mojo.setTempDir(absoluteTempDir.getAbsolutePath());
+
+        File bootDir = mojo.createSurefireBootDirectoryInTemp();
+
+        assertThat(bootDir).isDirectory();
+        assertThat(bootDir.getCanonicalFile()).isEqualTo(absoluteTempDir.getCanonicalFile());
+    }
+
+    @Test
     public void shouldSmartlyResolveJUnit5ProviderWithJUnit4() throws Exception {
         MavenProject mavenProject = new MavenProject();
         mavenProject.setArtifact(new DefaultArtifact(
