@@ -45,16 +45,6 @@ public final class DefaultForkedProcessTimeoutContext implements ForkedProcessTi
             File javaExecutable,
             File reportsDirectory,
             int timeoutSeconds,
-            ConsoleLogger logger) {
-        this(pid, forkNumber, javaExecutable, reportsDirectory, timeoutSeconds, logger, null);
-    }
-
-    public DefaultForkedProcessTimeoutContext(
-            long pid,
-            int forkNumber,
-            File javaExecutable,
-            File reportsDirectory,
-            int timeoutSeconds,
             ConsoleLogger logger,
             Map<String, String> extensionContext) {
         this.pid = pid;
@@ -64,7 +54,7 @@ public final class DefaultForkedProcessTimeoutContext implements ForkedProcessTi
         this.timeoutSeconds = timeoutSeconds;
         this.logger = logger;
         this.extensionContext = extensionContext == null || extensionContext.isEmpty()
-                ? Collections.<String, String>emptyMap()
+                ? Collections.emptyMap()
                 : Collections.unmodifiableMap(new HashMap<>(extensionContext));
     }
 

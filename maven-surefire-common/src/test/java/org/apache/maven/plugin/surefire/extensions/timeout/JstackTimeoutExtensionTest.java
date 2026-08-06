@@ -68,7 +68,7 @@ class JstackTimeoutExtensionTest {
     void disabledByDefaultDoesNothing() {
         JstackTimeoutExtension ext = new JstackTimeoutExtension();
         DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(currentPidBestEffort(), 1, null, tmp.toFile(), 60, logger);
+                new DefaultForkedProcessTimeoutContext(currentPidBestEffort(), 1, null, tmp.toFile(), 60, logger, null);
         ext.onTimeoutDetected(ctx);
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }
@@ -78,7 +78,7 @@ class JstackTimeoutExtensionTest {
         System.setProperty(JstackTimeoutExtension.ENABLED_PROPERTY, "true");
         JstackTimeoutExtension ext = new JstackTimeoutExtension();
         DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(-1L, 1, null, tmp.toFile(), 60, logger);
+                new DefaultForkedProcessTimeoutContext(-1L, 1, null, tmp.toFile(), 60, logger, null);
         ext.onTimeoutDetected(ctx);
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }
@@ -87,7 +87,7 @@ class JstackTimeoutExtensionTest {
     void onForkExitedIsNoop() {
         new JstackTimeoutExtension()
                 .onForkExited(
-                        new DefaultForkedProcessTimeoutContext(123L, 1, null, tmp.toFile(), 60, logger),
+                        new DefaultForkedProcessTimeoutContext(123L, 1, null, tmp.toFile(), 60, logger, null),
                         new RunResult(0, 0, 0, 0));
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }

@@ -42,13 +42,13 @@ class TimeoutExtensionDispatcherTest {
     private final NullConsoleLogger logger = new NullConsoleLogger();
 
     private ForkedProcessTimeoutContext context() {
-        return new DefaultForkedProcessTimeoutContext(123L, 2, new File("/java"), new File("."), 60, logger);
+        return new DefaultForkedProcessTimeoutContext(123L, 2, new File("/java"), new File("."), 60, logger, null);
     }
 
     @Test
     void hasExtensionsReportsEmptyList() {
         TimeoutExtensionDispatcher d =
-                new TimeoutExtensionDispatcher(logger, Collections.<ForkedProcessTimeoutExtension>emptyList());
+                new TimeoutExtensionDispatcher(logger, Collections.emptyList());
         assertThat(d.hasExtensions()).isFalse();
         d.fireTimeoutDetected(context());
         d.fireForkExited(context(), new RunResult(0, 0, 0, 0));
@@ -185,7 +185,7 @@ class TimeoutExtensionDispatcherTest {
         ForkedProcessTimeoutContext ctx =
                 new DefaultForkedProcessTimeoutContext(123L, 2, new File("/java"), new File("."), 60, logger, config);
         TimeoutExtensionDispatcher d =
-                new TimeoutExtensionDispatcher(logger, Collections.<ForkedProcessTimeoutExtension>singletonList(ext));
+                new TimeoutExtensionDispatcher(logger, Collections.singletonList(ext));
         try {
             d.fireTimeoutDetected(ctx);
         } finally {
@@ -197,7 +197,7 @@ class TimeoutExtensionDispatcherTest {
     @Test
     void extensionContextDefaultsToEmptyMap() {
         ForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(1L, 1, null, new File("."), 60, logger);
+                new DefaultForkedProcessTimeoutContext(1L, 1, null, new File("."), 60, logger, null);
         assertThat(ctx.getExtensionContext()).isNotNull().isEmpty();
     }
 }
