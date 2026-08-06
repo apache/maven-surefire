@@ -602,6 +602,123 @@ public class RunListenerAdapterTest {
         assertEquals("some display name", value.getNameText());
     }
 
+    @Test
+    public void notifiedWithActualTestClassNameWhenRunInsideSuite() throws Exception {
+        // Build a Suite hierarchy: SuiteEngine -> SuiteClass -> JupiterEngine -> TestClass -> method
+        // This simulates @Suite @SelectPackages("...") running tests from another class.
+        EngineDescriptor suiteEngine =
+                new EngineDescriptor(UniqueId.forEngine("junit-platform-suite"), "JUnit Platform Suite");
+
+        TestDescriptor suiteClass = new ClassTestDescriptor(
+                suiteEngine.getUniqueId().append("suite", MySuiteClass.class.getName()),
+                MySuiteClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        suiteEngine.addChild(suiteClass);
+
+        TestDescriptor jupiterEngine =
+                new AbstractTestDescriptor(
+                        suiteClass.getUniqueId().append("engine", "junit-jupiter"), "JUnit Jupiter") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        suiteClass.addChild(jupiterEngine);
+
+        TestDescriptor testClass = new ClassTestDescriptor(
+                jupiterEngine.getUniqueId().append("class", MyTestClass.class.getName()),
+                MyTestClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        jupiterEngine.addChild(testClass);
+
+        TestDescriptor method = new TestMethodTestDescriptor(
+                testClass.getUniqueId().append("method", MY_TEST_METHOD_NAME),
+                MyTestClass.class,
+                MyTestClass.class.getDeclaredMethod(MY_TEST_METHOD_NAME),
+                Collections::emptyList,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        testClass.addChild(method);
+
+        TestPlan plan = TestPlan.from(false, singletonList(suiteEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(suiteEngine));
+        adapter.executionStarted(TestIdentifier.from(suiteClass));
+        adapter.executionStarted(TestIdentifier.from(jupiterEngine));
+        adapter.executionStarted(TestIdentifier.from(testClass));
+        adapter.executionStarted(TestIdentifier.from(method));
+
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        adapter.executionFinished(TestIdentifier.from(method), failed(new AssertionError("fail")));
+        verify(listener).testFailed(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        // The source name must be the actual test class, not the Suite class
+        assertEquals(MyTestClass.class.getName(), entry.getSourceName());
+        assertEquals(MY_TEST_METHOD_NAME, entry.getName());
+    }
+
+    @Test
+    public void notifiedWithSuiteClassNameWhenEngineHasNoTestClass() {
+        // Build a Suite hierarchy whose nested engine exposes no test class right below it, as
+        // Cucumber does: SuiteEngine -> SuiteClass -> CucumberEngine -> feature -> scenario.
+        // The feature/scenario nodes carry no ClassSource, so the test must be attributed to the
+        // enclosing Suite class instead of being dropped (see issue #3264 follow-up / Cucumber IT).
+        EngineDescriptor suiteEngine =
+                new EngineDescriptor(UniqueId.forEngine("junit-platform-suite"), "JUnit Platform Suite");
+
+        TestDescriptor suiteClass = new ClassTestDescriptor(
+                suiteEngine.getUniqueId().append("suite", MySuiteClass.class.getName()),
+                MySuiteClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        suiteEngine.addChild(suiteClass);
+
+        TestDescriptor cucumberEngine =
+                new AbstractTestDescriptor(suiteClass.getUniqueId().append("engine", "cucumber"), "Cucumber") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        suiteClass.addChild(cucumberEngine);
+
+        TestDescriptor feature =
+                new AbstractTestDescriptor(cucumberEngine.getUniqueId().append("feature", "sum.feature"), "Sum test") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        cucumberEngine.addChild(feature);
+
+        TestDescriptor scenario =
+                new AbstractTestDescriptor(feature.getUniqueId().append("scenario", "1"), "Invalid test") {
+                    @Override
+                    public Type getType() {
+                        return Type.TEST;
+                    }
+                };
+        feature.addChild(scenario);
+
+        TestPlan plan = TestPlan.from(false, singletonList(suiteEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(suiteEngine));
+        adapter.executionStarted(TestIdentifier.from(suiteClass));
+        adapter.executionStarted(TestIdentifier.from(cucumberEngine));
+        adapter.executionStarted(TestIdentifier.from(feature));
+        adapter.executionStarted(TestIdentifier.from(scenario));
+
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        adapter.executionFinished(TestIdentifier.from(scenario), failed(new AssertionError("fail")));
+        verify(listener).testFailed(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        // No test class exists below the Cucumber engine, so the Suite class is the attribution.
+        assertEquals(MySuiteClass.class.getName(), entry.getSourceName());
+        assertEquals("Invalid test", entry.getName());
+    }
+
     private static TestIdentifier newMethodIdentifier() throws Exception {
         return TestIdentifier.from(newMethodDescriptor());
     }
@@ -719,6 +836,8 @@ public class RunListenerAdapterTest {
         @org.junit.jupiter.api.Test
         void myNamedTestMethod() {}
     }
+
+    private static class MySuiteClass {}
 
     static class TestMethodTestDescriptorWithDisplayName extends AbstractTestDescriptor {
         private TestMethodTestDescriptorWithDisplayName(
