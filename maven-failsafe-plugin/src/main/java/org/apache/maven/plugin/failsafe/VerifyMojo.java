@@ -181,11 +181,13 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
                     capitalizeFirstLetter(getPluginName()) + " report directory: " + getReportsDirectory());
 
             try {
-                RunResult summary = existsSummaryFile() ? readSummary(summaryFile) : noTestsRun();
+                RunResult summary = isSummaryFile(summaryFile) ? readSummary(summaryFile) : noTestsRun();
 
-                if (existsSummaryFiles()) {
+                if (summaryFiles != null) {
                     for (final File summaryFile : summaryFiles) {
-                        summary = summary.aggregate(readSummary(summaryFile));
+                        if (isSummaryFile(summaryFile)) {
+                            summary = summary.aggregate(readSummary(summaryFile));
+                        }
                     }
                 }
                 reportExecution(this, summary, getConsoleLogger(), getBooterForkException(summary));
@@ -233,7 +235,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
 
         if (!existsSummary()) {
             getConsoleLogger().info("No tests to run.");
-            return false;
+            return getFailIfNoTests();
         }
 
         if (failOnFlakeCount < 0) {
@@ -368,11 +370,29 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     }
 
     private boolean existsSummaryFile() {
-        return summaryFile != null && summaryFile.isFile();
+        return existsSummaryFile(summaryFile);
     }
 
     private boolean existsSummaryFiles() {
-        return summaryFiles != null && summaryFiles.length != 0;
+        boolean exists = false;
+        if (summaryFiles != null) {
+            for (File summaryFile : summaryFiles) {
+                exists |= existsSummaryFile(summaryFile);
+            }
+        }
+        return exists;
+    }
+
+    private boolean existsSummaryFile(File summaryFile) {
+        boolean exists = isSummaryFile(summaryFile);
+        if (!exists && summaryFile != null) {
+            getConsoleLogger().debug("Failsafe summary file does not exist: " + summaryFile);
+        }
+        return exists;
+    }
+
+    private static boolean isSummaryFile(File summaryFile) {
+        return summaryFile != null && summaryFile.isFile();
     }
 
     private boolean existsSummary() {
