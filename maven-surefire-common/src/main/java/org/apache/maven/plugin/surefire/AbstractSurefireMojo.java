@@ -1876,6 +1876,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         getProperties().setProperty(ProviderParameterNames.STACK_TRACE_MAX_FRAMES, String.valueOf(stackTraceMaxFrames));
 
+        getProperties()
+                .setProperty(
+                        ProviderParameterNames.FORKCOUNT_PROP, Integer.toString(Math.max(getEffectiveForkCount(), 1)));
+
         Map<String, String> providerProperties = toStringProperties(getProperties());
 
         return new ProviderConfiguration(
