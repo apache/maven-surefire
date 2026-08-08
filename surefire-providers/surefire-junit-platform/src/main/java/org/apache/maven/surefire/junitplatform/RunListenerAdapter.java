@@ -21,6 +21,7 @@ package org.apache.maven.surefire.junitplatform;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,10 +51,13 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
@@ -87,6 +91,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     private final ThreadLocal<Boolean> suppressOutput = new ThreadLocal<>();
     /** Class names that had at least one successful test method in the current adapter cycle. */
     private final Set<String> classesWithSuccessfulTests = ConcurrentHashMap.newKeySet();
+    /** Unique IDs of class containers that had at least one descendant test start in the current adapter cycle. */
+    private final Set<String> classContainersWithStartedTests = ConcurrentHashMap.newKeySet();
 
     private volatile Set<UniqueId> rerunTestIds = emptySet();
 
@@ -127,16 +133,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         runningTestIdentifiersByUniqueId.put(testIdentifier.getUniqueId(), testIdentifier);
 
-        if (testIdentifier.isContainer()
-                && testIdentifier
-                        .getSource()
-                        .filter(ClassSource.class::isInstance)
-                        .isPresent()) {
+        if (isClassContainer(testIdentifier)) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
             runListener.testSetStarting(createReportEntry(testIdentifier));
         } else if (testIdentifier.isTest()) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
             runListener.testStarting(createReportEntry(testIdentifier));
+            recordStartedTest(testIdentifier);
         }
     }
 
@@ -147,11 +150,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         }
         suppressOutput.remove();
 
-        boolean isClass = testIdentifier.isContainer()
-                && testIdentifier
-                        .getSource()
-                        .filter(ClassSource.class::isInstance)
-                        .isPresent();
+        boolean isClass = isClassContainer(testIdentifier);
 
         boolean isTest = testIdentifier.isTest();
 
@@ -172,6 +171,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     if (isTest) {
                         runListener.testAssumptionFailure(
                                 createReportEntry(testIdentifier, testExecutionResult, elapsed));
+                    } else if (isClass) {
+                        reportAbortedClass(testIdentifier, testExecutionResult, elapsed);
                     } else {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
@@ -216,6 +217,58 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         runningTestIdentifiersByUniqueId.remove(testIdentifier.getUniqueId());
     }
 
+    private void reportAbortedClass(
+            TestIdentifier testIdentifier, TestExecutionResult testExecutionResult, Integer elapsed) {
+        if (classContainersWithStartedTests.contains(testIdentifier.getUniqueId())) {
+            runListener.testSetCompleted(
+                    createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
+            return;
+        }
+
+        List<TestIdentifier> discoveredTests = testPlan == null
+                ? emptyList()
+                : testPlan.getDescendants(testIdentifier).stream()
+                        .filter(TestIdentifier::isTest)
+                        .sorted(comparing(TestIdentifier::getUniqueId))
+                        .collect(toList());
+        List<TestIdentifier> targetedTests =
+                discoveredTests.stream().filter(this::isRerunTarget).collect(toList());
+
+        if (discoveredTests.isEmpty()) {
+            runListener.testAssumptionFailure(createReportEntry(testIdentifier, testExecutionResult, elapsed));
+        } else {
+            for (TestIdentifier test : targetedTests) {
+                runListener.testAssumptionFailure(createReportEntry(test, testExecutionResult, null));
+            }
+        }
+
+        runListener.testSetCompleted(createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+    }
+
+    private void recordStartedTest(TestIdentifier testIdentifier) {
+        TestPlan currentTestPlan = testPlan;
+        if (currentTestPlan == null) {
+            return;
+        }
+
+        Optional<TestIdentifier> parent = currentTestPlan.getParent(testIdentifier);
+        while (parent.isPresent()) {
+            TestIdentifier ancestor = parent.get();
+            if (isClassContainer(ancestor)) {
+                classContainersWithStartedTests.add(ancestor.getUniqueId());
+            }
+            parent = currentTestPlan.getParent(ancestor);
+        }
+    }
+
+    private static boolean isClassContainer(TestIdentifier testIdentifier) {
+        return testIdentifier.isContainer()
+                && testIdentifier
+                        .getSource()
+                        .filter(ClassSource.class::isInstance)
+                        .isPresent();
+    }
+
     private Integer computeElapsedTime(TestIdentifier testIdentifier) {
         Long startTime = testStartTime.remove(testIdentifier);
         long endTime = System.currentTimeMillis();
@@ -248,11 +301,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         }
         suppressOutput.remove();
 
-        boolean isClass = testIdentifier.isContainer()
-                && testIdentifier
-                        .getSource()
-                        .filter(ClassSource.class::isInstance)
-                        .isPresent();
+        boolean isClass = isClassContainer(testIdentifier);
 
         testStartTime.remove(testIdentifier);
 
@@ -666,6 +715,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         getFailures().clear();
         testPlan = null;
         classesWithSuccessfulTests.clear();
+        classContainersWithStartedTests.clear();
     }
 
     @Override

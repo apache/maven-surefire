@@ -487,15 +487,91 @@ public class RunListenerAdapterTest {
     }
 
     @Test
-    public void notifiedWhenClassExecutionAborted() {
+    public void notifiedForAllDescendantTestsWhenClassExecutionAborted() throws Exception {
+        TestDescriptor classDescriptor = newClassDescriptor();
+        UniqueId classId = classDescriptor.getUniqueId();
+        TestDescriptor directMethod =
+                newMethodDescriptor(classId.append("method", MY_TEST_METHOD_NAME), MY_TEST_METHOD_NAME);
+        TestDescriptor nestedContainer =
+                new EngineDescriptor(classId.append("nested", "container"), "nested container");
+        TestDescriptor nestedMethod = newMethodDescriptor(
+                nestedContainer.getUniqueId().append("method", MY_NAMED_TEST_METHOD_NAME), MY_NAMED_TEST_METHOD_NAME);
+        classDescriptor.addChild(directMethod);
+        classDescriptor.addChild(nestedContainer);
+        nestedContainer.addChild(nestedMethod);
+
+        TestPlan testPlan = TestPlan.from(false, singletonList(classDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(testPlan);
+
+        TestIdentifier classIdentifier = TestIdentifier.from(classDescriptor);
+        TestSkippedException assumption = new TestSkippedException("skipped");
+        adapter.executionStarted(classIdentifier);
+        adapter.executionFinished(classIdentifier, aborted(assumption));
+
+        ArgumentCaptor<ReportEntry> skippedTests = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener, times(2)).testAssumptionFailure(skippedTests.capture());
+        verify(listener).testSetStarting(any());
+        verify(listener).testSetCompleted(any());
+
+        assertThat(skippedTests.getAllValues())
+                .extracting(ReportEntry::getName)
+                .containsExactlyInAnyOrder(MY_TEST_METHOD_NAME, MY_NAMED_TEST_METHOD_NAME);
+        assertThat(skippedTests.getAllValues()).allSatisfy(report -> {
+            assertThat(report.getSourceName()).isEqualTo(MyTestClass.class.getName());
+            assertThat(report.getStackTraceWriter()).isNotNull();
+            assertThat(report.getStackTraceWriter().getThrowable().getTarget()).isSameAs(assumption);
+        });
+    }
+
+    @Test
+    public void notifiedWithSyntheticSkipWhenAbortedClassHasNoDescendantTests() {
+        TestDescriptor classDescriptor = newClassDescriptor();
+        TestPlan testPlan = TestPlan.from(false, singletonList(classDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(testPlan);
+
         TestSkippedException t = new TestSkippedException("skipped");
-        adapter.executionFinished(newClassIdentifier(), aborted(t));
+        adapter.executionFinished(TestIdentifier.from(classDescriptor), aborted(t));
         String source = MyTestClass.class.getName();
         StackTraceWriter stw = new DefaultStackTraceWriter(source, "initializationError", t);
         ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass(SimpleReportEntry.class);
+        verify(listener).testAssumptionFailure(report.capture());
+        assertThat(report.getValue().getSourceName()).isEqualTo(source);
+        assertThat(report.getValue().getName()).isEqualTo("initializationError");
+        assertThat(report.getValue().getStackTraceWriter()).isEqualTo(stw);
+
+        report = ArgumentCaptor.forClass(SimpleReportEntry.class);
         verify(listener).testSetCompleted(report.capture());
         assertThat(report.getValue().getSourceName()).isEqualTo(source);
-        assertThat(report.getValue().getStackTraceWriter()).isEqualTo(stw);
+        assertThat(report.getValue().getName()).isNull();
+        assertThat(report.getValue().getStackTraceWriter()).isNull();
+    }
+
+    @Test
+    public void doesNotSkipDescendantsWhenClassAbortsAfterTestStarted() throws Exception {
+        TestDescriptor classDescriptor = newClassDescriptor();
+        TestDescriptor nestedContainer =
+                new EngineDescriptor(classDescriptor.getUniqueId().append("nested-class", "Nested"), "Nested");
+        TestDescriptor methodDescriptor = newMethodDescriptor(
+                nestedContainer.getUniqueId().append("method", MY_TEST_METHOD_NAME), MY_TEST_METHOD_NAME);
+        classDescriptor.addChild(nestedContainer);
+        nestedContainer.addChild(methodDescriptor);
+        TestPlan testPlan = TestPlan.from(false, singletonList(classDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(testPlan);
+
+        TestIdentifier classIdentifier = TestIdentifier.from(classDescriptor);
+        TestIdentifier methodIdentifier = TestIdentifier.from(methodDescriptor);
+        TestSkippedException assumption = new TestSkippedException("after all skipped");
+        adapter.executionStarted(classIdentifier);
+        adapter.executionStarted(methodIdentifier);
+        adapter.executionFinished(methodIdentifier, successful());
+        adapter.executionFinished(classIdentifier, aborted(assumption));
+
+        verify(listener).testSucceeded(any());
+        verify(listener, never()).testAssumptionFailure(any());
+        ArgumentCaptor<SimpleReportEntry> report = ArgumentCaptor.forClass(SimpleReportEntry.class);
+        verify(listener).testSetCompleted(report.capture());
+        assertThat(report.getValue().getStackTraceWriter().getThrowable().getTarget())
+                .isSameAs(assumption);
     }
 
     @Test
@@ -852,10 +928,15 @@ public class RunListenerAdapterTest {
     }
 
     private static TestDescriptor newMethodDescriptor(Class<?>... parameterTypes) throws Exception {
+        return newMethodDescriptor(UniqueId.forEngine("method"), MY_TEST_METHOD_NAME, parameterTypes);
+    }
+
+    private static TestDescriptor newMethodDescriptor(UniqueId uniqueId, String methodName, Class<?>... parameterTypes)
+            throws Exception {
         return new TestMethodTestDescriptor(
-                UniqueId.forEngine("method"),
+                uniqueId,
                 MyTestClass.class,
-                MyTestClass.class.getDeclaredMethod(MY_TEST_METHOD_NAME, parameterTypes),
+                MyTestClass.class.getDeclaredMethod(methodName, parameterTypes),
                 Collections::emptyList,
                 new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
     }
