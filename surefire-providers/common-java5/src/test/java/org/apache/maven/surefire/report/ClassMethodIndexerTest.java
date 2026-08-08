@@ -62,4 +62,15 @@ public class ClassMethodIndexerTest {
         index = indexer.indexClassMethod(getClass().getName(), "methodName");
         assertThat(index).isEqualTo(0x0000000100000001L);
     }
+
+    @Test
+    public void testExistingIndexRestoresThreadLocal() {
+        ClassMethodIndexer indexer = new ClassMethodIndexer();
+        long first = indexer.indexClassMethod(getClass().getName(), "first");
+        long second = indexer.indexClassMethod(getClass().getName(), "second");
+
+        assertThat(indexer.getLocalIndex()).isEqualTo(second);
+        assertThat(indexer.indexClassMethod(getClass().getName(), "first")).isEqualTo(first);
+        assertThat(indexer.getLocalIndex()).isEqualTo(first);
+    }
 }

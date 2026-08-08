@@ -28,18 +28,30 @@ import org.apache.maven.surefire.api.report.StackTraceWriter;
 public class TestMethodStats {
     private final String testClassMethodName;
 
+    private final Long testRunId;
+
     private final ReportEntryType resultType;
 
     private final StackTraceWriter stackTraceWriter;
 
     public TestMethodStats(String testClassMethodName, ReportEntryType resultType, StackTraceWriter stackTraceWriter) {
+        this(testClassMethodName, null, resultType, stackTraceWriter);
+    }
+
+    public TestMethodStats(
+            String testClassMethodName, Long testRunId, ReportEntryType resultType, StackTraceWriter stackTraceWriter) {
         this.testClassMethodName = testClassMethodName;
+        this.testRunId = testRunId;
         this.resultType = resultType;
         this.stackTraceWriter = stackTraceWriter;
     }
 
     public String getTestClassMethodName() {
         return testClassMethodName;
+    }
+
+    TestMethodKey getTestMethodKey() {
+        return new TestMethodKey(testClassMethodName, testRunId);
     }
 
     public ReportEntryType getResultType() {

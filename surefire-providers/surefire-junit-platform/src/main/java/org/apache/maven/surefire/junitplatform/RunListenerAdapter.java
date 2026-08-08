@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitplatform;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,7 +51,10 @@ import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.joining;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
@@ -78,8 +82,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
+    // Some custom runners execute tests removed by post-discovery filtering. Do not
+    // report those executions or associate their output with a targeted rerun.
+    private final ThreadLocal<Boolean> suppressOutput = new ThreadLocal<>();
     /** Class names that had at least one successful test method in the current adapter cycle. */
     private final Set<String> classesWithSuccessfulTests = ConcurrentHashMap.newKeySet();
+
+    private volatile Set<UniqueId> rerunTestIds = emptySet();
 
     private final TestReportListener<TestOutputReportEntry> runListener;
     private final Stoppable stoppable;
@@ -105,10 +114,17 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     public void testPlanExecutionFinished(TestPlan testPlan) {
         this.testPlan = null;
         testStartTime.clear();
+        suppressOutput.remove();
     }
 
     @Override
     public void executionStarted(TestIdentifier testIdentifier) {
+        if (!isRerunTarget(testIdentifier)) {
+            suppressOutput.set(true);
+            return;
+        }
+        suppressOutput.remove();
+
         runningTestIdentifiersByUniqueId.put(testIdentifier.getUniqueId(), testIdentifier);
 
         if (testIdentifier.isContainer()
@@ -126,6 +142,11 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
     @Override
     public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+        if (!isRerunTarget(testIdentifier)) {
+            return;
+        }
+        suppressOutput.remove();
+
         boolean isClass = testIdentifier.isContainer()
                 && testIdentifier
                         .getSource()
@@ -221,6 +242,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
     @Override
     public void executionSkipped(TestIdentifier testIdentifier, String reason) {
+        if (!isRerunTarget(testIdentifier)) {
+            suppressOutput.set(true);
+            return;
+        }
+        suppressOutput.remove();
+
         boolean isClass = testIdentifier.isContainer()
                 && testIdentifier
                         .getSource()
@@ -266,6 +293,19 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         String methodName = failed || testIdentifier.isTest() ? classMethodName.getMethodSignature() : null;
         String methodText = failed || testIdentifier.isTest() ? classMethodName.getMethodDisplayName() : null;
 
+        // Some engines, notably JUnit Vintage with JUnitParams, attach ClassSource to
+        // individual tests. They are tests nevertheless and need a test name rather
+        // than being reported as an unnamed class-level event.
+        if (testIdentifier.isTest()
+                && methodName == null
+                && testIdentifier
+                        .getSource()
+                        .filter(ClassSource.class::isInstance)
+                        .isPresent()) {
+            methodName = testIdentifier.getLegacyReportingName();
+            methodText = testIdentifier.getDisplayName();
+        }
+
         if (testExecutionResult != null
                 && testExecutionResult.getStatus() != org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL
                 && testIdentifier.isContainer()
@@ -287,9 +327,10 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         }
         StackTraceWriter stw =
                 testExecutionResult == null ? null : toStackTraceWriter(className, methodName, testExecutionResult);
+        String testId = testIdentifier.isTest() ? testIdentifier.getUniqueId() : methodName;
         return new SimpleReportEntry(
                 runMode,
-                classMethodIndexer.indexClassMethod(className, methodName),
+                classMethodIndexer.indexClassMethod(className, testId),
                 className,
                 classText,
                 qualifiedClassName,
@@ -603,6 +644,20 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         return failures;
     }
 
+    void setRerunTestIds(Set<UniqueId> rerunTestIds) {
+        this.rerunTestIds = unmodifiableSet(new LinkedHashSet<>(rerunTestIds));
+    }
+
+    private boolean isRerunTarget(TestIdentifier testIdentifier) {
+        if (runMode != RERUN_TEST_AFTER_FAILURE || rerunTestIds.isEmpty()) {
+            return true;
+        }
+
+        UniqueId candidateId = UniqueId.parse(testIdentifier.getUniqueId());
+        return rerunTestIds.stream()
+                .anyMatch(failureId -> candidateId.hasPrefix(failureId) || failureId.hasPrefix(candidateId));
+    }
+
     boolean hasFailingTests() {
         return !getFailures().isEmpty();
     }
@@ -615,6 +670,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
     @Override
     public void writeTestOutput(OutputReportEntry reportEntry) {
+        if (Boolean.TRUE.equals(suppressOutput.get())) {
+            return;
+        }
         Long testRunId = classMethodIndexer.getLocalIndex();
         runListener.writeTestOutput(new TestOutputReportEntry(reportEntry, runMode, testRunId));
     }

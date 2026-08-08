@@ -73,17 +73,17 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
 
     private RunStatistics globalStats = new RunStatistics();
 
-    // from "<testclass>.<testmethod>" -> statistics about all the runs for success tests
-    private Map<String, List<TestMethodStats>> successTests;
+    // from test identity -> statistics about all the runs for success tests
+    private Map<TestMethodKey, List<TestMethodStats>> successTests;
 
-    // from "<testclass>.<testmethod>" -> statistics about all the runs for flaky tests
-    private Map<String, List<TestMethodStats>> flakyTests;
+    // from test identity -> statistics about all the runs for flaky tests
+    private Map<TestMethodKey, List<TestMethodStats>> flakyTests;
 
-    // from "<testclass>.<testmethod>" -> statistics about all the runs for failed tests
-    private Map<String, List<TestMethodStats>> failedTests;
+    // from test identity -> statistics about all the runs for failed tests
+    private Map<TestMethodKey, List<TestMethodStats>> failedTests;
 
-    // from "<testclass>.<testmethod>" -> statistics about all the runs for error tests
-    private Map<String, List<TestMethodStats>> errorTests;
+    // from test identity -> statistics about all the runs for error tests
+    private Map<TestMethodKey, List<TestMethodStats>> errorTests;
 
     public DefaultReporterFactory(StartupReportConfiguration reportConfiguration, ConsoleLogger consoleLogger) {
         this(reportConfiguration, consoleLogger, null);
@@ -252,16 +252,16 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
         failedTests = new TreeMap<>();
         errorTests = new TreeMap<>();
 
-        Map<String, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<>();
+        Map<TestMethodKey, List<TestMethodStats>> mergedTestHistoryResult = new HashMap<>();
         // Merge all the stats for tests from listeners
         for (TestSetRunListener listener : listeners) {
             for (TestMethodStats methodStats : listener.getTestMethodStats()) {
-                List<TestMethodStats> currentMethodStats =
-                        mergedTestHistoryResult.get(methodStats.getTestClassMethodName());
+                TestMethodKey testMethodKey = methodStats.getTestMethodKey();
+                List<TestMethodStats> currentMethodStats = mergedTestHistoryResult.get(testMethodKey);
                 if (currentMethodStats == null) {
                     currentMethodStats = new ArrayList<>();
                     currentMethodStats.add(methodStats);
-                    mergedTestHistoryResult.put(methodStats.getTestClassMethodName(), currentMethodStats);
+                    mergedTestHistoryResult.put(testMethodKey, currentMethodStats);
                 } else {
                     currentMethodStats.add(methodStats);
                 }
@@ -272,9 +272,10 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
         int completedCount = 0, skipped = 0;
         Map<String, List<TestMethodStats>> beforeAllFailures = new HashMap<>();
 
-        for (Map.Entry<String, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet()) {
+        for (Map.Entry<TestMethodKey, List<TestMethodStats>> entry : mergedTestHistoryResult.entrySet()) {
             List<TestMethodStats> testMethodStats = entry.getValue();
-            String testClassMethodName = entry.getKey();
+            TestMethodKey testMethodKey = entry.getKey();
+            String testClassMethodName = testMethodKey.getTestClassMethodName();
 
             // Handle @BeforeAll failures (null, empty, ends with ".null" or ".initializationError" method names).
             // Do NOT include ".executionError" (AfterAll/AfterClass) — those stay as real errors (#3412).
@@ -324,19 +325,19 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
                         }
                     }
                     completedCount += successCount - 1;
-                    successTests.put(testClassMethodName, testMethodStats);
+                    successTests.put(testMethodKey, testMethodStats);
                     break;
                 case SKIPPED:
                     skipped++;
                     break;
                 case FLAKE:
-                    flakyTests.put(testClassMethodName, testMethodStats);
+                    flakyTests.put(testMethodKey, testMethodStats);
                     break;
                 case FAILURE:
-                    failedTests.put(testClassMethodName, testMethodStats);
+                    failedTests.put(testMethodKey, testMethodStats);
                     break;
                 case ERROR:
-                    errorTests.put(testClassMethodName, testMethodStats);
+                    errorTests.put(testMethodKey, testMethodStats);
                     break;
                 default:
                     throw new IllegalStateException("Get unknown test result type");
@@ -344,9 +345,9 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
         }
 
         // Loop over all success tests and find those that are passed flakes for beforeAll failures
-        for (Map.Entry<String, List<TestMethodStats>> entry : successTests.entrySet()) {
+        for (Map.Entry<TestMethodKey, List<TestMethodStats>> entry : successTests.entrySet()) {
             List<TestMethodStats> testMethodStats = entry.getValue();
-            String testClassMethodName = entry.getKey();
+            String testClassMethodName = entry.getKey().getTestClassMethodName();
             // If current test belong to class that failed during beforeAll store that info to proper log info
             String className = extractClassNameFromMethodName(testClassMethodName);
             if (beforeAllFailures.containsKey(className)) {
@@ -360,7 +361,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
         for (Map.Entry<String, List<TestMethodStats>> entry : beforeAllFailures.entrySet()) {
             String className = entry.getKey();
             List<TestMethodStats> testMethodStats = entry.getValue();
-            String classNameKey = className + ".<beforeAll>";
+            TestMethodKey classNameKey = new TestMethodKey(className + ".<beforeAll>", null);
 
             if (reportConfiguration.getRerunFailingTestsCount() > 0
                     && testMethodStats.stream()
@@ -386,7 +387,7 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
      */
     // Use default visibility for testing
     boolean printTestFailures(TestResultType type) {
-        final Map<String, List<TestMethodStats>> testStats;
+        final Map<TestMethodKey, List<TestMethodStats>> testStats;
         final Level level;
         switch (type) {
             case FAILURE:
@@ -411,13 +412,13 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             printed = true;
         }
 
-        for (Map.Entry<String, List<TestMethodStats>> entry : testStats.entrySet()) {
+        for (Map.Entry<TestMethodKey, List<TestMethodStats>> entry : testStats.entrySet()) {
             List<TestMethodStats> testMethodStats = entry.getValue();
             if (testMethodStats.size() == 1) {
                 // No rerun, follow the original output format
                 failure("  " + testMethodStats.get(0).getStackTraceWriter().smartTrimmedStackTrace());
             } else {
-                log(entry.getKey(), level);
+                log(entry.getKey().getTestClassMethodName(), level);
                 for (int i = 0; i < testMethodStats.size(); i++) {
                     StackTraceWriter failureStackTrace = testMethodStats.get(i).getStackTraceWriter();
                     if (failureStackTrace == null) {

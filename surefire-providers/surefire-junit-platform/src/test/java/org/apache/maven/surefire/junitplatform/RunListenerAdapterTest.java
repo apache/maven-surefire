@@ -59,6 +59,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,6 +73,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -100,6 +102,30 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void ignoresNonTargetTestsExecutedByRunnerDuringRerun() throws Exception {
+        UniqueId parentId = UniqueId.forEngine("junit-vintage").append("runner", MyTestClass.class.getName());
+        UniqueId failedId = parentId.append("test", "failed");
+        TestIdentifier failed = TestIdentifier.from(new TestMethodTestDescriptorWithDisplayName(
+                failedId, MyTestClass.class, MyTestClass.class.getDeclaredMethod("myTestMethod"), "failed"));
+        TestIdentifier passing = TestIdentifier.from(new TestMethodTestDescriptorWithDisplayName(
+                parentId.append("test", "passing"),
+                MyTestClass.class,
+                MyTestClass.class.getDeclaredMethod("myNamedTestMethod"),
+                "passing"));
+
+        adapter.setRunMode(RERUN_TEST_AFTER_FAILURE);
+        adapter.setRerunTestIds(singleton(failedId));
+        adapter.executionStarted(passing);
+        adapter.executionFinished(passing, successful());
+        adapter.executionStarted(failed);
+        adapter.executionFinished(failed, successful());
+
+        verify(listener).testStarting(any());
+        verify(listener).testSucceeded(any());
+        verifyNoMoreInteractions(listener);
+    }
+
+    @Test
     public void notifiedWithCorrectNamesWhenMethodExecutionStarted() throws Exception {
         ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
 
@@ -117,6 +143,77 @@ public class RunListenerAdapterTest {
         assertEquals(MY_TEST_METHOD_NAME, entry.getName());
         assertEquals(MyTestClass.class.getName(), entry.getSourceName());
         assertNull(entry.getStackTraceWriter());
+    }
+
+    @Test
+    public void uniqueIdsDistinguishTestsWithIdenticalReportedNames() {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor testClass = newClassDescriptor();
+        engine.addChild(testClass);
+
+        TestDescriptor first =
+                new AbstractTestDescriptor(testClass.getUniqueId().append("scenario", "1"), "identical name") {
+                    @Override
+                    public Type getType() {
+                        return TEST;
+                    }
+                };
+        TestDescriptor second =
+                new AbstractTestDescriptor(testClass.getUniqueId().append("scenario", "2"), "identical name") {
+                    @Override
+                    public Type getType() {
+                        return TEST;
+                    }
+                };
+        testClass.addChild(first);
+        testClass.addChild(second);
+
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(first));
+        adapter.executionStarted(TestIdentifier.from(second));
+
+        ArgumentCaptor<ReportEntry> started = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener, times(2)).testStarting(started.capture());
+        ReportEntry firstStart = started.getAllValues().get(0);
+        ReportEntry secondStart = started.getAllValues().get(1);
+        assertEquals("identical name", firstStart.getName());
+        assertEquals("identical name", secondStart.getName());
+        assertThat(firstStart.getTestRunId()).isNotEqualTo(secondStart.getTestRunId());
+
+        adapter.executionFinished(TestIdentifier.from(first), successful());
+        ArgumentCaptor<ReportEntry> finished = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener).testSucceeded(finished.capture());
+        assertEquals(firstStart.getTestRunId(), finished.getValue().getTestRunId());
+    }
+
+    @Test
+    public void testIdentifierWithClassSourceHasTestName() {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor testClass = newClassDescriptor();
+        engine.addChild(testClass);
+
+        TestDescriptor parameterizedTest =
+                new AbstractTestDescriptor(
+                        testClass.getUniqueId().append("test", "parameterized-1"),
+                        "parameterized [1]",
+                        ClassSource.from(MyTestClass.class)) {
+                    @Override
+                    public Type getType() {
+                        return TEST;
+                    }
+                };
+        testClass.addChild(parameterizedTest);
+
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+        adapter.executionStarted(TestIdentifier.from(parameterizedTest));
+
+        ArgumentCaptor<ReportEntry> started = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener).testStarting(started.capture());
+        assertEquals(MyTestClass.class.getName(), started.getValue().getSourceName());
+        assertEquals("parameterized [1]", started.getValue().getName());
     }
 
     @Test
