@@ -105,6 +105,16 @@ class VerifyMojoTest {
     }
 
     @Test
+    void executeWithMissingSummaryAndFailIfNoTests() {
+        setupExecuteMocks();
+        mojo.setFailIfNoTests(true);
+
+        assertThatCode(mojo::execute)
+                .isExactlyInstanceOf(MojoFailureException.class)
+                .hasMessage("No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)");
+    }
+
+    @Test
     void executeWithExistingAndMissingAdditionalSummaryFiles() throws Exception {
         setupExecuteMocks();
         setSummaryFiles(

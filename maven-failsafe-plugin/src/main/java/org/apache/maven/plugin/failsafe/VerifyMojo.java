@@ -235,7 +235,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
 
         if (!existsSummary()) {
             getConsoleLogger().info("No tests to run.");
-            return false;
+            return getFailIfNoTests();
         }
 
         if (failOnFlakeCount < 0) {
