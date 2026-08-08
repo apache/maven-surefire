@@ -25,6 +25,9 @@ import java.util.TimerTask;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -47,10 +50,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * Goal which terminates the maven process it is executed in after a timeout.
- * 
- * @goal selfdestruct
- * @phase test
  */
+@Mojo(name = "selfdestruct", defaultPhase = LifecyclePhase.TEST)
 public class SelfDestructMojo
     extends AbstractMojo
 {
@@ -61,17 +62,15 @@ public class SelfDestructMojo
 
     /**
      * Timeout in milliseconds
-     * 
-     * @parameter
      */
+    @Parameter
     private long timeoutInMillis;
 
     /**
      * Method of self-destruction: 'exit' will use System.exit (default), 'halt' will use Runtime.halt, 'interrupt' will
      * try to call 'taskkill' (windows) or 'kill -INT' (others)
-     * 
-     * @parameter
      */
+    @Parameter
     private String method = "exit";
 
     public void execute()
