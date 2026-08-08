@@ -179,14 +179,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-wagon</artifactId>
+      <artifactId>maven-resolver-transport-http</artifactId>
       <version>${resolverVersion}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.wagon</groupId>
-      <artifactId>wagon-http-lightweight</artifactId>
-      <version>3.5.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
