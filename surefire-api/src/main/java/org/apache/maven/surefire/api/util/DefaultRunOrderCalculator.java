@@ -68,6 +68,7 @@ public class DefaultRunOrderCalculator implements RunOrderCalculator {
 
     private void orderTestClasses(List<Class<?>> testClasses, RunOrder runOrder) {
         if (RunOrder.RANDOM.equals(runOrder)) {
+            testClasses.sort(getAlphabeticalComparator());
             Collections.shuffle(testClasses, random);
         } else if (RunOrder.FAILEDFIRST.equals(runOrder)) {
             RunEntryStatisticsMap stat = RunEntryStatisticsMap.fromFile(runOrderParameters.getRunStatisticsFile());

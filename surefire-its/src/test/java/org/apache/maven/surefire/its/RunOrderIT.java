@@ -112,6 +112,21 @@ public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
+    public void testRandomSeedPassedToJUnit5() {
+        for (int forkCount : new int[] {0, 1}) {
+            unpack("runOrder-junitX", "-random-seed-fork-count-" + forkCount)
+                    .setJUnitVersion("5.14.1")
+                    .forkCount(forkCount)
+                    .reuseForks(reuseForks())
+                    .runOrder("random")
+                    .runOrderRandomSeed("1234")
+                    .sysProp("expected.junit.random.seed", "1234")
+                    .executeTest()
+                    .verifyErrorFree(3);
+        }
+    }
+
+    @Test
     public void testReverseAlphabeticalJUnit6() throws VerificationException {
         // JUnit 6.0.0 requires Java 17+
         assumeJavaVersion(17);

@@ -79,6 +79,8 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.report.ConsoleOutputCapture.startCapture;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
@@ -98,6 +100,8 @@ import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.r
  */
 public class JUnitPlatformProvider extends AbstractProvider {
     static final String CONFIGURATION_PARAMETERS = "configurationParameters";
+
+    private static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
 
     private final ProviderParameters parameters;
 
@@ -157,13 +161,15 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private void setupRunOrder() {
-        String runOrder = parameters.getProviderProperties().get("runOrder");
+        String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
                 getConfigurationParameters()
                         .put("junit.jupiter.testmethod.order.default", "org.junit.jupiter.api.MethodOrderer$Random");
                 getConfigurationParameters()
                         .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$Random");
+                Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
+                        .ifPresent(seed -> getConfigurationParameters().put(JUNIT_RANDOM_SEED, seed));
             } else if (runOrder.equals("alphabetical")) {
                 getConfigurationParameters()
                         .put(

@@ -141,6 +141,8 @@ import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
@@ -1877,6 +1879,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         getProperties().setProperty(ProviderParameterNames.STACK_TRACE_MAX_FRAMES, String.valueOf(stackTraceMaxFrames));
 
         Map<String, String> providerProperties = toStringProperties(getProperties());
+        providerProperties.put(RUN_ORDER_PROP, RunOrder.asString(runOrderParameters.getRunOrder()));
+        if (runOrderParameters.getRunOrderRandomSeed() != null) {
+            providerProperties.put(
+                    RUN_ORDER_RANDOM_SEED_PROP,
+                    runOrderParameters.getRunOrderRandomSeed().toString());
+        }
 
         return new ProviderConfiguration(
                 directoryScannerParameters,

@@ -74,6 +74,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CONFIGURATION_PARAMETERS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -99,6 +100,35 @@ import static org.mockito.Mockito.withSettings;
  * @since 2.22.0
  */
 public class JUnitPlatformProviderTest {
+    @Test
+    public void shouldPassSurefireRandomSeedToJupiter() {
+        Map<String, String> providerProperties = new HashMap<>();
+        providerProperties.put("runOrder", "random");
+        providerProperties.put("runOrderRandomSeed", "1234");
+        ProviderParameters providerParameters = providerParametersMock();
+        when(providerParameters.getProviderProperties()).thenReturn(providerProperties);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+
+        assertThat(provider.getConfigurationParameters())
+                .containsEntry("junit.jupiter.execution.order.random.seed", "1234");
+    }
+
+    @Test
+    public void shouldPreferExplicitJupiterRandomSeed() {
+        Map<String, String> providerProperties = new HashMap<>();
+        providerProperties.put("runOrder", "random");
+        providerProperties.put("runOrderRandomSeed", "1234");
+        providerProperties.put(CONFIGURATION_PARAMETERS, "junit.jupiter.execution.order.random.seed=5678");
+        ProviderParameters providerParameters = providerParametersMock();
+        when(providerParameters.getProviderProperties()).thenReturn(providerProperties);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+
+        assertThat(provider.getConfigurationParameters())
+                .containsEntry("junit.jupiter.execution.order.random.seed", "5678");
+    }
+
     @Test
     public void shouldFailClassOnBeforeAll() throws Exception {
         TestReportListener<TestOutputReportEntry> listener = mock(TestReportListener.class);
