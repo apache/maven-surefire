@@ -65,6 +65,7 @@ import org.junit.jupiter.api.Test;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -138,7 +139,8 @@ public class ForkStarterTest {
         cli.createArg().setLine("-jar");
         cli.createArg().setLine("surefirebooter.jar");
         cli.createArg().setLine("fail");
-        when(forkConfiguration.createCommandLine(eq(startupConfiguration), eq(1), eq(tmp)))
+        when(forkConfiguration.createCommandLine(
+                        eq(startupConfiguration), eq(1), eq(tmp), any(SurefireProperties.class)))
                 .thenReturn(cli);
 
         SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
@@ -228,7 +230,8 @@ public class ForkStarterTest {
         cli.setExecutable(System.getProperty("java.home") + "/bin/java");
         cli.createArg().setLine("-jar");
         cli.createArg().setLine("surefirebooter.jar");
-        when(forkConfiguration.createCommandLine(eq(startupConfiguration), eq(1), eq(tmp)))
+        when(forkConfiguration.createCommandLine(
+                        eq(startupConfiguration), eq(1), eq(tmp), any(SurefireProperties.class)))
                 .thenReturn(cli);
 
         SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter = new SurefireStatelessTestsetInfoReporter();

@@ -29,6 +29,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.util.internal.ImmutableMap;
@@ -143,13 +144,17 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
      * @param config       the startup configuration
      * @param forkNumber   index of forked JVM, to be the replacement in the argLine
      * @param dumpLogDirectory     directory for dump log file
+     * @param startupSystemProperties system properties which must be set when the forked JVM starts
      * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException when unable to perform the fork
      */
     @Nonnull
     @Override
     public Commandline createCommandLine(
-            @Nonnull StartupConfiguration config, int forkNumber, @Nonnull File dumpLogDirectory)
+            @Nonnull StartupConfiguration config,
+            int forkNumber,
+            @Nonnull File dumpLogDirectory,
+            @Nonnull SurefireProperties startupSystemProperties)
             throws SurefireBooterForkException {
         try {
             Commandline cli = new Commandline(getExcludedEnvironmentVariables());
@@ -165,6 +170,11 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
             }
 
             cli.setExecutable(getJdkForTests().getJvmExecutable().getAbsolutePath());
+
+            for (Object key : startupSystemProperties.getStringKeySet()) {
+                String propertyName = (String) key;
+                cli.createArg().setValue("-D" + propertyName + "=" + startupSystemProperties.getProperty(propertyName));
+            }
 
             String jvmArgLine = newJvmArgLine(forkNumber);
             if (!jvmArgLine.isEmpty()) {

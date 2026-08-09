@@ -34,7 +34,9 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.plugin.surefire.AbstractSurefireMojo;
 import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
@@ -141,7 +143,7 @@ public class ForkConfigurationTest {
         StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
 
         org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
 
         assertThat(cli.getEnvironmentVariables())
                 .contains("key1=val1", "key2=val2", "key3=val3")
@@ -196,7 +198,7 @@ public class ForkConfigurationTest {
         StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
 
         org.apache.maven.surefire.shared.utils.cli.Commandline cliFork1 =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
 
         assertThat(cliFork1.getEnvironmentVariables())
                 .contains("FORK_ID=1")
@@ -204,7 +206,7 @@ public class ForkConfigurationTest {
                 .doesNotHaveDuplicates();
 
         org.apache.maven.surefire.shared.utils.cli.Commandline cliFork2 =
-                config.createCommandLine(startup, 2, getTempDirectory());
+                config.createCommandLine(startup, 2, getTempDirectory(), new SurefireProperties());
 
         assertThat(cliFork2.getEnvironmentVariables())
                 .contains("FORK_ID=2")
@@ -246,7 +248,7 @@ public class ForkConfigurationTest {
         StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
 
         org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
         String cliAsString = cli.toString();
 
         assertThat(cliAsString).contains("arg1");
@@ -322,7 +324,7 @@ public class ForkConfigurationTest {
         assertThat(startup.isShadefire()).isFalse();
 
         org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
 
         assertThat(cli.toString()).contains("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005");
     }
@@ -342,10 +344,38 @@ public class ForkConfigurationTest {
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
 
         org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
 
         String line = join(" ", cli.getCommandline());
         assertTrue(line.contains("-jar"));
+    }
+
+    @Test
+    public void testStartupSystemPropertyPrecedesArgLineAndMainClass() throws IOException, SurefireBooterForkException {
+        ForkConfiguration config = getForkConfiguration(basedir, "-Djava.io.tmpdir=from-arg-line");
+        File cpElement = getTempClasspathFile();
+
+        List<String> cp = singletonList(cpElement.getAbsolutePath());
+        ClasspathConfiguration cpConfig =
+                new ClasspathConfiguration(new Classpath(cp), emptyClasspath(), emptyClasspath(), true, true);
+        ClassLoaderConfiguration clc = new ClassLoaderConfiguration(true, true);
+        StartupConfiguration startup =
+                new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
+
+        String configuredTempDir = new File(basedir, "custom temp-${surefire.forkNumber}").getAbsolutePath();
+        SurefireProperties effectiveSystemProperties = new SurefireProperties();
+        effectiveSystemProperties.setProperty("java.io.tmpdir", configuredTempDir);
+        SurefireProperties startupSystemProperties =
+                AbstractSurefireMojo.createCopyAndReplaceForkNumPlaceholder(effectiveSystemProperties, 2);
+
+        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
+                config.createCommandLine(startup, 2, getTempDirectory(), startupSystemProperties);
+
+        assertThat(cli.getArguments())
+                .containsSubsequence(
+                        "-Djava.io.tmpdir=" + configuredTempDir.replace("${surefire.forkNumber}", "2"),
+                        "-Djava.io.tmpdir=from-arg-line",
+                        "-jar");
     }
 
     @Test
@@ -362,7 +392,7 @@ public class ForkConfigurationTest {
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
 
         org.apache.maven.surefire.shared.utils.cli.Commandline commandLine =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
         assertThat(commandLine.toString()).contains(IS_OS_WINDOWS ? "abc def" : "'abc' 'def'");
     }
 
@@ -378,7 +408,7 @@ public class ForkConfigurationTest {
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
         ForkConfiguration config = getForkConfiguration(cwd.getCanonicalFile());
         org.apache.maven.surefire.shared.utils.cli.Commandline commandLine =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
 
         File forkDirectory = new File(basedir, "fork_1");
 
@@ -393,7 +423,7 @@ public class ForkConfigurationTest {
 
         try {
             ForkConfiguration config = getForkConfiguration(cwd.getCanonicalFile());
-            config.createCommandLine(STARTUP_CONFIG, 1, getTempDirectory());
+            config.createCommandLine(STARTUP_CONFIG, 1, getTempDirectory(), new SurefireProperties());
         } catch (SurefireBooterForkException e) {
             // To handle issue with ~ expansion on Windows
             String absolutePath = cwd.getCanonicalPath();
@@ -415,7 +445,7 @@ public class ForkConfigurationTest {
 
         try {
             ForkConfiguration config = getForkConfiguration(cwd.getAbsoluteFile());
-            config.createCommandLine(STARTUP_CONFIG, 1, getTempDirectory());
+            config.createCommandLine(STARTUP_CONFIG, 1, getTempDirectory(), new SurefireProperties());
         } catch (SurefireBooterForkException sbfe) {
             assertEquals("Cannot create workingDirectory " + cwd.getAbsolutePath(), sbfe.getMessage());
             return;
@@ -501,7 +531,7 @@ public class ForkConfigurationTest {
 
         ForkConfiguration config = getForkConfiguration(workingDir.getCanonicalFile());
         org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+                config.createCommandLine(startup, 1, getTempDirectory(), new SurefireProperties());
 
         // The command line must use -jar (manifest-only JAR mode)
         String line = join(" ", cli.getCommandline());

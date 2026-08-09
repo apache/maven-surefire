@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.plugin.surefire.JdkAttributes;
+import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.Commandline;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ForkedBooter;
@@ -79,15 +80,19 @@ public abstract class ForkConfiguration {
     protected abstract Classpath getBooterClasspath();
 
     /**
-     * @param config               the startup configuration
-     * @param forkNumber           index of forked JVM, to be the replacement in the argLine
+     * @param config       the startup configuration
+     * @param forkNumber   index of forked JVM, to be the replacement in the argLine
      * @param dumpLogDirectory     directory for dump log file
+     * @param startupSystemProperties system properties which must be set when the forked JVM starts
      * @return CommandLine able to flush entire command going to be sent to forked JVM
      * @throws org.apache.maven.surefire.booter.SurefireBooterForkException
      *          when unable to perform the fork
      */
     @Nonnull
     public abstract Commandline createCommandLine(
-            @Nonnull StartupConfiguration config, int forkNumber, @Nonnull File dumpLogDirectory)
+            @Nonnull StartupConfiguration config,
+            int forkNumber,
+            @Nonnull File dumpLogDirectory,
+            @Nonnull SurefireProperties startupSystemProperties)
             throws SurefireBooterForkException;
 }

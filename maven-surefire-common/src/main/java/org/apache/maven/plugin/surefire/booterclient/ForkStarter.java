@@ -485,6 +485,7 @@ public class ForkStarter {
         final File surefireProperties;
         final File systPropsFile;
         final ForkChannel forkChannel;
+        final SurefireProperties startupSystemProperties = new SurefireProperties();
         File dumpLogDir = replaceForkThreadsInPath(startupReportConfiguration.getReportsDirectory(), forkNumber);
         try {
             ForkNodeArguments forkNodeArguments = new ForkedNodeArg(
@@ -514,6 +515,12 @@ public class ForkStarter {
             if (effectiveSystemProperties != null) {
                 SurefireProperties filteredProperties =
                         createCopyAndReplaceForkNumPlaceholder(effectiveSystemProperties, forkNumber);
+                String javaIoTmpDir = filteredProperties.getProperty("java.io.tmpdir");
+                if (javaIoTmpDir != null) {
+                    // The JDK caches the default temporary directory before ForkedBooter can set system properties.
+                    startupSystemProperties.setProperty("java.io.tmpdir", javaIoTmpDir);
+                    filteredProperties.remove("java.io.tmpdir");
+                }
 
                 systPropsFile = writePropertiesFile(
                         filteredProperties,
@@ -527,7 +534,8 @@ public class ForkStarter {
             throw new SurefireBooterForkException("Error creating properties files for forking", e);
         }
 
-        Commandline cli = forkConfiguration.createCommandLine(startupConfiguration, forkNumber, dumpLogDir);
+        Commandline cli = forkConfiguration.createCommandLine(
+                startupConfiguration, forkNumber, dumpLogDir, startupSystemProperties);
 
         cli.createArg().setValue(tempDir);
         cli.createArg().setValue(DUMP_FILE_PREFIX + forkNumber);
