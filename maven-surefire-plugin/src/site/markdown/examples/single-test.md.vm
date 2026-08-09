@@ -1,165 +1,139 @@
-  ------
-  Running a Single Test
-  ------
-  Allan Ramirez
-  Olivier Lamy
-  ------
- 2012-02-28
-  ------
-  
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+---
+title: Running a Single Test
+author:
+  - Allan Ramirez
+  - Olivier Lamy
+date: 2012-02-28
+---
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Running a Single Test
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+# Running a Single Test
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  During development, you may run a single test class repeatedly. To run this
-  through Maven, set the <<<test>>> property to a specific test case.
+During development, you may run a single test class repeatedly. To run this through Maven, set the `test` property to a specific test case.
+#{else}
+During development, you may run a single test class repeatedly. To run this through Maven, set the `it.test` property to a specific test case.
+#{end}
 
-+---+
+```text
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 mvn -Dtest=TestCircle test
-+---+
-
-If you have multiple executions configured in surefire plugin within your POM, you may want to execute the only default test phase:
-
-+---+
-mvn surefire:test -Dtest=TestCircle
-+---+
-
-  The value for the <<<test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
 #{else}
-  During development, you may run a single test class repeatedly. To run this
-  through Maven, set the <<<it.test>>> property to a specific test case.
-
-+---+
 mvn -Dit.test=ITCircle verify
-+---+
-
-  The value for the <<<it.test>>> parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
 #{end}
-
-  You may also use patterns to run a number of tests:
+```
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-+---+
+# If you have multiple executions configured in surefire plugin within your POM, you may want to execute the only default test phase:
+
+```bash
+mvn surefire:test -Dtest=TestCircle
+```
+
+The value for the `test` parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
+#{else}
+The value for the `it.test` parameter is the name of the test class (without the extension; we'll strip off the extension if you accidentally provide one).
+#{end}
+
+You may also use patterns to run a number of tests:
+
+```text
+#{if}(${project.artifactId}=="maven-surefire-plugin")
 mvn -Dtest=TestCi*le test
-+---+
 #{else}
-+---+
 mvn -Dit.test=ITCi*le verify
-+---+
 #{end}
+```
 
-  And you may use multiple names/patterns, separated by commas:
+And you may use multiple names/patterns, separated by commas:
 
+```text
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-+---+
 mvn -Dtest=TestSquare,TestCi*le test
-+---+
 #{else}
-+---+
 mvn -Dit.test=ITSquare,ITCi*le verify
-+---+
 #{end}
+```
 
-  << NOTE: Use syntax e.g. "foo/MyTest.java", "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes). >>
+**NOTE: Use syntax e.g. "foo/MyTest.java", "\*\*/MyTest.java", "MyTest" for "test" parameter (see includes/excludes).**
 
-Running a Set of Methods in a Single Test Class
+# Running a Set of Methods in a Single Test Class
 
-  You can also run only a subset of the tests in a test class.
-  
-  << NOTE : This feature is supported only for Junit 4.x and TestNG. Use syntax e.g. "foo/MyTest.java",
-  "**/MyTest.java", "MyTest" for "test" parameter (see includes/excludes). >>
-  
-  You should use the following syntax:
-  
+You can also run only a subset of the tests in a test class.
+
+**NOTE : This feature is supported only for Junit 4.x and TestNG. Use syntax e.g. "foo/MyTest.java", "\*\*/MyTest.java", "MyTest" for "test" parameter (see includes/excludes).**
+
+You should use the following syntax:
+
+```text
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-+---+
 mvn -Dtest=TestCircle#mytest test
-+---+
 #{else}
-+---+
 mvn -Dit.test=ITCircle#mytest verify
-+---+
 #{end}
+```
 
-  You can use patterns too:
-  
+You can use patterns too:
+
+```text
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-+---+
 mvn -Dtest=TestCircle#test* test
-+---+
 #{else}
-+---+
 mvn -Dit.test=ITCircle#test* verify
-+---+
 #{end}
+```
 
-  You can select multiple methods (JUnit 4, JUnit 4.7+ and TestNG):
+You can select multiple methods (JUnit 4, JUnit 4.7+ and TestNG):
 
+```text
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-+---+
 mvn -Dtest=TestCircle#testOne+testTwo test
-+---+
 #{else}
-+---+
 mvn -Dit.test=ITCircle#testOne+testTwo verify
-+---+
 #{end}
+```
 
+# Multiple Formats in One
 
-Multiple Formats in One
+Multiple formats are supported in one pattern (JUnit 4, JUnit 4.7+, TestNG):
 
-  Multiple formats are supported in one pattern (JUnit 4, JUnit 4.7+, TestNG):
-
+```text
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-+---+
 mvn "-Dtest=???Test, !Unstable*, pkg/**/Ci*leTest.java, *Test#test*One+testTwo?????, #fast*+slowTest" test
 mvn "-Dtest=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyTest.class#one.*|two.*], %regex[#fast.*|slow.*]" test
-+---+
 #{else}
-+---+
 mvn "-Dit.test=???IT, !Unstable*, pkg/**/Ci*leIT.java, *IT#test*One+testTwo?????, #fast*+slowTest" verify
 mvn "-Dit.test=Basic*, !%regex[.*.Unstable.*], !%regex[.*.MyIT.class#one.*|two.*], %regex[#fast.*|slow.*]" verify
-+---+
 #{end}
+```
 
-  The exclamation mark (!) excludes tests. The character (?) within non-regex pattern replaces one character in file
-  name or path. The file extensions are not mandatory in non-regex patterns, and packages with slash can be used.
-  The regex validates fully qualified class file, and validates test methods separately after (#) however class
-  is optional. The regex supports '.class' file extension only. Note the regex comments, marked by (#)
-  character, are unsupported. The Parameterized JUnit runner describes test methods using an index in brackets, so the
-  non-regex method pattern would become <<<#testMethod[*]>>>. If using the JUnit annotation
-  <<<@Parameters(name="\{index\}: fib(\{0\})=\{1\}")>>> and selecting the index e.g. 5 in pattern, the non-regex
-  method pattern would become <<<#testMethod[5:*]>>>.
+The exclamation mark (\!) excludes tests. The character (?) within non-regex pattern replaces one character in file name or path. The file extensions are not mandatory in non-regex patterns, and packages with slash can be used. The regex validates fully qualified class file, and validates test methods separately after (#) however class is optional. The regex supports '.class' file extension only. Note the regex comments, marked by (#) character, are unsupported. The Parameterized JUnit runner describes test methods using an index in brackets, so the non-regex method pattern would become `#testMethod[*]`. If using the JUnit annotation `@Parameters(name="{index}: fib({0})={1}")` and selecting the index e.g. 5 in pattern, the non-regex method pattern would become `#testMethod[5:*]`.
 
-* Fully qualified class name
+Fully qualified class name
+--------------------------
 
-  The syntax with fully qualified class names or packages can be used. For example:
+The syntax with fully qualified class names or packages can be used. For example:
 
-+---+
+```xml
 <test>my.package.???Test#testMethod, another.package.*</test>
-+---+
+```
 
-  The character (?) replaces single character and (*) represents zero or more characters.
-  Multiple formats can be combined.
-
-
-
+The character (?) replaces single character and (*) represents zero or more characters. Multiple formats can be combined.

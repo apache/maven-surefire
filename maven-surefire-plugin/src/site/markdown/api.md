@@ -1,93 +1,76 @@
-  ------
-  Provider API
-  ------
-  Kristian Rosenvold
-  ------
-  2010-12-09
-  ------
-  
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
+---
+title: Provider API
+author:
+  - Kristian Rosenvold
+date: 2010-12-09
+---
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Maven Surefire Provider API
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-  As of version 2.7 of Surefire, there is a proposed public API available for
-  external providers to use Surefire features.
+# Maven Surefire Provider API
 
-  The key features of Surefire are forking, reporting and directory/classpath scanning.
-  The remaining features are implemented in the providers.
+As of version 2.7 of Surefire, there is a proposed public API available for external providers to use Surefire features.
 
-  Please note that this API is still subject to change until otherwise declared, even in minor revisions.
-  Such changes will mostly happen to facilitate needs of new providers.
+The key features of Surefire are forking, reporting and directory/classpath scanning. The remaining features are implemented in the providers.
 
-* Requirements for a Provider
+Please note that this API is still subject to change until otherwise declared, even in minor revisions. Such changes will mostly happen to facilitate needs of new providers.
 
-  There are three things any provider must fulfill:
+## Requirements for a Provider
 
-  * A provider must implement the <<<org.apache.maven.surefire.providerapi.SurefireProvider>>> interface.
+There are three things any provider must fulfill:
 
-  * A provider contains a <<<META-INF/services>>> file entry named <<<org.apache.maven.surefire.providerapi.SurefireProvider>>>
-  (as per {{{http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html}ServiceLoader}}). This file
-  contains the fully qualified name of the actual provider class.
+- A provider must implement the `org.apache.maven.surefire.providerapi.SurefireProvider` interface.
+- A provider contains a `META-INF/services` file entry named `org.apache.maven.surefire.providerapi.SurefireProvider` (as per [ServiceLoader](http://download.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html)). This file contains the fully qualified name of the actual provider class.
+- The actual provider class contains a one-arg constructor that accepts an instance of `org.apache.maven.surefire.providerapi.ProviderParameters`. This interface delivers all Surefire features to the provider implementation. Please see the javadoc of this interface for options.
 
-  * The actual provider class contains a one-arg constructor that accepts an instance of
-  <<<org.apache.maven.surefire.providerapi.ProviderParameters>>>. This interface delivers all Surefire features
-  to the provider implementation. Please see the javadoc of this interface for options.
+Since 3.6.0, there is one unified provider within Surefire, `surefire-junit-platform`, which is the showcase implementation. Examples can be found by looking at the Surefire source code itself.
 
-  []
+The javadoc on the intefaces mentioned in this article should otherwise be sufficient to write a provider. Providers are added as dependencies to the Surefire and Failsafe plugins.
 
-  Since 3.6.0, there is one unified provider within Surefire, <<<surefire-junit-platform>>>,
-  which is the showcase implementation. Examples can be found by looking at the Surefire source code itself.
+### API Changes for 2.11
 
-  The javadoc on the intefaces mentioned in this article should otherwise be sufficient to write a provider.
-  Providers are added as dependencies to the Surefire and Failsafe plugins.
+Prior to 2.11, the provider would do
 
-** API Changes for 2.11
-
-    Prior to 2.11, the provider would do
-
-+---+
+```text
     TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
-+---+
+```
 
-    and the classes would arrive in sorted order. In 2.11, an additional step must be implemented by the provider;
+and the classes would arrive in sorted order. In 2.11, an additional step must be implemented by the provider;
 
-+---+
+```text
     TestsToRun scanned = directoryScanner.locateTestClasses( testClassLoader, scannerFilter );
     return providerParameters.getRunOrderCalculator().orderTestClasses(  scanned );
-+---+
+```
 
-** API changes for 2.12.2:
+### API changes for 2.12.2:
 
-   Prior to this version, the provider would do
+Prior to this version, the provider would do
 
-+---+
+```text
     directoryScanner = booterParameters.getDirectoryScanner();
     final TestsToRun scanResult = directoryScanner.locateTestClasses( testClassLoader, testChecker );
-+---+
+```
 
-   In this version <<<ProviderParameters#getDirectoryScanner>>> has been deprecated, and it *will* be removed
-   for the next major version. Instead, use
+In this version `ProviderParameters#getDirectoryScanner` has been deprecated, and it \*will\* be removed for the next major version. Instead, use
 
-+---+
+```text
     scanResult = booterParameters.getScanResult();
     final TestsToRun testsToRun = scanResult.applyFilter(testChecker, testClassLoader );
-+---+
+```

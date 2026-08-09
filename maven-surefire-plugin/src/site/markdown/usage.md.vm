@@ -1,43 +1,44 @@
-  ------
-  Usage
-  ------
-  Brett Porter
-  Allan Ramirez
-  Stephen Connolly
-  ------
-  2011-06-27
-  ------
-  
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
+---
+title: Usage
+author:
+  - Brett Porter
+  - Allan Ramirez
+  - Stephen Connolly
+date: 2011-06-27
+---
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Usage
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+# Usage
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  Best practice is to define the version of the Surefire Plugin that you want to use in either your <<<pom.xml>>>
-  or a parent <<<pom.xml>>>:
+Best practice is to define the version of the Surefire Plugin that you want to use in either your `pom.xml` or a parent `pom.xml`:
+#{else}
+To use the ${thisPlugin} Plugin, you need to add the following configuration to your `pom.xml`:
+#{end}
 
-+---+
+```xml
 <project>
   [...]
   <build>
+#{if}(${project.artifactId}=="maven-surefire-plugin")
     <pluginManagement>
       <plugins>
         <plugin>
@@ -47,19 +48,7 @@ Usage
         </plugin>
       </plugins>
     </pluginManagement>
-  </build>
-  [...]
-</project>
-+---+
-
 #{else}
-  To use the ${thisPlugin} Plugin, you need to add the following configuration to
-  your <<<pom.xml>>>:
-
-+---+
-<project>
-  [...]
-  <build>
     <plugins>
       <plugin>
         <groupId>${project.groupId}</groupId>
@@ -75,69 +64,56 @@ Usage
         </executions>
       </plugin>
     </plugins>
+#{end}
   </build>
   [...]
 </project>
-+---+
+```
 
-#{end}
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  The ${thisPlugin} Plugin can be invoked by calling the <<<test>>> phase of the
-  build lifecycle.
-
-+---+
-mvn test
-+---+
-
+The ${thisPlugin} Plugin can be invoked by calling the `test` phase of the build lifecycle.
 #{else}
-  The ${thisPlugin} Plugin can be invoked by calling the <<<verify>>> phase of the
-  build lifecycle.
-
-+---+
-mvn verify
-+---+
+The ${thisPlugin} Plugin can be invoked by calling the `verify` phase of the build lifecycle.
 #{end}
 
-* Using Different Testing Providers
+```text
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+mvn test
+#{else}
+mvn verify
+#{end}
+```
 
-  Tests in your test source directory can be any combination of the following:
+Using Different Testing Providers
+---------------------------------
 
-   * TestNG (6.14.3 or later)
+Tests in your test source directory can be any combination of the following:
 
-   * JUnit (4.12+ or 5.x)
+- TestNG (6.14.3 or later)
+- JUnit (4.12+ or 5.x)
 
-  Since Surefire 3.6.0, all tests run via the JUnit Platform. The appropriate engine is automatically selected
-  based on your dependencies:
+Since Surefire 3.6.0, all tests run via the JUnit Platform. The appropriate engine is automatically selected based on your dependencies:
 
-   * <<<junit:junit>>> (4.12+) - runs via Vintage Engine
+- `junit:junit` (4.12+) - runs via Vintage Engine
+- `junit-jupiter-engine` - runs via Jupiter Engine
+- `org.testng:testng` (6.14.3+) - runs via TestNG JUnit Platform Engine
 
-   * <<<junit-jupiter-engine>>> - runs via Jupiter Engine
+Since the test framework dependency is required to compile the test classes anyway, no additional configuration is required.
 
-   * <<<org.testng:testng>>> (6.14.3+) - runs via TestNG JUnit Platform Engine
+Note that any normal Surefire integration works identically no matter which test framework is in use - so you can still produce a Cobertura report and a Surefire results report on your project web site for your TestNG tests, for example.
 
-  []
+There are additional options available if you are running TestNG tests.
 
-  Since the test framework dependency is required to compile the test classes anyway, no additional configuration is required.
-
-  Note that any normal Surefire integration works identically no matter which
-  test framework is in use - so you can still produce a Cobertura report and a
-  Surefire results report on your project web site for your TestNG tests,
-  for example.
-
-  There are additional options available if you are running TestNG tests.
-
-  See {{{./examples/testng.html} Using TestNG}} for more information.
+See [ Using TestNG](./examples/testng.html) for more information.
 
 #{if}(${project.artifactId}=="maven-failsafe-plugin")
-* Using jetty and ${project.artifactId}
 
-  You need to bind one of <<<jetty:start>>>, <<<jetty:run>>>, <<<jetty:run-exploded>>> or <<<jetty:run-war>>>
-  to the <<<pre-integration-test>>> phase with <<<daemon>>> set to true, bind
-  <<<failsafe:integration-test>>> to the <<<integration-test>>> phase, bind <<<jetty:stop>>>
-  to the <<<post-integration-test>>> phase and finally bind <<<failsafe:verify>>> to
-  the <<<verify>>> phase.  Here is an example:
+Using jetty and ${project.artifactId}
+-------------------------------------
 
-+---+
+You need to bind one of `jetty:start`, `jetty:run`, `jetty:run-exploded` or `jetty:run-war` to the `pre-integration-test` phase with `daemon` set to true, bind `failsafe:integration-test` to the `integration-test` phase, bind `jetty:stop` to the `post-integration-test` phase and finally bind `failsafe:verify` to the `verify` phase. Here is an example:
+
+```xml
 <project>
   [...]
   <build>
@@ -206,23 +182,17 @@ mvn verify
   </build>
   [...]
 </project>
-+---+
+```
 
-  You then invoke Maven with a phase of <<<verify>>> or later in order to run
-  the integration tests.  <<DO NOT>> directly invoke any of the phases
-  <<<pre-integration-test>>>, <<<integration-test>>>, or <<<post-integration-test>>> as
-  these are too long to type and they will likely leave a jetty container running.
+You then invoke Maven with a phase of `verify` or later in order to run the integration tests. **DO NOT** directly invoke any of the phases `pre-integration-test`, `integration-test`, or `post-integration-test` as these are too long to type and they will likely leave a jetty container running.
 
-+---+
+```bash
 mvn verify
-+---+
+```
 
-  Note: during test development, you will likely run a jetty instance in the background.
-  to help running the integration tests, it can be handy to bind <<<jetty:stop>>> to
-  the <<<pre-integration-test>>> phase before <<<jetty:run>>> to flush out any
-  running jetty instance before starting the integration test jetty instance, e.g.
+Note: during test development, you will likely run a jetty instance in the background. to help running the integration tests, it can be handy to bind `jetty:stop` to the `pre-integration-test` phase before `jetty:run` to flush out any running jetty instance before starting the integration test jetty instance, e.g.
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -256,14 +226,14 @@ mvn verify
   </build>
   [...]
 </project>
-+---+
+```
 
-* Reporting integration test results
+Reporting integration test results
+----------------------------------
 
-  The ${thisPlugin} Plugin uses the exact same format as the ${thatPlugin} Plugin, so to generate a report you just add a second
-  Surefire Report Plugin report set using the ${thisPlugin} reports directory, e.g.
+The ${thisPlugin} Plugin uses the exact same format as the ${thatPlugin} Plugin, so to generate a report you just add a second Surefire Report Plugin report set using the ${thisPlugin} reports directory, e.g.
 
-+---+
+```xml
 <project>
   [...]
   <reporting>
@@ -285,15 +255,14 @@ mvn verify
   </reporting>
   [...]
 </project>
-+---+
+```
 
-* Running integration tests multiple times
+Running integration tests multiple times
+----------------------------------------
 
-  If you need to run your integration tests multiple times, just use multiple executions of the <<<integration-test>>>
-  goal.  You will need to specify a different summary file for each execution, and then configure the <<<verify>>> goal
-  with the multiple summary files in order to fail the build when any one execution has failures, e.g.
+If you need to run your integration tests multiple times, just use multiple executions of the `integration-test` goal. You will need to specify a different summary file for each execution, and then configure the `verify` goal with the multiple summary files in order to fail the build when any one execution has failures, e.g.
 
-+---+
+```xml
 <project>
   [...]
   <reporting>
@@ -345,16 +314,14 @@ mvn verify
   </reporting>
   [...]
 </project>
-+---+
+```
 
-* Usage in multi-module projects
+Usage in multi-module projects
+------------------------------
 
-  The recommendations for using the ${thisPlugin} Plugin listed at the top of this page are fine for 95% of use cases.
-  When you are defining a shared definition of the ${thisPlugin} Plugin in a parent pom, it is considered best practice
-  to define an execution id in order to allow child projects to override the configuration. Thus you might have the
-  following in your parent <<<pom.xml>>>:
+The recommendations for using the ${thisPlugin} Plugin listed at the top of this page are fine for 95% of use cases. When you are defining a shared definition of the ${thisPlugin} Plugin in a parent pom, it is considered best practice to define an execution id in order to allow child projects to override the configuration. Thus you might have the following in your parent `pom.xml`:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -379,11 +346,11 @@ mvn verify
   </build>
   [...]
 </project>
-+---+
+```
 
-  The child projects can then trigger usage of the ${thisPlugin} Plugin with
+The child projects can then trigger usage of the ${thisPlugin} Plugin with
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -397,12 +364,11 @@ mvn verify
   </build>
   [...]
 </project>
-+---+
+```
 
-  For very complex builds, it may be better to separate the executions for the <<<integration-test>>> and <<<verify>>>
-  goals.
+For very complex builds, it may be better to separate the executions for the `integration-test` and `verify` goals.
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -432,6 +398,5 @@ mvn verify
   </build>
   [...]
 </project>
-+---+
-
+```
 #{end}
