@@ -1,172 +1,115 @@
-  ------
-  Introduction
-  ------
-  Stephen Connolly
-  Allan Ramirez
-  ------
-  2011-06-27
-  ------
+---
+title: Introduction
+author:
+  - Stephen Connolly
+  - Allan Ramirez
+date: 2011-06-27
+---
 
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+  http://www.apache.org/licenses/LICENSE-2.0
 
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-Maven ${thisPlugin} Plugin
+# Maven ${thisPlugin} Plugin
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  The Surefire Plugin is used during the <<<test>>> phase of the build
-  lifecycle to execute the unit tests of an application. It generates reports
-  in two different file formats:
+The Surefire Plugin is used during the `test` phase of the build lifecycle to execute the unit tests of an application. It generates reports in two different file formats:
 #{else}
-  The Failsafe Plugin is designed to run integration tests while the Surefire Plugin is designed to run unit tests.
-  The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it
-  does so in a safe way.
+The Failsafe Plugin is designed to run integration tests while the Surefire Plugin is designed to run unit tests. The name (failsafe) was chosen both because it is a synonym of surefire and because it implies that when it fails, it does so in a safe way.
 
-  The Maven lifecycle has four phases for running integration tests:
+The Maven lifecycle has four phases for running integration tests:
 
-  * <<<pre-integration-test>>> for setting up the integration test environment.
+- `pre-integration-test` for setting up the integration test environment.
+- `integration-test` for running the integration tests.
+- `post-integration-test` for tearing down the integration test environment.
+- `verify` for checking the results of the integration tests.
 
-  * <<<integration-test>>> for running the integration tests.
+If you use the Surefire Plugin for running tests, then when you have a test failure, the build will stop at the `integration-test` phase and your integration test environment will not have been torn down correctly.
 
-  * <<<post-integration-test>>> for tearing down the integration test environment.
+The Failsafe Plugin is used during the `integration-test` and `verify` phases of the build lifecycle to execute the integration tests of an application. The Failsafe Plugin will not fail the build during the `integration-test` phase, thus enabling the `post-integration-test` phase to execute.
 
-  * <<<verify>>> for checking the results of the integration tests.
+NOTE: when running integration tests, you should invoke Maven with the (shorter to type too)
 
-  []
-
-  If you use the Surefire Plugin for running tests, then when you have a test failure, the build will stop at the
-  <<<integration-test>>> phase and your integration test environment will not have been torn down correctly.
-
-  The Failsafe Plugin is used during the <<<integration-test>>> and <<<verify>>> phases of the build
-  lifecycle to execute the integration tests of an application. The Failsafe Plugin will not fail the build during
-  the <<<integration-test>>> phase, thus enabling the <<<post-integration-test>>> phase to execute.
-
-  NOTE: when running integration tests, you should invoke Maven with the (shorter to type too)
-
-+---+
+```bash
 mvn verify
-+---+
+```
 
-  rather than trying to invoke the <<<integration-test>>> phase directly, as otherwise the <<<post-integration-test>>>
-  phase will not be executed.
+rather than trying to invoke the `integration-test` phase directly, as otherwise the `post-integration-test` phase will not be executed.
 
-  The Failsafe Plugin generates reports in two different file formats:
-
+The Failsafe Plugin generates reports in two different file formats:
 #{end}
 
-  * Plain text files (<<<*.txt>>>)
+- Plain text files (`*.txt`)
+- XML files (`*.xml`)
 
-  * XML files (<<<*.xml>>>)
+By default, these files are generated in `${esc.d}{basedir}/target/${thisPlugin.toLowerCase()}-reports/TEST-*.xml`.
 
-  []
+The schema for the ${thisPlugin} XML reports is available at [${thisPlugin} XML Report Schema](./xsd/${thisPlugin.toLowerCase()}-test-report.xsd).
 
-  By default, these files are generated in <<<$\{basedir\}/target/${thisPlugin.toLowerCase()}-reports/TEST-*.xml>>>.
-
-  The schema for the ${thisPlugin} XML reports is available at
-  {{{./xsd/${thisPlugin.toLowerCase()}-test-report.xsd}${thisPlugin} XML Report Schema}}.
-
-  For an HTML format of the report, please see the
-  {{{http://maven.apache.org/plugins/maven-surefire-report-plugin/}Maven Surefire Report Plugin}}.
+For an HTML format of the report, please see the [Maven Surefire Report Plugin](http://maven.apache.org/plugins/maven-surefire-report-plugin/).
 
 #{if}(${project.artifactId}=="maven-failsafe-plugin")
-  By default this plugin generates summary XML file at <<<$\{basedir\}/target/failsafe-reports/failsafe-summary.xml>>>
-  and the schema is available at {{{./xsd/failsafe-summary.xsd}Failsafe XML Summary Schema}}.
+By default this plugin generates summary XML file at `${esc.d}{basedir}/target/failsafe-reports/failsafe-summary.xml` and the schema is available at [Failsafe XML Summary Schema](./xsd/failsafe-summary.xsd).
 #{end}
 
-* Goals Overview
+Goals Overview
+--------------
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  The Surefire Plugin has only one goal:
+The Surefire Plugin has only one goal:
 
-  * {{{./test-mojo.html}surefire:test}} runs the unit tests of an application.
-
-  []
-
+- [surefire:test](./test-mojo.html) runs the unit tests of an application.
 #{else}
-  The Failsafe Plugin has only two goals:
+The Failsafe Plugin has only two goals:
 
-  * {{{./integration-test-mojo.html}failsafe:integration-test}} runs the integration tests of an application.
-
-  * {{{./verify-mojo.html}failsafe:verify}} verifies that the integration tests of an application passed.
-
-  []
-
+- [failsafe:integration-test](./integration-test-mojo.html) runs the integration tests of an application.
+- [failsafe:verify](./verify-mojo.html) verifies that the integration tests of an application passed.
 #{end}
 
-* Usage
+Usage
+-----
 
-  General instructions on how to use the ${thisPlugin} Plugin can be found on the {{{./usage.html}usage page}}. Some more
-  specific use cases are described in the examples listed below. Additionally, users can contribute to the
-  {{{https://github.com/apache/maven-surefire}GitHub project}}.
+General instructions on how to use the ${thisPlugin} Plugin can be found on the [usage page](./usage.html). Some more specific use cases are described in the examples listed below. Additionally, users can contribute to the [GitHub project](https://github.com/apache/maven-surefire).
 
-  In case you still have questions regarding the plugin's usage, please have a look at the {{{./faq.html}FAQ}} and feel
-  free to contact the {{{./mailing-lists.html}user mailing list}}. The posts to the mailing list are archived and could
-  already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching
-  the {{{./mailing-lists.html}mail archive}}.
+In case you still have questions regarding the plugin's usage, please have a look at the [FAQ](./faq.html) and feel free to contact the [user mailing list](./mailing-lists.html). The posts to the mailing list are archived and could already contain the answer to your question as part of an older thread. Hence, it is also worth browsing/searching the [mail archive](./mailing-lists.html).
 
-  If you feel like the plugin is missing a feature or has a defect, you can file a feature request or bug report in our
-  {{{./issue-management.html}issue tracker}}. When creating a new issue, please provide a comprehensive description of your
-  concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason,
-  entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated.
-  Of course, patches are welcome, too. Contributors can check out the project from our
-  {{{./scm.html}source repository}} and will find supplementary information in the
-  {{{http://maven.apache.org/guides/development/guide-helping.html}guide to helping with Maven}}.
+If you feel like the plugin is missing a feature or has a defect, you can file a feature request or bug report in our [issue tracker](./issue-management.html). When creating a new issue, please provide a comprehensive description of your concern. Especially for fixing bugs it is crucial that the developers can reproduce your problem. For this reason, entire debug logs, POMs or most preferably little demo projects attached to the issue are very much appreciated. Of course, patches are welcome, too. Contributors can check out the project from our [source repository](./scm.html) and will find supplementary information in the [guide to helping with Maven](http://maven.apache.org/guides/development/guide-helping.html).
 
-* Examples
+Examples
+--------
 
-  The following examples show how to use the ${thisPlugin} Plugin in more advanced use cases:
+The following examples show how to use the ${thisPlugin} Plugin in more advanced use cases:
 
-  * {{{./examples/testng.html}Using TestNG}}
-
-  * {{{./examples/junit-platform.html}Using JUnit 5 Platform}}
-
-  * {{{./examples/junit.html}Using JUnit}}
-
-  * {{{./examples/skipping-tests.html}Skipping Tests}}
-
-  * {{{./examples/skip-after-failure.html}Skip After Failure}}
-
-  * {{{./examples/inclusion-exclusion.html}Inclusions and Exclusions of Tests}}
-
-  * {{{./examples/single-test.html}Running a Single Test}}
-
-  * {{{./examples/rerun-failing-tests.html}Re-run Failing Tests}}
-
-  * {{{./examples/class-loading.html}Class Loading and Forking}}
-
-  * {{{./examples/debugging.html}Debugging Tests}}
-
-  * {{{./examples/system-properties.html}Using System Properties}}
-
-  * {{{./examples/configuring-classpath.html}Configuring the Classpath}}
-
-  * {{{./examples/providers.html}Selecting Providers}}
-
-  * {{{./examples/fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}
-
-  * {{{./examples/logging.html}Using Console Logs}}
-
-  * {{{./examples/shutdown.html}Shutdown of Forked JVM}}
-
-  * {{{./java9.html}Run tests with Java 9}}
-
-  * {{{./whats-new-3-6-0.html}What's New in 3.6.0}}
-
-  []
+- [Using TestNG](./examples/testng.html)
+- [Using JUnit 5 Platform](./examples/junit-platform.html)
+- [Using JUnit](./examples/junit.html)
+- [Skipping Tests](./examples/skipping-tests.html)
+- [Skip After Failure](./examples/skip-after-failure.html)
+- [Inclusions and Exclusions of Tests](./examples/inclusion-exclusion.html)
+- [Running a Single Test](./examples/single-test.html)
+- [Re-run Failing Tests](./examples/rerun-failing-tests.html)
+- [Class Loading and Forking](./examples/class-loading.html)
+- [Debugging Tests](./examples/debugging.html)
+- [Using System Properties](./examples/system-properties.html)
+- [Configuring the Classpath](./examples/configuring-classpath.html)
+- [Selecting Providers](./examples/providers.html)
+- [Fork Options and Parallel Test Execution](./examples/fork-options-and-parallel-execution.html)
+- [Using Console Logs](./examples/logging.html)
+- [Shutdown of Forked JVM](./examples/shutdown.html)
+- [Run tests with Java 9](./java9.html)
+- [What's New in 3.6.0](./whats-new-3-6-0.html)

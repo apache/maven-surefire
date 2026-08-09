@@ -1,41 +1,42 @@
-  ------
-  Skipping Tests
-  ------
-  Johnny Ruiz
-  Brett Porter
-  Allan Ramirez
-  ------
-  July 2006
-  ------
+---
+title: Skipping Tests
+author:
+  - Johnny Ruiz
+  - Brett Porter
+  - Allan Ramirez
+date: July 2006
+---
 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Skipping Tests
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+# Skipping Tests
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
+To skip running the tests for a particular project, set the **skipTests** property to **true**.
+#{else}
+To skip running the tests for a particular project, set the **skipITs** property to **true**.
+#{end}
 
- To skip running the tests for a particular project, set the <<skipTests>> property to <<true>>.
-
-+---+
+```xml
 <project>
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   [...]
   <build>
     <plugins>
@@ -50,21 +51,7 @@ Skipping Tests
     </plugins>
   </build>
   [...]
-</project>
-+---+
-
- You can also skip the tests via the command line by executing the following command:
-
-+---+
-mvn install -DskipTests
-+---+
-
 #{else}
-
- To skip running the tests for a particular project, set the <<skipITs>> property to <<true>>.
-
-+---+
-<project>
     [...]
     <build>
         <plugins>
@@ -79,49 +66,37 @@ mvn install -DskipTests
         </plugins>
     </build>
     [...]
+#{end}
 </project>
-+---+
+```
 
- You can also skip the tests via the command line by executing the following command:
+You can also skip the tests via the command line by executing the following command:
 
-+---+
+```bash
 mvn install -DskipTests
-+---+
+#{if}(${project.artifactId}=="maven-failsafe-plugin")
+```
 
-#{if}(${project.artifactId}=="maven-surefire-plugin")
- The <<<-DskipTests>>> command-line property only skips tests run by the ${thisPlugin} Plugin and
- does <<not>> skip the integration tests run by the ${thatPlugin} Plugin (since 3.6.0).
- To skip integration tests from the command line use the <<<skipITs>>> property:
-#{else}
- The <<<-DskipTests>>> command-line property only skips tests run by the Surefire Plugin and
- does <<not>> skip the integration tests run by the ${thisPlugin} Plugin (since 3.6.0).
- To skip integration tests from the command line use the <<<skipITs>>> property:
-#{end}
+The `-DskipTests` command-line property only skips tests run by the Surefire Plugin and does **not** skip the integration tests run by the ${thisPlugin} Plugin (since 3.6.0). To skip integration tests from the command line use the `skipITs` property:
 
-+---+
+```bash
 mvn install -DskipITs
-+---+
-
 #{end}
+```
 
+If you absolutely must, you can also use the `maven.test.skip` property to skip compiling the tests. `maven.test.skip` is honored by Surefire, Failsafe and the Compiler Plugin.
 
-
- If you absolutely must, you can also use the <<<maven.test.skip>>> property to skip compiling the tests.
- <<<maven.test.skip>>> is honored by Surefire, Failsafe and the Compiler Plugin.
-
-+---+
+```bash
 mvn install -Dmaven.test.skip=true
-+---+
+```
 
-Skipping by Default
+# Skipping by Default
 
-   If you want to skip tests by default but want the ability to re-enable tests from the
-   command line, you need to go via a properties section in the pom:
+If you want to skip tests by default but want the ability to re-enable tests from the command line, you need to go via a properties section in the pom:
 
-#{if}(${project.artifactId}=="maven-surefire-plugin")
-
-+---+
+```xml
 <project>
+#{if}(${project.artifactId}=="maven-surefire-plugin")
   [...]
   <properties>
     <skipTests>true</skipTests>
@@ -140,13 +115,7 @@ Skipping by Default
     </plugins>
   </build>
   [...]
-</project>
-+---+
-
 #{else}
-
-+---+
-<project>
     [...]
     <properties>
         <skipTests>true</skipTests>
@@ -165,15 +134,14 @@ Skipping by Default
         </plugins>
     </build>
     [...]
-</project>
-+---+
-
 #{end}
+</project>
+```
 
-   This will allow you to run with all tests disabled by default and to run them with this command:
+This will allow you to run with all tests disabled by default and to run them with this command:
 
-+---+
+```bash
 mvn install -DskipTests=false
-+---+
+```
 
-   The same can be done with the <<<skip>>> parameter and other boolean properties of the plugin.
+The same can be done with the `skip` parameter and other boolean properties of the plugin.

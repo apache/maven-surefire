@@ -1,38 +1,37 @@
- ------
- Using JUnit
- ------
- Kristian Rosenvold <krosenvold@apache.org>
- ------
- 2010-10-10
- ------
- 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+---
+title: Using JUnit
+author:
+  - Kristian Rosenvold krosenvold@apache.org
+date: 2010-10-10
+---
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html 
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Using JUnit
+  http://www.apache.org/licenses/LICENSE-2.0
 
-* Configuring JUnit
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-  To get started with JUnit, you need to add the required version of JUnit to your project:
+# Using JUnit
 
-+---+
+Configuring JUnit
+-----------------
+
+To get started with JUnit, you need to add the required version of JUnit to your project:
+
+```xml
 <dependencies>
   [...]
     <dependency>
@@ -43,47 +42,41 @@ Using JUnit
     </dependency>
   [...]
 </dependencies>
-+---+
+```
 
+This is the only step that is required to get started - you can now create tests in your test source directory (e.g., `src/test/java`).
 
-  This is the only step that is required to get started - you can now create tests in your test source directory
-  (e.g., <<<src/test/java>>>).
+JUnit Support in Surefire 3.6.0+
+--------------------------------
 
-* JUnit Support in Surefire 3.6.0+
+Since version 3.6.0, Surefire runs all JUnit tests via the JUnit Platform:
 
-  Since version 3.6.0, Surefire runs all JUnit tests via the JUnit Platform:
+- **JUnit 5 tests** are executed via the Jupiter Engine
+- **JUnit 4 tests** (4.12 or later) are executed via the Vintage Engine
 
-  * <<JUnit 5 tests>> are executed via the Jupiter Engine
+**Important:** JUnit 4.12 is the minimum supported version. Earlier versions of JUnit 4 and JUnit 3.x are no longer supported. If you have JUnit 3 tests, they must be migrated to JUnit 4.12+ to run.
 
-  * <<JUnit 4 tests>> (4.12 or later) are executed via the Vintage Engine
+Provider Selection
+------------------
 
-  []
+Since Surefire 3.6.0, all tests run via the JUnit Platform provider (`surefire-junit-platform`):
 
-  <<Important:>> JUnit 4.12 is the minimum supported version. Earlier versions of JUnit 4 and JUnit 3.x
-  are no longer supported. If you have JUnit 3 tests, they must be migrated to JUnit 4.12+ to run.
-
-* Provider Selection
-
-   Since Surefire 3.6.0, all tests run via the JUnit Platform provider (<<<surefire-junit-platform>>>):
-
-+---+
+```text
 if JUnit 5 Platform artifacts are present
     use junit-platform with Jupiter engine
 if JUnit 4.12+ is present
     use junit-platform with Vintage engine
 if JUnit < 4.12 is present
     ERROR: JUnit 4.12 or later is required
-+---+
+```
 
-    <<Note:>> If you have JUnit 3 or JUnit 4 (before 4.12) tests, you must upgrade your JUnit dependency to at least 4.12.
-    JUnit 4.12+ tests can run unchanged via the Vintage Engine.
+**Note:** If you have JUnit 3 or JUnit 4 (before 4.12) tests, you must upgrade your JUnit dependency to at least 4.12. JUnit 4.12+ tests can run unchanged via the Vintage Engine.
 
-** Manual Engine Configuration
+#[[### Manual Engine Configuration]]#
 
-   Since Surefire 3.6.0, explicit provider configuration is rarely needed. However, you can add
-   specific JUnit Platform engines as plugin dependencies if needed:
+Since Surefire 3.6.0, explicit provider configuration is rarely needed. However, you can add specific JUnit Platform engines as plugin dependencies if needed:
 
-+---+
+```xml
 <plugins>
 [...]
   <plugin>
@@ -100,16 +93,16 @@ if JUnit < 4.12 is present
   </plugin>
 [...]
 </plugins>
-+---+
+```
 
-  When using this technique there is no check that the proper test-frameworks are present on your project's
-  classpath. Failing to add the proper test-frameworks will result in a build failure.
+When using this technique there is no check that the proper test-frameworks are present on your project's classpath. Failing to add the proper test-frameworks will result in a build failure.
 
-* Running Tests in Parallel
+Running Tests in Parallel
+-------------------------
 
-  You can run your tests in parallel using the <<<parallel>>> parameter:
+You can run your tests in parallel using the `parallel` parameter:
 
-+---+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -123,23 +116,22 @@ if JUnit < 4.12 is present
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  This is particularly useful for slow tests that can have high concurrency.
+This is particularly useful for slow tests that can have high concurrency.
 
-  Additional thread-count attributes are available: <<<threadCountSuites>>>, <<<threadCountClasses>>> and
-  <<<threadCountMethods>>>. The attributes <<<parallelTestsTimeoutInSeconds>>> and
-  <<<parallelTestsTimeoutForcedInSeconds>>> can be used to shut down the parallel execution after an elapsed timeout.
+Additional thread-count attributes are available: `threadCountSuites`, `threadCountClasses` and `threadCountMethods`. The attributes `parallelTestsTimeoutInSeconds` and `parallelTestsTimeoutForcedInSeconds` can be used to shut down the parallel execution after an elapsed timeout.
 
-  See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
+See also [Fork Options and Parallel Test Execution](./fork-options-and-parallel-execution.html).
 
-* Using Custom Listeners and Reporters
+Using Custom Listeners and Reporters
+------------------------------------
 
-  When running JUnit 4 tests via the Vintage Engine, you can attach custom JUnit 4 <<<RunListeners>>> to your tests.
+When running JUnit 4 tests via the Vintage Engine, you can attach custom JUnit 4 `RunListeners` to your tests.
 
-  You can configure multiple custom listeners like this:
+You can configure multiple custom listeners like this:
 
-+---+
+```xml
 <dependencies>
 [...]
   <dependency>
@@ -168,24 +160,20 @@ if JUnit < 4.12 is present
   </plugin>
 [...]
 </plugins>
-+---+
+```
 
-  For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
+For more information on JUnit, see the [JUnit web site](http://www.junit.org).
 
-  You can implement JUnit listener interface <<<org.junit.runner.notification.RunListener>>> in
-  a separate test artifact <<<your-junit-listener-artifact>>> with scope=test, or in project test source code
-  <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
-  in current ClassLoader of surefire-junit* providers.
+You can implement JUnit listener interface `org.junit.runner.notification.RunListener` in a separate test artifact `your-junit-listener-artifact` with scope=test, or in project test source code `src/test/java`. You can filter test artifacts by the parameter `dependenciesToScan` to load its classes in current ClassLoader of surefire-junit* providers.
 
-  Since JUnit 4.12 thread safe listener class should be annotated by
-  <<<org.junit.runner.notification.RunListener.ThreadSafe>>> which avoids unnecessary locks in JUnit.
+Since JUnit 4.12 thread safe listener class should be annotated by `org.junit.runner.notification.RunListener.ThreadSafe` which avoids unnecessary locks in JUnit.
 
-* Using a Security Manager (All providers)
+Using a Security Manager (All providers)
+----------------------------------------
 
-    Alternatively you can define a policy file that allows all providers to run with Surefire
-    and configure it using the <<<argLine>>> parameter and two system properties:
+Alternatively you can define a policy file that allows all providers to run with Surefire and configure it using the `argLine` parameter and two system properties:
 
-+---+
+```xml
 <plugins>
 [...]
       <plugin>
@@ -193,22 +181,21 @@ if JUnit < 4.12 is present
         <artifactId>${project.artifactId}</artifactId>
         <version>${project.version}</version>
         <configuration>
-          <argLine>-Djava.security.manager -Djava.security.policy=${basedir}/src/test/resources/java.policy</argLine>
+          <argLine>-Djava.security.manager -Djava.security.policy=${esc.d}{basedir}/src/test/resources/java.policy</argLine>
         </configuration>
       </plugin>
 [...]
 </plugins>
-+---+
+```
 
-  The disadvantage of this solution is that the policy changes will affect the tests too, which make the
-  security environment less realistic.
+The disadvantage of this solution is that the policy changes will affect the tests too, which make the security environment less realistic.
 
-* Using JUnit Categories
+Using JUnit Categories
+----------------------
 
-    JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the <<<groups>>> parameter.
-    Since Surefire 3.6.0, JUnit 4 categories work via the Vintage Engine.
+JUnit 4.8 introduced the notion of Categories. You can use JUnit categories by using the `groups` parameter. Since Surefire 3.6.0, JUnit 4 categories work via the Vintage Engine.
 
-+---+
+```xml
 <plugins>
 [...]
     <plugin>
@@ -221,17 +208,16 @@ if JUnit < 4.12 is present
     </plugin>
 [...]
 </plugins>
-+---+
+```
 
-  This will execute only those tests annotated with the <<<@Category(com.mycompany.SlowTests.class)>>> annotation and those tests
-  annotated with <<<@Category(com.mycompany.SlowerTests.class)>>> if class/interface <<<SlowerTests>>> is subclass of <<<SlowTests>>>:
+This will execute only those tests annotated with the `@Category(com.mycompany.SlowTests.class)` annotation and those tests annotated with `@Category(com.mycompany.SlowerTests.class)` if class/interface `SlowerTests` is subclass of `SlowTests`:
 
-+---+
+```java
     public interface SlowTests{}
     public interface SlowerTests extends SlowTests{}
-+---+
+```
 
-+---+
+```java
     public class AppTest {
       @Test
       @Category(com.mycompany.SlowTests.class)
@@ -251,15 +237,12 @@ if JUnit < 4.12 is present
         System.out.println("fast");
       }
     }
-+---+
+```
 
-  The <<<@Category>>> annotation can also be applied at class-level.
-  
-  Multiple categories can be specified by comma-delimiting them in the <<<groups>>> parameter in which case tests annotated with
-  any of the categories will be executed.
-	
-  For more information on JUnit, see the {{{http://www.junit.org}JUnit web site}}.
+The `@Category` annotation can also be applied at class-level.
 
-  Since version 2.18.1 and JUnit 4.12, the <<<@Category>>> annotation type is automatically inherited from
-  superclasses, see <<<@java.lang.annotation.Inherited>>>. Make sure that test class inheritance still makes sense
-  together with <<<@Category>>> annotation of the JUnit 4.12 or higher appeared in superclass.
+Multiple categories can be specified by comma-delimiting them in the `groups` parameter in which case tests annotated with any of the categories will be executed.
+
+For more information on JUnit, see the [JUnit web site](http://www.junit.org).
+
+Since version 2.18.1 and JUnit 4.12, the `@Category` annotation type is automatically inherited from superclasses, see `@java.lang.annotation.Inherited`. Make sure that test class inheritance still makes sense together with `@Category` annotation of the JUnit 4.12 or higher appeared in superclass.
