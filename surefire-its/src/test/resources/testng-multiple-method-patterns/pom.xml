@@ -41,7 +41,10 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.14.3</version>
+      <!-- Avoid a suspected TestNG 6.14.3 race that may lose class lifecycle callbacks
+           during parallel execution; fixed by https://github.com/testng-team/testng/issues/2000.
+           Version 7.5.1 is the latest release that supports Java 8. -->
+      <version>7.5.1</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
