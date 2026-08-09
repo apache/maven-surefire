@@ -54,6 +54,10 @@ public class ProviderParameterNames {
 
     public static final String EXCLUDES_SCAN_LIST = "junit.excludes.scan.list";
 
+    public static final String RUN_ORDER_PROP = "runOrder";
+
+    public static final String RUN_ORDER_RANDOM_SEED_PROP = "runOrderRandomSeed";
+
     /**
      * Additional package prefixes to filter from stack traces.
      * @since 3.6.0
