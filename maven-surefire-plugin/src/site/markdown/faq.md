@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
+---
+title: Frequently Asked Questions
+---
 
 <!--
 Licensed to the Apache Software Foundation (ASF) under one
@@ -19,162 +21,143 @@ specific language governing permissions and limitations
 under the License.
 -->
 
+<a name="top"></a>
 
-<faqs xmlns="http://maven.apache.org/FML/1.0.1"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://maven.apache.org/FML/1.0.1 http://maven.apache.org/xsd/fml-1.0.1.xsd"
-      id="FAQ" title="Frequently Asked Questions">
-  <part id="General">
-    <faq id="surefire-v-failsafe">
-      <question>What is the difference between maven-failsafe-plugin and maven-surefire-plugin?</question>
-      <answer>
-        <p>
-          <a href="http://maven.apache.org/plugins/maven-surefire-plugin/">maven-surefire-plugin</a>
-          is designed for running unit tests and if any of the tests fail then it will fail the build immediately.
-        </p>
-        <p>
-          <a href="http://maven.apache.org/plugins/maven-failsafe-plugin/">maven-failsafe-plugin</a>
-          is designed for running integration tests, and decouples failing the build if there
-          are test failures from actually running the tests.
-        </p>
-      </answer>
-    </faq>
-    <faq id="reuse-test-code">
-      <question>How can I reuse my test code in other modules?</question>
-      <answer>
-        <p>
-          Visit this link for your reference,
-          <a href="http://maven.apache.org/guides/mini/guide-attached-tests.html"> Attaching tests</a>.
-          Also see the examples for <a href="examples/inclusion-exclusion.html">Inclusions and Exclusions of Tests</a>.
-        </p>
-      </answer>
-    </faq>
-    <faq id="vm-termination">
-      <question>Surefire fails with the message "The forked VM terminated without properly saying goodbye".</question>
-      <answer>
-        <p>
-        Surefire does not support tests or any referenced libraries calling <code>System.exit()</code> at any time. If
-        they do so, they are incompatible with Surefire and you should probably file an issue with the library/vendor.
+# Frequently Asked Questions
 
-        Alternatively the forked VM could also have crashed for a number of reasons.
-        Look for the classical "<code>hs_err*</code>" files indicating VM crashes or examine the Maven log output
-        when the tests execute. Some "extraordinary" output from crashing processes may be dumped to the console/log.
+1. [What is the difference between maven-failsafe-plugin and maven-surefire-plugin?](#surefire-v-failsafe)
+2. [How can I reuse my test code in other modules?](#reuse-test-code)
+3. [Surefire fails with the message "The forked VM terminated without properly saying goodbye".](#vm-termination)
+4. [Crashed Surefire or Failsafe plugin must indicate crashed tests](#crashed-forks)
+5. [How can I run GWT tests?](#GWT)
+6. [How do I use properties set by other plugins in `argLine`?](#late-property-evaluation)
+7. [How maven-failsafe-plugin allows me to configure the jar file or classes to use?](#failsafe-jar)
+8. [How to dump fatal errors and stack trace of plugin runtime if it fails?](#dumpfiles)
+9. [Corrupted channel by directly writing to native stream in forked JVM](#corruptedstream)
+10. [The files cannot be deleted when Jenkins CI killed Maven process and the tests still continue running.](#kill-jvm)
 
-        If this happens on a CI environment and only after it runs for some time, there is a fair chance your test suite is
-        leaking some kind of OS-level resource that makes things worse at every run. Regular OS-level monitoring tools
-        may give you some indication.
-        </p>
-      </answer>
-    </faq>
-    <faq id="crashed-forks">
-      <question>Crashed Surefire or Failsafe plugin must indicate crashed tests</question>
-      <answer>
-        <p>
-        After a forked JVM has crashed the console of forked JVM prints <em>Crashed tests:</em> and lists the last test
-        which has crashed. In the console log you can find the message
-        <em>The forked VM terminated without properly saying goodbye</em>.
-        </p>
-      </answer>
-    </faq>
-    <faq id="GWT">
-      <question>How can I run GWT tests?</question>
-      <answer>
-        Mojohaus publishes a [gwt-maven-plugin](https://gwt-maven-plugin.github.io/gwt-maven-plugin/),
-        but if you want to run with Surefire, you need the following settings:
-        <p>
-        Use the following configuration:<br/>
-        <code>
-        <![CDATA[ <useSystemClassLoader>true</useSystemClassLoader>]]><br/>
-        <![CDATA[ <useManifestOnlyJar>false</useManifestOnlyJar>]]><br/>
-        <![CDATA[ <forkCount>1</forkCount>]]><br/>
-        </code>
-        Try <code>reuseForks=true</code> and if it doesn't work, fall back to <code>reuseForks=false</code>
-        </p>
-      </answer>
-    </faq>
-    <faq id="late-property-evaluation">
-      <question>How do I use properties set by other plugins in <code>argLine</code>?</question>
-      <answer>
-        <p>
-          Maven does property replacement for <pre>${...}</pre> values in pom.xml before any
-          plugin is run. So Surefire would never see the place-holders in its argLine property.
-        </p>
-        <p>
-          Using an alternate syntax for these properties, <pre>@{...}</pre> allows late
-          replacement of properties when the plugin is executed, so properties that have been modified by other
-          plugins will be picked up correctly.
-          In contrast to the standard Maven property replacement the <code>@{...}</code> placeholder is replaced by the empty string if the referenced 
-          property cannot be found.
-          <i>This mechanism is only necessary for properties which are modified, i.e. also available with a different value at initialization of the 
-          POM model. Otherwise standard Maven property replacement kicks in properly directly before this goal is being executed (instead of when the POM model is being resolved)</i>.
-        </p>
-      </answer>
-    </faq>
-    <faq id="failsafe-jar">
-      <question>How maven-failsafe-plugin allows me to configure the jar file or classes to use?</question>
-      <answer>
-        <p>
-        By default maven-failsafe-plugin uses project artifact file in test classpath if packaging is set to "jar" in
-        pom.xml. This can be modified and for instance set to main project classes if you use configuration parameter
-        "classesDirectory". This would mean that you set value "${project.build.outputDirectory}" for the parameter
-        "classesDirectory" in the configuration of plugin.
-        </p>
-      </answer>
-    </faq>
-    <faq id="dumpfiles">
-      <question>How to dump fatal errors and stack trace of plugin runtime if it fails?</question>
-      <answer>
-        <p>
-        By default <em>maven-failsafe-plugin</em> and <em>maven-surefire-plugin</em> dumps fatal errors in dump files
-        and these are located in <em>target/failsafe-reports</em> and <em>target/surefire-reports</em>.
-        Names of dump files are formatted as follows:
-        <br/>
-        <code>
-        <![CDATA[ [date]-jvmRun[N].dump]]><br/>
-        <![CDATA[ [date]-jvmRun[N].dumpstream]]><br/>
-        <![CDATA[ [date].dumpstream]]><br/>
-        <![CDATA[ [date].dump]]><br/>
-        </code>
+<a name="surefire-v-failsafe"></a>
 
-        Forked JVM process and plugin process communicate via std/out. If this channel is corrupted, for a whatever
-        reason, the dump of the corrupted stream appears in <em>*.dumpstream</em>.
-        </p>
-      </answer>
-    </faq>
-    <faq id="corruptedstream">
-      <question>Corrupted channel by directly writing to native stream in forked JVM</question>
-      <answer>
-        <p>
-        If your tests use native library which prints to STDOUT this warning message appears because the library
-        corrupted the channel used by the plugin in order to transmit events with test status back to Maven process.
-        It would be even worse if you override the Java stream by <em>System.setOut</em> because the stream is also
-        supposed to be corrupted but the Maven will never see the tests finished and build may hang.
-        <br/>
-        This warning message appears if you use <em>FileDescriptor.out</em> or JVM prints GC summary.
-        <br/>
-        In that case the warning is printed
-        <em>"Corrupted channel by directly writing to native stream in forked JVM"</em>, and a dump file can be found
-        in Reports directory.
-        <br/>
-        If debug level is enabled then messages of corrupted stream appear in the console.
-        </p>
-      </answer>
-    </faq>
-    <faq id="kill-jvm">
-      <question>The files cannot be deleted when Jenkins CI killed Maven process and the tests still continue running.</question>
-      <answer>
-        <p>
-          Surefire and Failsafe plugin may kill forked Surefire JVM when the standard-input stream is closed.
-          This works when you stop Maven process by CTRL+C but it is not guaranteed on all platforms.
-          By default, the plugins use process pipes for interprocess communication.
-          Since version 3.0.0-M5, TCP/IP sockets are also available and can be
-          selected with the forkNode configuration parameter.
-          See the documentation of the configuration parameter
-          "enableProcessChecker" for mechanisms to detect and kill orphan forked JVMs.
-          These mechanisms have some drawbacks regarding your
-          OS systems and GC, therefore see the documentation for the parameter "enableProcessChecker".
-        </p>
-      </answer>
-    </faq>
-  </part>
-</faqs>
+### What is the difference between maven-failsafe-plugin and maven-surefire-plugin?
+
+[maven-surefire-plugin](http://maven.apache.org/plugins/maven-surefire-plugin/) is designed for running unit
+tests and if any of the tests fail then it will fail the build immediately.
+
+[maven-failsafe-plugin](http://maven.apache.org/plugins/maven-failsafe-plugin/) is designed for running
+integration tests, and decouples failing the build if there are test failures from actually running the tests.
+
+<a name="reuse-test-code"></a>
+
+### How can I reuse my test code in other modules?
+
+Visit this link for your reference,
+[Attaching tests](http://maven.apache.org/guides/mini/guide-attached-tests.html). Also see the examples for
+[Inclusions and Exclusions of Tests](examples/inclusion-exclusion.html).
+
+<a name="vm-termination"></a>
+
+### Surefire fails with the message "The forked VM terminated without properly saying goodbye".
+
+Surefire does not support tests or any referenced libraries calling `System.exit()` at any time. If they do so,
+they are incompatible with Surefire and you should probably file an issue with the library/vendor.
+
+Alternatively the forked VM could also have crashed for a number of reasons. Look for the classical
+`hs_err*` files indicating VM crashes or examine the Maven log output when the tests execute. Some
+"extraordinary" output from crashing processes may be dumped to the console/log.
+
+If this happens on a CI environment and only after it runs for some time, there is a fair chance your test
+suite is leaking some kind of OS-level resource that makes things worse at every run. Regular OS-level
+monitoring tools may give you some indication.
+
+<a name="crashed-forks"></a>
+
+### Crashed Surefire or Failsafe plugin must indicate crashed tests
+
+After a forked JVM has crashed the console of forked JVM prints *Crashed tests:* and lists the last test which
+has crashed. In the console log you can find the message *The forked VM terminated without properly saying
+goodbye*.
+
+<a name="GWT"></a>
+
+### How can I run GWT tests?
+
+Mojohaus publishes a [gwt-maven-plugin](https://gwt-maven-plugin.github.io/gwt-maven-plugin/), but if you want
+to run with Surefire, you need the following settings:
+
+```xml
+<useSystemClassLoader>true</useSystemClassLoader>
+<useManifestOnlyJar>false</useManifestOnlyJar>
+<forkCount>1</forkCount>
+```
+
+Try `reuseForks=true` and if it doesn't work, fall back to `reuseForks=false`
+
+<a name="late-property-evaluation"></a>
+
+### How do I use properties set by other plugins in `argLine`?
+
+Maven does property replacement for `${...}` values in pom.xml before any plugin is run. So Surefire would
+never see the place-holders in its argLine property.
+
+Using an alternate syntax for these properties, `@{...}` allows late replacement of properties when the plugin
+is executed, so properties that have been modified by other plugins will be picked up correctly. In contrast to
+the standard Maven property replacement the `@{...}` placeholder is replaced by the empty string if the
+referenced property cannot be found. *This mechanism is only necessary for properties which are modified, i.e.
+also available with a different value at initialization of the POM model. Otherwise standard Maven property
+replacement kicks in properly directly before this goal is being executed (instead of when the POM model is
+being resolved)*.
+
+<a name="failsafe-jar"></a>
+
+### How maven-failsafe-plugin allows me to configure the jar file or classes to use?
+
+By default maven-failsafe-plugin uses project artifact file in test classpath if packaging is set to "jar" in
+pom.xml. This can be modified and for instance set to main project classes if you use configuration parameter
+"classesDirectory". This would mean that you set value "${project.build.outputDirectory}" for the parameter
+"classesDirectory" in the configuration of plugin.
+
+<a name="dumpfiles"></a>
+
+### How to dump fatal errors and stack trace of plugin runtime if it fails?
+
+By default *maven-failsafe-plugin* and *maven-surefire-plugin* dumps fatal errors in dump files and these are
+located in *target/failsafe-reports* and *target/surefire-reports*. Names of dump files are formatted as
+follows:
+
+```
+[date]-jvmRun[N].dump
+[date]-jvmRun[N].dumpstream
+[date].dumpstream
+[date].dump
+```
+
+Forked JVM process and plugin process communicate via std/out. If this channel is corrupted, for a whatever
+reason, the dump of the corrupted stream appears in *\*.dumpstream*.
+
+<a name="corruptedstream"></a>
+
+### Corrupted channel by directly writing to native stream in forked JVM
+
+If your tests use native library which prints to STDOUT this warning message appears because the library
+corrupted the channel used by the plugin in order to transmit events with test status back to Maven process.
+It would be even worse if you override the Java stream by *System.setOut* because the stream is also supposed
+to be corrupted but the Maven will never see the tests finished and build may hang.
+
+This warning message appears if you use *FileDescriptor.out* or JVM prints GC summary.
+
+In that case the warning is printed *"Corrupted channel by directly writing to native stream in forked JVM"*,
+and a dump file can be found in Reports directory.
+
+If debug level is enabled then messages of corrupted stream appear in the console.
+
+<a name="kill-jvm"></a>
+
+### The files cannot be deleted when Jenkins CI killed Maven process and the tests still continue running.
+
+Surefire and Failsafe plugin may kill forked Surefire JVM when the standard-input stream is closed. This works
+when you stop Maven process by CTRL+C but it is not guaranteed on all platforms. By default, the plugins use
+process pipes for interprocess communication. Since version 3.0.0-M5, TCP/IP sockets are also available and can
+be selected with the forkNode configuration parameter. See the documentation of the configuration parameter
+"enableProcessChecker" for mechanisms to detect and kill orphan forked JVMs. These mechanisms have some
+drawbacks regarding your OS systems and GC, therefore see the documentation for the parameter
+"enableProcessChecker".
