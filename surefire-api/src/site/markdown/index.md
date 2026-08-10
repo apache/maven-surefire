@@ -28,12 +28,13 @@ under the License.
 
 ## Definitions
 
-|Term|Definition|
-|:---|:---|
-|test method|Individual test method within a class|
-|test|1..N test methods in 1 or more classes.|
-|suite|1..N tests.|
-|group|A named subset of test methods within a test.|
+<table class="table table-bordered table-striped">
+<tr><th>Term</th><th>Definition</th></tr>
+<tr><td style="text-align: left;">test method</td><td style="text-align: left;">Individual test method within a class</td></tr>
+<tr><td style="text-align: left;">test</td><td style="text-align: left;">1..N test methods in 1 or more classes.</td></tr>
+<tr><td style="text-align: left;">suite</td><td style="text-align: left;">1..N tests.</td></tr>
+<tr><td style="text-align: left;">group</td><td style="text-align: left;">A named subset of test methods within a test.</td></tr>
+</table>
 
 How each definition is applied depends on the provider, and the test suite being used.
 

@@ -53,11 +53,12 @@ Minimum Java Version for Toolchains
 
 The minimum version of Java that can be used as a toolchain is limited by the Surefire Booter requirement.
 
-|Surefire Version|Minimum Java Version|Class File Version|
-|:---|:---|:---|
-|3\.0.0-M6 or higher|Java 8|52|
-|3\.0.0-M5 and lower|Java 7|51|
-|lower than 3.0.0-M1|Java 6|50|
+<table class="table table-bordered table-striped">
+<tr><th>Surefire Version</th><th>Minimum Java Version</th><th>Class File Version</th></tr>
+<tr><td style="text-align: left;">3.0.0-M6 or higher</td><td style="text-align: left;">Java 8</td><td style="text-align: left;">52</td></tr>
+<tr><td style="text-align: left;">3.0.0-M5 and lower</td><td style="text-align: left;">Java 7</td><td style="text-align: left;">51</td></tr>
+<tr><td style="text-align: left;">lower than 3.0.0-M1</td><td style="text-align: left;">Java 6</td><td style="text-align: left;">50</td></tr>
+</table>
 
 If you try to use a version older than the minimum supported version, you should face something like:
 
