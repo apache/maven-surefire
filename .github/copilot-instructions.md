@@ -123,6 +123,18 @@ Report plugin tests (`maven-surefire-report-plugin`) use the `@MojoTest`/`@Injec
 - `plugin-config.xml` paths use `${basedir}` which resolves to the `@Basedir` path
 - Stub `project implementation` classes in plugin-config.xml must be commented out (they NPE with `@MojoTest`)
 
+### Parallel Test Execution
+
+Unit tests run with **JUnit 5 parallel execution enabled** (configured in the root `pom.xml`):
+- `junit.jupiter.execution.parallel.mode.classes.default=concurrent` → test **classes run concurrently**
+- `junit.jupiter.execution.parallel.mode.default=same_thread` → methods within a class stay on one thread
+
+Because classes run in parallel, any test that mutates **JVM-global state must not race** with tests that read it, or you get flaky, OS/timing-dependent failures (often surfacing only on Windows CI). Annotate such classes with `@Isolated` (`org.junit.jupiter.api.parallel.Isolated`) so they run alone:
+- Tests calling `System.setProperty` / `System.clearProperty` (e.g., `JstackTimeoutExtensionTest`)
+- Tests mutating global static configuration (e.g., `StackTraceProviderTest`, `ForkedBooterTest`)
+
+Note `StatelessXmlReporterTest` asserts against the full `System.getProperties()` snapshot, so any concurrent system-property mutation elsewhere will break it.
+
 ## Development Requirements
 
 - **Maven**: 3.6.3+

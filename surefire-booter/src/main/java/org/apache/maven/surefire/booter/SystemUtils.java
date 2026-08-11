@@ -198,6 +198,32 @@ public final class SystemUtils {
         return pidOnJMX();
     }
 
+    /**
+     * Returns the OS PID of the given child {@link Process} using the Java 9+
+     * {@code Process.pid()} method via reflection.
+     *
+     * @param process a {@link Process} returned by {@code ProcessBuilder} /
+     *                {@code Runtime.exec}; may be {@code null}
+     * @return the PID, or {@code null} when it cannot be determined (e.g.
+     *         running on Java 8 or the reflective call fails)
+     * @since 3.6.0
+     */
+    public static Long pidOf(Process process) {
+        if (process == null) {
+            return null;
+        }
+        Method pidMethod = ReflectionUtils.tryGetMethod(Process.class, "pid");
+        if (pidMethod == null) {
+            return null;
+        }
+        try {
+            Object value = pidMethod.invoke(process);
+            return value instanceof Long ? (Long) value : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
     static Long pidOnJMX() {
         String processName = ManagementFactory.getRuntimeMXBean().getName();
         if (processName.contains("@")) {
