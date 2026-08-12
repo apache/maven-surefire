@@ -210,6 +210,67 @@ public class DefaultReporterFactoryTest extends TestCase {
         assertEquals(emptyList(), reporter.getMessages());
     }
 
+    /**
+     * AfterAll/AfterClass failures are reported as {@code Class.executionError}. They must count as
+     * errors (not flakes) even when test methods in the same class succeeded and rerun is enabled
+     * (#3412).
+     */
+    public void testAfterAllFailureRemainsErrorNotFlake() throws Exception {
+        MessageUtils.setColorEnabled(false);
+        File target = new File(System.getProperty("user.dir"), "target");
+        File reportsDirectory = new File(target, "tmp-afterall-3412");
+        StartupReportConfiguration reportConfig = new StartupReportConfiguration(
+                true,
+                true,
+                "PLAIN",
+                false,
+                reportsDirectory,
+                false,
+                null,
+                new File(reportsDirectory, "TESTHASH"),
+                false,
+                2,
+                null,
+                null,
+                false,
+                true,
+                true,
+                false,
+                new SurefireStatelessReporter(),
+                new SurefireConsoleOutputReporter(),
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
+
+        DummyTestReporter reporter = new DummyTestReporter();
+        DefaultReporterFactory factory = new DefaultReporterFactory(reportConfig, reporter);
+
+        String afterAllClass = "com.example.AfterAllFailClass";
+        Queue<TestMethodStats> runStats = new ArrayDeque<>();
+        runStats.add(new TestMethodStats(afterAllClass + ".testOne", ReportEntryType.SUCCESS, null));
+        runStats.add(new TestMethodStats(afterAllClass + ".testTwo", ReportEntryType.SUCCESS, null));
+        runStats.add(new TestMethodStats(
+                afterAllClass + ".executionError",
+                ReportEntryType.ERROR,
+                new DummyStackTraceWriter(afterAllClass + ".executionError " + TEST_ERROR_SUFFIX)));
+
+        TestSetRunListener runListener = mock(TestSetRunListener.class);
+        when(runListener.getTestMethodStats()).thenReturn(runStats);
+        factory.addListener(runListener);
+
+        invokeMethod(factory, "mergeTestHistoryResult");
+        RunStatistics mergedStatistics = factory.getGlobalRunStatistics();
+
+        assertEquals(3, mergedStatistics.getCompletedCount());
+        assertEquals(1, mergedStatistics.getErrors());
+        assertEquals(0, mergedStatistics.getFailures());
+        assertEquals(0, mergedStatistics.getFlakes());
+        assertEquals(0, mergedStatistics.getSkipped());
+
+        reporter.reset();
+        factory.printTestFailures(TestResultType.FLAKE);
+        assertEquals(emptyList(), reporter.getMessages());
+    }
+
     static final class DummyTestReporter implements ConsoleLogger {
         private final List<String> messages = new ArrayList<>();
 
