@@ -20,6 +20,7 @@ package org.apache.maven.plugin.failsafe;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLDecoder;
 
@@ -93,5 +94,39 @@ class VerifyMojoTest {
         setupExecuteMocks();
         mojo.setSummaryFile(new File(getTestBaseDir(), "failsafe-summary-success.xml"));
         mojo.execute();
+    }
+
+    @Test
+    void executeWithMissingAdditionalSummaryFiles() throws Exception {
+        setupExecuteMocks();
+        setSummaryFiles(new File(tempFolder, "missing-summary.xml"));
+
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
+    }
+
+    @Test
+    void executeWithMissingSummaryAndFailIfNoTests() {
+        setupExecuteMocks();
+        mojo.setFailIfNoTests(true);
+
+        assertThatCode(mojo::execute)
+                .isExactlyInstanceOf(MojoFailureException.class)
+                .hasMessage("No tests were executed!  (Set -DfailIfNoTests=false to ignore this error.)");
+    }
+
+    @Test
+    void executeWithExistingAndMissingAdditionalSummaryFiles() throws Exception {
+        setupExecuteMocks();
+        setSummaryFiles(
+                new File(getTestBaseDir(), "failsafe-summary-success.xml"),
+                new File(tempFolder, "missing-summary.xml"));
+
+        assertThatCode(mojo::execute).doesNotThrowAnyException();
+    }
+
+    private void setSummaryFiles(File... summaryFiles) throws ReflectiveOperationException {
+        Field field = VerifyMojo.class.getDeclaredField("summaryFiles");
+        field.setAccessible(true);
+        field.set(mojo, summaryFiles);
     }
 }

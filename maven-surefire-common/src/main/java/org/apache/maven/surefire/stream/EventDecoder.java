@@ -104,6 +104,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         DATA_STRING,
         DATA_STRING,
         DATA_STRING,
+        DATA_STRING,
         DATA_INTEGER,
         DATA_STRING,
         DATA_STRING,
@@ -272,28 +273,28 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                 return new SystemPropertyEvent(
                         memento.ofDataAt(0), memento.ofDataAt(1), memento.ofDataAt(2), memento.ofDataAt(3));
             case BOOTERCODE_TESTSET_STARTING:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestsetStartingEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TESTSET_COMPLETED:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestsetCompletedEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TEST_STARTING:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestStartingEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TEST_SUCCEEDED:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestSucceededEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TEST_FAILED:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestFailedEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TEST_SKIPPED:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestSkippedEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TEST_ERROR:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestErrorEvent(toReportEntry(memento.getData()));
             case BOOTERCODE_TEST_ASSUMPTIONFAILURE:
-                checkArguments(memento, 12);
+                checkArguments(memento, 13);
                 return new TestAssumptionFailureEvent(toReportEntry(memento.getData()));
             default:
                 throw new IllegalArgumentException("Missing a branch for the event type " + eventType);
@@ -307,20 +308,22 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
         // ReportEntry:
         String source = (String) args.get(2);
         String sourceText = (String) args.get(3);
-        String name = (String) args.get(4);
-        String nameText = (String) args.get(5);
-        String group = (String) args.get(6);
-        String message = (String) args.get(7);
-        Integer timeElapsed = (Integer) args.get(8);
+        String sourceQualifiedName = (String) args.get(4);
+        String name = (String) args.get(5);
+        String nameText = (String) args.get(6);
+        String group = (String) args.get(7);
+        String message = (String) args.get(8);
+        Integer timeElapsed = (Integer) args.get(9);
         // StackTraceWriter:
-        String traceMessage = (String) args.get(9);
-        String smartTrimmedStackTrace = (String) args.get(10);
-        String stackTrace = (String) args.get(11);
+        String traceMessage = (String) args.get(10);
+        String smartTrimmedStackTrace = (String) args.get(11);
+        String stackTrace = (String) args.get(12);
         return newReportEntry(
                 runMode,
                 testRunId,
                 source,
                 sourceText,
+                sourceQualifiedName,
                 name,
                 nameText,
                 group,
@@ -348,6 +351,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
             long testRunId,
             String source,
             String sourceText,
+            String sourceQualifiedName,
             String name,
             String nameText,
             String group,
@@ -364,6 +368,7 @@ public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEven
                 testRunId,
                 source,
                 sourceText,
+                sourceQualifiedName,
                 name,
                 nameText,
                 group,

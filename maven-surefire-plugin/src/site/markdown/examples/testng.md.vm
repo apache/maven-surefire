@@ -1,0 +1,310 @@
+---
+title: Using TestNG
+author:
+  - Brett Porter brett@apache.org
+date: 2010-01-09
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+# Using TestNG
+
+TestNG via JUnit Platform (Since 3.6.0)
+---------------------------------------
+
+Starting with Surefire 3.6.0, TestNG tests are executed via the JUnit Platform using the TestNG JUnit Platform engine. This provides unified execution and reporting across all test frameworks.
+
+**Important**: TestNG 6.14.3 is the minimum supported version.
+
+Configuring TestNG
+------------------
+
+To get started with TestNG, include the following dependency in your project:
+
+```xml
+<dependencies>
+  [...]
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.14.3</version>
+      <scope>test</scope>
+    </dependency>
+  [...]
+</dependencies>
+```
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+This is the only step that is required to get started - you can now create tests in your test source directory (e.g., `src/test/java`). As long as they are named in accordance with the defaults such as `*Test.java` they will be run by ${thisPlugin} as TestNG tests.
+#{else}
+This is the only step that is required to get started - you can now create tests in your test source directory (e,g., `src/test/java`). As long as they are named in accordance with the defaults such as `*IT.java` they will be run by ${thisPlugin} as TestNG tests.
+#{end}
+
+If you'd like to use a different naming scheme, you can change the `includes` parameter, as discussed in the [Inclusions and Exclusions of Tests](./inclusion-exclusion.html) example.
+
+Specifying Test Parameters
+--------------------------
+
+Your TestNG test can accept parameters with the `@Parameters` annotation. You can also pass parameters from Maven into your TestNG test, by specifying them as system properties, like this:
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <systemPropertyVariables>
+            <propertyName>firefox</propertyName>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+For more information about setting system properties in ${thisPlugin} tests, see [System Properties](./system-properties.html).
+
+Using Groups
+------------
+
+TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with ${thisPlugin}, use the `groups` parameter, for example:
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <groups>functest,perftest</groups>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+Likewise, the `excludedGroups` parameter can be used to run all but a certain set of groups.
+
+Running Tests in Parallel
+-------------------------
+
+TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the `parallel` parameter, and may change the `threadCount` parameter if the default of 5 is not sufficient. For example:
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <parallel>methods</parallel>
+          <threadCount>10</threadCount>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence and thread safety of your tests and code.
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <properties>
+            <property>
+              <name>parallel</name>
+              <value>methods</value>
+            </property>
+            <property>
+              <name>dataproviderthreadcount</name>
+              <value>30</value>
+            </property>
+          </properties>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+See also [Fork Options and Parallel Test Execution](./fork-options-and-parallel-execution.html).
+
+Using Custom Listeners and Reporters
+------------------------------------
+
+TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests. By default, TestNG attaches a few basic listeners to generate HTML and XML reports. You can configure multiple custom listeners like this:
+
+```xml
+<dependencies>
+[...]
+  <dependency>
+    <groupId>your-testng-listener-artifact-groupid</groupId>
+    <artifactId>your-testng-listener-artifact-artifactid</artifactId>
+    <version>your-testng-listener-artifact-version</version>
+    <scope>test</scope>
+  </dependency>
+[...]
+</dependencies>
+[...]
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          <properties>
+            <property>
+              <name>usedefaultlisteners</name>
+              <value>false</value> <!-- disabling default listeners is optional -->
+            </property>
+            <property>
+              <name>listener</name>
+              <value>com.mycompany.MyResultListener,com.mycompany.MyAnnotationTransformer,com.mycompany.MyMethodInterceptor</value>
+            </property>
+            <property>
+              <name>reporter</name>
+              <value>listenReport.Reporter</value>
+            </property>
+          </properties>
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+For more information on TestNG, see the [TestNG web site](https://testng.org).
+
+You can implement TestNG listener interface `org.testng.ITestListener` in a separate test artifact `your-testng-listener-artifact` with scope=test, or in project test source code `src/test/java`. You can filter test artifacts by the parameter `dependenciesToScan` to load its classes in current ClassLoader of the test provider. The TestNG reporter class should implement `org.testng.IReporter`.
+
+The level of verbosity
+----------------------
+
+The verbosity level can be configured in provider property `surefire.testng.verbose`. The verbosity level is between 0 and 10 where 10 is the most detailed. You can specify -1 and this will put TestNG in debug mode (no longer slicing off stack traces and all). The default level is 0.
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>surefire.testng.verbose</name>
+              <value>10</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+Customizing TestNG Object Factory
+---------------------------------
+
+Since the plugin version 2.19 and TestNG 5.7 or higher you can customize TestNG object factory by implementing `org.testng.IObjectFactory` and binding the class name to the key `objectfactory` in provider properties:
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>objectfactory</name>
+              <value>testng.objectfactory.TestNGCustomObjectFactory</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+Customizing TestNG Test Runner Factory
+--------------------------------------
+
+You can customize the TestNG runner factory by implementing `org.testng.ITestRunnerFactory` and binding the class name to the key `testrunfactory` in provider properties:
+
+```xml
+<plugins>
+    [...]
+      <plugin>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>${project.artifactId}</artifactId>
+        <version>${project.version}</version>
+        <configuration>
+          [...]
+          <properties>
+            <property>
+              <name>testrunfactory</name>
+              <value>testng.testrunnerfactory.TestNGCustomTestRunnerFactory</value>
+            </property>
+          </properties>
+          [...]
+        </configuration>
+      </plugin>
+    [...]
+</plugins>
+```
+
+Running TestNG and JUnit Tests
+------------------------------
+
+Since Surefire 3.6.0, both TestNG and JUnit tests run via the JUnit Platform, making it easy to have both frameworks in the same project:
+
+```xml
+<dependencies>
+  [...]
+  <dependency>
+    <groupId>org.testng</groupId>
+    <artifactId>testng</artifactId>
+    <version>6.14.3</version>
+    <scope>test</scope>
+  </dependency>
+  <dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+  </dependency>
+  [...]
+</dependencies>
+```
+
+With both dependencies present, Surefire will automatically run both TestNG and JUnit 4 tests using their respective JUnit Platform engines.

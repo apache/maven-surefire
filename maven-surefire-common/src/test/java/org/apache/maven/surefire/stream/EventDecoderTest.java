@@ -183,10 +183,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(BOOTERCODE_TESTSET_STARTING);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -201,10 +202,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(ForkedProcessEventType.BOOTERCODE_TESTSET_COMPLETED);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -219,10 +221,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(ForkedProcessEventType.BOOTERCODE_TEST_STARTING);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -237,10 +240,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(BOOTERCODE_TEST_SUCCEEDED);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -255,10 +259,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(BOOTERCODE_TEST_FAILED);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -273,10 +278,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(ForkedProcessEventType.BOOTERCODE_TEST_SKIPPED);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -291,10 +297,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(ForkedProcessEventType.BOOTERCODE_TEST_ERROR);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -309,10 +316,11 @@ public class EventDecoderTest {
         });
 
         segmentTypes = decoder.nextSegmentType(ForkedProcessEventType.BOOTERCODE_TEST_ASSUMPTIONFAILURE);
-        assertThat(segmentTypes).hasSize(14).isEqualTo(new SegmentType[] {
+        assertThat(segmentTypes).hasSize(15).isEqualTo(new SegmentType[] {
             RUN_MODE,
             TEST_RUN_ID,
             STRING_ENCODING,
+            DATA_STRING,
             DATA_STRING,
             DATA_STRING,
             DATA_STRING,
@@ -448,6 +456,7 @@ public class EventDecoderTest {
                         1L,
                         "source",
                         "sourceText",
+                        "sourceQualifiedName",
                         "name",
                         "nameText",
                         "group",
@@ -465,6 +474,8 @@ public class EventDecoderTest {
                 .isEqualTo("source");
         assertThat(((TestsetStartingEvent) event).getReportEntry().getSourceText())
                 .isEqualTo("sourceText");
+        assertThat(((TestsetStartingEvent) event).getReportEntry().getSourceQualifiedName())
+                .isEqualTo("sourceQualifiedName");
         assertThat(((TestsetStartingEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestsetStartingEvent) event).getReportEntry().getNameText())
                 .isEqualTo("nameText");
@@ -495,6 +506,7 @@ public class EventDecoderTest {
                         1L,
                         "source",
                         "sourceText",
+                        "sourceQualifiedName",
                         "name",
                         "nameText",
                         "group",
@@ -513,6 +525,8 @@ public class EventDecoderTest {
                 .isEqualTo("source");
         assertThat(((TestsetCompletedEvent) event).getReportEntry().getSourceText())
                 .isEqualTo("sourceText");
+        assertThat(((TestsetCompletedEvent) event).getReportEntry().getSourceQualifiedName())
+                .isEqualTo("sourceQualifiedName");
         assertThat(((TestsetCompletedEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestsetCompletedEvent) event).getReportEntry().getNameText())
                 .isEqualTo("nameText");
@@ -545,6 +559,7 @@ public class EventDecoderTest {
                         1L,
                         "source",
                         "sourceText",
+                        "sourceQualifiedName",
                         "name",
                         "nameText",
                         "group",
@@ -559,6 +574,8 @@ public class EventDecoderTest {
         assertThat(((TestStartingEvent) event).getReportEntry().getTestRunId()).isEqualTo(1L);
         assertThat(((TestStartingEvent) event).getReportEntry().getSourceName()).isEqualTo("source");
         assertThat(((TestStartingEvent) event).getReportEntry().getSourceText()).isEqualTo("sourceText");
+        assertThat(((TestStartingEvent) event).getReportEntry().getSourceQualifiedName())
+                .isEqualTo("sourceQualifiedName");
         assertThat(((TestStartingEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestStartingEvent) event).getReportEntry().getNameText()).isEqualTo("nameText");
         assertThat(((TestStartingEvent) event).getReportEntry().getGroup()).isEqualTo("group");
@@ -588,6 +605,7 @@ public class EventDecoderTest {
                         1L,
                         "source",
                         "sourceText",
+                        "sourceQualifiedName",
                         "name",
                         "nameText",
                         "group",
@@ -604,6 +622,8 @@ public class EventDecoderTest {
                 .isEqualTo("source");
         assertThat(((TestSucceededEvent) event).getReportEntry().getSourceText())
                 .isEqualTo("sourceText");
+        assertThat(((TestSucceededEvent) event).getReportEntry().getSourceQualifiedName())
+                .isEqualTo("sourceQualifiedName");
         assertThat(((TestSucceededEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestSucceededEvent) event).getReportEntry().getNameText()).isEqualTo("nameText");
         assertThat(((TestSucceededEvent) event).getReportEntry().getGroup()).isEqualTo("group");
@@ -619,6 +639,7 @@ public class EventDecoderTest {
                         1L,
                         "source",
                         null,
+                        null,
                         "name",
                         null,
                         "group",
@@ -633,6 +654,8 @@ public class EventDecoderTest {
         assertThat(((TestFailedEvent) event).getReportEntry().getTestRunId()).isEqualTo(1L);
         assertThat(((TestFailedEvent) event).getReportEntry().getSourceName()).isEqualTo("source");
         assertThat(((TestFailedEvent) event).getReportEntry().getSourceText()).isNull();
+        assertThat(((TestFailedEvent) event).getReportEntry().getSourceQualifiedName())
+                .isNull();
         assertThat(((TestFailedEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestFailedEvent) event).getReportEntry().getNameText()).isNull();
         assertThat(((TestFailedEvent) event).getReportEntry().getGroup()).isEqualTo("group");
@@ -657,13 +680,16 @@ public class EventDecoderTest {
 
         memento = decoder.new Memento();
         memento.getData()
-                .addAll(asList(NORMAL_RUN, 1L, "source", null, "name", null, null, null, 5, null, null, "stackTrace"));
+                .addAll(asList(
+                        NORMAL_RUN, 1L, "source", null, null, "name", null, null, null, 5, null, null, "stackTrace"));
         event = decoder.toMessage(BOOTERCODE_TEST_SKIPPED, memento);
         assertThat(event).isInstanceOf(TestSkippedEvent.class);
         assertThat(((TestSkippedEvent) event).getReportEntry().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(((TestSkippedEvent) event).getReportEntry().getTestRunId()).isEqualTo(1L);
         assertThat(((TestSkippedEvent) event).getReportEntry().getSourceName()).isEqualTo("source");
         assertThat(((TestSkippedEvent) event).getReportEntry().getSourceText()).isNull();
+        assertThat(((TestSkippedEvent) event).getReportEntry().getSourceQualifiedName())
+                .isNull();
         assertThat(((TestSkippedEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestSkippedEvent) event).getReportEntry().getNameText()).isNull();
         assertThat(((TestSkippedEvent) event).getReportEntry().getGroup()).isNull();
@@ -689,13 +715,27 @@ public class EventDecoderTest {
         memento = decoder.new Memento();
         memento.getData()
                 .addAll(asList(
-                        NORMAL_RUN, 1L, "source", null, "name", "nameText", null, null, 0, null, null, "stackTrace"));
+                        NORMAL_RUN,
+                        1L,
+                        "source",
+                        null,
+                        null,
+                        "name",
+                        "nameText",
+                        null,
+                        null,
+                        0,
+                        null,
+                        null,
+                        "stackTrace"));
         event = decoder.toMessage(BOOTERCODE_TEST_ERROR, memento);
         assertThat(event).isInstanceOf(TestErrorEvent.class);
         assertThat(((TestErrorEvent) event).getReportEntry().getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(((TestErrorEvent) event).getReportEntry().getTestRunId()).isEqualTo(1L);
         assertThat(((TestErrorEvent) event).getReportEntry().getSourceName()).isEqualTo("source");
         assertThat(((TestErrorEvent) event).getReportEntry().getSourceText()).isNull();
+        assertThat(((TestErrorEvent) event).getReportEntry().getSourceQualifiedName())
+                .isNull();
         assertThat(((TestErrorEvent) event).getReportEntry().getName()).isEqualTo("name");
         assertThat(((TestErrorEvent) event).getReportEntry().getNameText()).isEqualTo("nameText");
         assertThat(((TestErrorEvent) event).getReportEntry().getGroup()).isNull();
@@ -721,7 +761,19 @@ public class EventDecoderTest {
         memento = decoder.new Memento();
         memento.getData()
                 .addAll(asList(
-                        NORMAL_RUN, 1L, "source", null, "name", null, "group", null, 5, null, null, "stackTrace"));
+                        NORMAL_RUN,
+                        1L,
+                        "source",
+                        null,
+                        null,
+                        "name",
+                        null,
+                        "group",
+                        null,
+                        5,
+                        null,
+                        null,
+                        "stackTrace"));
         event = decoder.toMessage(BOOTERCODE_TEST_ASSUMPTIONFAILURE, memento);
         assertThat(event).isInstanceOf(TestAssumptionFailureEvent.class);
         assertThat(((TestAssumptionFailureEvent) event).getReportEntry().getRunMode())
@@ -731,6 +783,8 @@ public class EventDecoderTest {
         assertThat(((TestAssumptionFailureEvent) event).getReportEntry().getSourceName())
                 .isEqualTo("source");
         assertThat(((TestAssumptionFailureEvent) event).getReportEntry().getSourceText())
+                .isNull();
+        assertThat(((TestAssumptionFailureEvent) event).getReportEntry().getSourceQualifiedName())
                 .isNull();
         assertThat(((TestAssumptionFailureEvent) event).getReportEntry().getName())
                 .isEqualTo("name");
@@ -762,7 +816,7 @@ public class EventDecoderTest {
 
     @Test
     public void shouldRecognizeEmptyStream4ReportEntry() {
-        ReportEntry reportEntry = newReportEntry(NORMAL_RUN, 1L, "", "", "", "", "", "", null, "", "", "");
+        ReportEntry reportEntry = newReportEntry(NORMAL_RUN, 1L, "", "", "", "", "", "", "", null, "", "", "");
         assertThat(reportEntry).isNotNull();
         assertThat(reportEntry.getRunMode()).isEqualTo(NORMAL_RUN);
         assertThat(reportEntry.getTestRunId()).isEqualTo(1L);
@@ -773,6 +827,7 @@ public class EventDecoderTest {
                 .isEmpty();
         assertThat(reportEntry.getSourceName()).isEmpty();
         assertThat(reportEntry.getSourceText()).isEmpty();
+        assertThat(reportEntry.getSourceQualifiedName()).isEmpty();
         assertThat(reportEntry.getName()).isEmpty();
         assertThat(reportEntry.getNameText()).isEmpty();
         assertThat(reportEntry.getGroup()).isEmpty();
@@ -805,6 +860,7 @@ public class EventDecoderTest {
         when(reportEntry.getNameWithGroup()).thenReturn("name with group");
         when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
         when(reportEntry.getSourceText()).thenReturn("test class display name");
+        when(reportEntry.getSourceQualifiedName()).thenReturn("pkg.MyTest$innerClass");
         when(reportEntry.getStackTraceWriter()).thenReturn(stackTraceWriter);
 
         ReportEntry decodedReportEntry = newReportEntry(
@@ -812,6 +868,7 @@ public class EventDecoderTest {
                 1L,
                 reportEntry.getSourceName(),
                 reportEntry.getSourceText(),
+                reportEntry.getSourceQualifiedName(),
                 reportEntry.getName(),
                 reportEntry.getNameText(),
                 reportEntry.getGroup(),
@@ -824,6 +881,7 @@ public class EventDecoderTest {
         assertThat(decodedReportEntry).isNotNull();
         assertThat(decodedReportEntry.getSourceName()).isEqualTo(reportEntry.getSourceName());
         assertThat(decodedReportEntry.getSourceText()).isEqualTo(reportEntry.getSourceText());
+        assertThat(decodedReportEntry.getSourceQualifiedName()).isEqualTo(reportEntry.getSourceQualifiedName());
         assertThat(decodedReportEntry.getName()).isEqualTo(reportEntry.getName());
         assertThat(decodedReportEntry.getNameText()).isEqualTo(reportEntry.getNameText());
         assertThat(decodedReportEntry.getGroup()).isEqualTo(reportEntry.getGroup());
@@ -835,6 +893,7 @@ public class EventDecoderTest {
                 1L,
                 reportEntry.getSourceName(),
                 reportEntry.getSourceText(),
+                reportEntry.getSourceQualifiedName(),
                 reportEntry.getName(),
                 reportEntry.getNameText(),
                 reportEntry.getGroup(),
@@ -847,6 +906,7 @@ public class EventDecoderTest {
         assertThat(decodedReportEntry).isNotNull();
         assertThat(decodedReportEntry.getSourceName()).isEqualTo(reportEntry.getSourceName());
         assertThat(decodedReportEntry.getSourceText()).isEqualTo(reportEntry.getSourceText());
+        assertThat(decodedReportEntry.getSourceQualifiedName()).isEqualTo(reportEntry.getSourceQualifiedName());
         assertThat(decodedReportEntry.getName()).isEqualTo(reportEntry.getName());
         assertThat(decodedReportEntry.getNameText()).isEqualTo(reportEntry.getNameText());
         assertThat(decodedReportEntry.getGroup()).isEqualTo(reportEntry.getGroup());
@@ -865,6 +925,7 @@ public class EventDecoderTest {
                 1L,
                 reportEntry.getSourceName(),
                 reportEntry.getSourceText(),
+                reportEntry.getSourceQualifiedName(),
                 reportEntry.getName(),
                 reportEntry.getNameText(),
                 reportEntry.getGroup(),
@@ -877,6 +938,7 @@ public class EventDecoderTest {
         assertThat(decodedReportEntry).isNotNull();
         assertThat(decodedReportEntry.getSourceName()).isEqualTo(reportEntry.getSourceName());
         assertThat(decodedReportEntry.getSourceText()).isEqualTo(reportEntry.getSourceText());
+        assertThat(decodedReportEntry.getSourceQualifiedName()).isEqualTo(reportEntry.getSourceQualifiedName());
         assertThat(decodedReportEntry.getName()).isEqualTo(reportEntry.getName());
         assertThat(decodedReportEntry.getNameText()).isEqualTo(reportEntry.getNameText());
         assertThat(decodedReportEntry.getGroup()).isEqualTo(reportEntry.getGroup());
@@ -895,6 +957,7 @@ public class EventDecoderTest {
                 1L,
                 reportEntry.getSourceName(),
                 reportEntry.getSourceText(),
+                reportEntry.getSourceQualifiedName(),
                 reportEntry.getName(),
                 reportEntry.getNameText(),
                 reportEntry.getGroup(),
@@ -907,6 +970,7 @@ public class EventDecoderTest {
         assertThat(decodedReportEntry).isNotNull();
         assertThat(decodedReportEntry.getSourceName()).isEqualTo(reportEntry.getSourceName());
         assertThat(decodedReportEntry.getSourceText()).isEqualTo(reportEntry.getSourceText());
+        assertThat(decodedReportEntry.getSourceQualifiedName()).isEqualTo(reportEntry.getSourceQualifiedName());
         assertThat(decodedReportEntry.getName()).isEqualTo(reportEntry.getName());
         assertThat(decodedReportEntry.getNameText()).isEqualTo(reportEntry.getNameText());
         assertThat(decodedReportEntry.getGroup()).isEqualTo(reportEntry.getGroup());
@@ -929,6 +993,7 @@ public class EventDecoderTest {
                 1L,
                 reportEntry.getSourceName(),
                 reportEntry.getSourceText(),
+                reportEntry.getSourceQualifiedName(),
                 reportEntry.getName(),
                 reportEntry.getNameText(),
                 reportEntry.getGroup(),
@@ -941,6 +1006,7 @@ public class EventDecoderTest {
         assertThat(decodedReportEntry).isNotNull();
         assertThat(decodedReportEntry.getSourceName()).isEqualTo(reportEntry.getSourceName());
         assertThat(decodedReportEntry.getSourceText()).isEqualTo(reportEntry.getSourceText());
+        assertThat(decodedReportEntry.getSourceQualifiedName()).isEqualTo(reportEntry.getSourceQualifiedName());
         assertThat(decodedReportEntry.getName()).isEqualTo(reportEntry.getName());
         assertThat(decodedReportEntry.getNameText()).isEqualTo(reportEntry.getNameText());
         assertThat(decodedReportEntry.getGroup()).isEqualTo(reportEntry.getGroup());

@@ -393,9 +393,12 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     /**
      * Determines the final result type for a test method, applying special handling for @BeforeAll failures.
-     * If a @BeforeAll fails but any actual test methods succeed, it's classified as a FLAKE.
+     * If a @BeforeAll fails but any actual test methods succeed (on a later rerun), it's classified as a FLAKE.
+     * <p>
+     * AfterAll/AfterClass failures are reported as {@code executionError} by the JUnit Platform provider and
+     * are intentionally <em>not</em> covered here — they must remain errors (#3412).
      *
-     * @param methodName the name of the test method (null or "null" for @BeforeAll)
+     * @param methodName the name of the test method (null, "null", or "initializationError" for @BeforeAll)
      * @param methodRuns the list of runs for this method
      * @param methodStatistics all method statistics for the test class
      * @return the final TestResultType
@@ -406,14 +409,15 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             Map<String, List<WrappedReportEntry>> methodStatistics) {
         TestResultType resultType = getTestResultType(methodRuns);
 
-        // Special handling for @BeforeAll failures (null method name or method name is "null" or "initializationError")
-        // If @BeforeAll failed but any actual test methods succeeded, treat it as a flake
-        if ((methodName == null || methodName.equals("null") || methodName.equals("initializationError"))
+        // Special handling for @BeforeAll failures only (not @AfterAll "executionError" or null-named
+        // teardown failures). If @BeforeAll failed but any actual test methods succeeded on a later
+        // run, treat it as a flake. Do not match methodName == null: AfterAll/AfterClass may also
+        // surface with an empty name and must remain errors (#3412).
+        if (("null".equals(methodName) || "initializationError".equals(methodName))
                 && (resultType == TestResultType.ERROR || resultType == TestResultType.FAILURE)) {
-            // Check if any actual test methods (non-null and not "null" names) succeeded
+            // Check if any actual test methods succeeded (exclude synthetic class-level names)
             boolean hasSuccessfulTestMethods = methodStatistics.entrySet().stream()
-                    .filter(entry ->
-                            entry.getKey() != null && !entry.getKey().equals("null")) // Only actual test methods
+                    .filter(entry -> isActualTestMethodName(entry.getKey()))
                     .anyMatch(entry -> entry.getValue().stream()
                             .anyMatch(reportEntry -> reportEntry.getReportEntryType() == SUCCESS));
 
@@ -423,6 +427,16 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         }
 
         return resultType;
+    }
+
+    /**
+     * Whether the method name refers to a real test method rather than a synthetic class-level failure.
+     */
+    private static boolean isActualTestMethodName(String methodName) {
+        return methodName != null
+                && !methodName.equals("null")
+                && !methodName.equals("initializationError")
+                && !methodName.equals("executionError");
     }
 
     private Deque<WrappedReportEntry> getAddMethodRunHistoryMap(String testClassName) {

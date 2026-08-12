@@ -32,6 +32,22 @@ public class JUnit4PlatformFailingBeforeAllRerunIT extends SurefireJUnit4Integra
     private static final String TEST_PROJECT_BASE = "junit-platform-rerun-failing-before-all";
 
     @Test
+    public void testRecoveredBeforeAllDoesNotFailBuild() {
+        OutputValidator outputValidator = unpack(TEST_PROJECT_BASE)
+                .setJUnitVersion(VERSION)
+                .maven()
+                .debugLogging()
+                .addGoal("-Dtest=FlakyBeforeAllTest")
+                .addGoal("-Dsurefire.rerunFailingTestsCount=1")
+                .executeTest()
+                .assertTestSuiteResults(2, 0, 0, 0, 1);
+
+        outputValidator.verifyTextInLog("junitplatform.FlakyBeforeAllTest.<beforeAll>");
+        outputValidator.verifyTextInLog("Run 1: FlakyBeforeAllTest.setup");
+        outputValidator.verifyTextInLog("Run 2: PASS");
+    }
+
+    @Test
     public void testBeforeAllFailures() {
         // Test that @BeforeAll failures are properly handled when they succeed on rerun
         OutputValidator outputValidator = unpack(TEST_PROJECT_BASE)

@@ -276,7 +276,8 @@ public class DefaultReporterFactory implements ReporterFactory, ReportsMerger {
             List<TestMethodStats> testMethodStats = entry.getValue();
             String testClassMethodName = entry.getKey();
 
-            // Handle @BeforeAll failures (null, empty, ends with ".null" or ".initializationError" method names)
+            // Handle @BeforeAll failures (null, empty, ends with ".null" or ".initializationError" method names).
+            // Do NOT include ".executionError" (AfterAll/AfterClass) — those stay as real errors (#3412).
             // But only if they actually failed (ERROR or FAILURE), not if they were skipped
             if ((StringUtils.isBlank(testClassMethodName)
                             || testClassMethodName.endsWith(".null")

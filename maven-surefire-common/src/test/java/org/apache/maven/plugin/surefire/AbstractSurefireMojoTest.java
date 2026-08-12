@@ -55,11 +55,14 @@ import org.apache.maven.plugin.surefire.booterclient.Platform;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
+import org.apache.maven.surefire.api.util.RunOrder;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
+import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
@@ -155,6 +158,22 @@ public class AbstractSurefireMojoTest {
         plugin.setVersion(mojoArtifact.getVersion());
         when(pluginDescriptor.getPlugin()).thenReturn(plugin);
         mojo.setPluginDescriptor(pluginDescriptor);
+    }
+
+    @Test
+    public void shouldAddRunOrderParametersToProviderProperties() throws Exception {
+        MavenProject project = mock(MavenProject.class);
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+        RunOrderParameters runOrderParameters = new RunOrderParameters(new RunOrder[] {RunOrder.RANDOM}, null, 1234L);
+
+        ProviderConfiguration providerConfiguration =
+                invokeMethod(mojo, "createProviderConfiguration", runOrderParameters);
+
+        assertThat(providerConfiguration.getProviderProperties())
+                .containsEntry("runOrder", "random")
+                .containsEntry("runOrderRandomSeed", "1234");
     }
 
     @Test

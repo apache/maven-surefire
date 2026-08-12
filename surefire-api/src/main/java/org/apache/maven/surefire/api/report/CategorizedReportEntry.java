@@ -103,11 +103,40 @@ public class CategorizedReportEntry extends SimpleReportEntry {
         this.group = group;
     }
 
+    public CategorizedReportEntry(
+            @Nonnull RunMode runMode,
+            @Nonnegative Long testRunId,
+            String source,
+            String sourceText,
+            String sourceQualifiedName,
+            String name,
+            String nameText,
+            String group,
+            StackTraceWriter stackTraceWriter,
+            Integer elapsed,
+            String message,
+            Map<String, String> systemProperties) {
+        super(
+                runMode,
+                testRunId,
+                source,
+                sourceText,
+                sourceQualifiedName,
+                name,
+                nameText,
+                stackTraceWriter,
+                elapsed,
+                message,
+                systemProperties);
+        this.group = group;
+    }
+
     public static TestSetReportEntry reportEntry(
             @Nonnull RunMode runMode,
             @Nonnegative Long testRunId,
             String source,
             String sourceText,
+            String sourceQualifiedName,
             String name,
             String nameText,
             String group,
@@ -121,6 +150,7 @@ public class CategorizedReportEntry extends SimpleReportEntry {
                         testRunId,
                         source,
                         sourceText,
+                        sourceQualifiedName,
                         name,
                         nameText,
                         group,
@@ -133,6 +163,7 @@ public class CategorizedReportEntry extends SimpleReportEntry {
                         testRunId,
                         source,
                         sourceText,
+                        sourceQualifiedName,
                         name,
                         nameText,
                         stackTraceWriter,

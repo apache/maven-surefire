@@ -346,6 +346,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
                 1,
                 reportEntry.getSourceName(),
                 reportEntry.getSourceText(),
+                reportEntry.getSourceQualifiedName(),
                 reportEntry.getName(),
                 reportEntry.getNameText(),
                 reportEntry.getGroup(),
@@ -361,6 +362,7 @@ public class EventChannelEncoder extends EventEncoder implements MasterProcessCh
 
         encodeString(encoder, result, reportEntry.getSourceName());
         encodeString(encoder, result, reportEntry.getSourceText());
+        encodeString(encoder, result, reportEntry.getSourceQualifiedName());
         encodeString(encoder, result, reportEntry.getName());
         encodeString(encoder, result, reportEntry.getNameText());
         encodeString(encoder, result, reportEntry.getGroup());

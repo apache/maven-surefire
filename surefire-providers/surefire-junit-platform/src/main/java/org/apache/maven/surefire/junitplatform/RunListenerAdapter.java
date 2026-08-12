@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -58,12 +59,28 @@ import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
  * @since 2.22.0
  */
 final class RunListenerAdapter implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter {
+    /**
+     * Report name for class-level failures that happen before any test method runs
+     * (e.g. {@code @BeforeAll} / {@code @BeforeClass}). Eligible for flaky-BeforeAll
+     * special-casing when a later rerun succeeds.
+     */
     private static final String INITIALIZATION_ERROR = "initializationError";
+
+    /**
+     * Report name for class-level failures that happen after at least one test method
+     * already succeeded (e.g. {@code @AfterAll} / {@code @AfterClass}). Must not be
+     * treated as a flaky BeforeAll — these are real errors and must not trigger
+     * needless re-execution of already-passing tests (#3412).
+     */
+    private static final String EXECUTION_ERROR = "executionError";
 
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
+    /** Class names that had at least one successful test method in the current adapter cycle. */
+    private final Set<String> classesWithSuccessfulTests = ConcurrentHashMap.newKeySet();
+
     private final TestReportListener<TestOutputReportEntry> runListener;
     private final Stoppable stoppable;
     private volatile TestPlan testPlan;
@@ -153,12 +170,21 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
-                    failures.put(testIdentifier, testExecutionResult);
+                    // Do not record AfterAll/AfterClass container failures for rerun: the test
+                    // methods already passed, and re-executing them cannot fix a deterministic
+                    // teardown failure (#3412).
+                    if (!(isClass && EXECUTION_ERROR.equals(reportEntry.getName()))) {
+                        failures.put(testIdentifier, testExecutionResult);
+                    }
                     fireStopEvent();
                     break;
                 default:
                     if (isTest) {
-                        runListener.testSucceeded(createReportEntry(testIdentifier, null, elapsed));
+                        SimpleReportEntry succeeded = createReportEntry(testIdentifier, null, elapsed);
+                        runListener.testSucceeded(succeeded);
+                        if (succeeded.getSourceName() != null) {
+                            classesWithSuccessfulTests.add(succeeded.getSourceName());
+                        }
                     } else {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
@@ -244,8 +270,16 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 && testExecutionResult.getStatus() != org.junit.platform.engine.TestExecutionResult.Status.SUCCESSFUL
                 && testIdentifier.isContainer()
                 && methodName == null) {
-            methodName = INITIALIZATION_ERROR;
-            methodText = INITIALIZATION_ERROR;
+            // BeforeAny tests ran → setup failure; after tests succeeded → teardown failure.
+            // Distinguishing them keeps AfterAll/AfterClass errors from being misclassified as
+            // flaky BeforeAll failures (#3412 / regression since 3.5.5).
+            if (className != null && classesWithSuccessfulTests.contains(className)) {
+                methodName = EXECUTION_ERROR;
+                methodText = EXECUTION_ERROR;
+            } else {
+                methodName = INITIALIZATION_ERROR;
+                methodText = INITIALIZATION_ERROR;
+            }
         }
 
         if (Objects.equals(methodName, methodText)) {
@@ -313,7 +347,34 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 // use deprecated method
                 testPlan.getTestIdentifier(
                         testIdentifier.getParentIdObject().get().toString());
-        return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
+        if (!parent.getParentIdObject().isPresent()) {
+            return testIdentifier;
+        }
+        // Inside a Suite the hierarchy contains a nested engine (like junit-jupiter under
+        // junit-platform-suite). Stop at that boundary so the test is attributed to its real test
+        // class rather than the Suite class. The ClassSource guard keeps traversing up for engines
+        // that expose no test class below them (like Cucumber features/scenarios), so those tests
+        // fall back to the enclosing Suite class instead of being dropped.
+        if (isEngineIdentifier(parent) && hasClassSource(testIdentifier)) {
+            return testIdentifier;
+        }
+        return findTopParent(parent);
+    }
+
+    private static boolean hasClassSource(TestIdentifier testIdentifier) {
+        return testIdentifier.getSource().filter(ClassSource.class::isInstance).isPresent();
+    }
+
+    private static boolean isEngineIdentifier(TestIdentifier testIdentifier) {
+        String uniqueId = testIdentifier.getUniqueId();
+        int lastOpen = uniqueId.lastIndexOf('[');
+        if (lastOpen >= 0) {
+            int colon = uniqueId.indexOf(':', lastOpen);
+            if (colon > lastOpen) {
+                return "engine".equals(uniqueId.substring(lastOpen + 1, colon));
+            }
+        }
+        return false;
     }
 
     /**
@@ -549,6 +610,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     void reset() {
         getFailures().clear();
         testPlan = null;
+        classesWithSuccessfulTests.clear();
     }
 
     @Override
