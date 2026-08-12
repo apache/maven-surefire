@@ -37,12 +37,10 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
-import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -339,15 +337,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
-        if (!hasParentId(testIdentifier)) {
+        Optional<TestIdentifier> parentIdentifier = testPlan.getParent(testIdentifier);
+        if (!parentIdentifier.isPresent()) {
             return testIdentifier;
         }
-        TestIdentifier parent =
-                // Get the parent test identifier using the parent ID object is from 1.10
-                // use deprecated method
-                testPlan.getTestIdentifier(
-                        testIdentifier.getParentIdObject().get().toString());
-        if (!parent.getParentIdObject().isPresent()) {
+        TestIdentifier parent = parentIdentifier.get();
+        if (!testPlan.getParent(parent).isPresent()) {
             return testIdentifier;
         }
         // Inside a Suite the hierarchy contains a nested engine (like junit-jupiter under
@@ -377,42 +372,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         return false;
     }
 
-    /**
-     * Checks if the test identifier has a parent ID but using reflection as it's
-     * only available from 1.8.
-     *
-     * @param testIdentifier the test identifier to check
-     * @return true if the test identifier has a parent ID, false otherwise
-     */
-    private boolean hasParentId(TestIdentifier testIdentifier) {
-        Method getParentIdObjectMethod = ReflectionUtils.tryGetMethod(testIdentifier.getClass(), "getParentIdObject");
-        if (getParentIdObjectMethod == null) {
-            return false;
-        }
-        try {
-            Optional<UniqueId> uniqueIdOptional = (Optional<UniqueId>) getParentIdObjectMethod.invoke(testIdentifier);
-            return uniqueIdOptional.isPresent();
-        } catch (Throwable ignore) {
-            // ignore this
-        }
-        return false;
-    }
-
     private TestIdentifier findFirstParentContainerAndSourceClass(TestIdentifier testIdentifier) {
-        if (!hasParentId(testIdentifier)
-                || (testIdentifier.isContainer()
-                        && testIdentifier
-                                .getSource()
-                                .filter(ClassSource.class::isInstance)
-                                .isPresent())) {
+        if (testIdentifier.isContainer() && hasClassSource(testIdentifier)) {
             return testIdentifier;
         }
-        TestIdentifier parent =
-                // Get the parent test identifier using the parent ID object is from 1.10
-                // use deprecated method
-                testPlan.getTestIdentifier(
-                        testIdentifier.getParentIdObject().get().toString());
-        return findFirstParentContainerAndSourceClass(parent);
+        Optional<TestIdentifier> parent = testPlan.getParent(testIdentifier);
+        return parent.isPresent() ? findFirstParentContainerAndSourceClass(parent.get()) : testIdentifier;
     }
 
     /**

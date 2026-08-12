@@ -690,6 +690,55 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void notifiedWithRunnerClassNameWhenScenariosHaveNoTestClass() {
+        // Cucumber driven by the Vintage engine: VintageEngine -> RunnerClass -> feature -> scenario.
+        // Only the runner class carries a ClassSource, so the scenarios must be attributed to it.
+        // Attributing them anywhere else splits the per-source statistics from the test set they
+        // belong to and the test set is reported as running no tests at all.
+        EngineDescriptor vintageEngine = new EngineDescriptor(UniqueId.forEngine("junit-vintage"), "JUnit Vintage");
+
+        TestDescriptor runnerClass = new ClassTestDescriptor(
+                vintageEngine.getUniqueId().append("runner", MySuiteClass.class.getName()),
+                MySuiteClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        vintageEngine.addChild(runnerClass);
+
+        TestDescriptor feature =
+                new AbstractTestDescriptor(runnerClass.getUniqueId().append("feature", "sum.feature"), "Sum test") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        runnerClass.addChild(feature);
+
+        TestDescriptor scenario =
+                new AbstractTestDescriptor(feature.getUniqueId().append("scenario", "1"), "Invalid test") {
+                    @Override
+                    public Type getType() {
+                        return Type.TEST;
+                    }
+                };
+        feature.addChild(scenario);
+
+        TestPlan plan = TestPlan.from(false, singletonList(vintageEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(vintageEngine));
+        adapter.executionStarted(TestIdentifier.from(runnerClass));
+        adapter.executionStarted(TestIdentifier.from(feature));
+        adapter.executionStarted(TestIdentifier.from(scenario));
+
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        adapter.executionFinished(TestIdentifier.from(scenario), failed(new AssertionError("fail")));
+        verify(listener).testFailed(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        assertEquals(MySuiteClass.class.getName(), entry.getSourceName());
+        assertEquals("Invalid test", entry.getName());
+    }
+
+    @Test
     public void notifiedWithSuiteClassNameWhenEngineHasNoTestClass() {
         // Build a Suite hierarchy whose nested engine exposes no test class right below it, as
         // Cucumber does: SuiteEngine -> SuiteClass -> CucumberEngine -> feature -> scenario.
