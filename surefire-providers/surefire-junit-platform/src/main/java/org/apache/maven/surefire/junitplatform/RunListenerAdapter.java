@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -59,10 +60,18 @@ import static org.junit.platform.engine.TestExecutionResult.Status.FAILED;
  * @since 2.22.0
  */
 final class RunListenerAdapter implements TestExecutionListener, TestOutputReceiver<OutputReportEntry>, RunModeSetter {
+    /**
+     * Synthetic method name used for a class-level teardown failure (e.g. {@code @AfterAll} / {@code @AfterClass})
+     * that happens after at least one test method of the class has already succeeded. Naming it distinctly lets the
+     * Maven-side reporter keep it as a real error instead of misclassifying it as a flaky {@code @BeforeAll} (#3412).
+     */
+    private static final String EXECUTION_ERROR = "executionError";
+
     private final ClassMethodIndexer classMethodIndexer = new ClassMethodIndexer();
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
+    private final Set<String> classesWithSuccessfulTests = ConcurrentHashMap.newKeySet();
     private final TestReportListener<TestOutputReportEntry> runListener;
     private final Stoppable stoppable;
     private volatile TestPlan testPlan;
@@ -152,11 +161,18 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
-                    failures.put(testIdentifier, testExecutionResult);
+                    // A class-level teardown failure (@AfterAll/@AfterClass) that happens after test methods have
+                    // already succeeded is renamed to "executionError". Such a failure must stay a real error, so it
+                    // is not recorded as a rerunnable failure (which would needlessly re-run passing methods) (#3412).
+                    if (!(isClass && EXECUTION_ERROR.equals(reportEntry.getName()))) {
+                        failures.put(testIdentifier, testExecutionResult);
+                    }
                     fireStopEvent();
                     break;
                 default:
                     if (isTest) {
+                        classesWithSuccessfulTests.add(
+                                toClassMethodName(testIdentifier).getClassName());
                         runListener.testSucceeded(createReportEntry(testIdentifier, null, elapsed));
                     } else {
                         runListener.testSetCompleted(
@@ -236,6 +252,17 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         boolean failed = testExecutionResult == null || testExecutionResult.getStatus() == FAILED;
         String methodName = failed || testIdentifier.isTest() ? classMethodName.getMethodSignature() : null;
+        // Distinguish a class-level teardown failure (@AfterAll/@AfterClass) from a setup failure (@BeforeAll):
+        // when a container fails after at least one of its test methods already succeeded, name it "executionError"
+        // so the Maven-side reporter keeps it as a real error rather than a flaky @BeforeAll failure (#3412).
+        if (testExecutionResult != null
+                && testExecutionResult.getStatus() == FAILED
+                && testIdentifier.isContainer()
+                && !testIdentifier.isTest()
+                && methodName == null
+                && classesWithSuccessfulTests.contains(className)) {
+            methodName = EXECUTION_ERROR;
+        }
         String methodText = failed || testIdentifier.isTest() ? classMethodName.getMethodDisplayName() : null;
         if (Objects.equals(methodName, methodText)) {
             methodText = null;
@@ -526,6 +553,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
     void reset() {
         getFailures().clear();
+        classesWithSuccessfulTests.clear();
         testPlan = null;
     }
 
