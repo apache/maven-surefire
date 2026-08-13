@@ -34,18 +34,17 @@ version from the [download page](download.html).
 
 ## What's New
 
-### In development (3.6.0-M2-SNAPSHOT)
+### 3.6.0-M2
 
 New features and enhancements:
 
-- Your tests can now run on [JUnit 6](https://github.com/apache/maven-surefire/pull/3370).
 - A new [extension point](https://github.com/apache/maven-surefire/pull/3372) runs diagnosis tools
   (such as a thread dump collector) automatically when a forked JVM times out.
 - [Random test order is now reproducible](https://issues.apache.org/jira/browse/SUREFIRE-859) — a given
   seed produces the same class and method ordering across machines.
 - [`-DskipTests` no longer skips Failsafe](https://issues.apache.org/jira/browse/SUREFIRE-823), so unit and
   integration tests can be controlled independently.
-- Stack traces now use the [`StackWalker` API](https://github.com/apache/maven-surefire/pull/3374) on Java 9+.
+- For better performance, Stack traces now use the [`StackWalker` API](https://github.com/apache/maven-surefire/pull/3374) on Java 9+.
 
 Bug fixes: see the [3.6.0-M2 milestone](https://github.com/apache/maven-surefire/milestone/81)
 for the full list of resolved issues.
