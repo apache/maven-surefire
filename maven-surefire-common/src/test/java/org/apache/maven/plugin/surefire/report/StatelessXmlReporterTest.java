@@ -18,6 +18,7 @@
  */
 package org.apache.maven.plugin.surefire.report;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -358,6 +359,30 @@ public class StatelessXmlReporterTest {
         assertThat(testcase.getChild("system-err").getValue())
                 .contains("&amp#65534;")
                 .contains(supplementaryCharacter);
+    }
+
+    @Test
+    public void testMalformedUtf8IsReplaced() throws Exception {
+        ByteArrayOutputStream xml = new ByteArrayOutputStream();
+        xml.write("<root><![CDATA[".getBytes(UTF_8));
+
+        StatelessXmlReporter.EncodingOutputStream out = new StatelessXmlReporter.EncodingOutputStream(xml);
+        out.write(new byte[] {'A', (byte) 0x80});
+        out.write(0xE2);
+        out.write('B');
+        out.write(new byte[] {(byte) 0xF0, (byte) 0x9F});
+        out.write(new byte[] {(byte) 0x98, (byte) 0x80});
+        out.write(0xC2);
+        out.finish();
+
+        xml.write("]]></root>".getBytes(UTF_8));
+
+        Xpp3Dom root;
+        try (InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(xml.toByteArray()), UTF_8)) {
+            root = Xpp3DomBuilder.build(reader);
+        }
+
+        assertThat(root.getValue()).isEqualTo("A\uFFFD\uFFFDB" + new String(Character.toChars(0x1F600)) + "\uFFFD");
     }
 
     @Test

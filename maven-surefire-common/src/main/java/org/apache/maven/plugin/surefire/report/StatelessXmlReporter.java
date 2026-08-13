@@ -725,7 +725,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         fw.flush();
     }
 
-    private static final class EncodingOutputStream extends FilterOutputStream {
+    static final class EncodingOutputStream extends FilterOutputStream {
         private int c1 = -1;
 
         private int c2 = -1;
