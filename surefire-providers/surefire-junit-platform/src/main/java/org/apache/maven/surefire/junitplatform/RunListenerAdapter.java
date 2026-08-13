@@ -37,13 +37,11 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReceiver;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
-import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.report.ClassMethodIndexer;
 import org.apache.maven.surefire.report.PojoStackTraceWriter;
 import org.apache.maven.surefire.report.RunModeSetter;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.TestSource;
-import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -320,39 +318,30 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private TestIdentifier findTopParent(TestIdentifier testIdentifier) {
-        if (!hasParentId(testIdentifier)) {
+        Optional<TestIdentifier> parentOptional = resolveParent(testIdentifier);
+        if (!parentOptional.isPresent()) {
             return testIdentifier;
         }
-        TestIdentifier parent =
-                // Get the parent test identifier using the parent ID object is from 1.10
-                // use deprecated method
-                testPlan.getTestIdentifier(
-                        testIdentifier.getParentIdObject().get().toString());
-        return !parent.getParentIdObject().isPresent() ? testIdentifier : findTopParent(parent);
+        TestIdentifier parent = parentOptional.get();
+        return !resolveParent(parent).isPresent() ? testIdentifier : findTopParent(parent);
     }
 
     /**
-     * Checks if the test identifier has a parent ID but using reflection as it's only available from 1.8.
+     * Resolve the parent identifier via {@link TestPlan#getParent(TestIdentifier)}.
+     * That API has existed since JUnit Platform 1.0. Prefer it over
+     * {@code TestIdentifier#getParentIdObject()}, which is only available from 1.8 and
+     * previously gated parent walks so pre-1.8 launchers (for example Cucumber via
+     * vintage) lost class-level source names and reported {@code Tests run: 0}.
      *
-     * @param testIdentifier the test identifier to check
-     * @return true if the test identifier has a parent ID, false otherwise
+     * @param testIdentifier the test identifier whose parent is needed
+     * @return the parent, or empty when the identifier is at the root of the plan
      */
-    private boolean hasParentId(TestIdentifier testIdentifier) {
-        Method getParentIdObjectMethod = ReflectionUtils.tryGetMethod(testIdentifier.getClass(), "getParentIdObject");
-        if (getParentIdObjectMethod == null) {
-            return false;
-        }
-        try {
-            Optional<UniqueId> uniqueIdOptional = (Optional<UniqueId>) getParentIdObjectMethod.invoke(testIdentifier);
-            return uniqueIdOptional.isPresent();
-        } catch (Throwable ignore) {
-            // ignore this
-        }
-        return false;
+    private Optional<TestIdentifier> resolveParent(TestIdentifier testIdentifier) {
+        return testPlan.getParent(testIdentifier);
     }
 
     private TestIdentifier findFirstParentContainerAndSourceClass(TestIdentifier testIdentifier) {
-        if (!hasParentId(testIdentifier)
+        if (!resolveParent(testIdentifier).isPresent()
                 || (testIdentifier.isContainer()
                         && testIdentifier
                                 .getSource()
@@ -360,11 +349,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                                 .isPresent())) {
             return testIdentifier;
         }
-        TestIdentifier parent =
-                // Get the parent test identifier using the parent ID object is from 1.10
-                // use deprecated method
-                testPlan.getTestIdentifier(
-                        testIdentifier.getParentIdObject().get().toString());
+        TestIdentifier parent = resolveParent(testIdentifier).get();
         return findFirstParentContainerAndSourceClass(parent);
     }
 
