@@ -283,6 +283,32 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 .orElseGet(Stream::empty);
     }
 
+    /**
+     * Extract the invocation index from a JUnit Jupiter {@code [class-template-invocation:#N]} unique-id
+     * segment. JUnit 6 {@code @ParameterizedClass} uses this segment; the method-level legacy name
+     * no longer carries the {@code [N]} suffix that {@code @ParameterizedTest} still has.
+     *
+     * @param uniqueId the platform unique id string
+     * @return the numeric index, or {@code null} when the id has no class-template invocation
+     */
+    private static String extractClassTemplateInvocationIndex(String uniqueId) {
+        if (uniqueId == null) {
+            return null;
+        }
+        String marker = "[class-template-invocation:";
+        int start = uniqueId.lastIndexOf(marker);
+        if (start < 0) {
+            return null;
+        }
+        start += marker.length();
+        int end = uniqueId.indexOf(']', start);
+        if (end <= start) {
+            return null;
+        }
+        String value = uniqueId.substring(start, end);
+        return value.startsWith("#") ? value.substring(1) : value;
+    }
+
     private String safeGetMessage(Throwable throwable) {
         try {
             SafeThrowable t = throwable == null ? null : new SafeThrowable(throwable);
@@ -553,14 +579,22 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     .map(TestIdentifier::getLegacyReportingName)
                     .anyMatch(legacyReportingName -> legacyReportingName.matches("^\\[.+]$"));
             boolean isTestTemplate = testIdentifier.getLegacyReportingName().matches("^.*\\[\\d+]$");
+            // JUnit 6 @ParameterizedClass parents have a ClassSource, so they are missed by
+            // hasParameterizedParent, and the method legacy name no longer includes [N] (#3303).
+            String classTemplateInvocationIndex = extractClassTemplateInvocationIndex(testIdentifier.getUniqueId());
 
-            boolean parameterized = isParameterized || hasParameterizedParent || isTestTemplate;
+            boolean parameterized =
+                    isParameterized || hasParameterizedParent || isTestTemplate || classTemplateInvocationIndex != null;
             String methodName = methodSource.getMethodName();
             String description = testIdentifier.getLegacyReportingName();
             boolean equalDescriptions = methodDisplay.equals(description);
             boolean hasLegacyDescription = description.startsWith(methodName + '(');
             boolean hasDisplayName = !equalDescriptions || !hasLegacyDescription;
             String methodDesc = parameterized ? description : methodName;
+            if (classTemplateInvocationIndex != null
+                    && !methodDesc.endsWith("[" + classTemplateInvocationIndex + "]")) {
+                methodDesc = methodDesc + "[" + classTemplateInvocationIndex + "]";
+            }
             String methodDisp = hasDisplayName ? methodDisplay : methodDesc;
 
             // The behavior of methods getLegacyReportingName() and getDisplayName().
