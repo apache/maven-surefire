@@ -695,6 +695,8 @@ public class RunListenerAdapterTest {
         // Cucumber does: SuiteEngine -> SuiteClass -> CucumberEngine -> feature -> scenario.
         // The feature/scenario nodes carry no ClassSource, so the test must be attributed to the
         // enclosing Suite class instead of being dropped (see issue #3264 follow-up / Cucumber IT).
+        // Parent walks must use TestPlan#getParent (Platform 1.0+), not getParentIdObject (1.8+),
+        // otherwise pre-1.8 launchers report Tests run: 0 (issue #3428).
         EngineDescriptor suiteEngine =
                 new EngineDescriptor(UniqueId.forEngine("junit-platform-suite"), "JUnit Platform Suite");
 
@@ -748,6 +750,54 @@ public class RunListenerAdapterTest {
         // No test class exists below the Cucumber engine, so the Suite class is the attribution.
         assertEquals(MySuiteClass.class.getName(), entry.getSourceName());
         assertEquals("Invalid test", entry.getName());
+    }
+
+    @Test
+    public void notifiedWithRunnerClassWhenCucumberScenarioHasNoClassSource() {
+        // Cucumber-via-JUnit hierarchy without Suite: Engine -> runner class -> feature -> scenario.
+        // Scenario nodes have no ClassSource; class-level source must still resolve to the runner
+        // class via TestPlan#getParent so stats buckets match testSetCompleted (issue #3428).
+        EngineDescriptor cucumberEngine = new EngineDescriptor(UniqueId.forEngine("cucumber"), "Cucumber");
+
+        TestDescriptor runnerClass = new ClassTestDescriptor(
+                cucumberEngine.getUniqueId().append("class", MyTestClass.class.getName()),
+                MyTestClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        cucumberEngine.addChild(runnerClass);
+
+        TestDescriptor feature =
+                new AbstractTestDescriptor(runnerClass.getUniqueId().append("feature", "dummy.feature"), "dummy") {
+                    @Override
+                    public Type getType() {
+                        return Type.CONTAINER;
+                    }
+                };
+        runnerClass.addChild(feature);
+
+        TestDescriptor scenario =
+                new AbstractTestDescriptor(feature.getUniqueId().append("scenario", "1"), "Run a dummy cucumber test") {
+                    @Override
+                    public Type getType() {
+                        return Type.TEST;
+                    }
+                };
+        feature.addChild(scenario);
+
+        TestPlan plan = TestPlan.from(false, singletonList(cucumberEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(cucumberEngine));
+        adapter.executionStarted(TestIdentifier.from(runnerClass));
+        adapter.executionStarted(TestIdentifier.from(feature));
+        adapter.executionStarted(TestIdentifier.from(scenario));
+
+        ArgumentCaptor<ReportEntry> entryCaptor = ArgumentCaptor.forClass(ReportEntry.class);
+        adapter.executionFinished(TestIdentifier.from(scenario), successful());
+        verify(listener).testSucceeded(entryCaptor.capture());
+
+        ReportEntry entry = entryCaptor.getValue();
+        assertEquals(MyTestClass.class.getName(), entry.getSourceName());
+        assertEquals("Run a dummy cucumber test", entry.getName());
     }
 
     private static TestIdentifier newMethodIdentifier() throws Exception {
