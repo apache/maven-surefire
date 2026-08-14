@@ -58,6 +58,7 @@ import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassNameFilter;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
@@ -316,12 +317,41 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return null;
     }
 
-    private LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
+    LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
         LauncherDiscoveryRequestBuilder builder = newRequest();
-        // Iterate over recorded failures
-        for (TestIdentifier identifier :
-                new LinkedHashSet<>(adapter.getFailures().keySet())) {
-            builder.selectors(selectUniqueId(identifier.getUniqueId()));
+        LinkedHashSet<TestIdentifier> failures =
+                new LinkedHashSet<>(adapter.getFailures().keySet());
+        LinkedHashSet<UniqueId> failureIds = failures.stream()
+                .map(TestIdentifier::getUniqueId)
+                .map(UniqueId::parse)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        adapter.setRerunTestIds(failureIds);
+        LinkedHashSet<String> classNames = new LinkedHashSet<>();
+
+        for (TestIdentifier identifier : failures) {
+            // Runner-backed Vintage tests may expose only a ClassSource and may not
+            // support rediscovery from a leaf UniqueId. Rediscover their owning class
+            // and retain the failed branch with a post-discovery filter instead.
+            Optional<ClassSource> classSource =
+                    identifier.getSource().filter(ClassSource.class::isInstance).map(ClassSource.class::cast);
+            if (classSource.isPresent()) {
+                classNames.add(classSource.get().getClassName());
+            } else {
+                builder.selectors(selectUniqueId(identifier.getUniqueId()));
+            }
+        }
+
+        if (!classNames.isEmpty()) {
+            classNames.forEach(className -> builder.selectors(selectClass(className)));
+            builder.filters((PostDiscoveryFilter) testDescriptor -> {
+                UniqueId candidateId = testDescriptor.getUniqueId();
+                boolean isFailureOrRelatedContainer = failureIds.stream()
+                        .anyMatch(failureId -> candidateId.hasPrefix(failureId) || failureId.hasPrefix(candidateId));
+                return FilterResult.includedIf(
+                        isFailureOrRelatedContainer,
+                        () -> "Failed test or related container",
+                        () -> "Not a failed test");
+            });
         }
         return builder.build();
     }

@@ -283,6 +283,53 @@ public class DefaultReporterFactoryTest {
         assertEquals(emptyList(), reporter.getMessages());
     }
 
+    @Test
+    public void testIdenticalNamesWithDistinctIdsRemainSeparate() {
+        File reportsDirectory = new File(new File(System.getProperty("user.dir"), "target"), "tmpIdentity");
+        StartupReportConfiguration reportConfig = new StartupReportConfiguration(
+                true,
+                true,
+                "PLAIN",
+                false,
+                reportsDirectory,
+                false,
+                null,
+                new File(reportsDirectory, "TESTHASH"),
+                false,
+                1,
+                null,
+                null,
+                false,
+                true,
+                true,
+                false,
+                new SurefireStatelessReporter(),
+                new SurefireConsoleOutputReporter(),
+                new SurefireStatelessTestsetInfoReporter(),
+                new ReporterFactoryOptions());
+        DefaultReporterFactory factory = new DefaultReporterFactory(reportConfig, new DummyTestReporter());
+
+        String identicalName = "com.example.Test.identical name";
+        Queue<TestMethodStats> runStats = new ArrayDeque<>();
+        runStats.add(new TestMethodStats(identicalName, 1L, ReportEntryType.SKIPPED, null));
+        runStats.add(new TestMethodStats(
+                identicalName, 2L, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL)));
+        runStats.add(new TestMethodStats(identicalName, 3L, ReportEntryType.SUCCESS, null));
+        runStats.add(new TestMethodStats(
+                identicalName, 2L, ReportEntryType.FAILURE, new DummyStackTraceWriter(ASSERTION_FAIL)));
+
+        TestSetRunListener runListener = mock(TestSetRunListener.class);
+        when(runListener.getTestMethodStats()).thenReturn(runStats);
+        factory.addListener(runListener);
+
+        RunStatistics mergedStatistics = factory.getGlobalRunStatistics();
+        assertEquals(3, mergedStatistics.getCompletedCount());
+        assertEquals(0, mergedStatistics.getErrors());
+        assertEquals(1, mergedStatistics.getFailures());
+        assertEquals(0, mergedStatistics.getFlakes());
+        assertEquals(1, mergedStatistics.getSkipped());
+    }
+
     static final class DummyTestReporter implements ConsoleLogger {
         private final List<String> messages = new ArrayList<>();
 

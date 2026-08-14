@@ -321,6 +321,7 @@ public class TestSetRunListener implements TestReportListener<TestOutputReportEn
         for (WrappedReportEntry reportEntry : getTestSetStats(report).getReportEntries()) {
             TestMethodStats methodStats = new TestMethodStats(
                     reportEntry.getClassMethodName(),
+                    reportEntry.getTestRunId(),
                     reportEntry.getReportEntryType(),
                     reportEntry.getStackTraceWriter());
             testMethodStats.add(methodStats);

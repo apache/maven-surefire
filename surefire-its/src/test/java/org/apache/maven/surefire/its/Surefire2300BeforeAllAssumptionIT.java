@@ -16,26 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.its.jiras;
+package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.jupiter.api.Test;
 
 /**
- * SUREFIRE-1152 Assert rerunFailingTestsCount works with test suites
- *
- * @author Sean Flanigan
+ * Integration test for SUREFIRE-2300 / GitHub issue #2602.
  */
-public class Surefire1152RerunFailingTestsInSuiteIT extends SurefireJUnit4IntegrationTestCase {
-
+public class Surefire2300BeforeAllAssumptionIT extends SurefireJUnit4IntegrationTestCase {
     @Test
-    public void testJUnit48Provider4() {
-        SurefireLauncher launcher = unpack("surefire-1152-rerunFailingTestsCount-suite");
-        OutputValidator outputValidator =
-                launcher.showErrorStackTraces().debugLogging().executeVerify();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0, 2);
-        outputValidator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
+    public void reportsTestsAbortedByBeforeAllAssumptionAsSkipped() {
+        OutputValidator validator = unpack("surefire-2300-before-all-assumption")
+                .executeTest()
+                .assertTestSuiteResults(2, 0, 0, 2)
+                .verifyTextInLog("Tests run: 2, Failures: 0, Errors: 0, Skipped: 2");
+
+        validator
+                .getSurefireReportsXmlFile("TEST-example.TestAssume.xml")
+                .assertContainsText("tests=\"2\" errors=\"0\" skipped=\"2\" failures=\"0\"")
+                .assertContainsText("name=\"testOne\"")
+                .assertContainsText("name=\"testTwo\"")
+                .assertContainsText("<skipped type=\"org.opentest4j.TestAbortedException\">")
+                .assertContainsText("Assumption failed: assumption is not true");
     }
 }

@@ -16,26 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.its.jiras;
+package example;
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Test;
 
-/**
- * SUREFIRE-1152 Assert rerunFailingTestsCount works with test suites
- *
- * @author Sean Flanigan
- */
-public class Surefire1152RerunFailingTestsInSuiteIT extends SurefireJUnit4IntegrationTestCase {
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ReproducerIT {
+    private static final AtomicInteger TEST_ONE_RUNS = new AtomicInteger();
+
+    private static final AtomicInteger TEST_TWO_RUNS = new AtomicInteger();
 
     @Test
-    public void testJUnit48Provider4() {
-        SurefireLauncher launcher = unpack("surefire-1152-rerunFailingTestsCount-suite");
-        OutputValidator outputValidator =
-                launcher.showErrorStackTraces().debugLogging().executeVerify();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0, 2);
-        outputValidator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
+    public void testOne() {
+        failFirstTwoRuns(TEST_ONE_RUNS);
+    }
+
+    @Test
+    public void testTwo() {
+        failFirstTwoRuns(TEST_TWO_RUNS);
+    }
+
+    @Test
+    public void testThree() {}
+
+    private static void failFirstTwoRuns(AtomicInteger runs) {
+        int currentRun = runs.incrementAndGet();
+        assertTrue(currentRun >= 3, "Run " + currentRun + " intentionally fails");
     }
 }

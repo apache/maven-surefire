@@ -16,26 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.its.jiras;
+package example;
 
-import org.apache.maven.surefire.its.fixture.OutputValidator;
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
-/**
- * SUREFIRE-1152 Assert rerunFailingTestsCount works with test suites
- *
- * @author Sean Flanigan
- */
-public class Surefire1152RerunFailingTestsInSuiteIT extends SurefireJUnit4IntegrationTestCase {
+public class TestAssume {
+    @BeforeAll
+    public static void beforeAll() {
+        Assumptions.assumeTrue(false, "assumption is not true");
+    }
 
     @Test
-    public void testJUnit48Provider4() {
-        SurefireLauncher launcher = unpack("surefire-1152-rerunFailingTestsCount-suite");
-        OutputValidator outputValidator =
-                launcher.showErrorStackTraces().debugLogging().executeVerify();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0, 2);
-        outputValidator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
-    }
+    public void testOne() {}
+
+    @Test
+    public void testTwo() {}
 }

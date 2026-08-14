@@ -16,26 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.its.jiras;
+package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.jupiter.api.Test;
 
 /**
- * SUREFIRE-1152 Assert rerunFailingTestsCount works with test suites
- *
- * @author Sean Flanigan
+ * Integration test for SUREFIRE-2274 / GitHub issue #2656.
  */
-public class Surefire1152RerunFailingTestsInSuiteIT extends SurefireJUnit4IntegrationTestCase {
-
+public class Surefire2274FailsafeFlakeCountIT extends SurefireJUnit4IntegrationTestCase {
     @Test
-    public void testJUnit48Provider4() {
-        SurefireLauncher launcher = unpack("surefire-1152-rerunFailingTestsCount-suite");
-        OutputValidator outputValidator =
-                launcher.showErrorStackTraces().debugLogging().executeVerify();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0, 2);
-        outputValidator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
+    public void failsafeVerifyFailsWhenFlakeCountExceedsLimit() {
+        OutputValidator validator = unpack("surefire-2274-failsafe-flake-count")
+                .maven()
+                .withFailure()
+                .executeVerify()
+                .assertIntegrationTestSuiteResults(3, 0, 0, 0)
+                .verifyTextInLog("There are 2 flakes and failOnFlakeCount is set to 1");
+
+        validator.getTargetFile("failsafe-reports/failsafe-summary.xml").assertContainsText("<flakes>2</flakes>");
+        validator
+                .getTargetFile("failsafe-reports/TEST-example.ReproducerIT.xml")
+                .assertContainsText("flakes=\"2\"")
+                .assertContainsText("<flakyFailure");
     }
 }

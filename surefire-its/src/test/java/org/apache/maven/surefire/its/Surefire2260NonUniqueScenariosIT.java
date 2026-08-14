@@ -16,26 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.its.jiras;
+package org.apache.maven.surefire.its;
 
+import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.junit.jupiter.api.Test;
 
 /**
- * SUREFIRE-1152 Assert rerunFailingTestsCount works with test suites
- *
- * @author Sean Flanigan
+ * Integration test for SUREFIRE-2260 / GitHub issue #2670.
  */
-public class Surefire1152RerunFailingTestsInSuiteIT extends SurefireJUnit4IntegrationTestCase {
-
+public class Surefire2260NonUniqueScenariosIT extends SurefireJUnit4IntegrationTestCase {
     @Test
-    public void testJUnit48Provider4() {
-        SurefireLauncher launcher = unpack("surefire-1152-rerunFailingTestsCount-suite");
-        OutputValidator outputValidator =
-                launcher.showErrorStackTraces().debugLogging().executeVerify();
-        outputValidator.assertTestSuiteResults(2, 0, 0, 0, 2);
-        outputValidator.assertIntegrationTestSuiteResults(1, 0, 0, 0);
+    public void identicallyNamedCucumberScenariosRemainDistinctDuringRerun() throws VerificationException {
+        OutputValidator validator = unpack("surefire-2260-non-unique-scenarios")
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextNotInLog("Element name cannot be empty");
+
+        validator.assertTestSuiteResults(3, 0, 1, 1, 0);
     }
 }

@@ -38,14 +38,14 @@ public final class ClassMethodIndexer {
 
     public long indexClassMethod(String clazz, String method) {
         ClassMethod key = new ClassMethod(requireNonNull(clazz), method);
-        return testIdMapping.computeIfAbsent(key, cm -> {
+        long id = testIdMapping.computeIfAbsent(key, cm -> {
             Long classId = testIdMapping.get(new ClassMethod(requireNonNull(clazz), null));
             long c = classId == null ? (((long) classIndex.getAndIncrement()) << 32) : classId;
             int m = method == null ? 0 : methodIndex.getAndIncrement();
-            long id = c | m;
-            testLocalMapping.set(id);
-            return id;
+            return c | m;
         });
+        testLocalMapping.set(id);
+        return id;
     }
 
     public long indexClass(String clazz) {

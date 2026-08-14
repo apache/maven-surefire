@@ -308,7 +308,7 @@ public class StatelessXmlReporterTest {
                 createStdOutput(firstRunErr));
 
         WrappedReportEntry testTwoSecondError = new WrappedReportEntry(
-                new SimpleReportEntry(RERUN_TEST_AFTER_FAILURE, 1L, cls, null, TEST_TWO, null, stackTraceWriterTwo, 13),
+                new SimpleReportEntry(RERUN_TEST_AFTER_FAILURE, 0L, cls, null, TEST_TWO, null, stackTraceWriterTwo, 13),
                 ReportEntryType.ERROR,
                 1771085631L,
                 13,
@@ -325,7 +325,7 @@ public class StatelessXmlReporterTest {
 
         WrappedReportEntry testThreeSecondRun = new WrappedReportEntry(
                 new SimpleReportEntry(
-                        RERUN_TEST_AFTER_FAILURE, 3L, cls, null, TEST_THREE, null, stackTraceWriterTwo, 2),
+                        RERUN_TEST_AFTER_FAILURE, 2L, cls, null, TEST_THREE, null, stackTraceWriterTwo, 2),
                 ReportEntryType.SUCCESS,
                 1771085631L,
                 2,
@@ -506,6 +506,148 @@ public class StatelessXmlReporterTest {
                 .filter(line -> line.contains("<!-- a skipped test execution in re-run phase -->"))
                 .count();
         assertEquals(1, linesWithComments);
+    }
+
+    @Test
+    public void testIdenticalNamesWithDistinctIdsRemainSeparate() throws IOException {
+        expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
+        StackTraceWriter failure = new DeserializedStacktraceWriter("failure", "trimmed", "failed");
+
+        WrappedReportEntry skipped = new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 1L, getClass().getName(), null, TEST_ONE, null, 1),
+                SKIPPED,
+                1771085631L,
+                1,
+                null,
+                null);
+        WrappedReportEntry failed = new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 2L, getClass().getName(), null, TEST_ONE, null, failure, 2),
+                ReportEntryType.FAILURE,
+                1771085631L,
+                2,
+                null,
+                null);
+        WrappedReportEntry succeeded = new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 3L, getClass().getName(), null, TEST_ONE, null, 3),
+                SUCCESS,
+                1771085631L,
+                3,
+                null,
+                null);
+        WrappedReportEntry failedAgain = new WrappedReportEntry(
+                new SimpleReportEntry(
+                        RERUN_TEST_AFTER_FAILURE, 2L, getClass().getName(), null, TEST_ONE, null, failure, 4),
+                ReportEntryType.FAILURE,
+                1771085631L,
+                4,
+                null,
+                null);
+        stats.testSucceeded(skipped);
+        stats.testSucceeded(failed);
+        stats.testSucceeded(succeeded);
+        rerunStats.testSucceeded(failedAgain);
+
+        WrappedReportEntry testSet = new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, null, null, 10),
+                SUCCESS,
+                1771085631L,
+                10,
+                null,
+                null,
+                systemProps());
+        StatelessXmlReporter reporter = new StatelessXmlReporter(
+                reportDir,
+                null,
+                false,
+                1,
+                new HashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
+
+        reporter.testSetCompleted(testSet, stats);
+        reporter.testSetCompleted(testSet, rerunStats);
+
+        Xpp3Dom testSuite;
+        try (FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
+                InputStreamReader reader = new InputStreamReader(fileInputStream, UTF_8)) {
+            testSuite = Xpp3DomBuilder.build(reader);
+        }
+        assertEquals("3", testSuite.getAttribute("tests"));
+        assertEquals("1", testSuite.getAttribute("failures"));
+        assertEquals("1", testSuite.getAttribute("skipped"));
+        assertEquals("0", testSuite.getAttribute("flakes"));
+        assertEquals(3, testSuite.getChildren("testcase").length);
+    }
+
+    @Test
+    public void testSkippedExecutionInFlakeDoesNotCreateEmptyElement() throws IOException {
+        expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
+        StackTraceWriter failure = new DeserializedStacktraceWriter("failure", "trimmed", "failed");
+
+        stats.testSucceeded(new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 1L, getClass().getName(), null, TEST_ONE, null, failure, 1),
+                ReportEntryType.FAILURE,
+                1771085631L,
+                1,
+                null,
+                null));
+        stats.testSucceeded(new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 1L, getClass().getName(), null, TEST_ONE, null, 1),
+                SKIPPED,
+                1771085631L,
+                1,
+                null,
+                null));
+        rerunStats.testSucceeded(new WrappedReportEntry(
+                new SimpleReportEntry(RERUN_TEST_AFTER_FAILURE, 1L, getClass().getName(), null, TEST_ONE, null, 1),
+                SUCCESS,
+                1771085631L,
+                1,
+                null,
+                null));
+
+        WrappedReportEntry testSet = new WrappedReportEntry(
+                new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, null, null, 3),
+                SUCCESS,
+                1771085631L,
+                3,
+                null,
+                null,
+                systemProps());
+        StatelessXmlReporter reporter = new StatelessXmlReporter(
+                reportDir,
+                null,
+                false,
+                1,
+                new HashMap<>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
+
+        reporter.testSetCompleted(testSet, stats);
+        reporter.testSetCompleted(testSet, rerunStats);
+
+        try (FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
+                InputStreamReader reader = new InputStreamReader(fileInputStream, UTF_8)) {
+            Xpp3Dom testSuite = Xpp3DomBuilder.build(reader);
+            assertEquals("1", testSuite.getAttribute("flakes"));
+            assertNotNull(testSuite.getChild("testcase").getChild("flakyFailure"));
+        }
+        assertThat(readAllLines(expectedReportFile.toPath(), UTF_8))
+                .anyMatch(line -> line.contains("<!-- a skipped test execution in re-run phase -->"));
     }
 
     @Test

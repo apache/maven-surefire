@@ -52,9 +52,18 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.ClassSelector;
+import org.junit.platform.engine.discovery.UniqueIdSelector;
+import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
+import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.launcher.EngineFilter;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.LauncherSession;
 import org.junit.platform.launcher.LauncherSessionListener;
+import org.junit.platform.launcher.PostDiscoveryFilter;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
@@ -127,6 +136,41 @@ public class JUnitPlatformProviderTest {
 
         assertThat(provider.getConfigurationParameters())
                 .containsEntry("junit.jupiter.execution.order.random.seed", "5678");
+    }
+
+    @Test
+    public void rerunsClassSourceTestByClassWithUniqueIdFilter() {
+        RunListenerAdapter adapter = new RunListenerAdapter(runListenerMock(), Stoppable.NOOP);
+        UniqueId parentId = UniqueId.forEngine("junit-vintage")
+                .append("runner", TestClass1.class.getName())
+                .append("test", "parameterized");
+        UniqueId failedId = parentId.append("test", "[0]");
+        TestDescriptor failedTest = testDescriptor(failedId, ClassSource.from(TestClass1.class));
+        adapter.getFailures().put(TestIdentifier.from(failedTest), TestExecutionResult.failed(new AssertionError()));
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParametersMock());
+        LauncherDiscoveryRequest request = provider.buildLauncherDiscoveryRequestForRerunFailures(adapter);
+
+        assertThat(request.getSelectorsByType(ClassSelector.class))
+                .extracting(ClassSelector::getClassName)
+                .containsExactly(TestClass1.class.getName());
+        assertThat(request.getSelectorsByType(UniqueIdSelector.class)).isEmpty();
+
+        PostDiscoveryFilter filter = request.getPostDiscoveryFilters().get(0);
+        TestDescriptor parent = testDescriptor(parentId, ClassSource.from(TestClass1.class));
+        TestDescriptor sibling = testDescriptor(parentId.append("test", "[1]"), ClassSource.from(TestClass1.class));
+        assertThat(filter.apply(parent).included()).isTrue();
+        assertThat(filter.apply(failedTest).included()).isTrue();
+        assertThat(filter.apply(sibling).included()).isFalse();
+    }
+
+    private static TestDescriptor testDescriptor(UniqueId uniqueId, ClassSource source) {
+        return new AbstractTestDescriptor(uniqueId, uniqueId.toString(), source) {
+            @Override
+            public Type getType() {
+                return Type.TEST;
+            }
+        };
     }
 
     @Test

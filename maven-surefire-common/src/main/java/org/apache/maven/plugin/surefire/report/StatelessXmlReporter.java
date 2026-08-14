@@ -161,7 +161,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
 
     @Override
     public void testSetCompleted(WrappedReportEntry testSetReportEntry, TestSetStats testSetStats) {
-        Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics =
+        Map<String, Map<TestMethodKey, List<WrappedReportEntry>>> classMethodStatistics =
                 arrangeMethodStatistics(testSetReportEntry, testSetStats);
 
         // The Java Language Spec:
@@ -176,7 +176,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 showProperties(ppw, testSetReportEntry.getSystemProperties());
             } else {
                 boolean hasNonSuccess = false;
-                for (Map<String, List<WrappedReportEntry>> statistics : classMethodStatistics.values()) {
+                for (Map<TestMethodKey, List<WrappedReportEntry>> statistics : classMethodStatistics.values()) {
                     for (List<WrappedReportEntry> thisMethodRuns : statistics.values()) {
                         if (thisMethodRuns.stream()
                                 .anyMatch(entry -> entry.getReportEntryType() != ReportEntryType.SUCCESS)) {
@@ -194,9 +194,10 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 }
             }
 
-            for (Entry<String, Map<String, List<WrappedReportEntry>>> statistics : classMethodStatistics.entrySet()) {
-                Map<String, List<WrappedReportEntry>> methodStatistics = statistics.getValue();
-                for (Entry<String, List<WrappedReportEntry>> thisMethodRuns : methodStatistics.entrySet()) {
+            for (Entry<String, Map<TestMethodKey, List<WrappedReportEntry>>> statistics :
+                    classMethodStatistics.entrySet()) {
+                Map<TestMethodKey, List<WrappedReportEntry>> methodStatistics = statistics.getValue();
+                for (Entry<TestMethodKey, List<WrappedReportEntry>> thisMethodRuns : methodStatistics.entrySet()) {
                     serializeTestClass(outputStream, fw, ppw, thisMethodRuns.getValue(), methodStatistics);
                 }
             }
@@ -210,15 +211,15 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         }
     }
 
-    private Map<String, Map<String, List<WrappedReportEntry>>> arrangeMethodStatistics(
+    private Map<String, Map<TestMethodKey, List<WrappedReportEntry>>> arrangeMethodStatistics(
             WrappedReportEntry testSetReportEntry, TestSetStats testSetStats) {
-        Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics = new LinkedHashMap<>();
+        Map<String, Map<TestMethodKey, List<WrappedReportEntry>>> classMethodStatistics = new LinkedHashMap<>();
         for (WrappedReportEntry methodEntry : aggregateCacheFromMultipleReruns(testSetReportEntry, testSetStats)) {
             String testClassName = methodEntry.getSourceName();
-            Map<String, List<WrappedReportEntry>> stats =
+            Map<TestMethodKey, List<WrappedReportEntry>> stats =
                     classMethodStatistics.computeIfAbsent(testClassName, k -> new LinkedHashMap<>());
-            String methodName = methodEntry.getName();
-            List<WrappedReportEntry> methodRuns = stats.computeIfAbsent(methodName, k -> new ArrayList<>());
+            TestMethodKey methodKey = new TestMethodKey(methodEntry.getClassMethodName(), methodEntry.getTestRunId());
+            List<WrappedReportEntry> methodRuns = stats.computeIfAbsent(methodKey, k -> new ArrayList<>());
             methodRuns.add(methodEntry);
         }
         return classMethodStatistics;
@@ -237,7 +238,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             OutputStreamWriter fw,
             XMLWriter ppw,
             List<WrappedReportEntry> methodEntries,
-            Map<String, List<WrappedReportEntry>> methodStatistics)
+            Map<TestMethodKey, List<WrappedReportEntry>> methodStatistics)
             throws IOException {
         if (rerunFailingTestsCount > 0) {
             serializeTestClassWithRerun(outputStream, fw, ppw, methodEntries, methodStatistics);
@@ -275,7 +276,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
             OutputStreamWriter fw,
             XMLWriter ppw,
             List<WrappedReportEntry> methodEntries,
-            Map<String, List<WrappedReportEntry>> methodStatistics)
+            Map<TestMethodKey, List<WrappedReportEntry>> methodStatistics)
             throws IOException {
         WrappedReportEntry firstMethodEntry = methodEntries.get(0);
 
@@ -339,7 +340,9 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
                 WrappedReportEntry firstOrSuccessful = successful == null ? methodEntries.get(0) : successful;
                 startTestElement(ppw, firstOrSuccessful);
                 for (WrappedReportEntry singleRunEntry : methodEntries) {
-                    if (singleRunEntry.getReportEntryType() != SUCCESS) {
+                    if (singleRunEntry.getReportEntryType() == SKIPPED) {
+                        addCommentElementTestCase("a skipped test execution in re-run phase", fw, ppw, outputStream);
+                    } else if (singleRunEntry.getReportEntryType() != SUCCESS) {
                         getTestProblems(
                                 fw,
                                 ppw,
@@ -406,7 +409,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     private TestResultType getTestResultTypeWithBeforeAllHandling(
             String methodName,
             List<WrappedReportEntry> methodRuns,
-            Map<String, List<WrappedReportEntry>> methodStatistics) {
+            Map<TestMethodKey, List<WrappedReportEntry>> methodStatistics) {
         TestResultType resultType = getTestResultType(methodRuns);
 
         // Special handling for @BeforeAll failures only (not @AfterAll "executionError" or null-named
@@ -416,10 +419,11 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         if (("null".equals(methodName) || "initializationError".equals(methodName))
                 && (resultType == TestResultType.ERROR || resultType == TestResultType.FAILURE)) {
             // Check if any actual test methods succeeded (exclude synthetic class-level names)
-            boolean hasSuccessfulTestMethods = methodStatistics.entrySet().stream()
-                    .filter(entry -> isActualTestMethodName(entry.getKey()))
-                    .anyMatch(entry -> entry.getValue().stream()
-                            .anyMatch(reportEntry -> reportEntry.getReportEntryType() == SUCCESS));
+            boolean hasSuccessfulTestMethods = methodStatistics.values().stream()
+                    .filter(entries -> !entries.isEmpty()
+                            && isActualTestMethodName(entries.get(0).getName()))
+                    .anyMatch(entries ->
+                            entries.stream().anyMatch(reportEntry -> reportEntry.getReportEntryType() == SUCCESS));
 
             if (hasSuccessfulTestMethods) {
                 resultType = TestResultType.FLAKE;
@@ -497,7 +501,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     private void createTestSuiteElement(
             XMLWriter ppw,
             WrappedReportEntry report,
-            Map<String, Map<String, List<WrappedReportEntry>>> classMethodStatistics)
+            Map<String, Map<TestMethodKey, List<WrappedReportEntry>>> classMethodStatistics)
             throws IOException {
         ppw.startElement("testsuite");
 
@@ -531,11 +535,11 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
         int skipped = 0;
         int flakes = 0;
 
-        for (Map<String, List<WrappedReportEntry>> methodStats : classMethodStatistics.values()) {
+        for (Map<TestMethodKey, List<WrappedReportEntry>> methodStats : classMethodStatistics.values()) {
             actualTestCount += methodStats.size();
-            for (Map.Entry<String, List<WrappedReportEntry>> methodEntry : methodStats.entrySet()) {
-                String methodName = methodEntry.getKey();
+            for (Map.Entry<TestMethodKey, List<WrappedReportEntry>> methodEntry : methodStats.entrySet()) {
                 List<WrappedReportEntry> methodRuns = methodEntry.getValue();
+                String methodName = methodRuns.get(0).getName();
                 TestResultType resultType = getTestResultTypeWithBeforeAllHandling(methodName, methodRuns, methodStats);
 
                 switch (resultType) {
