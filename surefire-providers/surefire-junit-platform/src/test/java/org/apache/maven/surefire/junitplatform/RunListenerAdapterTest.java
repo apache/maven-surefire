@@ -287,6 +287,80 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void distinguishedNestedJUnit6ParameterizedClassInvocations() throws Exception {
+        EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-jupiter"), "JUnit Jupiter");
+        TestDescriptor outerTemplate = newParameterizedClassTemplateDescriptor(engine.getUniqueId());
+        engine.addChild(outerTemplate);
+
+        TestDescriptor outer1 = newParameterizedClassInvocationDescriptor(outerTemplate.getUniqueId(), 1);
+        TestDescriptor innerTemplate1 = newParameterizedClassTemplateDescriptor(outer1.getUniqueId());
+        TestDescriptor inner1 = newParameterizedClassInvocationDescriptor(innerTemplate1.getUniqueId(), 1);
+        TestDescriptor method11 = newUnparameterizedMethodDescriptor(inner1.getUniqueId());
+        outerTemplate.addChild(outer1);
+        outer1.addChild(innerTemplate1);
+        innerTemplate1.addChild(inner1);
+        inner1.addChild(method11);
+
+        TestDescriptor outer2 = newParameterizedClassInvocationDescriptor(outerTemplate.getUniqueId(), 2);
+        TestDescriptor innerTemplate2 = newParameterizedClassTemplateDescriptor(outer2.getUniqueId());
+        TestDescriptor inner2 = newParameterizedClassInvocationDescriptor(innerTemplate2.getUniqueId(), 1);
+        TestDescriptor method21 = newUnparameterizedMethodDescriptor(inner2.getUniqueId());
+        outerTemplate.addChild(outer2);
+        outer2.addChild(innerTemplate2);
+        innerTemplate2.addChild(inner2);
+        inner2.addChild(method21);
+
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(outerTemplate));
+        adapter.executionStarted(TestIdentifier.from(outer1));
+        adapter.executionStarted(TestIdentifier.from(innerTemplate1));
+        adapter.executionStarted(TestIdentifier.from(inner1));
+        adapter.executionStarted(TestIdentifier.from(method11));
+        adapter.executionFinished(TestIdentifier.from(method11), successful());
+        adapter.executionStarted(TestIdentifier.from(outer2));
+        adapter.executionStarted(TestIdentifier.from(innerTemplate2));
+        adapter.executionStarted(TestIdentifier.from(inner2));
+        adapter.executionStarted(TestIdentifier.from(method21));
+        adapter.executionFinished(TestIdentifier.from(method21), failed(new AssertionError("fail")));
+
+        ArgumentCaptor<ReportEntry> started = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener, times(2)).testStarting(started.capture());
+        assertEquals(
+                MY_TEST_METHOD_NAME + "()[1][1]", started.getAllValues().get(0).getName());
+        assertEquals(
+                MY_TEST_METHOD_NAME + "()[2][1]", started.getAllValues().get(1).getName());
+    }
+
+    @Test
+    public void doesNotReappendClassIndexWhenLegacyNameAlreadyHasIt() throws Exception {
+        // JUnit 6.1+ parameterized methods already report method()[class][method].
+        EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-jupiter"), "JUnit Jupiter");
+        TestDescriptor classTemplate = newParameterizedClassTemplateDescriptor(engine.getUniqueId());
+        engine.addChild(classTemplate);
+
+        TestDescriptor invocation = newParameterizedClassInvocationDescriptor(classTemplate.getUniqueId(), 1);
+        TestDescriptor method = newLegacyIndexedMethodDescriptor(invocation.getUniqueId(), "()[1][2]");
+        classTemplate.addChild(invocation);
+        invocation.addChild(method);
+
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(classTemplate));
+        adapter.executionStarted(TestIdentifier.from(invocation));
+        adapter.executionStarted(TestIdentifier.from(method));
+        adapter.executionFinished(TestIdentifier.from(method), successful());
+
+        ArgumentCaptor<ReportEntry> started = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener).testStarting(started.capture());
+        assertEquals(MY_TEST_METHOD_NAME + "()[1][2]", started.getValue().getName());
+    }
+
+    @Test
     public void notifiedEagerlyForTestSetWhenClassExecutionStarted() throws Exception {
         EngineDescriptor engine = newEngineDescriptor();
         TestDescriptor parent = newClassDescriptor();
@@ -1045,6 +1119,11 @@ public class RunListenerAdapterTest {
     }
 
     private static TestDescriptor newUnparameterizedMethodDescriptor(UniqueId parentId) throws Exception {
+        return newLegacyIndexedMethodDescriptor(parentId, "()");
+    }
+
+    private static TestDescriptor newLegacyIndexedMethodDescriptor(UniqueId parentId, String legacySuffix)
+            throws Exception {
         Method method = MyTestClass.class.getDeclaredMethod(MY_TEST_METHOD_NAME);
         return new AbstractTestDescriptor(
                 parentId.append("method", method.getName() + "()"),
@@ -1057,8 +1136,7 @@ public class RunListenerAdapterTest {
 
             @Override
             public String getLegacyReportingName() {
-                // JUnit 6 keeps the method legacy name without the class-invocation index.
-                return method.getName() + "()";
+                return method.getName() + legacySuffix;
             }
         };
     }

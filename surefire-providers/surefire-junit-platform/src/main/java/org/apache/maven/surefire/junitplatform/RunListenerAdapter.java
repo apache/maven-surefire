@@ -284,29 +284,39 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * Extract the invocation index from a JUnit Jupiter {@code [class-template-invocation:#N]} unique-id
-     * segment. JUnit 6 {@code @ParameterizedClass} uses this segment; the method-level legacy name
-     * no longer carries the {@code [N]} suffix that {@code @ParameterizedTest} still has.
+     * Build a {@code [outer][inner]} suffix from every JUnit Jupiter
+     * {@code [class-template-invocation:#N]} unique-id segment. Nested
+     * {@code @ParameterizedClass} declarations emit more than one; taking only
+     * the last would collapse outer #1/inner #1 with outer #2/inner #1.
      *
      * @param uniqueId the platform unique id string
-     * @return the numeric index, or {@code null} when the id has no class-template invocation
+     * @return the suffix, or an empty string when the id has no class-template invocation
      */
-    private static String extractClassTemplateInvocationIndex(String uniqueId) {
+    private static String extractClassTemplateInvocationSuffix(String uniqueId) {
         if (uniqueId == null) {
-            return null;
+            return "";
         }
         String marker = "[class-template-invocation:";
-        int start = uniqueId.lastIndexOf(marker);
-        if (start < 0) {
-            return null;
+        StringBuilder suffix = new StringBuilder();
+        int from = 0;
+        while (true) {
+            int start = uniqueId.indexOf(marker, from);
+            if (start < 0) {
+                break;
+            }
+            start += marker.length();
+            int end = uniqueId.indexOf(']', start);
+            if (end <= start) {
+                break;
+            }
+            String value = uniqueId.substring(start, end);
+            if (value.startsWith("#")) {
+                value = value.substring(1);
+            }
+            suffix.append('[').append(value).append(']');
+            from = end + 1;
         }
-        start += marker.length();
-        int end = uniqueId.indexOf(']', start);
-        if (end <= start) {
-            return null;
-        }
-        String value = uniqueId.substring(start, end);
-        return value.startsWith("#") ? value.substring(1) : value;
+        return suffix.toString();
     }
 
     private String safeGetMessage(Throwable throwable) {
@@ -581,19 +591,23 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             boolean isTestTemplate = testIdentifier.getLegacyReportingName().matches("^.*\\[\\d+]$");
             // JUnit 6 @ParameterizedClass parents have a ClassSource, so they are missed by
             // hasParameterizedParent, and the method legacy name no longer includes [N] (#3303).
-            String classTemplateInvocationIndex = extractClassTemplateInvocationIndex(testIdentifier.getUniqueId());
+            String classTemplateInvocationSuffix = extractClassTemplateInvocationSuffix(testIdentifier.getUniqueId());
 
-            boolean parameterized =
-                    isParameterized || hasParameterizedParent || isTestTemplate || classTemplateInvocationIndex != null;
+            boolean parameterized = isParameterized
+                    || hasParameterizedParent
+                    || isTestTemplate
+                    || !classTemplateInvocationSuffix.isEmpty();
             String methodName = methodSource.getMethodName();
             String description = testIdentifier.getLegacyReportingName();
             boolean equalDescriptions = methodDisplay.equals(description);
             boolean hasLegacyDescription = description.startsWith(methodName + '(');
             boolean hasDisplayName = !equalDescriptions || !hasLegacyDescription;
             String methodDesc = parameterized ? description : methodName;
-            if (classTemplateInvocationIndex != null
-                    && !methodDesc.endsWith("[" + classTemplateInvocationIndex + "]")) {
-                methodDesc = methodDesc + "[" + classTemplateInvocationIndex + "]";
+            // JUnit 6.1+ already puts the class index before a method invocation index
+            // (method()[1][2]); do not append again just because the name does not end
+            // with the last class index.
+            if (!classTemplateInvocationSuffix.isEmpty() && !methodDesc.contains(classTemplateInvocationSuffix)) {
+                methodDesc = methodDesc + classTemplateInvocationSuffix;
             }
             String methodDisp = hasDisplayName ? methodDisplay : methodDesc;
 
