@@ -1,40 +1,37 @@
- ------
- Using JUnit 5 Platform
- ------
- JUnit Lambda Team <junit-lambda-team@googlegroups.com>
- ------
- 2018-05-14
- ------
+---
+title: Using JUnit 5 Platform
+author:
+  - JUnit Lambda Team junit-lambda-team@googlegroups.com
+date: 2018-05-14
+---
 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Using JUnit 5 Platform
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-* Configuring JUnit Platform
+# Using JUnit 5 Platform
 
-  To get started with JUnit Platform, you need to add at least a single <<<TestEngine>>> implementation
-  to your project. For example, if you want to write tests with Jupiter, add the test artifact
-  <<<junit-jupiter-engine>>> to the dependencies in POM:
+Configuring JUnit Platform
+--------------------------
 
-+---+
+To get started with JUnit Platform, you need to add at least a single `TestEngine` implementation to your project. For example, if you want to write tests with Jupiter, add the test artifact `junit-jupiter-engine` to the dependencies in POM:
+
+```xml
 <dependencies>
     [...]
     <dependency>
@@ -45,19 +42,15 @@ Using JUnit 5 Platform
     </dependency>
     [...]
 </dependencies>
-+---+
+```
 
-  This will pull in all required dependencies. Among those dependencies is <<<junit-jupiter-api>>> which contains
-  the classes and interfaces your test source requires to compile. <<<junit-platform-engine>>> is also resolved and
-  added.
+This will pull in all required dependencies. Among those dependencies is `junit-jupiter-api` which contains the classes and interfaces your test source requires to compile. `junit-platform-engine` is also resolved and added.
 
-  This is the only step that is required to get started - you can now create tests in your test source directory
-  (e.g., <<<src/test/java>>>).
+This is the only step that is required to get started - you can now create tests in your test source directory (e.g., `src/test/java`).
 
-  If you want to write and execute JUnit 3 or 4 tests via the JUnit Platform add the Vintage Engine to the
-  dependencies, which transitively pulls in (and requires) <<<junit:junit:4.13.2>>>:
+If you want to write and execute JUnit 3 or 4 tests via the JUnit Platform add the Vintage Engine to the dependencies, which transitively pulls in (and requires) `junit:junit:4.13.2`:
 
-+---+
+```xml
 <dependencies>
     [...]
     <dependency>
@@ -68,33 +61,24 @@ Using JUnit 5 Platform
     </dependency>
     [...]
 </dependencies>
-+---+
+```
 
-  For more information on using JUnit 5, that is the JUnit Platform, JUnit Jupiter, and JUnit Vintage,
-  see the {{{https://junit.org/junit5/}JUnit 5 web site}}
-  and the {{{https://junit.org/junit5/docs/current/user-guide/}JUnit 5 User Guide}}.
+For more information on using JUnit 5, that is the JUnit Platform, JUnit Jupiter, and JUnit Vintage, see the [JUnit 5 web site](https://junit.org/junit5/) and the [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/).
 
-* Smart Resolution of Jupiter Engine and Vintage Engine for JUnit4
+Smart Resolution of Jupiter Engine and Vintage Engine for JUnit4
+----------------------------------------------------------------
 
-  JUnit5 API artifact and your test sources become isolated from engine. In these chapters you will see how you can
-  segregate, combine, select the APIs and Engines miscellaneous way. You can find integration tests
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit-4-5}with JUnit4/5}},
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng}with JUnit5/TestNG}}
-  and {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-runner}with the JUnit4 Runner for Jupiter tests}}.
-  (See the Maven profiles.)
+JUnit5 API artifact and your test sources become isolated from engine. In these chapters you will see how you can segregate, combine, select the APIs and Engines miscellaneous way. You can find integration tests [with JUnit4/5](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit-4-5), [with JUnit5/TestNG](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng) and [with the JUnit4 Runner for Jupiter tests](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-runner). (See the Maven profiles.)
 
-** How to run only one API
+#[[### How to run only one API]]#
 
-  Normally, the developer does not want to access internal classes of JUnit5 engine (e.g. <<<5.9.1>>>).
-  In the next chapters you can find your way to use the Jupiter or JUnit5 API where the plugin would resolve the engine.
+Normally, the developer does not want to access internal classes of JUnit5 engine (e.g. `5.9.1`). In the next chapters you can find your way to use the Jupiter or JUnit5 API where the plugin would resolve the engine.
 
-*** Jupiter API in test dependencies
+#[[#### Jupiter API in test dependencies]]#
 
-  In this example the POM has only Jupiter API dependency in test classpath. The plugin will resolve and download
-  the <<<junit-jupiter-engine>>> with the version related to the version of <<<junit-jupiter-api>>>. Similar principles
-  can be found in the following chapters as well.
+In this example the POM has only Jupiter API dependency in test classpath. The plugin will resolve and download the `junit-jupiter-engine` with the version related to the version of `junit-jupiter-api`. Similar principles can be found in the following chapters as well.
 
-+---+
+```xml
 <dependencies>
     [...]
     <dependency>
@@ -119,15 +103,13 @@ Using JUnit 5 Platform
     </plugins>
 </build>
 ...
-+---+
+```
 
-*** API-Engine versions segregation
+#[[#### API-Engine versions segregation]]#
 
-  In the following example the engine artifact appears in plugin dependencies and the engine is resolved by the plugin
-  and downloaded from a remote repository for plugins. You may want to update the version of engine with fixed bugs in
-  <<<5.9.1>>> but the API version <<<5.9.0>>> stays intact!
+In the following example the engine artifact appears in plugin dependencies and the engine is resolved by the plugin and downloaded from a remote repository for plugins. You may want to update the version of engine with fixed bugs in `5.9.1` but the API version `5.9.0` stays intact\!
 
-+---+
+```xml
 <dependencies>
     [...]
     <dependency>
@@ -158,15 +140,13 @@ Using JUnit 5 Platform
     </plugins>
 </build>
 ...
-+---+
+```
 
-*** JUnit4 API in test dependencies
+#[[#### JUnit4 API in test dependencies]]#
 
-  This is similar example with JUnit4 in test dependencies of your project POM.
-  The Vintage engine artifact has to be in the plugin dependencies; otherwise the plugin would use
-  <<<surefire-junit4>>> provider instead of the <<<surefire-junit-platform>>> provider.
+This is similar example with JUnit4 in test dependencies of your project POM. The Vintage engine artifact has to be in the plugin dependencies; otherwise the plugin would use `surefire-junit4` provider instead of the `surefire-junit-platform` provider.
 
-+---+
+```xml
 <dependencies>
     [...]
     <dependency>
@@ -196,18 +176,17 @@ Using JUnit 5 Platform
     </plugins>
 </build>
 ...
-+---+
+```
 
-** How to run multiple APIs or Engines
+#[[### How to run multiple APIs or Engines]]#
 
-  In the following example you can use both JUnit4 and JUnit5 tests.
+In the following example you can use both JUnit4 and JUnit5 tests.
 
-*** Jupiter API and JUnit4
+#[[#### Jupiter API and JUnit4]]#
 
-  Once you define any JUnit5 API in the dependencies, the provider <<<surefire-junit-platform>>> is selected and
-  you can always add the JUnit4 dependency.
+Once you define any JUnit5 API in the dependencies, the provider `surefire-junit-platform` is selected and you can always add the JUnit4 dependency.
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -222,11 +201,11 @@ Using JUnit 5 Platform
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-*** Jupiter API and Vintage Engine
+#[[#### Jupiter API and Vintage Engine]]#
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -241,11 +220,11 @@ Using JUnit 5 Platform
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-*** Jupiter and Vintage Engine
+#[[#### Jupiter and Vintage Engine]]#
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -260,19 +239,17 @@ Using JUnit 5 Platform
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-** Select engine and use multiple APIs
+#[[### Select engine and use multiple APIs]]#
 
-  In these examples you use both API, i.e. Jupiter and JUnit4, in the test dependencies but you want to select
-  the engine via plugin dependencies.
+In these examples you use both API, i.e. Jupiter and JUnit4, in the test dependencies but you want to select the engine via plugin dependencies.
 
-*** Select Jupiter
+#[[#### Select Jupiter]]#
 
-    Here your tests import the packages from JUnit4 and Jupiter but you want to select only one Maven profile
-    with JUnit4 tests.
+Here your tests import the packages from JUnit4 and Jupiter but you want to select only one Maven profile with JUnit4 tests.
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -306,14 +283,13 @@ Using JUnit 5 Platform
         </plugins>
     </build>
 </profile>
-+---+
+```
 
-*** Select JUnit4
+#[[#### Select JUnit4]]#
 
-  Here your tests import the packages from JUnit4 and Jupiter but you want to select only one Maven profile
-  with Jupiter tests.
+Here your tests import the packages from JUnit4 and Jupiter but you want to select only one Maven profile with Jupiter tests.
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -347,17 +323,15 @@ Using JUnit 5 Platform
         </plugins>
     </build>
 </profile>
-+---+
+```
 
-** How to run TestNG tests within the JUnit Platform
+#[[### How to run TestNG tests within the JUnit Platform]]#
 
-  You can run TestNG tests combined with JUnit5 tests.
+You can run TestNG tests combined with JUnit5 tests.
 
-  For more information see this
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng}example}}
-  and {{{https://github.com/junit-team/testng-engine}TestNG Engine for the JUnit Platform}}.
+For more information see this [example](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-testng) and [TestNG Engine for the JUnit Platform](https://github.com/junit-team/testng-engine).
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.testng</groupId>
@@ -372,20 +346,17 @@ Using JUnit 5 Platform
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-  The Maven does not take any responsibility for broken compatibilities in this case and the responsibility for
-  the dependency <<<org.junit.support:testng-engine>>>.
+The Maven does not take any responsibility for broken compatibilities in this case and the responsibility for the dependency `org.junit.support:testng-engine`.
 
-** JUnit Runner
+#[[### JUnit Runner]]#
 
-  The JUnit4 library has the {{{https://junit.org/junit4/javadoc/latest/src-html/org/junit/runner/Runner.html}Runner}}
-  implemented in the JUnit5's artifact <<<junit-platform-runner>>>.
+The JUnit4 library has the [Runner](https://junit.org/junit4/javadoc/latest/src-html/org/junit/runner/Runner.html) implemented in the JUnit5's artifact `junit-platform-runner`.
 
-  For more information see this
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-runner}example}}.
+For more information see this [example](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-runner).
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -400,15 +371,13 @@ Using JUnit 5 Platform
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-** JUnit5 Suite
+#[[### JUnit5 Suite]]#
 
-  For more information see this
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-suite}example with surefire integration test}}
-  and the {{{https://junit.org/junit5/docs/current/user-guide/#junit-platform-suite-engine}tutorial}}.
+For more information see this [example with surefire integration test](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/junit5-suite) and the [tutorial](https://junit.org/junit5/docs/current/user-guide/#junit-platform-suite-engine).
 
-+---+
+```xml
 <dependencies>
     <dependency>
         <groupId>org.junit.jupiter</groupId>
@@ -435,13 +404,14 @@ Using JUnit 5 Platform
         </plugin>
     </plugins>
 </build>
-+---+
+```
 
-* Provider Selection
+Provider Selection
+------------------
 
-   If nothing is configured, Surefire detects which JUnit version to use by the following algorithm:
+If nothing is configured, Surefire detects which JUnit version to use by the following algorithm:
 
-+---+
+```text
 if the JUnit 5 Platform Engine is present in the project
     use junit-platform
 if the JUnit version in the project >= 4.7 and the <<<parallel>>> configuration parameter has ANY value
@@ -450,52 +420,44 @@ if JUnit >= 4.0 is present
     use junit4 provider
 else
     use junit3.8.1
-+---+
+```
 
-  When using this technique there is no check that the proper test-frameworks are present on your project's
-  classpath. Failing to add the proper test-frameworks will result in a build failure.
+When using this technique there is no check that the proper test-frameworks are present on your project's classpath. Failing to add the proper test-frameworks will result in a build failure.
 
-* Running Tests in Parallel
+Running Tests in Parallel
+-------------------------
 
-  From JUnit Platform does not support running tests in parallel.
+From JUnit Platform does not support running tests in parallel.
 
-* Running a Single Test Class
+Running a Single Test Class
+---------------------------
 
-   The JUnit Platform Provider supports the <<<test>>> JVM system property supported by
-   the Maven Surefire Plugin. For example, to run only test methods in the <<<org.example.MyTest>>> test class
-   you can execute <<<mvn -Dtest=org.example.MyTest test>>> from the command line.
+The JUnit Platform Provider supports the `test` JVM system property supported by the Maven Surefire Plugin. For example, to run only test methods in the `org.example.MyTest` test class you can execute `mvn -Dtest=org.example.MyTest test` from the command line.
 
+Filtering by Test Class Names for Maven ${thisPlugin}
+-----------------------------------------------------
 
-* Filtering by Test Class Names for Maven ${thisPlugin}
-
-   The Maven ${thisPlugin} Plugin will scan for test classes whose fully qualified names match
-   the following patterns.
+The Maven ${thisPlugin} Plugin will scan for test classes whose fully qualified names match the following patterns.
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-   * <<<**/Test*.java>>>
-
-   * <<<**/*Test.java>>>
-
-   * <<<**/*Tests.java>>>
-
-   * <<<**/*TestCase.java>>>
+- `**/Test*.java`
+- `**/*Test.java`
+- `**/*Tests.java`
+- `**/*TestCase.java`
 #{else}
-   * <<<**/IT*.java>>>
-
-   * <<<**/*IT.java>>>
-
-   * <<<**/*ITCase.java>>>
+- `**/IT*.java`
+- `**/*IT.java`
+- `**/*ITCase.java`
 #{end}
 
-   Moreover, it will exclude all nested classes (including static member classes) by default.
+    Moreover, it will exclude all nested classes (including static member classes) by default.
 
-   Note, however, that you can override this default behavior by configuring explicit
-   `include` and `exclude` rules in your `pom.xml` file. For example, to keep Maven ${thisPlugin}
-   from excluding static member classes, you can override its exclude rules.
+    Note, however, that you can override this default behavior by configuring explicit \`include\` and \`exclude\` rules in your \`pom.xml\` file. For example, to keep Maven ${thisPlugin} from excluding static member classes, you can override its exclude rules.
 
-* Overriding exclude rules of Maven ${thisPlugin}
+Overriding exclude rules of Maven ${thisPlugin}
+-----------------------------------------------
 
-+---+
+```text
 ...
 <build>
     <plugins>
@@ -513,49 +475,46 @@ else
     </plugins>
 </build>
 ...
-+---+
+```
 
+Filtering by Tags
+-----------------
 
-* Filtering by Tags
+You can use JUnit5 Tags and filter tests by tags or tag expressions.
 
-   You can use JUnit5 Tags and filter tests by tags or tag expressions.
+- To include `tags` or `tag expressions`, use `groups`.
+- To exclude `tags` or `tag expressions`, use `excludedGroups`.
 
-    * To include <<<tags>>> or <<<tag expressions>>>, use <<<groups>>>.
+    ```unknown
+    ...
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>${project.artifactId}</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <groups>acceptance | !feature-a</groups>
+                    <excludedGroups>integration, regression</excludedGroups>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    ...
+    ```
 
-    * To exclude <<<tags>>> or <<<tag expressions>>>, use <<<excludedGroups>>>.
+Filtering JUnit5 Engines
+------------------------
 
-+---+
-...
-<build>
-    <plugins>
-        ...
-        <plugin>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>${project.artifactId}</artifactId>
-            <version>${project.version}</version>
-            <configuration>
-                <groups>acceptance | !feature-a</groups>
-                <excludedGroups>integration, regression</excludedGroups>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
-...
-+---+
+You can filter engines by the ID/s of an engine to be included or excluded in the test run.
 
+- To include `engines`, use `includeJUnit5Engines`.
+- To exclude `engines`, use `excludeJUnit5Engines`.
 
-* Filtering JUnit5 Engines
+Be aware that this feature reserves system properties `includejunit5engines` and `excludejunit5engines` for internal usage.
 
-   You can filter engines by the ID/s of an engine to be included or excluded in the test run.
-
-    * To include <<<engines>>>, use <<<includeJUnit5Engines>>>.
-
-    * To exclude <<<engines>>>, use <<<excludeJUnit5Engines>>>.
-
-   Be aware that this feature reserves system properties <<<includejunit5engines>>> and <<<excludejunit5engines>>>
-   for internal usage.
-
-+---+
+```text
 ...
 <build>
     <plugins>
@@ -578,16 +537,14 @@ else
     </plugins>
 </build>
 ...
-+---+
+```
 
+Configuration Parameters
+------------------------
 
-* Configuration Parameters
+You can set JUnit Platform configuration parameters to influence test discovery and execution by declaring the `configurationParameters` property and providing key-value pairs using the Java `Properties` file syntax (as shown below) or via the `junit-platform.properties` file.
 
-   You can set JUnit Platform configuration parameters to influence test discovery and execution by
-   declaring the <<<configurationParameters>>> property and providing key-value pairs using the Java
-   <<<Properties>>> file syntax (as shown below) or via the <<<junit-platform.properties>>> file.
-
-+---+
+```text
 ...
 <build>
     <plugins>
@@ -610,17 +567,14 @@ else
     </plugins>
 </build>
 ...
-+---+
+```
 
+Surefire Extensions and Reports Configuration for @DisplayName
+--------------------------------------------------------------
 
-* Surefire Extensions and Reports Configuration for @DisplayName
+Since plugin version 3.0.0-M4 you can use fine grained configuration of reports and enable phrased names together with `@DisplayName` in you tests. This is the complete list of attributes of particular objects. You do not have to specify e.g. `disable`, `version` and `encoding`. The boolean values reach default values `false` if not specified otherwise.
 
-   Since plugin version 3.0.0-M4 you can use fine grained configuration of reports and enable phrased names together
-   with <<<@DisplayName>>> in you tests.
-   This is the complete list of attributes of particular objects. You do not have to specify e.g. <<<disable>>>,
-   <<<version>>> and <<<encoding>>>. The boolean values reach default values <<<false>>> if not specified otherwise.
-
-+---+
+```text
 ...
 <build>
     <plugins>
@@ -654,27 +608,22 @@ else
     </plugins>
 </build>
 ...
-+---+
+```
 
-   Default implementations of these extensions are
-   <<<org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter>>>,
-   <<<org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter>>>, and
-   <<<org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter>>>.
+Default implementations of these extensions are `org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter`, `org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter`, and `org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter`.
 
-   The aim of extensions is to let the users customizing the default behavior. We are keen on listing useful
-   extensions on Apache Maven Surefire site if you propagate your extensions on GitHub.
+The aim of extensions is to let the users customizing the default behavior. We are keen on listing useful extensions on Apache Maven Surefire site if you propagate your extensions on GitHub.
 
+External extensions for the plugin
+----------------------------------
 
-* External extensions for the plugin
+This extension prints a tree view for the unit tests on the console. This is related to JUnit5 tests.
 
-   This extension prints a tree view for the unit tests on the console.
-   This is related to JUnit5 tests.
+<figure><img src="extension1.png" /><figcaption>The console with this extension.</figcaption></figure>
 
-[extension1.png] The console with this extension.
+Follow the example with the configuration and the dependency in the plugin.
 
-   Follow the example with the configuration and the dependency in the plugin.
-
-+---+
+```text
 ...
 <plugin>
     <groupId>${project.groupId}</groupId>
@@ -696,5 +645,4 @@ else
     </configuration>
 </plugin>
 ...
-+---+
-
+```

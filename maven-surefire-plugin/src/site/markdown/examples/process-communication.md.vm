@@ -1,50 +1,44 @@
-  ------
-  Using JUnit 5 Platform
-  ------
-  Communication Channels in Surefire <users@maven.apache.org>
-  ------
-  2020-03-15
-  ------
+---
+title: Using JUnit 5 Platform
+author:
+  - Communication Channels in Surefire users@maven.apache.org
+date: 2020-03-15
+---
 
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Communication Channels used between the Maven Process and Surefire Process
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-  There is one way to change the communication channel and two types of connection in the ${thisPlugin}.
-  The communication channel can be changed even by the user in the user's POM.
-  The physical layer of the channel can be switched from Process Pipes to TCP/IP.
-  The user select the default implementations in the POM or the user can implement his own channel without asking
-  the Apache Maven development team for providing a new support. Let's show you how this can be accomplished.
+# Communication Channels used between the Maven Process and Surefire Process
 
-* forkNode
+There is one way to change the communication channel and two types of connection in the ${thisPlugin}. The communication channel can be changed even by the user in the user's POM. The physical layer of the channel can be switched from Process Pipes to TCP/IP. The user select the default implementations in the POM or the user can implement his own channel without asking the Apache Maven development team for providing a new support. Let's show you how this can be accomplished.
 
-  The configuration is done by using only one configuration parameter <<<forkNode>>>.
+forkNode
+--------
 
-* The TCP/IP communication channel
+The configuration is done by using only one configuration parameter `forkNode`.
 
-  The ${thisPlugin} plugin uses process pipes by default. The implementation class for default configuration
-  is <<<org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory>>> and it does not have to be specified.
-  The TCP/IP channel can be selected as follows and the implementation class has to be specified:
+The TCP/IP communication channel
+--------------------------------
 
-+---+
+The ${thisPlugin} plugin uses process pipes by default. The implementation class for default configuration is `org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory` and it does not have to be specified. The TCP/IP channel can be selected as follows and the implementation class has to be specified:
+
+```xml
 <project>
     [...]
     <build>
@@ -63,21 +57,16 @@ Communication Channels used between the Maven Process and Surefire Process
     </build>
     [...]
 </project>
-+---+
+```
 
-* Custom implementation
+Custom implementation
+---------------------
 
-  The custom implementation involves two implementations. The first is used by the Maven process and there you
-  should implement the interface <<<org.apache.maven.surefire.extensions.ForkNodeFactory>>>, use the implementation
-  in a dependency <<<your-extension-api-impl-artifactid>>> declared below the plugin and configuration should
-  specify fully qualified class name of your custom <<<ForkNodeFactory>>> in the attribute <<<implementation>>>.
+The custom implementation involves two implementations. The first is used by the Maven process and there you should implement the interface `org.apache.maven.surefire.extensions.ForkNodeFactory`, use the implementation in a dependency `your-extension-api-impl-artifactid` declared below the plugin and configuration should specify fully qualified class name of your custom `ForkNodeFactory` in the attribute `implementation`.
 
-  The second implementation is SPI which is utilized by the forked JVM. Implement the Java SPI interface
-  <<<org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory>>> in the artifact
-  <<<your-extension-spi-impl-artifactid>>>.
+The second implementation is SPI which is utilized by the forked JVM. Implement the Java SPI interface `org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory` in the artifact `your-extension-spi-impl-artifactid`.
 
-
-+---+
+```xml
 <project>
     [...]
     <dependencies>
@@ -111,11 +100,11 @@ Communication Channels used between the Maven Process and Surefire Process
     </build>
     [...]
 </project>
-+---+
+```
 
-  The project <<<your-extension-api-impl-artifactid>>> should have the following dependency as mandatory:
+The project `your-extension-api-impl-artifactid` should have the following dependency as mandatory:
 
-+---+
+```xml
 <project>
     [...]
     <dependencies>
@@ -128,11 +117,11 @@ Communication Channels used between the Maven Process and Surefire Process
     </dependencies>
     [...]
 </project>
-+---+
+```
 
-  The project <<<your-extension-spi-impl-artifactid>>> should have the following dependency as mandatory:
+The project `your-extension-spi-impl-artifactid` should have the following dependency as mandatory:
 
-+---+
+```xml
 <project>
     [...]
     <dependencies>
@@ -145,9 +134,6 @@ Communication Channels used between the Maven Process and Surefire Process
     </dependencies>
     [...]
 </project>
-+---+
+```
 
-  Your SPI implementation appears in
-  <<<src/main/resources/META-INF/services/org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory>>>
-  and contains one implementation class. Your POM already specified it, see
-  <<<your.extention.api.impl.CustomForkNodeFactory>>>.
+Your SPI implementation appears in `src/main/resources/META-INF/services/org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory` and contains one implementation class. Your POM already specified it, see `your.extention.api.impl.CustomForkNodeFactory`.
