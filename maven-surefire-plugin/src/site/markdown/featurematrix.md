@@ -1,68 +1,51 @@
-  ------
-  Feature Matrix
-  ------
+---
+title: Feature Matrix
+---
 
-~~ Licensed to the Apache Software Foundation (ASF) under one
-~~ or more contributor license agreements.  See the NOTICE file
-~~ distributed with this work for additional information
-~~ regarding copyright ownership.  The ASF licenses this file
-~~ to you under the Apache License, Version 2.0 (the
-~~ "License"); you may not use this file except in compliance
-~~ with the License.  You may obtain a copy of the License at
-~~
-~~   http://www.apache.org/licenses/LICENSE-2.0
-~~
-~~ Unless required by applicable law or agreed to in writing,
-~~ software distributed under the License is distributed on an
-~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-~~ KIND, either express or implied.  See the License for the
-~~ specific language governing permissions and limitations
-~~ under the License.
+<!-- Licensed to the Apache Software Foundation (ASF) under one-->
+<!-- or more contributor license agreements.  See the NOTICE file-->
+<!-- distributed with this work for additional information-->
+<!-- regarding copyright ownership.  The ASF licenses this file-->
+<!-- to you under the Apache License, Version 2.0 (the-->
+<!-- "License"); you may not use this file except in compliance-->
+<!-- with the License.  You may obtain a copy of the License at-->
+<!---->
+<!--   http://www.apache.org/licenses/LICENSE-2.0-->
+<!---->
+<!-- Unless required by applicable law or agreed to in writing,-->
+<!-- software distributed under the License is distributed on an-->
+<!-- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY-->
+<!-- KIND, either express or implied.  See the License for the-->
+<!-- specific language governing permissions and limitations-->
+<!-- under the License.-->
+<!-- NOTE: For help with the syntax of this file, see:-->
+<!-- http://maven.apache.org/doxia/references/apt-format.html-->
+# Feature Matrix
 
-~~ NOTE: For help with the syntax of this file, see:
-~~ http://maven.apache.org/doxia/references/apt-format.html
+Not all features are supported for all test frameworks, and the following table gives a brief overview of support status:
 
-Feature Matrix
+<table class="table table-bordered table-striped">
+<tr><th><b>Feature</b></th><th><b>JUnit3</b></th><th><b>JUnit4</b></th><th><b>JUnit47</b></th><th><b>TestNG</b></th><th><b>POJO</b></th><th><b>JUnit 5 Platform</b></th></tr>
+<tr><td style="text-align: left;">groups/category/tags support</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td></tr>
+<tr><td style="text-align: left;">security manager support</td><td style="text-align: left;">Y</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td></tr>
+<tr><td style="text-align: left;">runOrder support</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">?</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td></tr>
+<tr><td style="text-align: left;">run &gt;1 individual test method in a class</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">N</td><td style="text-align: left;">?(*1)</td></tr>
+<tr><td style="text-align: left;">parallel support</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">N</td><td style="text-align: left;">N(*2)</td></tr>
+<tr><td style="text-align: left;">custom run-listener</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">-</td><td style="text-align: left;">N</td></tr>
+<tr><td style="text-align: left;">re-run count</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td><td style="text-align: left;">Y(*3)</td></tr>
+<tr><td style="text-align: left;">skip after failure count</td><td style="text-align: left;">N</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">N</td><td style="text-align: left;">N</td></tr>
+<tr><td style="text-align: left;">Surefire Extensions</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y</td><td style="text-align: left;">Y(*4)</td></tr>
+</table>
 
-    Not all features are supported for all test frameworks, and the following table gives a brief overview
-    of support status:
+Legend: &quot;Y&quot; means supported, &quot;N&quot; means not supported. &quot;?&quot; means not tested.
 
-*---------------------------------------------+-----------+-----------+------------+-----------+----------+----------------------+
-|| <<Feature>>                                ||<<JUnit3>>||<<JUnit4>>||<<JUnit47>>||<<TestNG>>||<<POJO>> ||<<JUnit 5 Platform>> |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| groups/category/tags support                |     N      |    N     |      Y     |    Y      |  N       |  Y                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| security manager support                    |     Y      |    N     |      N     |    N      |  N       |  N                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| runOrder support                            |     Y      |    Y     |      Y     |    ?      |  Y       |  Y                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| run >1 individual test method in a class    |     N      |    Y     |      Y     |    Y      |  N       |  ?(*1)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| parallel support                            |     N      |    N     |      Y     |    Y      |  N       |  N(*2)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| custom run-listener                         |     N      |    Y     |      Y     |    Y      |  -       |  N                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| re-run count                                |     N      |    Y     |      Y     |    N      |  N       |  Y(*3)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| skip after failure count                    |     N      |    Y     |      Y     |    Y      |  N       |  N                   |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
-| Surefire Extensions                         |     Y      |    Y     |      Y     |    Y      |  Y       |  Y(*4)               |
-*---------------------------------------------+------------+----------+------------+-----------+----------+----------------------+
+If you would like to implement support for a given provider with an &quot;N&quot; or a &quot;?&quot; \(or create tests for it\), you should create a patch and mark the issue as an improvement. If there is something wrong with an implementation marked with &quot;Y&quot; that is considered a bug.
 
+\(*1\) The JUnit 5 Platform supports running multiple individual test methods in a single class, but there are some corner cases that are not supported, yet: [junit-team/junit5#1343](https://github.com/junit-team/junit5/issues/1343) and [junit-team/junit5#1406\)](https://github.com/junit-team/junit5/issues/1406).
 
-    Legend: "Y" means supported, "N" means not supported. "?" means not tested.
+\(*2\) The test are executed in parallel but the report supports only a sequence of test events, see the issue [SUREFIRE-1795](https://issues.apache.org/jira/browse/SUREFIRE-1795).
 
-    If you would like to implement support for
-    a given provider with an "N" or a "?" (or create tests for it), you should create a patch and mark the issue as an
-    improvement. If there is something wrong with an implementation marked with "Y" that is considered a bug.
+\(*3\) Since 3\.0\.0-M4
 
-   (*1) The JUnit 5 Platform supports running multiple individual test methods in a single class, but there are some
-   corner cases that are not supported, yet: {{{https://github.com/junit-team/junit5/issues/1343}junit-team/junit5#1343}}
-   and {{{https://github.com/junit-team/junit5/issues/1406}junit-team/junit5#1406)}}.
+\(*4\) 3 extensions related to JUnit5 annotation `DisplayName`.
 
-   (*2) The test are executed in parallel but the report supports only a sequence of test events, see the issue
-   {{{https://issues.apache.org/jira/browse/SUREFIRE-1795}SUREFIRE-1795}}.
-
-   (*3) Since 3.0.0-M4
-
-   (*4) 3 extensions related to JUnit5 annotation <<<DisplayName>>>.

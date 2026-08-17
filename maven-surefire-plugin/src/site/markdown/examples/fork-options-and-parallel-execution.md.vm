@@ -1,148 +1,78 @@
- ------
- Fork Options and Parallel Test Execution
- ------
- Andreas Gudian
- ------
- 2013-01-03
- ------
+---
+title: Fork Options and Parallel Test Execution
+author:
+  - Andreas Gudian
+date: 2013-01-03
+---
 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Fork Options and Parallel Test Execution
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-  Choosing the right forking strategy and parallel execution settings can have
-  substantial impact on the memory requirements and the execution time of your
-  build system.
+# Fork Options and Parallel Test Execution
 
-  The ${thisPlugin.toLowerCase()} offers a variety of options to execute tests
-  in parallel, allowing you to make best use of the hardware at your disposal.
-  But forking in particular can also help keeping the memory requirements low.
+Choosing the right forking strategy and parallel execution settings can have substantial impact on the memory requirements and the execution time of your build system.
 
-  This page shall give you some ideas of how you can configure the test
-  execution in a way best suitable for your environment.
+The ${thisPlugin.toLowerCase()} offers a variety of options to execute tests in parallel, allowing you to make best use of the hardware at your disposal. But forking in particular can also help keeping the memory requirements low.
 
-* Parallel Test Execution
+This page shall give you some ideas of how you can configure the test execution in a way best suitable for your environment.
 
-  Basically, there are two ways in ${project.artifactId} to achieve parallel test
-  execution.
-  
-  The most obvious one is by using the <<<parallel>>> parameter. The possible
-  values depend on the test provider used. For JUnit 4.7 and onwards, this may
-  be <<<methods>>>, <<<classes>>>, <<<both>>>, <<<suites>>>,
-  <<<suitesAndClasses>>>, <<<suitesAndMethods>>>, <<<classesAndMethods>>> or
-  <<<all>>>. As a prerequisite in JUnit tests, the JUnit runner should extend
-  <<<org.junit.runners.ParentRunner>>>. If no runner is specified through the
-  annotation <<<@org.junit.runner.RunWith>>>, the prerequisite is accomplished.
+Parallel Test Execution
+-----------------------
 
-  As of ${project.artifactId}:2.16, the value "<<<both>>>" is deprecated but it
-  still can be used and behaves same as <<<classesAndMethods>>>.
+Basically, there are two ways in ${project.artifactId} to achieve parallel test execution.
 
-  See the example pages for {{{./junit.html#Running_tests_in_parallel}JUnit}}
-  and {{{./testng.html#Running_tests_in_parallel}TestNG}} for details.
+The most obvious one is by using the `parallel` parameter. The possible values depend on the test provider used. For JUnit 4.7 and onwards, this may be `methods`, `classes`, `both`, `suites`, `suitesAndClasses`, `suitesAndMethods`, `classesAndMethods` or `all`. As a prerequisite in JUnit tests, the JUnit runner should extend `org.junit.runners.ParentRunner`. If no runner is specified through the annotation `@org.junit.runner.RunWith`, the prerequisite is accomplished.
 
-  The extension of the parallelism is configured using the following parameters.
-  The parameter <<<useUnlimitedThreads>>> allows for an unlimited number of threads.
-  Unless <<<useUnlimitedThreads=true>>>, the parameter <<<threadCount>>> can be used
-  with the optional parameter <<<perCoreThreadCount=true>>> (true by default).
-  The parameters <<<useUnlimitedThreads>>> and <<<threadCount>>> are to be interpreted
-  in the context of the value specified for the <<<parallel>>> parameter.
-  
-  As of ${project.artifactId}:2.16, one can impose thread-count limitations on
-  suites, classes or methods using one or more of the parameters
-  <<<threadCountSuites>>>, <<<threadCountClasses>>> and <<<threadCountMethods>>>.
-  If only <<<threadCount>>> is specified, ${project.artifactId} attempts to
-  <<optimize>> the thread counts for suites, classes and methods and reuses
-  the threads in favor of a <<leaf>>, e.g. parallel methods (optionally
-  increasing concurrent methods).
-  
-  As an example with an unlimited number of threads, there is maximum of three
-  concurrent threads to execute suites:
-  <<<parallel=all>>>, <<<useUnlimitedThreads=true>>>, <<<threadCountSuites=3>>>.
-  
-  In the second example, the number of concurrent methods is not strictly
-  limited:
-  <<<parallel=classesAndMethods>>>, <<<threadCount=8>>>, <<<threadCountClasses=3>>>.
-  Here the number of parallel methods is varying from 5 to 7.
-  Accordingly <<<parallel=all>>>, but the sum of <<<threadCountSuites>>> and
-  <<<threadCountClasses>>> must not exceed certain (<<<threadCount>>> - 1).
-  Other combinations are possible with unspecified thread-count <<leaf>>.
-  Make sure that the <<leaf>> is last from the order suites-classes-methods
-  in <<<parallel>>>.
-  
-  In the third example the thread-counts represent a ratio, e.g. for
-  <<<parallel=all>>>, <<<threadCount=16>>>, <<<threadCountSuites=2>>>,
-  <<<threadCountClasses=3>>>, <<<threadCountMethods=5>>>. Thus the concurrent
-  suites will be 20%, concurrent classes 30%, and concurrent methods 50%.
-  
-  Finally, the <<<threadCount>>> and <<<useUnlimitedThreads>>> may not be
-  necessarily configured if the equivalent thread-counts are specified for the
-  value in <<<parallel>>>.
-  
-  The ${project.artifactId} is trying to reuse threads, thus <<optimize>>
-  the thread-counts, and prefers thread fairness. The optimization
-  <<<parallelOptimized>>> of the number of Threads is enabled by default in terms
-  of e.g. the number of <Suite> runners do not necessarily have to waste <Suite>'s
-  Thread resources. If <<<threadCount>>> is used, then the <<leaf>> with unlimited
-  thread-count may speed up especially at the end of test phase.
+As of ${project.artifactId}:2.16, the value "`both`" is deprecated but it still can be used and behaves same as `classesAndMethods`.
 
-  The parameters <<<parallelTestsTimeoutInSeconds>>> and
-  <<<parallelTestsTimeoutForcedInSeconds>>> are used to specify an optional
-  timeout in parallel execution. If the timeout is elapsed, the plugin prints
-  the summary log with ERROR lines:
-  <"These tests were executed in prior to the shutdown operation">, and
-  <"These tests are incomplete"> if the running Threads were <<interrupted>>.
+See the example pages for [JUnit](./junit.html#Running_tests_in_parallel) and [TestNG](./testng.html#Running_tests_in_parallel) for details.
 
-  <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
-  <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
-  For the sake of memory visibility between threads synchronize the methods.
-  See the keywords: <volatile>, <synchronized>, <<immutable>> and <final> in
-  {{{https://jcp.org/en/jsr/detail?id=133}Java Memory Model - JSR-133}}.
+The extension of the parallelism is configured using the following parameters. The parameter `useUnlimitedThreads` allows for an unlimited number of threads. Unless `useUnlimitedThreads=true`, the parameter `threadCount` can be used with the optional parameter `perCoreThreadCount=true` (true by default). The parameters `useUnlimitedThreads` and `threadCount` are to be interpreted in the context of the value specified for the `parallel` parameter.
 
-  <<The important thing to remember>> with the <<<parallel>>> option is: the
-  concurrency happens within the same JVM process. That is efficient in terms of
-  memory and execution time, but you may be more vulnerable towards race
-  conditions or other unexpected and hard to reproduce behavior.
+As of ${project.artifactId}:2.16, one can impose thread-count limitations on suites, classes or methods using one or more of the parameters `threadCountSuites`, `threadCountClasses` and `threadCountMethods`. If only `threadCount` is specified, ${project.artifactId} attempts to **optimize** the thread counts for suites, classes and methods and reuses the threads in favor of a **leaf**, e.g. parallel methods (optionally increasing concurrent methods).
 
-  The other possibility for parallel test execution is setting the parameter 
-  <<<forkCount>>> to a value higher than 1. The next section covers the details 
-  about this and the related <<<reuseForks>>> parameter.
-  Using <<<reuseForks=true>>> (by default) and forking the test classes in reusable
-  JVMs may lead to the same problem with shared <static code> across <@BeforeClass>
-  class initializers if using <<<parallel>>> without forking. Therefore setting
-  <<<reuseForks=false>>> may help however it would not guarantee proper
-  functionality of some features, e.g. <<<skipAfterFailureCount>>>.
+As an example with an unlimited number of threads, there is maximum of three concurrent threads to execute suites: `parallel=all`, `useUnlimitedThreads=true`, `threadCountSuites=3`.
 
-* Parallel Test Execution and Single Thread Execution
+In the second example, the number of concurrent methods is not strictly limited: `parallel=classesAndMethods`, `threadCount=8`, `threadCountClasses=3`. Here the number of parallel methods is varying from 5 to 7. Accordingly `parallel=all`, but the sum of `threadCountSuites` and `threadCountClasses` must not exceed certain (`threadCount` - 1). Other combinations are possible with unspecified thread-count **leaf**. Make sure that the **leaf** is last from the order suites-classes-methods in `parallel`.
 
-  As mentioned above the <<<parallel>>> test execution is used with specific
-  thread count. Since of ${project.artifactId}:2.18, you can apply the <JCIP>
-  annotation <<<@net.jcip.annotations.NotThreadSafe>>> on the Java class of JUnit
-  test (pure test class, <Suite>, <Parameterized>, etc.) in order to execute it in
-  single Thread instance. The Thread has name <maven-surefire-plugin@NotThreadSafe>
-  and it is executed at the end of the test run.
+In the third example the thread-counts represent a ratio, e.g. for `parallel=all`, `threadCount=16`, `threadCountSuites=2`, `threadCountClasses=3`, `threadCountMethods=5`. Thus the concurrent suites will be 20%, concurrent classes 30%, and concurrent methods 50%.
 
-  Just use project dependency <net.jcip:jcip-annotations:1.0> or another artifact
-  <com.github.stephenc.jcip:jcip-annotations:1.0-1> with Apache License 2.0.
-  
-+---+
+Finally, the `threadCount` and `useUnlimitedThreads` may not be necessarily configured if the equivalent thread-counts are specified for the value in `parallel`.
+
+The ${project.artifactId} is trying to reuse threads, thus **optimize** the thread-counts, and prefers thread fairness. The optimization `parallelOptimized` of the number of Threads is enabled by default in terms of e.g. the number of _Suite_ runners do not necessarily have to waste _Suite_'s Thread resources. If `threadCount` is used, then the **leaf** with unlimited thread-count may speed up especially at the end of test phase.
+
+The parameters `parallelTestsTimeoutInSeconds` and `parallelTestsTimeoutForcedInSeconds` are used to specify an optional timeout in parallel execution. If the timeout is elapsed, the plugin prints the summary log with ERROR lines: _"These tests were executed in prior to the shutdown operation"_, and _"These tests are incomplete"_ if the running Threads were **interrupted**.
+
+**Note:** As designed by JUnit runners, the static methods annotated with e.g. _@Parameters_, _@BeforeClass_ and _@AfterClass_ are called in parent thread. For the sake of memory visibility between threads synchronize the methods. See the keywords: _volatile_, _synchronized_, **immutable** and _final_ in [Java Memory Model - JSR-133](https://jcp.org/en/jsr/detail?id=133).
+
+**The important thing to remember** with the `parallel` option is: the concurrency happens within the same JVM process. That is efficient in terms of memory and execution time, but you may be more vulnerable towards race conditions or other unexpected and hard to reproduce behavior.
+
+The other possibility for parallel test execution is setting the parameter `forkCount` to a value higher than 1. The next section covers the details about this and the related `reuseForks` parameter. Using `reuseForks=true` (by default) and forking the test classes in reusable JVMs may lead to the same problem with shared _static code_ across _@BeforeClass_ class initializers if using `parallel` without forking. Therefore setting `reuseForks=false` may help however it would not guarantee proper functionality of some features, e.g. `skipAfterFailureCount`.
+
+Parallel Test Execution and Single Thread Execution
+---------------------------------------------------
+
+As mentioned above the `parallel` test execution is used with specific thread count. Since of ${project.artifactId}:2.18, you can apply the _JCIP_ annotation `@net.jcip.annotations.NotThreadSafe` on the Java class of JUnit test (pure test class, _Suite_, _Parameterized_, etc.) in order to execute it in single Thread instance. The Thread has name _maven-surefire-plugin@NotThreadSafe_ and it is executed at the end of the test run.
+
+Just use project dependency _net.jcip:jcip-annotations:1.0_ or another artifact _com.github.stephenc.jcip:jcip-annotations:1.0-1_ with Apache License 2.0.
+
+```xml
 <dependencies>
   [...]
   <dependency>
@@ -160,35 +90,22 @@ Fork Options and Parallel Test Execution
   </dependency>
   [...]
 </dependencies>
-+---+
+```
 
-  This way the parallel execution of tests classes annotated with
-  <<<@NotThreadSafe>>> are forked in single thread instance (don't mean
-  forked JVM process).
+This way the parallel execution of tests classes annotated with `@NotThreadSafe` are forked in single thread instance (don't mean forked JVM process).
 
-  If the <Suite> or <Parameterized> is annotated with <<<@NotThreadSafe>>>, the
-  suite classes are executed in single thread.
-  You can also annotate individual test class referenced by <Suite>, and the other
-  unannotated test classes in the <Suite> can be subject to run in parallel.
-  This way you can isolate conflicting groups of tests and still run their
-  individual tests in parallel.
+If the _Suite_ or _Parameterized_ is annotated with `@NotThreadSafe`, the suite classes are executed in single thread. You can also annotate individual test class referenced by _Suite_, and the other unannotated test classes in the _Suite_ can be subject to run in parallel. This way you can isolate conflicting groups of tests and still run their individual tests in parallel.
 
-  <<Note:>> As designed by JUnit runners, the static methods annotated with e.g.
-  <@Parameters>, <@BeforeClass> and <@AfterClass> are called in parent thread.
-  Assign classes to <<<@NotThreadSafe Suite>>> to prevent from this trouble. If you
-  do not want to change the hierarchy of your test classes, you may synchronize such
-  methods for the sake of improving memory visibility as a simplistic treatment.
-  See the keywords: <volatile>, <synchronized>, <<immutable>> and <final> in
-  {{{https://jcp.org/en/jsr/detail?id=133}Java Memory Model - JSR-133}}.
+**Note:** As designed by JUnit runners, the static methods annotated with e.g. _@Parameters_, _@BeforeClass_ and _@AfterClass_ are called in parent thread. Assign classes to `@NotThreadSafe Suite` to prevent from this trouble. If you do not want to change the hierarchy of your test classes, you may synchronize such methods for the sake of improving memory visibility as a simplistic treatment. See the keywords: _volatile_, _synchronized_, **immutable** and _final_ in [Java Memory Model - JSR-133](https://jcp.org/en/jsr/detail?id=133).
 
-* Parallel Test-Suite Execution
+Parallel Test-Suite Execution
+-----------------------------
 
-  ${project.artifactId}'s notion of "suite" is related to
-  {{{https://github.com/junit-team/junit4/wiki/Aggregating-tests-in-suites}junit4 Suite}}. 
+${project.artifactId}'s notion of "suite" is related to [junit4 Suite](https://github.com/junit-team/junit4/wiki/Aggregating-tests-in-suites).
 
-  For example, say your tests are laid out like this:
+For example, say your tests are laid out like this:
 
-+---+
+```text
 src/test/java
 +-features.areaA
 | +-SomeTest.java
@@ -196,11 +113,11 @@ src/test/java
 +-features.areaB
 | +-DifferentTest.java
 | +-OtherTest.java
-+---+
+```
 
-  You would add a TestSuite.java for each package, that would look something like:
+You would add a TestSuite.java for each package, that would look something like:
 
-+---+
+```java
 package features.areaA;
 
 import org.junit.runner.RunWith;
@@ -213,12 +130,11 @@ import org.junit.runners.Suite;
 })
 public class TestSuite {
 }
-+---+
+```
 
-  and similarly for <<<package features.areaB>>>. You would then configure
-  ${project.artifactId} as follows:
+and similarly for `package features.areaB`. You would then configure ${project.artifactId} as follows:
 
-+---+
+```xml
 <plugin>
   <groupId>${project.groupId}</groupId>
   <artifactId>${project.artifactId}</artifactId>
@@ -232,77 +148,39 @@ public class TestSuite {
     <perCoreThreadCount>false</perCoreThreadCount>
   </configuration>
 </plugin>
-+---+
+```
 
-  This would then run up to 2 threads, and each thread would be fed a TestSuite.class,
-  one at a time. The test classes within that Suite would be executed sequentially
-  in the order specified the Suite class.
+This would then run up to 2 threads, and each thread would be fed a TestSuite.class, one at a time. The test classes within that Suite would be executed sequentially in the order specified the Suite class.
 
-  Note that the <<<perCoreThreadCount>>> is a "multiplier" of a sorts. With this
-  parameter set to true (the default value), you will get the specified number of
-  threads <<per CPU core>>.
+Note that the `perCoreThreadCount` is a "multiplier" of a sorts. With this parameter set to true (the default value), you will get the specified number of threads **per CPU core**.
 
-  Also note that in this specific case <<<threadCountSuites=2>>> has the same effect
-  as <<<threadCount=2>>>, since we are using <<<parallel=suites>>>.
+Also note that in this specific case `threadCountSuites=2` has the same effect as `threadCount=2`, since we are using `parallel=suites`.
 
-* Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
+Parallel ${project.artifactId} Execution in Multi-Module Maven Parallel Build
+-----------------------------------------------------------------------------
 
-  Maven core allows building modules of multi-module projects in parallel with
-  the command line option <<<-T>>>. This <multiplies> the extent of concurrency
-  configured directly in ${project.artifactId}.
+Maven core allows building modules of multi-module projects in parallel with the command line option `-T`. This _multiplies_ the extent of concurrency configured directly in ${project.artifactId}.
 
-* Forked Test Execution
+Forked Test Execution
+---------------------
 
-  The parameter <<<forkCount>>> defines the maximum number of JVM processes that
-  ${project.artifactId} will spawn <concurrently> to execute the tests. It supports
-  the same syntax as <<<-T>>> in maven-core: if you terminate the value with a 'C',
-  that value will be multiplied with the number of available CPU cores in your
-  system. For example <<<forkCount=2.5C>>> on a Quad-Core system will result
-  in forking up to ten concurrent JVM processes that execute tests.
+The parameter `forkCount` defines the maximum number of JVM processes that ${project.artifactId} will spawn _concurrently_ to execute the tests. It supports the same syntax as `-T` in maven-core: if you terminate the value with a 'C', that value will be multiplied with the number of available CPU cores in your system. For example `forkCount=2.5C` on a Quad-Core system will result in forking up to ten concurrent JVM processes that execute tests.
 
-  The parameter <<<reuseForks>>> is used to define whether to terminate the 
-  spawned process after one test class and to create a new process for the next 
-  test in line (<<<reuseForks=false>>>), or whether to reuse the processes to 
-  execute the next tests (<<<reuseForks=true>>>).
+The parameter `reuseForks` is used to define whether to terminate the spawned process after one test class and to create a new process for the next test in line (`reuseForks=false`), or whether to reuse the processes to execute the next tests (`reuseForks=true`).
 
-  The <default setting> is <<<forkCount=1>>>/<<<reuseForks=true>>>, which means
-  that ${project.artifactId} creates one new JVM process to execute all tests
-  in one Maven module.
+The _default setting_ is `forkCount=1`/`reuseForks=true`, which means that ${project.artifactId} creates one new JVM process to execute all tests in one Maven module.
 
-  <<<forkCount=1>>>/<<<reuseForks=false>>> executes each test class in its own 
-  JVM process, one after another. It creates the highest level of separation for 
-  the test execution, but it would probably also give you the longest execution 
-  time of all the available options. Consider it as a last resort.
+`forkCount=1`/`reuseForks=false` executes each test class in its own JVM process, one after another. It creates the highest level of separation for the test execution, but it would probably also give you the longest execution time of all the available options. Consider it as a last resort.
 
-  With the <<<argLine>>> property, you can specify additional parameters to be
-  passed to the forked JVM process, such as memory settings. System property
-  variables from the main maven process are passed to the forked process as
-  well. Additionally, you can use the element <<<systemPropertyVariables>>> to
-  specify variables and values to be added to the system properties during the
-  test execution.
+With the `argLine` property, you can specify additional parameters to be passed to the forked JVM process, such as memory settings. System property variables from the main maven process are passed to the forked process as well. Additionally, you can use the element `systemPropertyVariables` to specify variables and values to be added to the system properties during the test execution.
 
-  You can use the placeholder <<<$\{surefire.forkNumber\}>>> within <<<argLine>>>,
-  <<<environmentVariables>>> (since ${project.artifactId}:3.2.0),
-  or within the system properties (both those specified via
-  <<<mvn test -D...>>> and via <<<systemPropertyVariables>>>). Before executing 
-  the tests, the ${thisPlugin.toLowerCase()} plugin replaces that placeholder
-  by the number of the actually executing process, counting from 1 to the
-  effective value of <<<forkCount>>> times the maximum number of parallel
-  executions in Maven parallel builds, i.e. the effective value of the <<<-T>>>
-  command line argument of Maven core.
+You can use the placeholder `${esc.d}{surefire.forkNumber}` within `argLine`, `environmentVariables` (since ${project.artifactId}:3.2.0), or within the system properties (both those specified via `mvn test -D...` and via `systemPropertyVariables`). Before executing the tests, the ${thisPlugin.toLowerCase()} plugin replaces that placeholder by the number of the actually executing process, counting from 1 to the effective value of `forkCount` times the maximum number of parallel executions in Maven parallel builds, i.e. the effective value of the `-T` command line argument of Maven core.
 
-  In case of disabled forking (<<<forkCount=0>>>), the placeholder will be
-  replaced with <1>.
+In case of disabled forking (`forkCount=0`), the placeholder will be replaced with _1_.
 
-  The following is an example configuration that makes use of up to three forked
-  processes that execute the tests and then terminate. A system property
-  <databaseSchema> is passed to the processes, that shall specify the database
-  schema to use during the tests. The values for that will be
-  <MY_TEST_SCHEMA_1>, <MY_TEST_SCHEMA_2>, and <MY_TEST_SCHEMA_3> for the three
-  processes. Additionaly by specifying custom <workingDirectory> each of processes
-  will be executed in a separate working directory to ensure isolation on file system level.
+The following is an example configuration that makes use of up to three forked processes that execute the tests and then terminate. A system property _databaseSchema_ is passed to the processes, that shall specify the database schema to use during the tests. The values for that will be _MY\_TEST\_SCHEMA\_1_, _MY\_TEST\_SCHEMA\_2_, and _MY\_TEST\_SCHEMA\_3_ for the three processes. Additionaly by specifying custom _workingDirectory_ each of processes will be executed in a separate working directory to ensure isolation on file system level.
 
-+---+
+```xml
 <plugins>
 [...]
   <plugin>
@@ -314,37 +192,27 @@ public class TestSuite {
         <reuseForks>true</reuseForks>
         <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
         <systemPropertyVariables>
-            <databaseSchema>MY_TEST_SCHEMA_${surefire.forkNumber}</databaseSchema>
+            <databaseSchema>MY_TEST_SCHEMA_${esc.d}{surefire.forkNumber}</databaseSchema>
         </systemPropertyVariables>
-        <workingDirectory>FORK_DIRECTORY_${surefire.forkNumber}</workingDirectory>
+        <workingDirectory>FORK_DIRECTORY_${esc.d}{surefire.forkNumber}</workingDirectory>
     </configuration>
   </plugin>
 [...]
 </plugins>
-+---+
+```
 
-  In case of a multi module project with tests in different modules, you could 
-  also use, say, <<<mvn -T 2 ...>>> to start the build, yielding values for 
-  <<<$\{surefire.forkNumber\}>>> ranging from 1 to 6.
+In case of a multi module project with tests in different modules, you could also use, say, `mvn -T 2 ...` to start the build, yielding values for `${esc.d}{surefire.forkNumber}` ranging from 1 to 6.
 
-  Imagine you execute some tests that use a JPA context, which has a notable
-  initial startup time. By setting <<<reuseForks=true>>>, you can reuse that
-  context for consecutive tests. And as many tests tend to use and access the
-  same test data, you can avoid database locks during the concurrent execution
-  by using distinct but uniform database schemas.
+Imagine you execute some tests that use a JPA context, which has a notable initial startup time. By setting `reuseForks=true`, you can reuse that context for consecutive tests. And as many tests tend to use and access the same test data, you can avoid database locks during the concurrent execution by using distinct but uniform database schemas.
 
-  Port numbers and file names are other examples of resources for which it may
-  be hard or undesired to be shared among concurrent test executions.
-  
-* Isolating report directories across forks
-  
-  You may run multiple TestNG suites in parallel fork JVM processes. In that case
-  one can see that each process has created XML report file with same name
-  overriding one each other. In order to prevent from this, you may want to change
-  report directory for each Suite XML. Since of Version 2.22.1 you can parameterize
-  <<<reportsDirectory>>> with placeholder <<<$\{surefire.forkNumber\}>>>.
-  
-+---+
+Port numbers and file names are other examples of resources for which it may be hard or undesired to be shared among concurrent test executions.
+
+Isolating report directories across forks
+-----------------------------------------
+
+You may run multiple TestNG suites in parallel fork JVM processes. In that case one can see that each process has created XML report file with same name overriding one each other. In order to prevent from this, you may want to change report directory for each Suite XML. Since of Version 2.22.1 you can parameterize `reportsDirectory` with placeholder `${esc.d}{surefire.forkNumber}`.
+
+```xml
 [...]
 <dependencies>
     [...]
@@ -367,7 +235,7 @@ public class TestSuite {
 		    <configuration>
 			    <forkCount>2</forkCount>
 			    <reuseForks>false</reuseForks>
-			    <reportsDirectory>target/surefire-reports-${surefire.forkNumber}</reportsDirectory>
+			    <reportsDirectory>target/surefire-reports-${esc.d}{surefire.forkNumber}</reportsDirectory>
 			    <suiteXmlFiles>
 				    <suiteXmlFile>src/test/resources/Suite1.xml</suiteXmlFile>
 				    <suiteXmlFile>src/test/resources/Suite2.xml</suiteXmlFile>
@@ -377,30 +245,17 @@ public class TestSuite {
         [...]
     </plugins>
 </build>
-+---+
+```
 
-* Combining forkCount and parallel
+Combining forkCount and parallel
+--------------------------------
 
-  The modes <<<forkCount=0>>> and <<<forkCount=1>>>/<<<reuseForks=true>>> can
-  be combined freely with the available settings for <<<parallel>>>.
+The modes `forkCount=0` and `forkCount=1`/`reuseForks=true` can be combined freely with the available settings for `parallel`.
 
-  As <<<reuseForks=false>>> creates a new JVM process for each test class,
-  using <<<parallel=classes>>> would have no effect. You can still use
-  <<<parallel=methods>>>, though.
+As `reuseForks=false` creates a new JVM process for each test class, using `parallel=classes` would have no effect. You can still use `parallel=methods`, though.
 
-  When using <<<reuseForks=true>>> and a <<<forkCount>>> value larger than one,
-  test classes are handed over to the forked process one-by-one. Thus,
-  <<<parallel=classes>>> would not change anything. However, you can use
-  <<<parallel=methods>>>: classes are executed in <<<forkCount>>> concurrent
-  processes, each of the processes can then use <<<threadCount>>> threads to
-  execute the methods of one class in parallel.
+When using `reuseForks=true` and a `forkCount` value larger than one, test classes are handed over to the forked process one-by-one. Thus, `parallel=classes` would not change anything. However, you can use `parallel=methods`: classes are executed in `forkCount` concurrent processes, each of the processes can then use `threadCount` threads to execute the methods of one class in parallel.
 
-  Regarding the compatibility with multi-module parallel maven builds via 
-  <<<-T>>>, the only limitation is that you can not use it together with
-  <<<forkCount=0>>>.
+Regarding the compatibility with multi-module parallel maven builds via `-T`, the only limitation is that you can not use it together with `forkCount=0`.
 
-  When running parallel maven builds without forks, all system properties
-  are shared among the builder threads and ${thisPlugin.toLowerCase()} executions,
-  therefore the threads will encounter race conditions when setting
-  properties, e.g. <<<baseDir>>>, which may lead to changing system properties
-  and unexpected runtime behaviour.
+When running parallel maven builds without forks, all system properties are shared among the builder threads and ${thisPlugin.toLowerCase()} executions, therefore the threads will encounter race conditions when setting properties, e.g. `baseDir`, which may lead to changing system properties and unexpected runtime behaviour.

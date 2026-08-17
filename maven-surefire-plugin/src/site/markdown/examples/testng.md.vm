@@ -1,38 +1,37 @@
- ------
- Using TestNG
- ------
- Brett Porter <brett@apache.org>
- ------
- 2010-01-09
- ------
- 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+---
+title: Using TestNG
+author:
+  - Brett Porter brett@apache.org
+date: 2010-01-09
+---
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Using TestNG
+  http://www.apache.org/licenses/LICENSE-2.0
 
-* Configuring TestNG
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-  To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
+# Using TestNG
 
-+---+
+Configuring TestNG
+------------------
+
+To get started with TestNG, include the following dependency in your project (replacing the version with the one you wish to use):
+
+```xml
 <dependencies>
   [...]
     <dependency>
@@ -43,28 +42,22 @@ Using TestNG
     </dependency>
   [...]
 </dependencies>
-+---+
-
+```
 
 #{if}(${project.artifactId}=="maven-surefire-plugin")
-  This is the only step that is required to get started - you can now create tests in your test source directory
-  (e.g., <<<src/test/java>>>). As long as they are named in accordance with the defaults such as <<<*Test.java>>> they will be run
-  by ${thisPlugin} as TestNG tests.
+This is the only step that is required to get started - you can now create tests in your test source directory (e.g., `src/test/java`). As long as they are named in accordance with the defaults such as `*Test.java` they will be run by ${thisPlugin} as TestNG tests.
 #{else}
-  This is the only step that is required to get started - you can now create tests in your test source directory
-  (e,g., <<<src/test/java>>>). As long as they are named in accordance with the defaults such as <<<*IT.java>>> they will be run
-  by ${thisPlugin} as TestNG tests.
+This is the only step that is required to get started - you can now create tests in your test source directory (e,g., `src/test/java`). As long as they are named in accordance with the defaults such as `*IT.java` they will be run by ${thisPlugin} as TestNG tests.
 #{end}
 
-  If you'd like to use a different naming scheme, you can change the <<<includes>>> parameter, as discussed in the
-  {{{./inclusion-exclusion.html}Inclusions and Exclusions of Tests}} example.
+If you'd like to use a different naming scheme, you can change the `includes` parameter, as discussed in the [Inclusions and Exclusions of Tests](./inclusion-exclusion.html) example.
 
-* Using Suite XML Files
+Using Suite XML Files
+---------------------
 
-  Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run.
-  These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
+Another alternative is to use TestNG suite XML files. This allows flexible configuration of the tests to be run. These files are created in the normal way, and then added to the ${thisPlugin} Plugin configuration:
 
-+---+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -79,16 +72,16 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  This configuration will override the includes and excludes patterns and run all tests in the suite files.
+This configuration will override the includes and excludes patterns and run all tests in the suite files.
 
-* Specifying Test Parameters
+Specifying Test Parameters
+--------------------------
 
-  Your TestNG test can accept parameters with the <<<@Parameters>>> annotation.  You can also pass parameters from Maven
-  into your TestNG test, by specifying them as system properties, like this:
+Your TestNG test can accept parameters with the `@Parameters` annotation. You can also pass parameters from Maven into your TestNG test, by specifying them as system properties, like this:
 
-+---+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -103,16 +96,16 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  For more information about setting system properties in ${thisPlugin} tests, see {{{./system-properties.html}System Properties}}.
+For more information about setting system properties in ${thisPlugin} tests, see [System Properties](./system-properties.html).
 
-* Using Groups
+Using Groups
+------------
 
-  TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with ${thisPlugin},
-  use the <<<groups>>> parameter, for example:
+TestNG allows you to group your tests. You can then execute one or more specific groups. To do this with ${thisPlugin}, use the `groups` parameter, for example:
 
-+---+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -125,17 +118,16 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  Likewise, the <<<excludedGroups>>> parameter can be used to run all but a certain set of groups.
+Likewise, the `excludedGroups` parameter can be used to run all but a certain set of groups.
 
-* Running Tests in Parallel
+Running Tests in Parallel
+-------------------------
 
-  TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the
-  <<<parallel>>> parameter, and may change the <<<threadCount>>> parameter if the default of 5 is not sufficient.
-  For example:
+TestNG allows you to run your tests in parallel, including JUnit tests. To do this, you must set the `parallel` parameter, and may change the `threadCount` parameter if the default of 5 is not sufficient. For example:
 
-+---+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -149,12 +141,11 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence
-  and thread safety of your tests and code.
-    
-+---+
+This is particularly useful for slow tests that can have high concurrency, or to quickly and roughly assess the independence and thread safety of your tests and code.
+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -176,11 +167,11 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
-  
-  You can run suites in parallel.
-  
-+---+
+```
+
+You can run suites in parallel.
+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -202,17 +193,16 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  See also {{{./fork-options-and-parallel-execution.html}Fork Options and Parallel Test Execution}}.
+See also [Fork Options and Parallel Test Execution](./fork-options-and-parallel-execution.html).
 
-* Using Custom Listeners and Reporters
+Using Custom Listeners and Reporters
+------------------------------------
 
-  TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests.
-  By default, TestNG attaches a few basic listeners to generate HTML and XML reports.
-  You can configure multiple custom listeners like this:
+TestNG provides support for attaching custom listeners, reporters, annotation transformers and method interceptors to your tests. By default, TestNG attaches a few basic listeners to generate HTML and XML reports. You can configure multiple custom listeners like this:
 
-+---+
+```xml
 <dependencies>
 [...]
   <dependency>
@@ -249,23 +239,18 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-  For more information on TestNG, see the {{{https://testng.org}TestNG web site}}.
+For more information on TestNG, see the [TestNG web site](https://testng.org).
 
-  You can implement TestNG listener interface <<<org.testng.ITestListener>>> in
-  a separate test artifact <<<your-testng-listener-artifact>>> with scope=test, or in project test source code
-  <<<src/test/java>>>. You can filter test artifacts by the parameter <<<dependenciesToScan>>> to load its classes
-  in current ClassLoader of surefire-testng provider. The TestNG reporter class should implement <<<org.testng.IReporter>>>.
+You can implement TestNG listener interface `org.testng.ITestListener` in a separate test artifact `your-testng-listener-artifact` with scope=test, or in project test source code `src/test/java`. You can filter test artifacts by the parameter `dependenciesToScan` to load its classes in current ClassLoader of surefire-testng provider. The TestNG reporter class should implement `org.testng.IReporter`.
 
-* The level of verbosity
+The level of verbosity
+----------------------
 
-  The verbosity level can be configured in provider property
-  <<<surefire.testng.verbose>>>. The verbosity level is between 0 and 10 where 10 is the most detailed.
-  You can specify -1 and this will put TestNG in debug mode (no longer slicing off stack traces and all).
-  The default level is 0.
-  
-+---+
+The verbosity level can be configured in provider property `surefire.testng.verbose`. The verbosity level is between 0 and 10 where 10 is the most detailed. You can specify -1 and this will put TestNG in debug mode (no longer slicing off stack traces and all). The default level is 0.
+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -285,15 +270,14 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-* Customizing TestNG Object Factory
+Customizing TestNG Object Factory
+---------------------------------
 
-  Since the plugin version 2.19 and TestNG 5.7 or higher you can customize
-  TestNG object factory by implementing <<<org.testng.IObjectFactory>>> and
-  binding the class name to the key <<<objectfactory>>> in provider properties:
-  
-+---+
+Since the plugin version 2.19 and TestNG 5.7 or higher you can customize TestNG object factory by implementing `org.testng.IObjectFactory` and binding the class name to the key `objectfactory` in provider properties:
+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -313,15 +297,14 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-* Customizing TestNG Test Runner Factory
+Customizing TestNG Test Runner Factory
+--------------------------------------
 
-  You can customize the
-  TestNG runner factory by implementing <<<org.testng.ITestRunnerFactory>>> and
-  binding the class name to the key <<<testrunfactory>>> in provider properties:
-  
-+---+
+You can customize the TestNG runner factory by implementing `org.testng.ITestRunnerFactory` and binding the class name to the key `testrunfactory` in provider properties:
+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -341,15 +324,14 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
-* Running 'testnames' in test tag
+Running &#39;testnames&#39; in test tag
+-------------------------------------
 
-  Only tests defined in a <<<test>>> tag matching one of these names will be run.
-  In this example two tests run out of 7; namely <InstallTest> and <ATest>.
-  The test <a-t3> does not match any test in <suite.xml>.
-  
-+---+
+Only tests defined in a `test` tag matching one of these names will be run. In this example two tests run out of 7; namely _InstallTest_ and _ATest_. The test _a-t3_ does not match any test in _suite.xml_.
+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -372,12 +354,11 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
+```
 
+The test suite 'suite.xml' :
 
-  The test suite 'suite.xml' :
-
-+---+
+```xml
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="Component Tests" verbose="2" annotations="JDK">
   <test name="a-t1" preserve-order="true" >
@@ -396,15 +377,14 @@ Using TestNG
     </classes>
   </test>
 </suite>
-+---+
+```
 
+Running TestNG and JUnit Tests
+------------------------------
 
-* Running TestNG and JUnit Tests
+To run TestNG and JUnit 4.x in the current Maven project, you need both TestNG and JUnit dependencies in the POM:
 
-  To run TestNG and JUnit 4.x in the current Maven project, you need
-  both TestNG and JUnit dependencies in the POM:
-
-+---+
+```xml
 <dependencies>
   [...]
   <dependency>
@@ -421,12 +401,11 @@ Using TestNG
   </dependency>
   [...]
 </dependencies>
-+---+
+```
 
-  You may want to run two providers, e.g. <<<surefire-junit47>>> and <<<surefire-testng>>>, and avoid running JUnit
-  tests within <<<surefire-testng>>> provider by setting property <<<junit=false>>> (note that this property is not applicable if you configure the <<<suiteXmlFiles>>> parameter).
+You may want to run two providers, e.g. `surefire-junit47` and `surefire-testng`, and avoid running JUnit tests within `surefire-testng` provider by setting property `junit=false` (note that this property is not applicable if you configure the `suiteXmlFiles` parameter).
 
-+---+
+```xml
 <plugins>
     [...]
       <plugin>
@@ -459,6 +438,4 @@ Using TestNG
       </plugin>
     [...]
 </plugins>
-+---+
-
-
+```

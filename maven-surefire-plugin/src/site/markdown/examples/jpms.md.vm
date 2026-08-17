@@ -1,45 +1,39 @@
- ------
- Java Modularity (JPMS) in Tests
- ------
- dev@maven.apache.org
- ------
- 2020-05-29
- ------
+---
+title: Java Modularity (JPMS) in Tests
+author:
+  - dev@maven.apache.org
+date: 2020-05-29
+---
 
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Using Java Modularity (JPMS) in Tests
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-* Examples using TestNG
+# Using Java Modularity (JPMS) in Tests
 
-  The Surefire project provides the integration tests with
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/surefire-1733-testng}TestNG}}
-  demonstrating the Java Modularity (JPMS).
+Examples using TestNG
+---------------------
 
-  The JDK version must be 9 or higher. The POM contains the dependency <<<org.testng:testng:7.1.0>>> which is
-  an automatic module. It activates the internal provider <<<surefire-testng>>> in the plugin. The frameworks with
-  assertions API are used, i.e. <<<org.hamcrest:hamcrest:2.2>>> (automatic module)
-  and <<<org.assertj:assertj-core:3.16.1>>> (named module).
+The Surefire project provides the integration tests with [TestNG](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/surefire-1733-testng) demonstrating the Java Modularity (JPMS).
 
-+---+
+The JDK version must be 9 or higher. The POM contains the dependency `org.testng:testng:7.1.0` which is an automatic module. It activates the internal provider `surefire-testng` in the plugin. The frameworks with assertions API are used, i.e. `org.hamcrest:hamcrest:2.2` (automatic module) and `org.assertj:assertj-core:3.16.1` (named module).
+
+```xml
 <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>${java.specification.version}</maven.compiler.release>
@@ -65,20 +59,20 @@ Using Java Modularity (JPMS) in Tests
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-  The most important parts are the module descriptors. This is the module descriptor located in <<<src/main/java>>>:
+The most important parts are the module descriptors. This is the module descriptor located in `src/main/java`:
 
-+---+
+```java
 module main
 {
     exports main;
 }
-+---+
+```
 
-  This is the module descriptor in <<<src/test/java>>>:
+This is the module descriptor in `src/test/java`:
 
-+---+
+```java
 module test
 {
     requires main;
@@ -87,18 +81,16 @@ module test
     requires org.assertj.core;
     exports test to org.testng;
 }
-+---+
+```
 
-* Examples using JUnit4
+Examples using JUnit4
+---------------------
 
-  The Surefire project provides the integration tests with
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/surefire-1733-junit4}JUnit4}}
-  demonstrating the Java Modularity (JPMS).
+The Surefire project provides the integration tests with [JUnit4](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/surefire-1733-junit4) demonstrating the Java Modularity (JPMS).
 
-  The JDK version must be 9 or higher. The POM contains the dependency <<<junit:junit:4.13>>> which is
-  an automatic module. It activates the internal provider <<<surefire-junit4>>> or <<<surefire-junit47>>> in the plugin.
+The JDK version must be 9 or higher. The POM contains the dependency `junit:junit:4.13` which is an automatic module. It activates the internal provider `surefire-junit4` or `surefire-junit47` in the plugin.
 
-+---+
+```xml
 <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>${java.specification.version}</maven.compiler.release>
@@ -124,20 +116,20 @@ module test
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-  The most important parts are the module descriptors. This is the module descriptor located in <<<src/main/java>>>:
+The most important parts are the module descriptors. This is the module descriptor located in `src/main/java`:
 
-+---+
+```java
 module main
 {
     exports main;
 }
-+---+
+```
 
-  This is the module descriptor in <<<src/test/java>>>:
+This is the module descriptor in `src/test/java`:
 
-+---+
+```java
 module test
 {
     requires main;
@@ -145,19 +137,16 @@ module test
     requires org.hamcrest;
     exports test to junit;
 }
-+---+
+```
 
-* Examples using JUnit5
+Examples using JUnit5
+---------------------
 
-  The Surefire project provides the integration tests with
-  {{{https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/maven-multimodule-project-with-jpms}JUnit5}}
-  demonstrating the Java Modularity (JPMS) in Maven multi-module project.
+The Surefire project provides the integration tests with [JUnit5](https://github.com/apache/maven-surefire/tree/master/surefire-its/src/test/resources/maven-multimodule-project-with-jpms) demonstrating the Java Modularity (JPMS) in Maven multi-module project.
 
-  The JDK version must be 9 or higher. The POM contains the dependency
-  <<<org.junit.jupiter:junit-jupiter-engine:5.9.1>>> which is named module. It activates the internal provider
-  <<<surefire-junit-platform>>> in the plugin.
+The JDK version must be 9 or higher. The POM contains the dependency `org.junit.jupiter:junit-jupiter-engine:5.9.1` which is named module. It activates the internal provider `surefire-junit-platform` in the plugin.
 
-+---+
+```xml
 <artifactId>com.foo.impl</artifactId>
 
 <dependencies>
@@ -176,11 +165,11 @@ module test
         <scope>test</scope>
     </dependency>
 </dependencies>
-+---+
+```
 
-  The most important parts are the module descriptors. This is the module descriptor located in <<<src/main/java>>>:
+The most important parts are the module descriptors. This is the module descriptor located in `src/main/java`:
 
-+---+
+```java
 module com.foo.impl
 {
     exports com.foo.impl;
@@ -188,11 +177,11 @@ module com.foo.impl
     requires org.slf4j;
     requires org.slf4j.simple;
 }
-+---+
+```
 
-  This is the module descriptor in <<<src/test/java>>>:
+This is the module descriptor in `src/test/java`:
 
-+---+
+```text
 open module com.foo.test
 {
     exports com.foo.implt;
@@ -202,4 +191,4 @@ open module com.foo.test
     requires transitive org.junit.jupiter.engine;
     requires transitive org.junit.jupiter.api;
 }
-+---+
+```

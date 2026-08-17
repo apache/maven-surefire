@@ -1,143 +1,108 @@
-  ------
-  Developing Surefire
-  ------
-  Kristian Rosenvold
-  ------
- 2011-03-07
-  ------
-  
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+---
+title: Developing Surefire
+author:
+  - Kristian Rosenvold
+date: 2011-03-07
+---
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html  
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Developer Center
+  http://www.apache.org/licenses/LICENSE-2.0
 
-  When working with Surefire, it is necessary to understand a few things:
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
-* Multi-module Project
+# Developer Center
 
-  The plugin is built as part of a multi-module plugin. You need to check out 
-  the complete module and build from there:
+When working with Surefire, it is necessary to understand a few things:
 
-+---+
+## Multi-module Project
+
+The plugin is built as part of a multi-module plugin. You need to check out the complete module and build from there:
+
+```text
   git clone https://gitbox.apache.org/repos/asf/maven-surefire.git
-+---+
+```
 
-* Making Test Cases for Demonstrating Problems
+## Making Test Cases for Demonstrating Problems
 
-  When reporting an issue, it is immensely useful to create a small sample project
-  that demonstrates the problem. Surefire already contains a large number of such
-  projects, and they can be found at
-  {{surefire-its/src/test/resources/}}.
-  Typically you can check out one of the pre-existing projects and run it like this:
+When reporting an issue, it is immensely useful to create a small sample project that demonstrates the problem. Surefire already contains a large number of such projects, and they can be found at [surefire-its/src/test/resources/](#surefire-its.2Fsrc.2Ftest.2Fresources.2F). Typically you can check out one of the pre-existing projects and run it like this:
 
-+---+
+```bash
   cd surefire-its/src/test/resources/failsafe-buildfail
   mvn -Dsurefire.version=2.12 verify
-+---+
+```
 
-* Attaching a Debugger
+## Attaching a Debugger
 
-  Sometimes it's appropriate to attach a remote debugger to the Surefire fork to try to determine what
-  is <really> going on. If you checkout and build trunk, you'd usually do something like this:
+Sometimes it's appropriate to attach a remote debugger to the Surefire fork to try to determine what is _really_ going on. If you checkout and build trunk, you'd usually do something like this:
 
-+---+
+```bash
   mvn -Dmaven.surefire.debug=true install
-+---+
+```
 
-  Load the source in your IDE, set a breakpoint at the start of <<<ForkedBooter#main>>> and attach
-  a debugger to port 5005.
+Load the source in your IDE, set a breakpoint at the start of `ForkedBooter#main` and attach a debugger to port 5005.
 
-* Tracing a Forked Execution
+## Tracing a Forked Execution
 
-  The forked Surefire process uses standard input and output to communicate back to the source. Sometimes when tracking troubles
-  it can be helpful to look at just the output of the fork.
+The forked Surefire process uses standard input and output to communicate back to the source. Sometimes when tracking troubles it can be helpful to look at just the output of the fork.
 
-  This can be done by running:
+This can be done by running:
 
-+---+
+```bash
 mvn -e -X install | grep Forking
-+---+
+```
 
-  If you copy the command part of the output, you should be able to re-run the command by just pasting it on
-  the command line (you might have to do only the bits after <<<&&>>>).
+If you copy the command part of the output, you should be able to re-run the command by just pasting it on the command line (you might have to do only the bits after `&&`).
 
-  You can now paste this command on the command line and capture the output of the fork. This may help you
-  determine if the problem is in the forked end or the receiving end.
+You can now paste this command on the command line and capture the output of the fork. This may help you determine if the problem is in the forked end or the receiving end.
 
-  When investigating a particular class, you probably want to <<<grep>>> the output for the class name.
-  Additionally the booter code (first field) can be seen at
-  {{https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git;a=blob;f=surefire-api/src/main/java/org/apache/maven/surefire/booter/ForkingRunListener.java}}
+When investigating a particular class, you probably want to `grep` the output for the class name. Additionally the booter code (first field) can be seen at [https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git;a=blob;f=surefire-api/src/main/java/org/apache/maven/surefire/booter/ForkingRunListener.java](https://git-wip-us.apache.org/repos/asf?p=maven-surefire.git;a=blob;f=surefire-api/src/main/java/org/apache/maven/surefire/booter/ForkingRunListener.java)
 
-  The second field in the output (after the booter code) is the logical channel number, where different threads in the fork
-  should come in different channels.
+The second field in the output (after the booter code) is the logical channel number, where different threads in the fork should come in different channels.
 
-* Test Cases
+## Test Cases
 
-  All patches to Surefire must contain test coverage, either as an integration test
-  or a unit test. All new features (changed/added plugin options) must be covered by
-  an end-to-end integration test.
+All patches to Surefire must contain test coverage, either as an integration test or a unit test. All new features (changed/added plugin options) must be covered by an end-to-end integration test.
 
-  There are
-  numerous other integration tests that all operate on small sample projects in
-  <<<surefire-its/src/test/resources>>>.
+There are numerous other integration tests that all operate on small sample projects in `surefire-its/src/test/resources`.
 
-  Example integration tests are <<<Surefire141PluggableProvidersIT>>> and the corresponding
-  <<<surefire-its/src/test/resources/surefire-141-pluggableproviders>>>.
+Example integration tests are `Surefire141PluggableProvidersIT` and the corresponding `surefire-its/src/test/resources/surefire-141-pluggableproviders`.
 
-* Essential Source Code Reading List
+## Essential Source Code Reading List
 
-  Some methods/classes reveal more about the basic working of a piece of code than others. The following classes/methods
-  are a "reading list" for getting quickly acquainted with the code:
+Some methods/classes reveal more about the basic working of a piece of code than others. The following classes/methods are a "reading list" for getting quickly acquainted with the code:
 
-+---+
+```text
 AbstractSurefireMojo#executeAllProviders
 ForkStarter#fork
 ForkedBooter#main
-+---+
+```
 
-* JDK Versions
+## JDK Versions
 
-  The surefire booter is capable of booting all the way back to jdk1.8. Specifically
-  this means <<<surefire-api>>>, <<<surefire-booter>>>, <<<common-junit3>>>, <<<surefire-junit3>>>
-  and other modules are compiled with source/target 1.8.
+The surefire booter is capable of booting all the way back to jdk1.8. Specifically this means `surefire-api`, `surefire-booter`, `common-junit3`, `surefire-junit3` and other modules are compiled with source/target 1.8.
 
-* Provider Isolation
+## Provider Isolation
 
-  Classes in the SUT (<Subject Under Test>) override any classes within the
-  Surefire providers. This means providers using any
-  third party dependencies (other than the test framework itself) should
-  shade these classes to a different package.
+Classes in the SUT (_Subject Under Test_) override any classes within the Surefire providers. This means providers using any third party dependencies (other than the test framework itself) should shade these classes to a different package.
 
-* Common Provider Modules
+## Common Provider Modules
 
-  The <<<surefire-providers>>> module contains <<<common-junitXX>>> modules. These modules
-  depend on the <<<XX>>> version of JUnit and can access the JUnit APIs at the correct
-  JUnit version level. Unit tests can also be written that will run with the
-  correct JUnit version. At build time, all of the relevant parts of these "common"
-  modules are just shaded into the provider jar files.
+The `surefire-providers` module contains `common-junitXX` modules. These modules depend on the `XX` version of JUnit and can access the JUnit APIs at the correct JUnit version level. Unit tests can also be written that will run with the correct JUnit version. At build time, all of the relevant parts of these "common" modules are just shaded into the provider jar files.
 
-* Shadefire
+## Shadefire
 
-  "Shadefire" is the first module to be run in the
-  Surefire build. This creates a shaded version of the JUnit provider, and this provider
-  is thereafter used to build Surefire itself. This is
-  because the SUT overrides the provider, and the Shadefire provider has been
-  relocated to avoid this overriding when Surefire is building itself.
-
+"Shadefire" is the first module to be run in the Surefire build. This creates a shaded version of the JUnit provider, and this provider is thereafter used to build Surefire itself. This is because the SUT overrides the provider, and the Shadefire provider has been relocated to avoid this overriding when Surefire is building itself.

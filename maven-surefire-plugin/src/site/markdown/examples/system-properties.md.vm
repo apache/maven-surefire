@@ -1,46 +1,43 @@
-  ------
-  Using System Properties
-  ------
-  Allan Ramirez
-  Dan Tran
-  Konrad Windszus
-  ------
-  2010-01-09
-  ------
-  
- ~~ Licensed to the Apache Software Foundation (ASF) under one
- ~~ or more contributor license agreements.  See the NOTICE file
- ~~ distributed with this work for additional information
- ~~ regarding copyright ownership.  The ASF licenses this file
- ~~ to you under the Apache License, Version 2.0 (the
- ~~ "License"); you may not use this file except in compliance
- ~~ with the License.  You may obtain a copy of the License at
- ~~
- ~~   http://www.apache.org/licenses/LICENSE-2.0
- ~~
- ~~ Unless required by applicable law or agreed to in writing,
- ~~ software distributed under the License is distributed on an
- ~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- ~~ KIND, either express or implied.  See the License for the
- ~~ specific language governing permissions and limitations
- ~~ under the License.
+---
+title: Using System Properties
+author:
+  - Allan Ramirez
+  - Dan Tran
+  - Konrad Windszus
+date: 2010-01-09
+---
 
- ~~ NOTE: For help with the syntax of this file, see:
- ~~ http://maven.apache.org/doxia/references/apt-format.html
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
 
-Using System Properties
+  http://www.apache.org/licenses/LICENSE-2.0
 
-%{toc|section=0|fromDepth=2}
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
 
+# Using System Properties
 
-  There are different parameters which affect the system properties passed to ${thisPlugin} providers:
+<!-- MACRO{toc|section=0|fromDepth=2} -->
 
-* systemPropertyVariables
+There are different parameters which affect the system properties passed to ${thisPlugin} providers:
 
-  This configuration is the replacement of the deprecated <<<systemProperties>>>. It can accept any {{{https://maven.apache.org/ref/3-LATEST/maven-model-builder/#model-interpolation}expression value}}
-  referencing Maven's properties that can be converted <<to a String value>> or arbitrary literals.
+systemPropertyVariables
+-----------------------
 
-+---+
+This configuration is the replacement of the deprecated `systemProperties`. It can accept any [expression value](https://maven.apache.org/ref/3-LATEST/maven-model-builder/#model-interpolation) referencing Maven's properties that can be converted **to a String value** or arbitrary literals.
+
+```xml
 <project>
   [...]
   <build>
@@ -61,15 +58,17 @@ Using System Properties
   </build>
   [...]
 </project>
-+---+
+```
 
-* systemPropertiesFile
+systemPropertiesFile
+--------------------
 
-  This configuration allows to add system properties through an external properties file whose path is given via this plugin parameter.
+This configuration allows to add system properties through an external properties file whose path is given via this plugin parameter.
 
-* systemProperties (Deprecated)
+systemProperties (Deprecated)
+-----------------------------
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -92,14 +91,11 @@ Using System Properties
   </build>
   [...]
 </project>
-+---+
+```
 
-  Take note that only <<String typed>> properties can be passed as system
-  properties. Any attempt to pass any other Maven variable type (e.g. a <<<List>>>
-  or a <<<URL>>> variable) will cause the variable expression to be passed
-  literally (unevaluated). So given the example below:
+Take note that only **String typed** properties can be passed as system properties. Any attempt to pass any other Maven variable type (e.g. a `List` or a `URL` variable) will cause the variable expression to be passed literally (unevaluated). So given the example below:
 
-+---+
+```xml
 <project>
   [...]
   <build>
@@ -112,7 +108,7 @@ Using System Properties
           <systemProperties>
             <property>
               <name>buildDir</name>
-              <value>\${project.build.outputDirectory}</value>
+              <value>${esc.d}{project.build.outputDirectory}</value>
             </property>
           </systemProperties>
         </configuration>
@@ -121,44 +117,37 @@ Using System Properties
   </build>
   [...]
 </project>
-+---+
+```
 
-  The string <<$\{project.build.outputDirectory\}>> will be passed on literally because the type
-  of that expression is a <<<File>>>, not a <<<String>>>.
+The string **${esc.d}{project.build.outputDirectory}** will be passed on literally because the type of that expression is a `File`, not a `String`.
 
-  To inherit the <<<systemProperties>>> collection from the parent configuration,
-  you will need to specify <<<combine.children="append">>> on the <<<systemProperties>>> node in the child pom:
+To inherit the `systemProperties` collection from the parent configuration, you will need to specify `combine.children="append"` on the `systemProperties` node in the child pom:
 
-+---+
+```xml
   <systemProperties combine.children="append">
       <property>
          [...]
       </property>
    </systemProperties>
-+---+
+```
 
-* Effective System Properties
+Effective System Properties
+---------------------------
 
-  The effective system properties are merged from the following sources:
+The effective system properties are merged from the following sources:
 
-  [[1]] <<<systemProperties>>>
+1. `systemProperties`
+1. `systemPropertiesFile`
+1. `systemPropertyVariables`
+1. [User properties from the current Maven session](https://maven.apache.org/ref/3-LATEST/maven-core/apidocs/org/apache/maven/execution/MavenSession.html#getUserProperties()) (if `promoteUserPropertiesToSystemProperties` is not set to `false`)
 
-  [[2]] <<<systemPropertiesFile>>>
+where latter items may overwrite properties with the same name of former items.
 
-  [[3]] <<<systemPropertyVariables>>>
+Special VM Properties
+---------------------
 
-  [[4]] {{{https://maven.apache.org/ref/3-LATEST/maven-core/apidocs/org/apache/maven/execution/MavenSession.html#getUserProperties()}User properties from the current Maven session}} (if <<<promoteUserPropertiesToSystemProperties>>> is not set to <<<false>>>)
+Some system properties must be set on the command line of the forked VM, and cannot be set after the VM has been started. These properties must be added to the `argLine` parameter of the Surefire plugin. E.g.,
 
-  []
-
-  where latter items may overwrite properties with the same name of former items.
-
-
-* Special VM Properties
-
-  Some system properties must be set on the command line of the forked VM, and cannot be set after the
-  VM has been started. These properties must be added to the <<<argLine>>> parameter of the Surefire plugin. E.g.,
-
-+---+
+```xml
   <argLine>-Djava.endorsed.dirs=...</argLine>
-+---+
+```
