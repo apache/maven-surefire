@@ -829,6 +829,24 @@ public class JUnitPlatformProviderTest {
     }
 
     @Test
+    public void testExecutionListenerIsConfiguredViaListenerProperty() throws Exception {
+        RecordingTestExecutionListener.EVENTS.clear();
+
+        // whitespace and empty entries are ignored
+        Map<String, String> providerProperties =
+                singletonMap("listener", " " + RecordingTestExecutionListener.class.getName() + " ,");
+        ProviderParameters providerParameters = providerParametersMock(VerboseTestClass.class);
+        when(providerParameters.getProviderProperties()).thenReturn(providerProperties);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+
+        invokeProvider(provider, newTestsToRun(VerboseTestClass.class));
+
+        assertThat(RecordingTestExecutionListener.EVENTS)
+                .contains("executionStarted:test()", "executionFinished:test()");
+    }
+
+    @Test
     public void onlyGroupsIsDeclared() {
         Map<String, String> properties = singletonMap(GROUPS_PROP, "groupOne, groupTwo");
 
@@ -1345,6 +1363,20 @@ public class JUnitPlatformProviderTest {
         void test() {
             System.out.println("stdout");
             System.err.println("stderr");
+        }
+    }
+
+    public static class RecordingTestExecutionListener implements TestExecutionListener {
+        static final List<String> EVENTS = new ArrayList<>();
+
+        @Override
+        public void executionStarted(TestIdentifier testIdentifier) {
+            EVENTS.add("executionStarted:" + testIdentifier.getDisplayName());
+        }
+
+        @Override
+        public void executionFinished(TestIdentifier testIdentifier, TestExecutionResult testExecutionResult) {
+            EVENTS.add("executionFinished:" + testIdentifier.getDisplayName());
         }
     }
 
