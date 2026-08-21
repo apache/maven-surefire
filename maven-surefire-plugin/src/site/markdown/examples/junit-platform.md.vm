@@ -539,6 +539,43 @@ Be aware that this feature reserves system properties `includejunit5engines` and
 ...
 ```
 
+Registering a custom TestExecutionListener
+-------------------------------------------
+
+Similar to the JUnit 4 `RunListener` support, a JUnit Platform `TestExecutionListener` can be registered
+through the `listener` provider property. Each class name configured there is instantiated and registered
+with the JUnit Platform `Launcher` for every test run:
+
+```text
+...
+<build>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>${project.artifactId}</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+                <properties>
+                    <property>
+                        <name>listener</name>
+                        <value>com.example.MyTestExecutionListener</value>
+                    </property>
+                </properties>
+            </configuration>
+        </plugin>
+        ...
+    </plugins>
+</build>
+...
+```
+
+The `listener` property accepts a comma-separated list of class names; whitespace around each entry
+is trimmed and empty entries are ignored. Each class name may refer to a JUnit Platform
+`TestExecutionListener`, a JUnit 4 `org.junit.runner.notification.RunListener`, or a TestNG listener.
+JUnit Platform and JUnit 4 listeners are handled by the provider, while TestNG listeners are forwarded
+to the TestNG engine.
+
 Configuration Parameters
 ------------------------
 

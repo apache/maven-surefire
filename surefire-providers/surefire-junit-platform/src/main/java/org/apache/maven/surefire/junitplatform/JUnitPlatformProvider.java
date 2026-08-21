@@ -272,11 +272,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private void execute(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter) {
         List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
         testExecutionListeners.add(adapter);
-
-        TestExecutionListener customListeners = createJUnit4Listeners();
-        if (customListeners != null) {
-            testExecutionListeners.add(customListeners);
-        }
+        testExecutionListeners.addAll(createTestExecutionListeners());
 
         if (testsToRun.allowEagerReading()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
@@ -292,29 +288,70 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    /* Takes care for JUnit 4 RunListener execution.
-     * The problem we have here is that testng's listeners are being configured with the same name in the project's pom.
-     * So we have to try wether we can instantiate something from JUnit 4 or not.
+    /**
+     * Instantiates the listeners configured through the {@code listener} provider property.
+     * A class name may refer to a JUnit Platform {@link TestExecutionListener}, a JUnit 4
+     * {@code org.junit.runner.notification.RunListener}, or a TestNG listener. TestNG listeners
+     * are ignored here because they are forwarded to the TestNG engine through the
+     * {@code testng.listeners} configuration parameter instead.
+     *
+     * @return the configured JUnit Platform {@link TestExecutionListener}s, or an empty list
+     *     if none were declared
      */
-    private TestExecutionListener createJUnit4Listeners() {
-
+    private List<TestExecutionListener> createTestExecutionListeners() {
         String listeners = parameters.getProviderProperties().get("listener");
-        if (listeners != null) {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            List<Object> runListeners = new ArrayList<>();
-            for (String listener : listeners.split(",")) {
-                try {
-                    Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
-                    runListeners.add(ReflectionUtils.instantiate(cl, listener, runListenerClass));
-                } catch (ClassCastException | ClassNotFoundException c) {
-                    // ignored as we may be in not-JUnit 4 context like testng
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            return new JUnit4ListenersAdapter(runListeners);
+        if (listeners == null) {
+            return Collections.emptyList();
         }
-        return null;
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        List<Object> runListeners = new ArrayList<>();
+        List<TestExecutionListener> testExecutionListeners = new ArrayList<>();
+        for (String listener : stream(listeners.split(","))
+                .map(String::trim)
+                .filter(trimmed -> !trimmed.isEmpty())
+                .collect(toList())) {
+            TestExecutionListener testExecutionListener = instantiateTestExecutionListener(cl, listener);
+            if (testExecutionListener != null) {
+                testExecutionListeners.add(testExecutionListener);
+            } else {
+                Object runListener = instantiateJUnit4RunListener(cl, listener);
+                if (runListener != null) {
+                    runListeners.add(runListener);
+                }
+                // otherwise ignored as we may be in a TestNG context
+            }
+        }
+        if (!runListeners.isEmpty()) {
+            testExecutionListeners.add(new JUnit4ListenersAdapter(runListeners));
+        }
+        return testExecutionListeners;
+    }
+
+    private TestExecutionListener instantiateTestExecutionListener(ClassLoader cl, String listener) {
+        try {
+            Class<?> listenerClass = cl.loadClass(listener);
+            if (!TestExecutionListener.class.isAssignableFrom(listenerClass)) {
+                return null;
+            }
+            return ReflectionUtils.instantiate(cl, listener, TestExecutionListener.class);
+        } catch (ClassNotFoundException e) {
+            // the configured class is not on the classpath
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object instantiateJUnit4RunListener(ClassLoader cl, String listener) {
+        try {
+            Class<?> runListenerClass = cl.loadClass("org.junit.runner.notification.RunListener");
+            return ReflectionUtils.instantiate(cl, listener, runListenerClass);
+        } catch (ClassCastException | ClassNotFoundException c) {
+            // ignored as we may be in not-JUnit 4 context like testng
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     LauncherDiscoveryRequest buildLauncherDiscoveryRequestForRerunFailures(RunListenerAdapter adapter) {
