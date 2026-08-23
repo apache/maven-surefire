@@ -22,6 +22,9 @@ updates:
     - "master"
     - "dependencies"
   directory: "/"
+  exclude-paths:
+    - "maven-failsafe-plugin/src/it/**"
+    - "surefire-its/src/test/resources/**"
   schedule:
     interval: "daily"
   ignore:
