@@ -284,39 +284,34 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     /**
-     * Build a {@code [outer][inner]} suffix from every JUnit Jupiter
-     * {@code [class-template-invocation:#N]} unique-id segment. Nested
-     * {@code @ParameterizedClass} declarations emit more than one; taking only
-     * the last would collapse outer #1/inner #1 with outer #2/inner #1.
+     * Collect every {@code [class-template-invocation:#N]} / {@code [test-template-invocation:#N]}
+     * index from the unique id. Nested {@code @ParameterizedClass} declarations emit more than
+     * one class segment; taking only the last would collapse outer #1/inner #1 with outer #2/inner #1.
      *
      * @param uniqueId the platform unique id string
-     * @return the suffix, or an empty string when the id has no class-template invocation
+     * @param segmentType {@code class-template-invocation} or {@code test-template-invocation}
+     * @return {@code [outer][inner]} or empty when the id has no such segment
      */
-    private static String extractClassTemplateInvocationSuffix(String uniqueId) {
-        if (uniqueId == null) {
+    private static String extractInvocationIndexSuffix(String uniqueId, String segmentType) {
+        if (uniqueId == null || uniqueId.isEmpty()) {
             return "";
         }
-        String marker = "[class-template-invocation:";
-        StringBuilder suffix = new StringBuilder();
-        int from = 0;
-        while (true) {
-            int start = uniqueId.indexOf(marker, from);
-            if (start < 0) {
-                break;
+        try {
+            StringBuilder suffix = new StringBuilder();
+            for (UniqueId.Segment segment : UniqueId.parse(uniqueId).getSegments()) {
+                if (!segmentType.equals(segment.getType())) {
+                    continue;
+                }
+                String value = segment.getValue();
+                if (value.startsWith("#")) {
+                    value = value.substring(1);
+                }
+                suffix.append('[').append(value).append(']');
             }
-            start += marker.length();
-            int end = uniqueId.indexOf(']', start);
-            if (end <= start) {
-                break;
-            }
-            String value = uniqueId.substring(start, end);
-            if (value.startsWith("#")) {
-                value = value.substring(1);
-            }
-            suffix.append('[').append(value).append(']');
-            from = end + 1;
+            return suffix.toString();
+        } catch (RuntimeException ignored) {
+            return "";
         }
-        return suffix.toString();
     }
 
     private String safeGetMessage(Throwable throwable) {
@@ -591,7 +586,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             boolean isTestTemplate = testIdentifier.getLegacyReportingName().matches("^.*\\[\\d+]$");
             // JUnit 6 @ParameterizedClass parents have a ClassSource, so they are missed by
             // hasParameterizedParent, and the method legacy name no longer includes [N] (#3303).
-            String classTemplateInvocationSuffix = extractClassTemplateInvocationSuffix(testIdentifier.getUniqueId());
+            String uniqueId = testIdentifier.getUniqueId();
+            String classTemplateInvocationSuffix = extractInvocationIndexSuffix(uniqueId, "class-template-invocation");
+            String testTemplateInvocationSuffix = extractInvocationIndexSuffix(uniqueId, "test-template-invocation");
 
             boolean parameterized = isParameterized
                     || hasParameterizedParent
@@ -603,11 +600,20 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             boolean hasLegacyDescription = description.startsWith(methodName + '(');
             boolean hasDisplayName = !equalDescriptions || !hasLegacyDescription;
             String methodDesc = parameterized ? description : methodName;
-            // JUnit 6.1+ already puts the class index before a method invocation index
-            // (method()[1][2]); do not append again just because the name does not end
-            // with the last class index.
-            if (!classTemplateInvocationSuffix.isEmpty() && !methodDesc.contains(classTemplateInvocationSuffix)) {
-                methodDesc = methodDesc + classTemplateInvocationSuffix;
+            // Rebuild as [class][method]. A contains() check on the class index alone
+            // treated foo()[2] (method #2) as already tagged for class #2, and
+            // foo()[1] + class #2 became foo()[1][2] instead of foo()[2][1].
+            if (!classTemplateInvocationSuffix.isEmpty()) {
+                String desired = classTemplateInvocationSuffix + testTemplateInvocationSuffix;
+                if (!methodDesc.endsWith(desired)) {
+                    if (!testTemplateInvocationSuffix.isEmpty() && methodDesc.endsWith(testTemplateInvocationSuffix)) {
+                        methodDesc =
+                                methodDesc.substring(0, methodDesc.length() - testTemplateInvocationSuffix.length())
+                                        + desired;
+                    } else {
+                        methodDesc = methodDesc + classTemplateInvocationSuffix;
+                    }
+                }
             }
             String methodDisp = hasDisplayName ? methodDisplay : methodDesc;
 
