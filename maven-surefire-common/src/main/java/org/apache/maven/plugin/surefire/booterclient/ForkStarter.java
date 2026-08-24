@@ -793,11 +793,9 @@ public class ForkStarter {
     private Iterable<?> getForkPerTestSetTestSets(SurefireProperties effectiveSystemProperties)
             throws SurefireBooterForkException {
         if (isForkJvmDifferentFromBuildJvm()) {
-            List<TypeEncodedValue> testSets = new ArrayList<>();
-            for (String testClassName : discoverTestClassNames(effectiveSystemProperties)) {
-                testSets.add(new TypeEncodedValue(Class.class.getName(), testClassName));
-            }
-            return testSets;
+            return discoverTestClassNames(effectiveSystemProperties).stream()
+                    .map(testClassName -> new TypeEncodedValue(Class.class.getName(), testClassName))
+                    .collect(toList());
         }
         return getSuitesIterator();
     }
@@ -868,13 +866,10 @@ public class ForkStarter {
             return Collections.emptyList();
         }
         try {
-            List<String> testClassNames = new ArrayList<>();
-            for (String line : Files.readAllLines(discoveryFile.toPath(), UTF_8)) {
-                if (!line.trim().isEmpty()) {
-                    testClassNames.add(line.trim());
-                }
-            }
-            return testClassNames;
+            return Files.readAllLines(discoveryFile.toPath(), UTF_8).stream()
+                    .map(String::trim)
+                    .filter(String::isEmpty)
+                    .collect(toList());
         } catch (IOException e) {
             throw new SurefireBooterForkException("Cannot read discovered tests from " + discoveryFile, e);
         }
