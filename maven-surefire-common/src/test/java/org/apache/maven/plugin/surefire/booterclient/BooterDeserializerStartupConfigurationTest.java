@@ -165,7 +165,8 @@ public class BooterDeserializerStartupConfigurationTest {
                 false,
                 null,
                 1,
-                "tcp://localhost:63003");
+                "tcp://localhost:63003",
+                null);
         try (InputStream inputStream = Files.newInputStream(propsTest.toPath())) {
             BooterDeserializer booterDeserializer = new BooterDeserializer(inputStream);
             assertNull(booterDeserializer.getPluginPid());

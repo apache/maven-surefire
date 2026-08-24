@@ -39,6 +39,14 @@ public final class TypeEncodedValue {
         this.value = value;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     private boolean isTypeClass() {
         return Class.class.getName().equals(type);
     }
