@@ -234,7 +234,15 @@ public class BooterDeserializerProviderConfigurationTest {
             test = "aTest";
         }
         final File propsTest = booterSerializer.serialize(
-                props, booterConfiguration, testProviderConfiguration, test, readTestsFromInStream, 51L, 1, "pipe://1");
+                props,
+                booterConfiguration,
+                testProviderConfiguration,
+                test,
+                readTestsFromInStream,
+                51L,
+                1,
+                "pipe://1",
+                null);
         BooterDeserializer booterDeserializer = new BooterDeserializer(new FileInputStream(propsTest));
         assertEquals("51", (Object) booterDeserializer.getPluginPid());
         assertEquals("pipe://1", booterDeserializer.getConnectionString());

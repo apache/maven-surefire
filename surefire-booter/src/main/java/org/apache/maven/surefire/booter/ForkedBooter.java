@@ -29,6 +29,8 @@ import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
@@ -56,6 +58,7 @@ import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
 
 import static java.lang.Thread.currentThread;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.ServiceLoader.load;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.cli.CommandLineOption.LOGGING_LEVEL_DEBUG;
@@ -101,6 +104,7 @@ public final class ForkedBooter {
     private ForkingReporterFactory forkingReporterFactory;
     private StartupConfiguration startupConfiguration;
     private Object testSet;
+    private String discoverTestsOutputFile;
 
     private void setupBooter(
             String tmpDir, String dumpFileName, String surefirePropsFileName, String effectiveSystemPropertiesFileName)
@@ -110,6 +114,7 @@ public final class ForkedBooter {
         setSystemProperties(new File(tmpDir, effectiveSystemPropertiesFileName));
 
         providerConfiguration = booterDeserializer.deserialize();
+        discoverTestsOutputFile = booterDeserializer.getDiscoverTestsOutputFile();
 
         // Configure StackTraceProvider with additional filter prefixes and max frames
         String stackTraceFilterPrefixes =
@@ -165,8 +170,10 @@ public final class ForkedBooter {
 
         ClassLoader classLoader = currentThread().getContextClassLoader();
         classLoader.setDefaultAssertionStatus(classpathConfiguration.isEnableAssertions());
-        boolean readTestsFromCommandReader = providerConfiguration.isReadTestsFromInStream();
-        testSet = createTestSet(providerConfiguration.getTestForFork(), readTestsFromCommandReader, classLoader);
+        if (discoverTestsOutputFile == null) {
+            boolean readTestsFromCommandReader = providerConfiguration.isReadTestsFromInStream();
+            testSet = createTestSet(providerConfiguration.getTestForFork(), readTestsFromCommandReader, classLoader);
+        }
     }
 
     private void execute() {
@@ -381,7 +388,29 @@ public final class ForkedBooter {
     }
 
     private void runSuitesInProcess() throws TestSetFailedException, InvocationTargetException {
-        createProviderInCurrentClassloader().invoke(testSet);
+        if (discoverTestsOutputFile != null) {
+            discoverTestsInProcess();
+        } else {
+            createProviderInCurrentClassloader().invoke(testSet);
+        }
+    }
+
+    /**
+     * Lists the test classes to run using the provider (which runs here, in the fork's JVM matching the toolchain),
+     * writes their names to {@link #discoverTestsOutputFile} (one per line, UTF-8) and returns without running any
+     * test. See <a href="https://github.com/apache/maven-surefire/issues/2151">Issue 2151</a>.
+     */
+    private void discoverTestsInProcess() throws TestSetFailedException {
+        SurefireProvider provider = createProviderInCurrentClassloader();
+        List<String> testClassNames = new ArrayList<>();
+        for (Class<?> testClass : provider.getSuites()) {
+            testClassNames.add(testClass.getName());
+        }
+        try {
+            Files.write(new File(discoverTestsOutputFile).toPath(), testClassNames, UTF_8);
+        } catch (IOException e) {
+            throw new TestSetFailedException("Cannot write discovered tests to " + discoverTestsOutputFile, e);
+        }
     }
 
     private ForkingReporterFactory createForkingReporterFactory() {

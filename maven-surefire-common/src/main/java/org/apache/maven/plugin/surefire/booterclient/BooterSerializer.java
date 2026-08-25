@@ -37,12 +37,14 @@ import org.apache.maven.surefire.booter.KeyValueSource;
 import org.apache.maven.surefire.booter.ProcessCheckerType;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
+import org.apache.maven.surefire.booter.TypeEncodedValue;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CHILD_DELEGATION;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.CLASSPATH;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.ENABLE_ASSERTIONS;
 import static org.apache.maven.surefire.booter.AbstractPathConfiguration.SUREFIRE_CLASSPATH;
+import static org.apache.maven.surefire.booter.BooterConstants.DISCOVER_TESTS_OUTPUT_FILE;
 import static org.apache.maven.surefire.booter.BooterConstants.EXCLUDES_PROPERTY_PREFIX;
 import static org.apache.maven.surefire.booter.BooterConstants.FAIL_FAST_COUNT;
 import static org.apache.maven.surefire.booter.BooterConstants.FORKTESTSET;
@@ -105,10 +107,12 @@ class BooterSerializer {
             boolean readTestsFromInStream,
             Long pid,
             int forkNumber,
-            String forkNodeConnectionString)
+            String forkNodeConnectionString,
+            String discoverTestsOutputFile)
             throws IOException {
         SurefireProperties properties = new SurefireProperties(sourceProperties);
         properties.setNullableProperty(FORK_NODE_CONNECTION_STRING, forkNodeConnectionString);
+        properties.setNullableProperty(DISCOVER_TESTS_OUTPUT_FILE, discoverTestsOutputFile);
         properties.setProperty(PLUGIN_PID, pid);
 
         AbstractPathConfiguration cp = startupConfiguration.getClasspathConfiguration();
@@ -178,6 +182,10 @@ class BooterSerializer {
     private static String getTypeEncoded(Object value) {
         if (value == null) {
             return null;
+        }
+        if (value instanceof TypeEncodedValue) {
+            TypeEncodedValue encoded = (TypeEncodedValue) value;
+            return encoded.getType() + "|" + encoded.getValue();
         }
         String valueToUse = value instanceof Class ? ((Class<?>) value).getName() : value.toString();
         return value.getClass().getName() + "|" + valueToUse;

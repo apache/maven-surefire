@@ -79,6 +79,18 @@ public class BooterDeserializer {
         return properties.getProperty(PLUGIN_PID);
     }
 
+    /**
+     * When set, the fork runs in discovery mode: it just lists the test classes to run (using the provider),
+     * writes their names to this file (one per line, UTF-8) and exits without running any test. This lets us
+     * list the tests inside a JVM that matches the toolchain, for the cases where Maven's own JVM cannot load
+     * the test classes (see <a href="https://github.com/apache/maven-surefire/issues/2151">Issue 2151</a>).
+     *
+     * @return the absolute path of the discovery output file, or {@code null} for a normal run
+     */
+    public String getDiscoverTestsOutputFile() {
+        return properties.getProperty(DISCOVER_TESTS_OUTPUT_FILE);
+    }
+
     public ProviderConfiguration deserialize() {
         final File reportsDirectory = new File(properties.getProperty(REPORTSDIRECTORY));
         final String testNgVersion = properties.getProperty(TESTARTIFACT_VERSION);

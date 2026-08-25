@@ -23,9 +23,12 @@ import javax.annotation.Nonnull;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -73,6 +76,7 @@ import org.apache.maven.surefire.booter.ProviderFactory;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.booter.SurefireExecutionException;
+import org.apache.maven.surefire.booter.TypeEncodedValue;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
@@ -86,6 +90,7 @@ import org.apache.maven.surefire.extensions.util.LineConsumerThread;
 import static java.lang.StrictMath.min;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.currentThread;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.addAll;
 import static java.util.UUID.randomUUID;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
@@ -109,6 +114,7 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 import static org.apache.maven.surefire.booter.SystemUtils.pidOf;
+import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
@@ -342,8 +348,8 @@ public class ForkStarter {
 
         Queue<String> tests = new ConcurrentLinkedQueue<>();
 
-        for (Class<?> clazz : getSuitesIterator()) {
-            tests.add(clazz.getName());
+        for (String testClassName : getTestClassNames(effectiveSystemProps)) {
+            tests.add(testClassName);
         }
 
         Queue<TestProvidingInputStream> forks = new ConcurrentLinkedQueue<>();
@@ -408,7 +414,8 @@ public class ForkStarter {
             addShutDownHook(shutdown);
             int failFastCount = providerConfiguration.getSkipAfterFailureCount();
             AtomicInteger notifyForksToSkipTestsNow = new AtomicInteger(failFastCount);
-            Collection<Future<RunResult>> results = stream(((Iterable<?>) getSuitesIterator()).spliterator(), false)
+            Collection<Future<RunResult>> results = stream(
+                            getForkPerTestSetTestSets(effectiveSystemProps).spliterator(), false)
                     .filter(fork -> !forkConfiguration.getPluginPlatform().isShutdown())
                     .map(testSet -> (Callable<RunResult>) () -> {
                         int forkNumber = drawNumber();
@@ -513,6 +520,29 @@ public class ForkStarter {
             ForkNodeFactory forkNodeFactory,
             boolean readTestsFromInStream)
             throws SurefireBooterForkException {
+        return fork(
+                testSet,
+                providerProperties,
+                forkClient,
+                effectiveSystemProperties,
+                forkNumber,
+                commandReader,
+                forkNodeFactory,
+                readTestsFromInStream,
+                null);
+    }
+
+    private RunResult fork(
+            Object testSet,
+            PropertiesWrapper providerProperties,
+            ForkClient forkClient,
+            SurefireProperties effectiveSystemProperties,
+            int forkNumber,
+            AbstractCommandReader commandReader,
+            ForkNodeFactory forkNodeFactory,
+            boolean readTestsFromInStream,
+            String discoverTestsOutputFile)
+            throws SurefireBooterForkException {
         CloseableCloser closer = new CloseableCloser(forkNumber, commandReader);
         final String tempDir;
         final File surefireProperties;
@@ -542,7 +572,8 @@ public class ForkStarter {
                     readTestsFromInStream,
                     pluginPid,
                     forkNumber,
-                    connectionString);
+                    connectionString,
+                    discoverTestsOutputFile);
 
             if (effectiveSystemProperties != null) {
                 SurefireProperties filteredProperties =
@@ -720,8 +751,127 @@ public class ForkStarter {
                     startupConfiguration, providerConfiguration, unifiedClassLoader, reporterFactory);
             SurefireProvider surefireProvider = providerFactory.createProvider(false);
             return surefireProvider.getSuites();
+        } catch (UnsupportedClassVersionError e) {
+            throw new SurefireBooterForkException(
+                    "Could not load the test classes to figure out which tests to run. This usually means the tests "
+                            + "were compiled with a newer JDK than the one running Maven, and forking (forkCount greater "
+                            + "than 1 or reuseForks=false) needs to list the tests using Maven's own JVM. Point the "
+                            + "'jvm' parameter or a 'jdk' toolchain at a JDK that is at least as new as the one used to "
+                            + "compile the tests.",
+                    e);
         } catch (SurefireExecutionException e) {
             throw new SurefireBooterForkException("Unable to create classloader to find test suites", e);
+        }
+    }
+
+    /**
+     * Gives back the names of the test classes to run. If the tests run in a different JVM than Maven itself
+     * (because a {@code jdk} toolchain or the {@code jvm} parameter is set), we ask a short-lived fork to list
+     * them, so Maven never has to load test classes that may be compiled for a newer JDK. Otherwise we just
+     * list them here, like before.
+     *
+     * @see <a href="https://github.com/apache/maven-surefire/issues/2151">Issue 2151</a>
+     */
+    private List<String> getTestClassNames(SurefireProperties effectiveSystemProperties)
+            throws SurefireBooterForkException {
+        if (isForkJvmDifferentFromBuildJvm()) {
+            return discoverTestClassNames(effectiveSystemProperties);
+        }
+        List<String> testClassNames = new ArrayList<>();
+        for (Class<?> clazz : getSuitesIterator()) {
+            testClassNames.add(clazz.getName());
+        }
+        return testClassNames;
+    }
+
+    /**
+     * Gives back the test sets for {@code fork-per-test-set} runs. When the tests run in a different JVM than Maven,
+     * we discover the class names in a fork (see {@link #getTestClassNames}) and wrap each one as a
+     * {@link TypeEncodedValue} of type {@link Class}, so every fork loads the class with its own JVM. Otherwise we
+     * reuse the already-loaded {@link Class} instances, like before.
+     */
+    private Iterable<?> getForkPerTestSetTestSets(SurefireProperties effectiveSystemProperties)
+            throws SurefireBooterForkException {
+        if (isForkJvmDifferentFromBuildJvm()) {
+            return discoverTestClassNames(effectiveSystemProperties).stream()
+                    .map(testClassName -> new TypeEncodedValue(Class.class.getName(), testClassName))
+                    .collect(toList());
+        }
+        return getSuitesIterator();
+    }
+
+    /**
+     * @return {@code true} when the tests run in a different JDK than Maven (set through a {@code jdk} toolchain or the
+     *     {@code jvm} parameter), in which case we need a fork to list the test classes.
+     */
+    private boolean isForkJvmDifferentFromBuildJvm() {
+        File testsJdkHome = forkConfiguration.getJdkForTests().getJdkHome();
+        return testsJdkHome != null && !testsJdkHome.equals(toJdkHomeFromJre());
+    }
+
+    /**
+     * Starts one short-lived fork with the configured test JVM that lists the test classes to run and writes their
+     * names to a temporary file, then reads them back. The candidate class names already travel to the fork through
+     * the provider properties (from the directory scan Maven did earlier), so no test class is loaded in Maven's JVM.
+     */
+    private List<String> discoverTestClassNames(SurefireProperties effectiveSystemProperties)
+            throws SurefireBooterForkException {
+        File discoveryFile;
+        try {
+            discoveryFile =
+                    File.createTempFile("surefire-discovered-tests", ".txt", forkConfiguration.getTempDirectory());
+        } catch (IOException e) {
+            throw new SurefireBooterForkException("Cannot create temporary file for test discovery", e);
+        }
+
+        TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
+        TestLessInputStream stream = builder.build();
+        Thread shutdown = createImmediateShutdownHookThread(builder, providerConfiguration.getShutdown());
+        ScheduledFuture<?> ping = triggerPingTimerForShutdown(builder);
+        int forkNumber = drawNumber();
+        PropertiesWrapper props = new PropertiesWrapper(providerConfiguration.getProviderProperties());
+        try {
+            addShutDownHook(shutdown);
+            DefaultReporterFactory forkedReporterFactory =
+                    new DefaultReporterFactory(startupReportConfiguration, log, forkNumber);
+            defaultReporterFactories.add(forkedReporterFactory);
+            ForkClient forkClient = new ForkClient(forkedReporterFactory, stream, forkNumber);
+            ForkNodeFactory node = forkConfiguration.getForkNodeFactory();
+            if (!forkConfiguration.getPluginPlatform().isShutdown()) {
+                fork(
+                        null,
+                        props,
+                        forkClient,
+                        effectiveSystemProperties,
+                        forkNumber,
+                        stream,
+                        node,
+                        false,
+                        discoveryFile.getAbsolutePath());
+            }
+            return readTestClassNames(discoveryFile);
+        } finally {
+            returnNumber(forkNumber);
+            removeShutdownHook(shutdown);
+            ping.cancel(true);
+            builder.removeStream(stream);
+            if (!forkConfiguration.isDebug() && !discoveryFile.delete()) {
+                discoveryFile.deleteOnExit();
+            }
+        }
+    }
+
+    private static List<String> readTestClassNames(File discoveryFile) throws SurefireBooterForkException {
+        if (!discoveryFile.isFile()) {
+            return Collections.emptyList();
+        }
+        try {
+            return Files.readAllLines(discoveryFile.toPath(), UTF_8).stream()
+                    .map(String::trim)
+                    .filter(String::isEmpty)
+                    .collect(toList());
+        } catch (IOException e) {
+            throw new SurefireBooterForkException("Cannot read discovered tests from " + discoveryFile, e);
         }
     }
 
