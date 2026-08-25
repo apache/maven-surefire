@@ -18,7 +18,20 @@
  */
 package org.apache.maven.plugins.surefire.report.stubs;
 
+import java.io.InputStream;
+
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+
 public class ReportTestStub extends SurefireReportMavenProjectStub {
+
+    public ReportTestStub() {
+        try (InputStream is =
+                ReportTestStub.class.getResourceAsStream("/unit/basic-surefire-report-test/plugin-config.xml")) {
+            setModel(new MavenXpp3Reader().read(is));
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not read test project model", e);
+        }
+    }
 
     @Override
     protected String getProjectDirName() {

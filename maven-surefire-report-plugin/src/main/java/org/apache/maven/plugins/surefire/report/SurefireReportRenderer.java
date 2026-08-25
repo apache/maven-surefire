@@ -366,9 +366,7 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
         if (!testCase.isSuccessful()) {
             sink.tableCell();
-            sinkAnchor("TC_" + toHtmlId(testCase.getFullName()));
-
-            link("#" + toHtmlId(testCase.getFullName()), testCase.getName());
+            linkTestCaseToSource(testCase);
 
             SinkEventAttributeSet atts = new SinkEventAttributeSet();
             atts.addAttribute(CLASS, "detailToggle");
@@ -398,7 +396,9 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
             sink.tableCell_();
         } else {
-            sinkCellAnchor(testCase.getName(), "TC_" + toHtmlId(testCase.getFullName()));
+            sink.tableCell();
+            linkTestCaseToSource(testCase);
+            sink.tableCell_();
         }
 
         tableCell(formatI18nString("surefire", "value.time", testCase.getTime()));
@@ -507,13 +507,13 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
 
                 String fullClassName = testCase.getFullClassName();
                 String errorLineNumber = testCase.getFailureErrorLine();
-                if (xrefTestLocation != null) {
-                    String path = fullClassName.replace('.', '/');
-                    sink.link(xrefTestLocation + "/" + path + ".html#L" + errorLineNumber);
+                String xrefLocation = getXrefTestSourceLocation(fullClassName, errorLineNumber);
+                if (xrefLocation != null) {
+                    sink.link(xrefLocation);
                 }
                 sink.text(fullClassName + ":" + errorLineNumber);
 
-                if (xrefTestLocation != null) {
+                if (xrefLocation != null) {
                     sink.link_();
                 }
                 sink.unknown("div", TAG_TYPE_END, null);
@@ -529,6 +529,44 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
         sink.lineBreak();
 
         endSection();
+    }
+
+    private void linkTestCaseToSource(ReportTestCase testCase) {
+        String xrefLocation = getXrefTestSourceLocation(testCase.getFullClassName(), null);
+        SinkEventAttributeSet atts = new SinkEventAttributeSet(ID, "TC_" + toHtmlId(testCase.getFullName()));
+        if (xrefLocation == null && !testCase.isSuccessful()) {
+            xrefLocation = "#" + toHtmlId(testCase.getFullName());
+        }
+        if (xrefLocation != null) {
+            atts.addAttribute(HREF, xrefLocation);
+        }
+
+        sink.unknown(A.toString(), TAG_TYPE_START, atts);
+        text(testCase.getName());
+        sink.unknown(A.toString(), TAG_TYPE_END, null);
+    }
+
+    private String getXrefTestSourceLocation(String fullClassName, String lineNumber) {
+        if (xrefTestLocation == null || fullClassName == null) {
+            return null;
+        }
+
+        String location = xrefTestLocation + "/" + toXrefTestSourcePath(fullClassName);
+        return lineNumber == null || lineNumber.isEmpty() ? location : location + "#L" + lineNumber;
+    }
+
+    static String toXrefTestSourcePath(String fullClassName) {
+        int reportNameSuffix = fullClassName.indexOf('(');
+        if (reportNameSuffix >= 0) {
+            fullClassName = fullClassName.substring(0, reportNameSuffix);
+        }
+
+        int nestedClass = fullClassName.indexOf('$');
+        if (nestedClass >= 0) {
+            fullClassName = fullClassName.substring(0, nestedClass);
+        }
+
+        return fullClassName.replace('.', '/') + ".html";
     }
 
     private void constructHotLinks() {

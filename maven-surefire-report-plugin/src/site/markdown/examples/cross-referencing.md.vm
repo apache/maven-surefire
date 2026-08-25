@@ -20,7 +20,7 @@ date: July 2006
 <!-- limitations under the License.-->
 # Source Code Cross Reference
 
-There are times when we wish to know right away the line number of the source code that caused a test to the fail. The Surefire Report Plugin has the capability to cross reference the source code that made the test fail. In order to activate this feature, the `maven-jxr-plugin` should be declared in the `<reporting>` section of the POM along with the `maven-surefire-report-plugin`. For more details, please read the documentation of the [Maven JXR Plugin](http://maven.apache.org/plugins/maven-jxr-plugin/).
+The Surefire Report Plugin can link every reported test to its source class. For failed tests, the failure details link directly to the source line when it is available from the stack trace. To activate this feature, declare the `maven-jxr-plugin` in the `<reporting>` section of the POM along with the `maven-surefire-report-plugin`. For more details, read the documentation of the [Maven JXR Plugin](https://maven.apache.org/jxr/maven-jxr-plugin/).
 
 ```xml
 <project>
@@ -46,7 +46,7 @@ There are times when we wish to know right away the line number of the source co
 </project>
 ```
 
-After executing `mvn site` for site generation, you'll notice that from the **Failure Details** section of the report, a link is available to redirect you to the source code that caused the failure.
+After executing `mvn site`, each test name links to its source class. The **Failure Details** section additionally links to the source line that caused the failure when that line can be determined.
 
 In the figure below the code that caused the failure is _com.test.proj.AppTest:36_
 
