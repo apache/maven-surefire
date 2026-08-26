@@ -28,7 +28,7 @@ public class Surefire3446IT extends SurefireJUnit4IntegrationTestCase {
     @Test
     void shouldRunSelectedNestedClass() {
         unpack("surefire-3446-nested-selection")
-                .setTestToRun("issue3446.NestedTest$Selected")
+                .setTestToRun("issue3446.NestedTest$Intermediate$Selected")
                 .executeTest()
                 .verifyErrorFree(1);
     }

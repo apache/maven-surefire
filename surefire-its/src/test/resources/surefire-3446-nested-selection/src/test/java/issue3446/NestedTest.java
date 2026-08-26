@@ -39,18 +39,35 @@ class NestedTest {
     }
 
     @Nested
-    class Selected {
-        @Test
-        void selectedTest() {
-            assertTrue(outerSetUp);
-        }
-    }
+    class Intermediate {
+        private boolean intermediateSetUp;
 
-    @Nested
-    class Sibling {
+        @BeforeEach
+        void setUpIntermediate() {
+            assertTrue(outerSetUp);
+            intermediateSetUp = true;
+        }
+
         @Test
-        void siblingTestMustNotRun() {
-            fail("A sibling nested test must not run");
+        void intermediateTestMustNotRun() {
+            fail("The intermediate test must not run");
+        }
+
+        @Nested
+        class Selected {
+            @Test
+            void selectedTest() {
+                assertTrue(outerSetUp);
+                assertTrue(intermediateSetUp);
+            }
+        }
+
+        @Nested
+        class Sibling {
+            @Test
+            void siblingTestMustNotRun() {
+                fail("A sibling nested test must not run");
+            }
         }
     }
 }
