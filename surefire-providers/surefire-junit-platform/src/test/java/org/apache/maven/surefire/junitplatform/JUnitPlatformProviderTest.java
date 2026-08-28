@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.regex.Pattern;
 
 import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.report.ReportEntry;
@@ -55,6 +56,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
+import org.junit.platform.engine.discovery.ClassNameFilter;
 import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.UniqueIdSelector;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
@@ -81,6 +83,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CONFIGURATION_PARAMETERS;
@@ -558,6 +561,51 @@ public class JUnitPlatformProviderTest {
                 reportEntries.get(1).getSourceText());
         assertEquals("level2test", reportEntries.get(1).getName());
         assertNull(reportEntries.get(1).getNameText());
+    }
+
+    @Test
+    public void runsDirectlySelectedNestedClass() throws Exception {
+        assertDirectNestedClassSelection(NestingTest.Level1NestedTest.Level2NestedTest.class.getName());
+    }
+
+    @Test
+    public void runsDirectlySelectedNestedClassWithRegexInclude() throws Exception {
+        String className = NestingTest.Level1NestedTest.Level2NestedTest.class.getName();
+        assertDirectNestedClassSelection("%regex[" + Pattern.quote(className) + "]");
+    }
+
+    @Test
+    public void doesNotTreatDollarAsNestedClassSeparator() {
+        TestListResolver testListResolver = new TestListResolver(LegalDollarClass$Test.class.getName());
+        ProviderParameters parameters = providerParametersMock(testListResolver, LegalDollarClass$Test.class);
+        when(parameters.getProviderProperties())
+                .thenReturn(singletonMap(INCLUDES_SCAN_LIST, LegalDollarClass$Test.class.getName()));
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters);
+
+        assertThat(provider.getFilters()).hasSize(1);
+        ClassNameFilter includeFilter = (ClassNameFilter) provider.getFilters()[0];
+        assertTrue(includeFilter.apply(LegalDollarClass$Test.class.getName()).included());
+        assertFalse(includeFilter.apply(LegalDollarClass.class.getName()).included());
+    }
+
+    private static void assertDirectNestedClassSelection(String includeScanPattern) throws Exception {
+        Class<?> selectedClass = NestingTest.Level1NestedTest.Level2NestedTest.class;
+        TestListResolver testListResolver = new TestListResolver(selectedClass.getName());
+        ProviderParameters parameters = providerParametersMock(testListResolver, selectedClass);
+        when(parameters.getProviderProperties()).thenReturn(singletonMap(INCLUDES_SCAN_LIST, includeScanPattern));
+
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
+
+        invokeProvider(provider, null);
+
+        assertThat(executionListener.summaries).hasSize(1);
+        TestExecutionSummary summary = executionListener.summaries.get(0);
+        assertEquals(1, summary.getTestsFoundCount());
+        assertEquals(1, summary.getTestsSucceededCount());
+        assertEquals(0, summary.getTestsFailedCount());
     }
 
     @Test
@@ -1194,6 +1242,10 @@ public class JUnitPlatformProviderTest {
 
         ScanResult scanResult = mock(ScanResult.class);
         when(scanResult.applyFilter(any(), any())).thenReturn(testsToRun);
+        when(scanResult.size()).thenReturn(testClasses.length);
+        for (int i = 0; i < testClasses.length; i++) {
+            when(scanResult.getClassName(i)).thenReturn(testClasses[i].getName());
+        }
 
         RunOrderCalculator runOrderCalculator = mock(RunOrderCalculator.class);
         when(runOrderCalculator.orderTestClasses(any())).thenReturn(testsToRun);
@@ -1209,6 +1261,7 @@ public class JUnitPlatformProviderTest {
         when(providerParameters.getRunOrderCalculator()).thenReturn(runOrderCalculator);
         when(providerParameters.getReporterFactory()).thenReturn(reporterFactory);
         when(providerParameters.getTestRequest()).thenReturn(testRequest);
+        when(providerParameters.getTestClassLoader()).thenReturn(JUnitPlatformProviderTest.class.getClassLoader());
 
         return providerParameters;
     }
@@ -1592,3 +1645,8 @@ public class JUnitPlatformProviderTest {
         return (T) field.get(target);
     }
 }
+
+class LegalDollarClass {}
+
+@SuppressWarnings("checkstyle:typename")
+class LegalDollarClass$Test {}

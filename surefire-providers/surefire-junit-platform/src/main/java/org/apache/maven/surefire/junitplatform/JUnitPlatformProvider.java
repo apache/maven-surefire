@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -441,6 +442,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         // includeClassNamePatterns support only regex patterns
         Optional<String> includesList =
                 Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.INCLUDES_SCAN_LIST));
+        Set<String> enclosingClassNames = includesList.isPresent() ? getEnclosingClassNames() : Collections.emptySet();
         if (includesList.isPresent()) {
             String[] includesRegex = Stream.of(includesList.get().split(","))
                     .filter(s -> s.startsWith("%regex["))
@@ -448,7 +450,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .map(s -> s.substring(0, s.length() - 1))
                     .toArray(String[]::new);
             if (includesRegex.length > 0) {
-                filters.add(ClassNameFilter.includeClassNamePatterns(includesRegex));
+                filters.add(includeEnclosingClasses(
+                        ClassNameFilter.includeClassNamePatterns(includesRegex), enclosingClassNames));
             }
         }
 
@@ -475,16 +478,16 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     .collect(toList());
             if (!includes.isEmpty()) {
                 // use of CompositeFilter?
-                ClassNameFilter classNameFilter = clasName -> {
+                ClassNameFilter classNameFilter = className -> {
                     FilterResult result = includes.stream()
                             .map(pattern -> FilterResult.includedIf(
-                                    match(pattern, clasName) || matchClassName(clasName, pattern)))
+                                    match(pattern, className) || matchClassName(className, pattern)))
                             .filter(FilterResult::included)
                             .findAny()
                             .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
                     return result;
                 };
-                filters.add(classNameFilter);
+                filters.add(includeEnclosingClasses(classNameFilter, enclosingClassNames));
             }
         }
 
@@ -551,6 +554,33 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .ifPresent(filters::add);
 
         return filters.toArray(new Filter<?>[0]);
+    }
+
+    private Set<String> getEnclosingClassNames() {
+        Set<String> enclosingClassNames = new LinkedHashSet<>();
+        ScanResult scanResult = parameters.getScanResult();
+        for (int i = 0; i < scanResult.size(); i++) {
+            String className = scanResult.getClassName(i);
+            Class<?> testClass;
+            try {
+                testClass = parameters.getTestClassLoader().loadClass(className);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Unable to create test class '" + className + "'", e);
+            }
+            for (Class<?> enclosingClass = testClass.getEnclosingClass();
+                    enclosingClass != null;
+                    enclosingClass = enclosingClass.getEnclosingClass()) {
+                enclosingClassNames.add(enclosingClass.getName());
+            }
+        }
+        return enclosingClassNames;
+    }
+
+    private static ClassNameFilter includeEnclosingClasses(
+            ClassNameFilter classNameFilter, Set<String> enclosingClassNames) {
+        return className -> enclosingClassNames.contains(className)
+                ? FilterResult.included("Enclosing class of an included test class")
+                : classNameFilter.apply(className);
     }
 
     Filter<?>[] getFilters() {
