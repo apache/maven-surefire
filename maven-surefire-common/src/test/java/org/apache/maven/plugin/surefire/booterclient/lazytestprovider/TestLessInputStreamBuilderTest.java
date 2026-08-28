@@ -180,42 +180,48 @@ public class TestLessInputStreamBuilderTest {
     @Test
     public void shouldThrowUnsupportedException1() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        assertThrows(UnsupportedOperationException.class, () -> builder.getImmediateCommands()
-                .provideNewTest());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> builder.getImmediateCommands().provideNewTest());
     }
 
     @Test
     public void shouldThrowUnsupportedException2() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        assertThrows(UnsupportedOperationException.class, () -> builder.getImmediateCommands()
-                .skipSinceNextTest());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> builder.getImmediateCommands().skipSinceNextTest());
     }
 
     @Test
     public void shouldThrowUnsupportedException3() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        assertThrows(UnsupportedOperationException.class, () -> builder.getImmediateCommands()
-                .acknowledgeByeEventReceived());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> builder.getImmediateCommands().acknowledgeByeEventReceived());
     }
 
     @Test
     public void shouldThrowUnsupportedException4() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        assertThrows(UnsupportedOperationException.class, () -> builder.getCachableCommands()
-                .acknowledgeByeEventReceived());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> builder.getCachableCommands().acknowledgeByeEventReceived());
     }
 
     @Test
     public void shouldThrowUnsupportedException5() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        assertThrows(UnsupportedOperationException.class, () -> builder.getCachableCommands()
-                .provideNewTest());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> builder.getCachableCommands().provideNewTest());
     }
 
     @Test
     public void shouldThrowUnsupportedException6() {
         TestLessInputStreamBuilder builder = new TestLessInputStreamBuilder();
-        assertThrows(UnsupportedOperationException.class, () -> builder.getCachableCommands()
-                .noop());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> builder.getCachableCommands().noop());
     }
 }
