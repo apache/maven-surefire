@@ -28,8 +28,6 @@ updates:
   schedule:
     interval: "daily"
   ignore:
-    # Ignore Maven Core updates
-    - dependency-name: "org.apache.maven:*"
     # to remove when depending on core 4.x
     - dependency-name: "org.slf4j:*"
       versions: [ ">=2.0"]
