@@ -77,6 +77,21 @@ class SurefireReportTest {
 
         int idx = htmlContent.indexOf("images/icon_success_sml.gif");
         assertTrue(idx >= 0, "Wrong content in file: " + report);
+
+        assertThat(
+                htmlContent,
+                containsString("<a id=\"TC_com.shape.CircleTest.testX\" "
+                        + "href=\"./xref-test/com/shape/CircleTest.html\">testX</a>"));
+        assertThat(
+                htmlContent,
+                containsString("<a id=\"TC_com.shape.CircleTest.testRadius\" "
+                        + "href=\"./xref-test/com/shape/CircleTest.html\">testRadius</a>"));
+        assertThat(
+                htmlContent,
+                containsString("<a href=\"#com.shape.CircleTest.testRadius\">"
+                        + "<img src=\"images/icon_warning_sml.gif\" /></a>"));
+        assertThat(htmlContent, containsString("toggleDisplay('com.shape.CircleTest.testRadius')"));
+        assertThat(htmlContent, containsString("./xref-test/com/shape/CircleTest.html#L34"));
     }
 
     @Test
@@ -106,8 +121,7 @@ class SurefireReportTest {
 
         String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
-        int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
-        assertEquals(-1, idx);
+        assertFalse(htmlContent.contains("./xref-test/com/shape/CircleTest.html"));
     }
 
     @Test
@@ -119,8 +133,17 @@ class SurefireReportTest {
         assertTrue(report.exists());
         String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
-        int idx = htmlContent.indexOf("./xref-test/com/shape/CircleTest.html#L44");
-        assertTrue(idx < 0);
+        assertFalse(htmlContent.contains("./xref-test/com/shape/CircleTest.html"));
+    }
+
+    @Test
+    void testXrefTestSourcePath() {
+        assertEquals("com/shape/CircleTest.html", SurefireReportRenderer.toXrefTestSourcePath("com.shape.CircleTest"));
+        assertEquals(
+                "com/shape/OuterTest.html", SurefireReportRenderer.toXrefTestSourcePath("com.shape.OuterTest$Nested"));
+        assertEquals(
+                "com/shape/CircleTest.html",
+                SurefireReportRenderer.toXrefTestSourcePath("com.shape.CircleTest(Linux)"));
     }
 
     @SuppressWarnings("checkstyle:methodname")
@@ -133,11 +156,11 @@ class SurefireReportTest {
         assertTrue(report.exists());
         String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
-        int idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testX\"></a>testX</td>");
+        int idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testX\">testX</a></td>");
         assertTrue(idx > 0);
 
-        idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testRadius\"></a>"
-                + "<a href=\"#com.shape.CircleTest.testRadius\">testRadius</a>");
+        idx = htmlContent.indexOf("<td><a id=\"TC_com.shape.CircleTest.testRadius\" "
+                + "href=\"#com.shape.CircleTest.testRadius\">testRadius</a>");
         assertTrue(idx > 0);
     }
 

@@ -74,8 +74,8 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
     private File reportsDirectory;
 
     /**
-     * Link the violation line numbers to the (Test) Source XRef. Links will be created automatically if the JXR plugin is
-     * being used.
+     * Link test names to the (Test) Source XRef. Failure details link to the exact source line when available. Links will
+     * be created automatically if the JXR plugin is being used.
      */
     @Parameter(property = "linkXRef", defaultValue = "true")
     private boolean linkXRef;
