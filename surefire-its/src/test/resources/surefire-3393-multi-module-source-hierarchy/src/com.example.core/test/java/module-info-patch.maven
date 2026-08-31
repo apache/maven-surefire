@@ -1,0 +1,9 @@
+/*
+ * Whitebox test patch for the com.example.core module.
+ * Allows test code to access the non-exported com.example.core.internal package.
+ */
+patch-module com.example.core {
+    add-modules TEST-MODULE-PATH;
+    add-reads TEST-MODULE-PATH;
+    add-exports com.example.core.internal to ALL-UNNAMED;
+}
