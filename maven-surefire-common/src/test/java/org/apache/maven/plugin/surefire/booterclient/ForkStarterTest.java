@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.List;
 import java.util.jar.Manifest;
 import java.util.zip.Deflater;
 
@@ -62,6 +63,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Arrays.asList;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -288,6 +291,19 @@ public class ForkStarterTest {
                 new LegacyForkNodeFactory(),
                 true);
         testLessInputStream.close();
+    }
+
+    @Test
+    public void readTestClassNamesShouldKeepDiscoveredClassesAndDropBlankLines() throws Exception {
+        File discoveryFile = new File(tmp, "surefire-discovered-tests.txt");
+        Files.write(discoveryFile.toPath(), asList("com.example.FooTest", "", "  com.example.BarTest  ", "   "), UTF_8);
+
+        Method method = ForkStarter.class.getDeclaredMethod("readTestClassNames", File.class);
+        method.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        List<String> testClassNames = (List<String>) method.invoke(null, discoveryFile);
+
+        assertThat(testClassNames).containsExactly("com.example.FooTest", "com.example.BarTest");
     }
 
     @SuppressWarnings("unchecked")
