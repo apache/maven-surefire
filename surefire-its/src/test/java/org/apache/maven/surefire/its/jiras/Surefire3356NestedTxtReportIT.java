@@ -21,20 +21,21 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaVersion;
 
 /**
- * Integration test for #3356: TXT report must count nested tests on the outer class.
+ * Integration test for https://github.com/apache/maven-surefire/issues/3356:
+ * TXT report must count nested tests on the outer class.
  */
 @SuppressWarnings("checkstyle:magicnumber")
 public class Surefire3356NestedTxtReportIT extends SurefireJUnit4IntegrationTestCase {
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeClass
+    public static void setUp() {
         assumeJavaVersion(17);
     }
 
