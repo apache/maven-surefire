@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.engine.config.DefaultJupiterConfiguration;
 import org.junit.jupiter.engine.config.JupiterConfiguration;
 import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
+import org.junit.jupiter.engine.descriptor.NestedClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor;
 import org.junit.platform.engine.ConfigurationParameters;
@@ -653,6 +654,64 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void nestedClassContainersDoNotOpenSeparateTestSets() throws Exception {
+        // Reproducer for #3356: all tests in @Nested classes must keep a single outer test set
+        // so the TXT report is not overwritten with Tests run: 0 after nested completion.
+        // Real Jupiter plans have an engine root above the class; findTopParent needs that.
+        EngineDescriptor engineDescriptor = newEngineDescriptor();
+        TestDescriptor classDescriptor = new ClassTestDescriptor(
+                engineDescriptor.getUniqueId().append("class", MyTestClass.class.getName()),
+                MyTestClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        TestDescriptor nestedDescriptor = new NestedClassTestDescriptor(
+                classDescriptor.getUniqueId().append("nested-class", MyTestClass.NestedGroup.class.getName()),
+                MyTestClass.NestedGroup.class,
+                () -> singletonList(MyTestClass.class),
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        TestDescriptor nestedMethod = new TestMethodTestDescriptor(
+                nestedDescriptor.getUniqueId().append("method", "nestedTest"),
+                MyTestClass.NestedGroup.class,
+                MyTestClass.NestedGroup.class.getDeclaredMethod("nestedTest"),
+                Collections::emptyList,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        engineDescriptor.addChild(classDescriptor);
+        classDescriptor.addChild(nestedDescriptor);
+        nestedDescriptor.addChild(nestedMethod);
+
+        TestPlan testPlan = TestPlan.from(false, singletonList(engineDescriptor), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(testPlan);
+
+        TestIdentifier classIdentifier = TestIdentifier.from(classDescriptor);
+        TestIdentifier nestedIdentifier = TestIdentifier.from(nestedDescriptor);
+        TestIdentifier methodIdentifier = TestIdentifier.from(nestedMethod);
+
+        adapter.executionStarted(classIdentifier);
+        adapter.executionStarted(nestedIdentifier);
+        adapter.executionStarted(methodIdentifier);
+        adapter.executionFinished(methodIdentifier, successful());
+        adapter.executionFinished(nestedIdentifier, successful());
+        adapter.executionFinished(classIdentifier, successful());
+
+        InOrder inOrder = inOrder(listener);
+        ArgumentCaptor<TestSetReportEntry> starting = ArgumentCaptor.forClass(TestSetReportEntry.class);
+        ArgumentCaptor<ReportEntry> succeeded = ArgumentCaptor.forClass(ReportEntry.class);
+        ArgumentCaptor<TestSetReportEntry> completed = ArgumentCaptor.forClass(TestSetReportEntry.class);
+
+        inOrder.verify(listener).testSetStarting(starting.capture());
+        inOrder.verify(listener).testStarting(any());
+        inOrder.verify(listener).testSucceeded(succeeded.capture());
+        inOrder.verify(listener).testSetCompleted(completed.capture());
+        inOrder.verifyNoMoreInteractions();
+
+        assertThat(starting.getAllValues()).hasSize(1);
+        assertThat(completed.getAllValues()).hasSize(1);
+        assertEquals(MyTestClass.class.getName(), starting.getValue().getSourceName());
+        assertEquals(MyTestClass.class.getName(), completed.getValue().getSourceName());
+        assertEquals(MyTestClass.class.getName(), succeeded.getValue().getSourceName());
+        assertEquals(
+                MyTestClass.NestedGroup.class.getName(), succeeded.getValue().getSourceQualifiedName());
+    }
+
     public void notifiedWhenMethodExecutionAborted() throws Exception {
         adapter.executionFinished(newMethodIdentifier(), aborted(null));
         verify(listener).testAssumptionFailure(any());
@@ -1320,6 +1379,12 @@ public class RunListenerAdapterTest {
         @DisplayName("name")
         @org.junit.jupiter.api.Test
         void myNamedTestMethod() {}
+
+        @org.junit.jupiter.api.Nested
+        class NestedGroup {
+            @org.junit.jupiter.api.Test
+            void nestedTest() {}
+        }
     }
 
     private static class MySuiteClass {}
