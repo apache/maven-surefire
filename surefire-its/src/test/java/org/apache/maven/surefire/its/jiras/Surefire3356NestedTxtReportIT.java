@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.jiras;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.TestFile;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -34,7 +34,7 @@ import static org.apache.maven.surefire.its.fixture.HelperAssertions.assumeJavaV
 @SuppressWarnings("checkstyle:magicnumber")
 public class Surefire3356NestedTxtReportIT extends SurefireJUnit4IntegrationTestCase {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         assumeJavaVersion(17);
     }
