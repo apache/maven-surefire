@@ -849,7 +849,12 @@ public class ForkStarter {
                         false,
                         discoveryFile.getAbsolutePath());
             }
-            return readTestClassNames(discoveryFile);
+            List<String> testClassNames = readTestClassNames(discoveryFile);
+            if (testClassNames.isEmpty()) {
+                log.warning("The test-listing fork did not discover any test class (see " + discoveryFile
+                        + "). No tests will run.");
+            }
+            return testClassNames;
         } finally {
             returnNumber(forkNumber);
             removeShutdownHook(shutdown);
@@ -868,7 +873,7 @@ public class ForkStarter {
         try {
             return Files.readAllLines(discoveryFile.toPath(), UTF_8).stream()
                     .map(String::trim)
-                    .filter(String::isEmpty)
+                    .filter(line -> !line.isEmpty())
                     .collect(toList());
         } catch (IOException e) {
             throw new SurefireBooterForkException("Cannot read discovered tests from " + discoveryFile, e);
