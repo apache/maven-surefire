@@ -146,13 +146,15 @@ public final class ReflectionUtils {
         return newInstance(constructor, params);
     }
 
-    @SuppressWarnings("checkstyle:emptyblock")
     public static Class<?> tryLoadClass(ClassLoader classLoader, String className) {
+        if (classLoader == null) {
+            return null;
+        }
         try {
             return classLoader.loadClass(className);
-        } catch (NoClassDefFoundError | ClassNotFoundException ignore) {
+        } catch (NoClassDefFoundError | ClassNotFoundException e) {
+            return null;
         }
-        return null;
     }
 
     public static Class<?> loadClass(ClassLoader classLoader, String className) {
