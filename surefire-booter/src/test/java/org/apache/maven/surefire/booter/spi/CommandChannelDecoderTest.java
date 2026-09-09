@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.booter.DumpErrorSingleton;
@@ -36,9 +37,7 @@ import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.booter.ForkedNodeArg;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import static java.nio.channels.Channels.newChannel;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -63,19 +62,22 @@ import static org.junit.Assert.fail;
 public class CommandChannelDecoderTest {
     private static final Random RND = new Random();
 
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
+    File reportsDir = new File("target", "decoder-dumps");
 
     @Before
     public void initTmpFile() {
-        File reportsDir = tempFolder.getRoot();
+        File reportsDir = new File("target", "decoder-dumps");
         String dumpFileName = "surefire-" + RND.nextLong();
         DumpErrorSingleton.getSingleton().init(reportsDir, dumpFileName);
     }
 
     @After
     public void deleteTmpFiles() {
-        tempFolder.delete();
+        try {
+            FileUtils.deleteDirectory(reportsDir);
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
     @Test
