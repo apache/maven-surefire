@@ -73,8 +73,17 @@ public class SurefireReport extends AbstractSurefireReport {
         return new File(buildDir, "surefire-reports");
     }
 
+    /**
+     * @deprecated use {@link #getOutputPath()} instead
+     */
     @Override
+    @Deprecated
     public String getOutputName() {
+        return getOutputPath();
+    }
+
+    @Override
+    public String getOutputPath() {
         return outputName;
     }
 
