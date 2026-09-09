@@ -21,7 +21,9 @@ package org.apache.maven.surefire.booter;
 import javax.annotation.Nonnull;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetSocketAddress;
@@ -31,6 +33,8 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -47,9 +51,11 @@ import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcesso
 import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,6 +106,29 @@ public class ForkedBooterMockTest {
             }
         }
         throw new NoSuchFieldException(fieldName);
+    }
+
+    @Test
+    public void shouldReadSurefirePropertiesWithoutInitializingNio(@TempDir Path tmpDir) throws Exception {
+        // ForkedBooter must not touch java.nio channels before it applies the effective system properties:
+        // sun.nio.ch.IOUtil loads the native "net" library, which freezes java.net.preferIPv4Stack for the whole
+        // JVM. Files.newInputStream() would do exactly that, java.io.FileInputStream does not.
+        // See https://github.com/apache/maven-surefire/issues/3456
+        Path propertiesFile = tmpDir.resolve("surefire.properties");
+        Files.write(propertiesFile, singletonList("key=value"));
+
+        try (InputStream stream = (InputStream) invokeMethod(
+                ForkedBooter.class, "createSurefirePropertiesIfFileExists", tmpDir.toString(), "surefire.properties")) {
+            assertThat(stream).isInstanceOf(FileInputStream.class);
+        }
+    }
+
+    @Test
+    public void shouldNotCreateSurefirePropertiesStreamForMissingFile(@TempDir Path tmpDir) throws Exception {
+        InputStream stream = (InputStream)
+                invokeMethod(ForkedBooter.class, "createSurefirePropertiesIfFileExists", tmpDir.toString(), "absent");
+
+        assertThat(stream).isNull();
     }
 
     @Test
