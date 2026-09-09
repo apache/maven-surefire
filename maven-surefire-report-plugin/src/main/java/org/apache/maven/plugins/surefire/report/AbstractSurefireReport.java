@@ -307,7 +307,7 @@ public abstract class AbstractSurefireReport extends AbstractMavenReport {
      * {@inheritDoc}
      */
     @Override
-    public abstract String getOutputName();
+    public abstract String getOutputPath();
 
     protected final ConsoleLogger getConsoleLogger() {
         return new PluginConsoleLogger(getLog());

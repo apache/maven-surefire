@@ -74,8 +74,17 @@ public class FailsafeOnlyReport extends AbstractSurefireReport {
         return new File(buildDir, "failsafe-reports");
     }
 
+    /**
+     * @deprecated use {@link #getOutputPath()} instead
+     */
     @Override
+    @Deprecated
     public String getOutputName() {
+        return getOutputPath();
+    }
+
+    @Override
+    public String getOutputPath() {
         return outputName;
     }
 
