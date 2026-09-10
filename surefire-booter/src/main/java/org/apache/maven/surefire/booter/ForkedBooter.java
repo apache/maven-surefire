@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.booter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -109,9 +110,15 @@ public final class ForkedBooter {
     private void setupBooter(
             String tmpDir, String dumpFileName, String surefirePropsFileName, String effectiveSystemPropertiesFileName)
             throws IOException {
+        // The user's system properties must be applied before anything else in this JVM touches a subsystem which
+        // reads them only once, at initialization time. The JDK networking layer is such a subsystem: loading the
+        // native "net" library snapshots java.net.preferIPv4Stack (and java.net.preferIPv6Addresses), so a fork which
+        // has already initialized it silently ignores these properties. Keep this the very first statement here, and
+        // keep everything it transitively calls free of java.nio, which loads that library. See GitHub issue #3456.
+        setSystemProperties(new File(tmpDir, effectiveSystemPropertiesFileName));
+
         BooterDeserializer booterDeserializer =
                 new BooterDeserializer(createSurefirePropertiesIfFileExists(tmpDir, surefirePropsFileName));
-        setSystemProperties(new File(tmpDir, effectiveSystemPropertiesFileName));
 
         providerConfiguration = booterDeserializer.deserialize();
         discoverTestsOutputFile = booterDeserializer.getDiscoverTestsOutputFile();
@@ -558,10 +565,16 @@ public final class ForkedBooter {
         return executor;
     }
 
+    /**
+     * Deliberately uses {@link FileInputStream} instead of {@link java.nio.file.Files#newInputStream}: the latter
+     * initializes {@code sun.nio.ch.IOUtil}, which loads the native "net" library and therefore freezes
+     * {@code java.net.preferIPv4Stack} before the user's {@code systemPropertyVariables} could ever be applied.
+     * See GitHub issue #3456.
+     */
     private static InputStream createSurefirePropertiesIfFileExists(String tmpDir, String propFileName)
             throws IOException {
         File surefirePropertiesFile = new File(tmpDir, propFileName);
-        return surefirePropertiesFile.exists() ? Files.newInputStream(surefirePropertiesFile.toPath()) : null;
+        return surefirePropertiesFile.exists() ? new FileInputStream(surefirePropertiesFile) : null;
     }
 
     private static boolean isDebugging() {
