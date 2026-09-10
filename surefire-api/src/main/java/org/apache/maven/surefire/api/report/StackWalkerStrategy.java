@@ -55,7 +55,12 @@ final class StackWalkerStrategy {
     private static final Method FRAME_METHOD_NAME; // StackWalker.StackFrame.getMethodName() -> String
 
     static {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        // java.lang.StackWalker is a JDK class; load it from this class's defining loader (the system
+        // loader if that is bootstrap null), not from the current thread's TCCL, which can be null.
+        ClassLoader classLoader = StackWalkerStrategy.class.getClassLoader();
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
 
         Class<?> stackWalkerClass = tryLoadClass(classLoader, "java.lang.StackWalker");
         // The concrete frame implementation is a non-exported jdk.internal class, so the accessor methods must be

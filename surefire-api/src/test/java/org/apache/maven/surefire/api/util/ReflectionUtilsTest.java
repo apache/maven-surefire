@@ -54,6 +54,24 @@ public class ReflectionUtilsTest {
     }
 
     @Test
+    public void tryLoadClassReturnsNullWhenClassLoaderIsNull() {
+        assertThat(ReflectionUtils.tryLoadClass(null, "java.lang.String")).isNull();
+    }
+
+    @Test
+    public void tryLoadClassReturnsNullWhenClassIsMissing() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        assertThat(ReflectionUtils.tryLoadClass(cl, "org.apache.maven.surefire.api.util.DoesNotExist"))
+                .isNull();
+    }
+
+    @Test
+    public void tryLoadClassLoadsExistingClass() {
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        assertThat(ReflectionUtils.tryLoadClass(cl, "java.lang.String")).isEqualTo(String.class);
+    }
+
+    @Test
     public void shouldNotInvokeStaticMethod() {
         assertThrows(
                 RuntimeException.class,

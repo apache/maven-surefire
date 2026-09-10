@@ -142,4 +142,18 @@ class StackTraceProviderTest {
         assertThat(frames).noneMatch(frame -> frame.startsWith(StackWalkerStrategy.class.getName() + "#"));
         assertThat(frames.get(0)).isEqualTo(getClass().getName() + "#strategyWalkAppliesExcludePredicate");
     }
+
+    @Test
+    void getStackDoesNotThrowWhenContextClassLoaderIsNull() {
+        ClassLoader original = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(null);
+        try {
+            List<String> stack = StackTraceProvider.getStack();
+            assertThat(stack).isNotNull();
+            assertThat(stack.get(0))
+                    .isEqualTo(getClass().getName() + "#getStackDoesNotThrowWhenContextClassLoaderIsNull");
+        } finally {
+            Thread.currentThread().setContextClassLoader(original);
+        }
+    }
 }
