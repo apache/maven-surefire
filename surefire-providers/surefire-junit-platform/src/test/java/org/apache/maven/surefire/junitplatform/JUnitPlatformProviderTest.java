@@ -81,6 +81,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDES_SCAN_LIST;
@@ -587,6 +588,168 @@ public class JUnitPlatformProviderTest {
         ClassNameFilter includeFilter = (ClassNameFilter) provider.getFilters()[0];
         assertTrue(includeFilter.apply(LegalDollarClass$Test.class.getName()).included());
         assertFalse(includeFilter.apply(LegalDollarClass.class.getName()).included());
+    }
+
+    @Test
+    public void includesClassMatchedByIncludePatternWithPackageDirectory() {
+        ClassNameFilter filter = scanListFilter(
+                singletonMap(INCLUDES_SCAN_LIST, "org/apache/maven/surefire/junitplatform/**/*AlphaTestClass.java"));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertFalse(filter.apply(BetaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void includesClassMatchedByIncludePatternWithMultipleWildcardDirectories() {
+        ClassNameFilter filter = scanListFilter(singletonMap(INCLUDES_SCAN_LIST, "**/junitplatform/**/*.java"));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertFalse(filter.apply(TestListResolver.class.getName()).included());
+    }
+
+    @Test
+    public void evaluatesRegexIncludeAgainstTheClassFilePath() {
+        ClassNameFilter filter = scanListFilter(singletonMap(INCLUDES_SCAN_LIST, "%regex[.*AlphaTestClass\\.class]"));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertFalse(filter.apply(BetaTestClass.class.getName()).included());
+
+        // a regex written for the dot separated class name does not fully match "<path>/AlphaTestClass.class"
+        ClassNameFilter classNameRegexFilter =
+                scanListFilter(singletonMap(INCLUDES_SCAN_LIST, "%regex[.*AlphaTestClass]"));
+
+        assertFalse(classNameRegexFilter.apply(AlphaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void excludesClassMatchedByExcludePatternWithPackageDirectory() {
+        ClassNameFilter filter =
+                scanListFilter(singletonMap(EXCLUDES_SCAN_LIST, "org/apache/maven/surefire/**/*BetaTestClass.java"));
+
+        assertFalse(filter.apply(BetaTestClass.class.getName()).included());
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void excludesClassWhoseNameContainsDollarByTheDefaultExcludePattern() {
+        ClassNameFilter filter = scanListFilter(singletonMap(EXCLUDES_SCAN_LIST, "**/*$*"));
+
+        assertFalse(filter.apply(LegalDollarClass$Test.class.getName()).included());
+        assertTrue(filter.apply(LegalDollarClass.class.getName()).included());
+    }
+
+    @Test
+    public void includesClassSelectedByFullyQualifiedOrSimpleClassName() {
+        String fullyQualifiedName = AlphaTestClass.class.getName();
+
+        for (String pattern : Arrays.asList(fullyQualifiedName, AlphaTestClass.class.getSimpleName())) {
+            ClassNameFilter filter = scanListFilter(singletonMap(INCLUDES_SCAN_LIST, pattern));
+
+            assertTrue(filter.apply(fullyQualifiedName).included(), pattern);
+            assertFalse(filter.apply(BetaTestClass.class.getName()).included(), pattern);
+        }
+    }
+
+    @Test
+    public void includesClassSelectedTogetherWithItsTestMethods() {
+        String fullyQualifiedName = AlphaTestClass.class.getName();
+
+        for (String pattern : Arrays.asList(fullyQualifiedName + "#someMethod", fullyQualifiedName + "#m1+m2")) {
+            ClassNameFilter filter = scanListFilter(singletonMap(INCLUDES_SCAN_LIST, pattern));
+
+            assertTrue(filter.apply(fullyQualifiedName).included(), pattern);
+            assertFalse(filter.apply(BetaTestClass.class.getName()).included(), pattern);
+        }
+    }
+
+    @Test
+    public void includesEveryClassOfACommaSeparatedSelection() {
+        ClassNameFilter filter = scanListFilter(singletonMap(
+                INCLUDES_SCAN_LIST, AlphaTestClass.class.getName() + "," + GammaTestClass.class.getSimpleName()));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertTrue(filter.apply(GammaTestClass.class.getName()).included());
+        assertFalse(filter.apply(BetaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void excludesClassSelectedWithALeadingExclamationMark() {
+        ClassNameFilter filter = scanListFilter(singletonMap(INCLUDES_SCAN_LIST, "!" + BetaTestClass.class.getName()));
+
+        assertFalse(filter.apply(BetaTestClass.class.getName()).included());
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void includesEveryClassWhenOnlyATestMethodIsSelected() {
+        ClassNameFilter filter = scanListFilter(singletonMap(INCLUDES_SCAN_LIST, "#someMethod"));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertTrue(filter.apply(BetaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void includesEnclosingClassOfAScannedNestedClassRejectedByAnExcludePattern() {
+        ClassNameFilter filter =
+                scanListFilter(singletonMap(EXCLUDES_SCAN_LIST, "**/*$*"), NestingTest.Level1NestedTest.class);
+
+        assertTrue(filter.apply(NestingTest.class.getName()).included());
+        assertFalse(filter.apply(LegalDollarClass$Test.class.getName()).included());
+    }
+
+    @Test
+    public void appliesExcludePatternsOnTopOfIncludePatterns() {
+        Map<String, String> scanList = new HashMap<>();
+        scanList.put(INCLUDES_SCAN_LIST, "**/AlphaTestClass.java,**/BetaTestClass.java");
+        scanList.put(EXCLUDES_SCAN_LIST, "**/BetaTestClass.java,**/GammaTestClass.java");
+
+        ClassNameFilter filter = scanListFilter(scanList);
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertFalse(filter.apply(BetaTestClass.class.getName()).included());
+        assertFalse(filter.apply(GammaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void evaluatesAntAndRegexIncludePatternsAsAlternatives() {
+        ClassNameFilter filter = scanListFilter(
+                singletonMap(INCLUDES_SCAN_LIST, "**/AlphaTestClass.java,%regex[.*BetaTestClass\\.class]"));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertTrue(filter.apply(BetaTestClass.class.getName()).included());
+        assertFalse(filter.apply(GammaTestClass.class.getName()).included());
+    }
+
+    @Test
+    public void includesClassWhenOnlyOneOfItsTestMethodsIsExcluded() {
+        ClassNameFilter filter = scanListFilter(
+                singletonMap(INCLUDES_SCAN_LIST, "!" + AlphaTestClass.class.getSimpleName() + "#someMethod"));
+
+        assertTrue(filter.apply(AlphaTestClass.class.getName()).included());
+        assertTrue(filter.apply(BetaTestClass.class.getName()).included());
+    }
+
+    private static ClassNameFilter scanListFilter(Map<String, String> scanListProperties) {
+        return scanListFilter(scanListProperties, new Class<?>[0]);
+    }
+
+    /**
+     * Creates the provider for the given {@code junit.includes.scan.list} and {@code junit.excludes.scan.list}
+     * provider properties and returns the single class name filter it derives from them.
+     *
+     * @param scanListProperties    the provider properties holding the include and exclude patterns
+     * @param scannedClasses        the classes the plugin has scanned, used only to compute the enclosing
+     *                              classes which are included regardless of the patterns
+     * @return the class name filter of the provider
+     */
+    private static ClassNameFilter scanListFilter(Map<String, String> scanListProperties, Class<?>... scannedClasses) {
+        ProviderParameters parameters = providerParametersMock(new TestListResolver(""), scannedClasses);
+        when(parameters.getProviderProperties()).thenReturn(scanListProperties);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters);
+
+        assertThat(provider.getFilters()).hasSize(1);
+        return (ClassNameFilter) provider.getFilters()[0];
     }
 
     private static void assertDirectNestedClassSelection(String includeScanPattern) throws Exception {
@@ -1650,3 +1813,9 @@ class LegalDollarClass {}
 
 @SuppressWarnings("checkstyle:typename")
 class LegalDollarClass$Test {}
+
+class AlphaTestClass {}
+
+class BetaTestClass {}
+
+class GammaTestClass {}

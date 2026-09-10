@@ -32,15 +32,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.surefire.api.booter.ProviderParameterNames;
 import org.apache.maven.surefire.api.provider.AbstractProvider;
 import org.apache.maven.surefire.api.provider.CommandChainReader;
 import org.apache.maven.surefire.api.provider.ProviderParameters;
@@ -50,12 +47,12 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
@@ -77,8 +74,10 @@ import static java.util.Optional.of;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDEDGROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_PROP;
@@ -90,7 +89,6 @@ import static org.apache.maven.surefire.api.testset.TestListResolver.optionallyW
 import static org.apache.maven.surefire.api.util.TestsToRun.fromClass;
 import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.match;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectUniqueId;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
@@ -399,122 +397,29 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return request().filters(filters).configurationParameters(getConfigurationParameters());
     }
 
-    private boolean matchClassName(String className, String pattern) {
-        boolean reverse = pattern.startsWith("!");
-        if (reverse) {
-            pattern = pattern.substring(1);
-        }
-        // pattern can be either fully qualified or simple class name or package + simple class name + #method
-        int hashIndex = pattern.indexOf('#');
-        // we receive only -Dtest=#method (weird but possible)
-        if (hashIndex == 0) {
-            return true;
-        }
-        if (hashIndex != -1) {
-            pattern = pattern.substring(0, hashIndex);
-        }
-
-        boolean match = className.endsWith("." + pattern)
-                || SelectorUtils.matchPath(pattern, className)
-                || matchAntPathPattern(pattern, className, true);
-
-        if (className.contains(".")) {
-            String simpleName = className.substring(className.lastIndexOf('.') + 1);
-            match = match || SelectorUtils.matchPath(pattern, simpleName);
-        }
-
-        if (pattern.contains("/")) {
-            String pkgStylePattern = pattern.replace('/', '.');
-            match = match || SelectorUtils.matchPath(pkgStylePattern, className);
-        }
-
-        boolean testMatch = match
-                || className.equals(pattern)
-                || className.endsWith("." + pattern)
-                || SelectorUtils.matchPath(pattern, className);
-        return reverse != testMatch;
-    }
-
-    // TODO this could be simplified/optimized
     private Filter<?>[] newFilters() {
         List<Filter<?>> filters = new ArrayList<>();
 
-        // includeClassNamePatterns support only regex patterns
         Optional<String> includesList =
-                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.INCLUDES_SCAN_LIST));
-        Set<String> enclosingClassNames = includesList.isPresent() ? getEnclosingClassNames() : Collections.emptySet();
-        if (includesList.isPresent()) {
-            String[] includesRegex = Stream.of(includesList.get().split(","))
-                    .filter(s -> s.startsWith("%regex["))
-                    .map(s -> StringUtils.replace(s, "%regex[", ""))
-                    .map(s -> s.substring(0, s.length() - 1))
-                    .toArray(String[]::new);
-            if (includesRegex.length > 0) {
-                filters.add(includeEnclosingClasses(
-                        ClassNameFilter.includeClassNamePatterns(includesRegex), enclosingClassNames));
-            }
-        }
-
-        // excludeClassNamePatterns support only regex patterns
+                Optional.ofNullable(parameters.getProviderProperties().get(INCLUDES_SCAN_LIST));
         Optional<String> excludesList =
-                Optional.ofNullable(parameters.getProviderProperties().get(ProviderParameterNames.EXCLUDES_SCAN_LIST));
-        if (excludesList.isPresent()) {
-            String[] excludesRegex = Stream.of(excludesList.get().split(","))
-                    .filter(s -> s.startsWith("%regex["))
-                    .map(s -> StringUtils.replace(s, "%regex[", ""))
-                    .map(s -> s.substring(0, s.length() - 1))
-                    .toArray(String[]::new);
-            if (excludesRegex.length > 0) {
-                filters.add(ClassNameFilter.excludeClassNamePatterns(excludesRegex));
-            }
-        }
-
-        if (includesList.isPresent()) {
-            // usual include/exclude are scanner style patterns
-            List<String> includes = Stream.of(includesList.get().split(","))
-                    .filter(s -> !s.startsWith("%regex["))
-                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
-                    // .map(pattern -> StringUtils.replace(pattern, "/", "."))
-                    .collect(toList());
-            if (!includes.isEmpty()) {
-                // use of CompositeFilter?
-                ClassNameFilter classNameFilter = className -> {
-                    FilterResult result = includes.stream()
-                            .map(pattern -> FilterResult.includedIf(
-                                    match(pattern, className) || matchClassName(className, pattern)))
-                            .filter(FilterResult::included)
-                            .findAny()
-                            .orElse(FilterResult.excluded("Not included by any pattern: " + includes));
-                    return result;
-                };
-                filters.add(includeEnclosingClasses(classNameFilter, enclosingClassNames));
-            }
-        }
-
-        if (excludesList.isPresent()) {
-
-            List<String> excludes = Stream.of(excludesList.get().split(","))
-                    .filter(s -> !s.startsWith("%regex["))
-                    .map(pattern -> StringUtils.replace(pattern, ".java", ""))
-                    // .map(pattern -> StringUtils.replace(pattern, "/", "."))
-                    .collect(toList());
-            if (!excludes.isEmpty()) {
-                // use of CompositeFilter?
-                ClassNameFilter classNameFilter = className -> {
-                    FilterResult result = excludes.stream()
-                            .map(pattern -> {
-                                boolean inclusive = match(pattern, className);
-                                return !inclusive
-                                        ? FilterResult.included("Not excluded by pattern: " + pattern)
-                                        : FilterResult.excluded("Excluded by pattern: " + pattern);
-                            })
-                            .filter(FilterResult::excluded)
-                            .findAny()
-                            .orElse(FilterResult.included("Not excluded by any pattern: " + excludes));
-                    return result;
-                };
-                filters.add(classNameFilter);
-            }
+                Optional.ofNullable(parameters.getProviderProperties().get(EXCLUDES_SCAN_LIST));
+        if (includesList.isPresent() || excludesList.isPresent()) {
+            // The plugin already applied includes/excludes (and -Dtest) when scanning the test classes directory.
+            // Engines may still discover classes on their own, so the same patterns are re-applied here, and they
+            // must be matched exactly like the scanner does: against the class file path (pkg/Name.class), which
+            // is also what the documentation describes for %regex[...] patterns.
+            TestListResolver scanListResolver = new TestListResolver(
+                    includesList.map(Collections::singletonList).orElse(Collections.emptyList()),
+                    excludesList.map(Collections::singletonList).orElse(Collections.emptyList()));
+            String includedReason = "Included by includes/excludes " + scanListResolver;
+            String excludedReason = "Not included by includes/excludes " + scanListResolver;
+            Set<String> enclosingClassNames = getEnclosingClassNames();
+            ClassNameFilter classNameFilter =
+                    className -> scanListResolver.shouldRun(TestListResolver.toClassFileName(className), null)
+                            ? FilterResult.included(includedReason)
+                            : FilterResult.excluded(excludedReason);
+            filters.add(includeEnclosingClasses(classNameFilter, enclosingClassNames));
         }
 
         boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
@@ -785,125 +690,5 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     + "However, the version of JUnit Platform on the runtime classpath does not support cancellation. "
                     + "Please update to 6.0.0 or later!");
         }
-    }
-
-    private static boolean matchAntPathPattern(String pattern, String str, boolean isCaseSensitive) {
-        if (str.startsWith("/") != pattern.startsWith("/")) {
-            return false;
-        }
-
-        List<String> patDirs = tokenizePath(pattern, "/");
-        List<String> strDirs = tokenizePath(str, "/");
-
-        int patIdxStart = 0;
-        int patIdxEnd = patDirs.size() - 1;
-        int strIdxStart = 0;
-        int strIdxEnd = strDirs.size() - 1;
-
-        // up to first '**'
-        while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = patDirs.get(patIdxStart);
-            if ("**".equals(patDir)) {
-                break;
-            }
-            if (!match(patDir, strDirs.get(strIdxStart), isCaseSensitive)) {
-                return false;
-            }
-            patIdxStart++;
-            strIdxStart++;
-        }
-        if (strIdxStart > strIdxEnd) {
-            // String is exhausted
-            for (int i = patIdxStart; i <= patIdxEnd; i++) {
-                if (!"**".equals(patDirs.get(i))) {
-                    return false;
-                }
-            }
-            return true;
-        } else {
-            if (patIdxStart > patIdxEnd) {
-                // String not exhausted, but pattern is. Failure.
-                return false;
-            }
-        }
-
-        // up to last '**'
-        while (patIdxStart <= patIdxEnd && strIdxStart <= strIdxEnd) {
-            String patDir = patDirs.get(patIdxEnd);
-            if ("**".equals(patDir)) {
-                break;
-            }
-            if (!match(patDir, strDirs.get(strIdxEnd), isCaseSensitive)) {
-                return false;
-            }
-            patIdxEnd--;
-            strIdxEnd--;
-        }
-        if (strIdxStart > strIdxEnd) {
-            // String is exhausted
-            for (int i = patIdxStart; i <= patIdxEnd; i++) {
-                if (!"**".equals(patDirs.get(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        while (patIdxStart != patIdxEnd && strIdxStart <= strIdxEnd) {
-            int patIdxTmp = -1;
-            for (int i = patIdxStart + 1; i <= patIdxEnd; i++) {
-                if ("**".equals(patDirs.get(i))) {
-                    patIdxTmp = i;
-                    break;
-                }
-            }
-            if (patIdxTmp == patIdxStart + 1) {
-                // '**/**' situation, so skip one
-                patIdxStart++;
-                continue;
-            }
-            // Find the pattern between padIdxStart & padIdxTmp in str between
-            // strIdxStart & strIdxEnd
-            int patLength = (patIdxTmp - patIdxStart - 1);
-            int strLength = (strIdxEnd - strIdxStart + 1);
-            int foundIdx = -1;
-            strLoop:
-            for (int i = 0; i <= strLength - patLength; i++) {
-                for (int j = 0; j < patLength; j++) {
-                    String subPat = patDirs.get(patIdxStart + j + 1);
-                    String subStr = strDirs.get(strIdxStart + i + j);
-                    if (!match(subPat, subStr, isCaseSensitive)) {
-                        continue strLoop;
-                    }
-                }
-
-                foundIdx = strIdxStart + i;
-                break;
-            }
-
-            if (foundIdx == -1) {
-                return false;
-            }
-
-            patIdxStart = patIdxTmp;
-            strIdxStart = foundIdx + patLength;
-        }
-
-        for (int i = patIdxStart; i <= patIdxEnd; i++) {
-            if (!"**".equals(patDirs.get(i))) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static List<String> tokenizePath(String path, String separator) {
-        List<String> ret = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(path, separator);
-        while (st.hasMoreTokens()) {
-            ret.add(st.nextToken());
-        }
-        return ret;
     }
 }
