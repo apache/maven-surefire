@@ -32,6 +32,13 @@ public class ProviderParameterNames {
 
     public static final String THREADCOUNT_PROP = "threadcount";
 
+    /**
+     * Number of forked JVMs executing tests concurrently, used together with {@link #THREADCOUNT_PROP} to size the
+     * distribution of the {@code balanced} run order.
+     * @since 3.6.0
+     */
+    public static final String FORKCOUNT_PROP = "forkcount";
+
     public static final String PARALLEL_PROP = "parallel";
 
     public static final String THREADCOUNTSUITES_PROP = "threadcountsuites";
