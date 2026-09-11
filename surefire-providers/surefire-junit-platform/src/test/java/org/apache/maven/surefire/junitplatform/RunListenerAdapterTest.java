@@ -287,6 +287,71 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void completesParameterizedClassReportOnceAfterAllInvocations() throws Exception {
+        EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-jupiter"), "JUnit Jupiter");
+        TestDescriptor classTemplate = newParameterizedClassTemplateDescriptor(engine.getUniqueId());
+        engine.addChild(classTemplate);
+
+        TestDescriptor invocation1 = newParameterizedClassInvocationDescriptor(classTemplate.getUniqueId(), 1);
+        TestDescriptor method1 = newUnparameterizedMethodDescriptor(invocation1.getUniqueId());
+        classTemplate.addChild(invocation1);
+        invocation1.addChild(method1);
+
+        TestDescriptor invocation2 = newParameterizedClassInvocationDescriptor(classTemplate.getUniqueId(), 2);
+        TestDescriptor method2 = newUnparameterizedMethodDescriptor(invocation2.getUniqueId());
+        classTemplate.addChild(invocation2);
+        invocation2.addChild(method2);
+
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(classTemplate));
+        adapter.executionStarted(TestIdentifier.from(invocation1));
+        adapter.executionStarted(TestIdentifier.from(method1));
+        adapter.executionFinished(TestIdentifier.from(method1), successful());
+        adapter.executionFinished(TestIdentifier.from(invocation1), successful());
+        adapter.executionStarted(TestIdentifier.from(invocation2));
+        adapter.executionStarted(TestIdentifier.from(method2));
+        adapter.executionFinished(TestIdentifier.from(method2), successful());
+        adapter.executionFinished(TestIdentifier.from(invocation2), successful());
+
+        verify(listener, times(1)).testSetStarting(any());
+        verify(listener, never()).testSetCompleted(any());
+
+        adapter.executionFinished(TestIdentifier.from(classTemplate), successful());
+
+        verify(listener, times(1)).testSetCompleted(any());
+    }
+
+    @Test
+    public void completesNestedClassReportBeforeOuterClass() {
+        EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-jupiter"), "JUnit Jupiter");
+        TestDescriptor outerClass = newClassDescriptor();
+        TestDescriptor nestedClass = new ClassTestDescriptor(
+                outerClass.getUniqueId().append("nested-class", MySuiteClass.class.getName()),
+                MySuiteClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+        engine.addChild(outerClass);
+        outerClass.addChild(nestedClass);
+
+        TestPlan plan = TestPlan.from(false, singletonList(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+        adapter.testPlanExecutionStarted(plan);
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(outerClass));
+        adapter.executionStarted(TestIdentifier.from(nestedClass));
+        adapter.executionFinished(TestIdentifier.from(nestedClass), successful());
+
+        verify(listener, times(2)).testSetStarting(any());
+        verify(listener, times(1)).testSetCompleted(any());
+
+        adapter.executionFinished(TestIdentifier.from(outerClass), successful());
+
+        verify(listener, times(2)).testSetCompleted(any());
+    }
+
+    @Test
     public void distinguishedNestedJUnit6ParameterizedClassInvocations() throws Exception {
         EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-jupiter"), "JUnit Jupiter");
         TestDescriptor outerTemplate = newParameterizedClassTemplateDescriptor(engine.getUniqueId());
