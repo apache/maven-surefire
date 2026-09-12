@@ -287,10 +287,23 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         if (!isClassContainer(testIdentifier)) {
             return false;
         }
-        ResultDisplay names = toClassMethodName(testIdentifier);
-        String sourceName = names.getClassName();
-        String qualifiedClassName = names.getQualifiedClassName();
-        return qualifiedClassName == null || Objects.equals(sourceName, qualifiedClassName);
+        // Top-level for Surefire = no ancestor ClassSource container.
+        // Name equality is wrong for JUnit 6 parameterized-class invocations: both the
+        // template and each invocation are ClassSource containers with the same
+        // sourceName/qualifiedClassName, so invocations would still open test sets (#3356).
+        TestPlan currentTestPlan = testPlan;
+        if (currentTestPlan == null) {
+            return true;
+        }
+        Optional<TestIdentifier> parent = currentTestPlan.getParent(testIdentifier);
+        while (parent.isPresent()) {
+            TestIdentifier ancestor = parent.get();
+            if (isClassContainer(ancestor)) {
+                return false;
+            }
+            parent = currentTestPlan.getParent(ancestor);
+        }
+        return true;
     }
 
     private Integer computeElapsedTime(TestIdentifier testIdentifier) {
@@ -366,8 +379,18 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             if (openTestSet) {
                 runListener.testSetStarting(report);
             }
-            for (TestIdentifier child : testPlan.getChildren(testIdentifier)) {
-                runListener.testSkipped(createReportEntry(child, null, emptyMap(), reason, null));
+            // Walk leaf tests (not only direct children) so a skipped @Nested container that
+            // itself contains another nested container still counts one skip per test method.
+            List<TestIdentifier> skippedTests = testPlan.getDescendants(testIdentifier).stream()
+                    .filter(TestIdentifier::isTest)
+                    .sorted(comparing(TestIdentifier::getUniqueId))
+                    .collect(toList());
+            if (skippedTests.isEmpty()) {
+                runListener.testSkipped(createReportEntry(testIdentifier, null, emptyMap(), reason, null));
+            } else {
+                for (TestIdentifier test : skippedTests) {
+                    runListener.testSkipped(createReportEntry(test, null, emptyMap(), reason, null));
+                }
             }
             if (openTestSet) {
                 runListener.testSetCompleted(report);
