@@ -279,18 +279,19 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
     /**
      * Whether this class container should open/close a Surefire test set.
-     * Top-level classes do; {@code @Nested} ClassSource containers do not, because they
-     * report under the outer class {@code sourceName} and would otherwise reset/overwrite
-     * the outer TXT summary (#3356).
+     * {@code @Nested} ClassSource containers do not, because they report under the outer
+     * class {@code sourceName} and would otherwise reset/overwrite the outer TXT summary
+     * (#3356). Stop at an engine boundary so a class selected under {@code @Suite} (suite
+     * ClassSource above a nested Jupiter engine) still opens its own test set — same
+     * engine-boundary rule as {@link #findTopParent(TestIdentifier)}.
      */
     private boolean isSurefireTestSetContainer(TestIdentifier testIdentifier) {
         if (!isClassContainer(testIdentifier)) {
             return false;
         }
-        // Top-level for Surefire = no ancestor ClassSource container.
         // Name equality is wrong for JUnit 6 parameterized-class invocations: both the
         // template and each invocation are ClassSource containers with the same
-        // sourceName/qualifiedClassName, so invocations would still open test sets (#3356).
+        // sourceName/qualifiedClassName, so walk ancestors instead of comparing names.
         TestPlan currentTestPlan = testPlan;
         if (currentTestPlan == null) {
             return true;
@@ -298,6 +299,11 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         Optional<TestIdentifier> parent = currentTestPlan.getParent(testIdentifier);
         while (parent.isPresent()) {
             TestIdentifier ancestor = parent.get();
+            // Suite hierarchy: SuiteClass -> nested engine -> TestClass. Stop here so the
+            // selected test class is still a Surefire test-set root.
+            if (isEngineIdentifier(ancestor)) {
+                return true;
+            }
             if (isClassContainer(ancestor)) {
                 return false;
             }
