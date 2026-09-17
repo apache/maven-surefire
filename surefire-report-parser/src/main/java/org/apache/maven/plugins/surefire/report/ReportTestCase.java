@@ -42,6 +42,8 @@ public final class ReportTestCase {
     private String failureErrorLine;
 
     private String failureDetail;
+    private String systemOut;
+    private String systemErr;
 
     private boolean hasFailure;
 
@@ -141,6 +143,24 @@ public final class ReportTestCase {
         hasError = isNotBlank(type);
         hasSkipped = false;
         return setFailureMessage(message).setFailureType(type);
+    }
+
+    public String getSystemOut() {
+        return systemOut;
+    }
+
+    public ReportTestCase setSystemOut(String message) {
+        systemOut = message;
+        return this;
+    }
+
+    public String getSystemErr() {
+        return systemErr;
+    }
+
+    public ReportTestCase setSystemErr(String message) {
+        systemErr = message;
+        return this;
     }
 
     public ReportTestCase setSkipped(String message) {
