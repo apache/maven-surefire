@@ -344,8 +344,11 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * Failed first will run tests that failed on previous run first, as well as new tests for this run.
      * <br>
      * <br>
-     * Balanced is only relevant with parallel=classes, and will try to optimize the run-order of the tests reducing the
-     * overall execution time. Initially a statistics file is created and every next test run will reorder classes.
+     * Balanced will try to optimize the run-order of the tests reducing the overall execution time by distributing the
+     * classes across the concurrent test consumers based on their recorded run time. The number of consumers is
+     * {@code forkCount} multiplied by {@code threadCount} (when {@code parallel} is used), so balanced is effective
+     * with {@code forkCount > 1} even without {@code parallel=classes}. Initially a statistics file is created and
+     * every next test run will reorder classes.
      * <br>
      * <br>
      * Note that the statistics are stored in a file named <b>.surefire-XXXXXXXXX</b> beside <i>pom.xml</i> and
