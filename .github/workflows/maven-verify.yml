@@ -26,6 +26,8 @@ jobs:
     name: Verify
     uses: apache/maven-gh-actions-shared/.github/workflows/maven-verify.yml@v5
     with:
+      # one full run on the oldest Maven the ASF parent lets us build with, next to the regular matrix
+      matrix-include: '[{"os": "ubuntu-latest", "jdk": "8", "distribution": "zulu", "maven": "3.9.0"}]'
       jdk-matrix: '[ "8", "11", "17", "21" ]'
       ff-jdk: '21'
       ff-goal: 'clean install site site:stage -P reporting -nsu'
