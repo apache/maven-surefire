@@ -1,0 +1,10 @@
+/*
+ * Whitebox test patch for the com.example.probe module. The TEST-MODULE-PATH
+ * tokens make maven-compiler-plugin 4.x expand the test-scope dependencies
+ * (JUnit) into module-info-patch.args, which surefire passes through verbatim
+ * after moving those dependencies to the module path (#3090).
+ */
+patch-module com.example.probe {
+    add-modules TEST-MODULE-PATH;
+    add-reads TEST-MODULE-PATH;
+}
