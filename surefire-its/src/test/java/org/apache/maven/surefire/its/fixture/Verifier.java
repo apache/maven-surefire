@@ -36,6 +36,8 @@ import org.apache.maven.executor.ExecutorException;
 import org.apache.maven.executor.ExecutorHelper;
 import org.apache.maven.executor.ExecutorRequest;
 import org.apache.maven.executor.ExecutorResult;
+import org.apache.maven.executor.embedded.EmbeddedMavenExecutor;
+import org.apache.maven.executor.forked.ForkedMavenExecutor;
 
 /**
  * Minimal, purpose-built replacement for the deprecated {@code org.apache.maven.shared.verifier.Verifier}
@@ -50,6 +52,18 @@ public class Verifier {
     private static final String CLEAN_CLI_ARGUMENT = "org.apache.maven.plugins:maven-clean-plugin:clean";
 
     private static final Path MAVEN_HOME = Paths.get(System.getProperty("maven.home"));
+
+    private static final EmbeddedMavenExecutor EMBEDDED_MAVEN_EXECUTOR = new EmbeddedMavenExecutor(MAVEN_HOME);
+
+    private static final ForkedMavenExecutor FORKED_MAVEN_EXECUTOR = new ForkedMavenExecutor(MAVEN_HOME);
+
+    /**
+     * One embedded executor per JVM on purpose: a new EmbeddedMavenExecutor per execution builds a new Maven
+     * ClassWorld that close() does not release (OOM after ~100 builds); the cost is that system properties set
+     * between executions are reset, see apache/maven-executor#46.
+     */
+    private static final ExecutorHelper EXECUTOR_HELPER =
+            ExecutorHelper.forExecutors(ExecutorHelper.Mode.AUTO, EMBEDDED_MAVEN_EXECUTOR, FORKED_MAVEN_EXECUTOR);
 
     private final String basedir;
 
@@ -151,13 +165,8 @@ public class Verifier {
      * Executes Maven with the accumulated CLI arguments, system properties and environment variables. Both
      * stdout and stderr are piped into the same {@code <basedir>/<logFileName>} file, in arrival order, so
      * that {@link #loadFile} and the {@code OutputValidator} log-reading helpers can read it back from disk
-     * exactly like the old Verifier did.
-     * <p>
-     * A fresh {@link ExecutorHelper} is created for, and closed after, this single invocation:
-     * {@code EmbeddedMavenExecutor} snapshots {@code System.getProperties()} at construction and restores that
-     * snapshot in a {@code finally} block after every embedded execution, so a helper shared across
-     * invocations would reset system properties set between two {@code execute()} calls back to whatever they
-     * were when the helper was created.
+     * exactly like the old Verifier did. Runs through the single JVM-lifetime {@link #EXECUTOR_HELPER}; see
+     * its Javadoc for why.
      */
     public void execute() throws VerificationException {
         List<String> args = new ArrayList<>();
@@ -192,9 +201,8 @@ public class Verifier {
             }
             ExecutorRequest request = builder.build();
 
-            try (ExecutorHelper executorHelper =
-                    ExecutorHelper.forMavenInstallation(MAVEN_HOME, ExecutorHelper.Mode.AUTO)) {
-                result = executorHelper.execute(mode, request);
+            try {
+                result = EXECUTOR_HELPER.execute(mode, request);
             } catch (ExecutorException e) {
                 throw new VerificationException("Failed to execute Maven", e);
             }
