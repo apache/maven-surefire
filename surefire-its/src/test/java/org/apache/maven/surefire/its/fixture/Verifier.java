@@ -21,7 +21,7 @@ package org.apache.maven.surefire.its.fixture;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -266,7 +266,7 @@ public class Verifier {
 
     private String getLogContents() {
         try {
-            return new String(Files.readAllBytes(new File(basedir, logFileName).toPath()), StandardCharsets.UTF_8);
+            return new String(Files.readAllBytes(new File(basedir, logFileName).toPath()), Charset.defaultCharset());
         } catch (IOException e) {
             return "(Error reading log contents: " + e.getMessage() + ")";
         }
@@ -337,7 +337,7 @@ public class Verifier {
         File file = new File(basedir, filename);
         if (file.exists()) {
             try {
-                for (String line : Files.readAllLines(file.toPath(), StandardCharsets.UTF_8)) {
+                for (String line : Files.readAllLines(file.toPath(), Charset.defaultCharset())) {
                     String trimmed = line.trim();
                     if (!trimmed.startsWith("#") && !trimmed.isEmpty()) {
                         lines.add(trimmed);
