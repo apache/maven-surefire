@@ -40,8 +40,6 @@ import static java.util.Collections.unmodifiableList;
  * @author Kristian Rosenvold
  */
 public final class MavenLauncher {
-    private static final File SETTINGS_XML_PATH = settingsXmlPath();
-
     private final List<String> cliOptions = new ArrayList<>();
 
     private final List<String> goals = new ArrayList<>();
@@ -155,8 +153,7 @@ public final class MavenLauncher {
 
     public OutputValidator getSubProjectValidator(String subProject) throws VerificationException {
         String subProjectBasedir = getValidator().getSubFile(subProject).getAbsolutePath();
-        String settingsXml = settingsXmlPath().getAbsolutePath();
-        Verifier subProjectVerifier = createVerifier(subProjectBasedir, settingsXml, null);
+        Verifier subProjectVerifier = createVerifier(subProjectBasedir, null);
         return new OutputValidator(subProjectVerifier);
     }
 
@@ -343,8 +340,7 @@ public final class MavenLauncher {
         if (verifier == null) {
             try {
                 String unpackedPath = ensureUnpacked().getAbsolutePath();
-                String settingsXml = SETTINGS_XML_PATH.getAbsolutePath();
-                verifier = createVerifier(unpackedPath, settingsXml, cli);
+                verifier = createVerifier(unpackedPath, cli);
             } catch (VerificationException e) {
                 throw new RuntimeException(e);
             }
@@ -397,19 +393,7 @@ public final class MavenLauncher {
         throw new IllegalStateException("Cannot find " + testCaseBeingRun.getName() + "in stacktrace");
     }
 
-    private static Verifier createVerifier(String basedir, String settingsFile, String[] defaultCliOptions)
-            throws VerificationException {
-
-        return defaultCliOptions == null
-                ? new Verifier(basedir, settingsFile, false)
-                : new Verifier(basedir, settingsFile, false, defaultCliOptions);
-    }
-
-    private static File settingsXmlPath() {
-        try {
-            return new File(System.getProperty("maven.settings.file")).getCanonicalFile();
-        } catch (IOException e) {
-            throw new IllegalStateException(e.getLocalizedMessage(), e);
-        }
+    private static Verifier createVerifier(String basedir, String[] defaultCliOptions) throws VerificationException {
+        return defaultCliOptions == null ? new Verifier(basedir) : new Verifier(basedir, defaultCliOptions);
     }
 }
