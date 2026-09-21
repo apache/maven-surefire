@@ -56,8 +56,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-verifier</artifactId>
+      <groupId>org.apache.maven.executor</groupId>
+      <artifactId>maven-executor</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

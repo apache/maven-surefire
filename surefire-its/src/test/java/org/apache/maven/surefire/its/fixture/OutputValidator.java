@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.shared.verifier.Verifier;
 import org.hamcrest.Matcher;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

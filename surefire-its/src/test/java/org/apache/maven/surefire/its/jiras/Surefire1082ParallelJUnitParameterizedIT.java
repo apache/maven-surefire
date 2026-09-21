@@ -22,11 +22,11 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
+import org.apache.maven.surefire.its.fixture.VerificationException;
 import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

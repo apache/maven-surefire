@@ -16,23 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.its.jiras;
-
-import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
-import org.apache.maven.surefire.its.fixture.SurefireLauncher;
-import org.apache.maven.surefire.its.fixture.VerificationException;
-import org.junit.Test;
+package org.apache.maven.surefire.its.fixture;
 
 /**
- * @author <a href="mailto:owen.farrell@gmail.com">Owen Farrell (owenfarrell)</a>
- * @see <a href="https://issues.apache.org/jira/browse/SUREFIRE-1383">SUREFIRE-1383</a>
- * @since 2.22.0
+ * Signals a failure detected by {@link Verifier}, mirroring the checked exception of the same
+ * name previously provided by the (deprecated) {@code org.apache.maven.shared.verifier.Verifier}.
  */
-public class Surefire1383ScanSessionDependenciesIT extends SurefireJUnit4IntegrationTestCase {
-    @Test
-    public void test() throws VerificationException {
-        SurefireLauncher launcher = unpack("surefire-1383");
-        launcher.executeTest();
-        launcher.getSubProjectValidator("sut").assertTestSuiteResults(1, 0, 0, 0);
+public class VerificationException extends Exception {
+    public VerificationException() {
+        super();
+    }
+
+    public VerificationException(String message) {
+        super(message);
+    }
+
+    public VerificationException(Throwable cause) {
+        super(cause);
+    }
+
+    public VerificationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
