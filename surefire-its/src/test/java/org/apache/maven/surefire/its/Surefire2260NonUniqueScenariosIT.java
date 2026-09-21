@@ -18,9 +18,9 @@
  */
 package org.apache.maven.surefire.its;
 
-import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.VerificationException;
 import org.junit.jupiter.api.Test;
 
 /**
