@@ -18,9 +18,7 @@
  */
 package org.apache.maven.surefire.its.fixture;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -53,13 +51,6 @@ public class Verifier {
 
     private static final Path MAVEN_HOME = Paths.get(System.getProperty("maven.home"));
 
-    /**
-     * Kept alive for the lifetime of the classloader: re-creating it per invocation would mean re-creating the
-     * embedded Maven ClassWorld on every single Maven invocation, which is (comparatively) expensive.
-     */
-    private static final ExecutorHelper EXECUTOR_HELPER =
-            ExecutorHelper.forMavenInstallation(MAVEN_HOME, ExecutorHelper.Mode.AUTO);
-
     private final String basedir;
 
     private final String[] defaultCliArguments;
@@ -78,12 +69,11 @@ public class Verifier {
 
     private String logFileName = "log.txt";
 
-    public Verifier(String basedir, String settingsFile, boolean debug) throws VerificationException {
-        this(basedir, settingsFile, debug, DEFAULT_CLI_ARGUMENTS);
+    public Verifier(String basedir) throws VerificationException {
+        this(basedir, DEFAULT_CLI_ARGUMENTS);
     }
 
-    public Verifier(String basedir, String settingsFile, boolean debug, String[] defaultCliArguments)
-            throws VerificationException {
+    public Verifier(String basedir, String[] defaultCliArguments) throws VerificationException {
         this.basedir = basedir;
         this.defaultCliArguments = defaultCliArguments == null ? new String[0] : defaultCliArguments.clone();
         this.localRepo = findLocalRepo();
@@ -91,9 +81,11 @@ public class Verifier {
 
     /**
      * Resolves the local repository the way the (deprecated) Verifier did: an explicit
-     * {@code -Dmaven.repo.local} Java System property first, falling back to {@code ~/.m2/repository}.
-     * Unlike the old Verifier, this does not parse {@code settingsFile} for a {@code <localRepository>}
-     * element.
+     * {@code -Dmaven.repo.local} Java System property first, falling back to {@code ~/.m2/repository}. Unlike
+     * the old Verifier, this does not additionally parse a {@code settings.xml} for a
+     * {@code <localRepository>} element as a fallback: that parsing was never applied to the actual build
+     * (the resolved value only fed {@link #getLocalRepository()}/{@link #getArtifactPath}), so dropping it
+     * changes no build behavior (see apache/maven-verifier#142).
      */
     private static String findLocalRepo() {
         String repo = System.getProperty("maven.repo.local");
@@ -156,9 +148,16 @@ public class Verifier {
     }
 
     /**
-     * Executes Maven with the accumulated CLI arguments, system properties and environment variables, then
-     * writes the captured stdout/stderr to {@code <basedir>/<logFileName>} so that {@link #loadFile} and the
-     * {@code OutputValidator} log-reading helpers can read it back from disk exactly like the old Verifier did.
+     * Executes Maven with the accumulated CLI arguments, system properties and environment variables. Both
+     * stdout and stderr are piped into the same {@code <basedir>/<logFileName>} file, in arrival order, so
+     * that {@link #loadFile} and the {@code OutputValidator} log-reading helpers can read it back from disk
+     * exactly like the old Verifier did.
+     * <p>
+     * A fresh {@link ExecutorHelper} is created for, and closed after, this single invocation:
+     * {@code EmbeddedMavenExecutor} snapshots {@code System.getProperties()} at construction and restores that
+     * snapshot in a {@code finally} block after every embedded execution, so a helper shared across
+     * invocations would reset system properties set between two {@code execute()} calls back to whatever they
+     * were when the helper was created.
      */
     public void execute() throws VerificationException {
         List<String> args = new ArrayList<>();
@@ -174,32 +173,34 @@ public class Verifier {
             args.add(cliArgument.replace("${basedir}", basedir));
         }
 
-        ByteArrayOutputStream stdOut = new ByteArrayOutputStream();
-        ByteArrayOutputStream stdErr = new ByteArrayOutputStream();
-
-        ExecutorRequest.Builder builder = ExecutorRequest.mavenBuilder()
-                .cwd(Paths.get(basedir))
-                .arguments(args)
-                .stdOut(stdOut)
-                .stdErr(stdErr);
-        if (!environmentVariables.isEmpty()) {
-            builder.environmentVariables(environmentVariables);
-        }
-        ExecutorRequest request = builder.build();
-
         ExecutorHelper.Mode mode = forkJvm == null
                 ? ExecutorHelper.Mode.AUTO
                 : (forkJvm ? ExecutorHelper.Mode.FORKED : ExecutorHelper.Mode.EMBEDDED);
 
+        File logFile = new File(basedir, logFileName);
         ExecutorResult result;
-        try {
-            result = EXECUTOR_HELPER.execute(mode, request);
-        } catch (ExecutorException e) {
-            writeLogFile(stdOut, stdErr);
-            throw new VerificationException("Failed to execute Maven", e);
-        }
+        // shared by both stdOut and stdErr below: the pump threads each close whatever stream they are given,
+        // and may write concurrently, so this sink must tolerate a double close and serialize writes.
+        try (IdempotentOutputStream sink = new IdempotentOutputStream(Files.newOutputStream(logFile.toPath()))) {
+            ExecutorRequest.Builder builder = ExecutorRequest.mavenBuilder()
+                    .cwd(Paths.get(basedir))
+                    .arguments(args)
+                    .stdOut(sink)
+                    .stdErr(sink);
+            if (!environmentVariables.isEmpty()) {
+                builder.environmentVariables(environmentVariables);
+            }
+            ExecutorRequest request = builder.build();
 
-        writeLogFile(stdOut, stdErr);
+            try (ExecutorHelper executorHelper =
+                    ExecutorHelper.forMavenInstallation(MAVEN_HOME, ExecutorHelper.Mode.AUTO)) {
+                result = executorHelper.execute(mode, request);
+            } catch (ExecutorException e) {
+                throw new VerificationException("Failed to execute Maven", e);
+            }
+        } catch (IOException e) {
+            throw new VerificationException("Could not write log file: " + logFile, e);
+        }
 
         if (!result.success()) {
             throw new VerificationException("Exit code was non-zero: "
@@ -208,13 +209,39 @@ public class Verifier {
         }
     }
 
-    private void writeLogFile(ByteArrayOutputStream stdOut, ByteArrayOutputStream stdErr) {
-        File logFile = new File(basedir, logFileName);
-        try (OutputStream out = new FileOutputStream(logFile)) {
-            stdOut.writeTo(out);
-            stdErr.writeTo(out);
-        } catch (IOException e) {
-            // best-effort: mirrors the old Verifier which swallowed log-file write failures
+    /**
+     * Wraps a single {@link OutputStream} so it can be handed to both the stdout and stderr sinks of an
+     * {@link ExecutorRequest} and still be closed safely by either (or both) pump threads.
+     */
+    private static final class IdempotentOutputStream extends OutputStream {
+        private final OutputStream delegate;
+        private boolean closed;
+
+        IdempotentOutputStream(OutputStream delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public synchronized void write(int b) throws IOException {
+            delegate.write(b);
+        }
+
+        @Override
+        public synchronized void write(byte[] b, int off, int len) throws IOException {
+            delegate.write(b, off, len);
+        }
+
+        @Override
+        public synchronized void flush() throws IOException {
+            delegate.flush();
+        }
+
+        @Override
+        public synchronized void close() throws IOException {
+            if (!closed) {
+                closed = true;
+                delegate.close();
+            }
         }
     }
 
