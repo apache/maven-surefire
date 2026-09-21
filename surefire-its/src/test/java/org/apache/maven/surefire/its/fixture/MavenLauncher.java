@@ -29,9 +29,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.maven.shared.utils.io.FileUtils;
-import org.apache.maven.shared.verifier.VerificationException;
-import org.apache.maven.shared.verifier.Verifier;
-import org.apache.maven.shared.verifier.util.ResourceExtractor;
 
 import static java.util.Collections.singletonMap;
 import static java.util.Collections.unmodifiableList;

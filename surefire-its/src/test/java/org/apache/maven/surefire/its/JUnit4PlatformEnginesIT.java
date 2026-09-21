@@ -21,9 +21,9 @@ package org.apache.maven.surefire.its;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.VerificationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

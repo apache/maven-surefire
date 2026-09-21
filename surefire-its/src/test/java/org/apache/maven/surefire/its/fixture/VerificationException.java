@@ -19,21 +19,23 @@
 package org.apache.maven.surefire.its.fixture;
 
 /**
- *
+ * Signals a failure detected by {@link Verifier}, mirroring the checked exception of the same
+ * name previously provided by the (deprecated) {@code org.apache.maven.shared.verifier.Verifier}.
  */
-public class FailsafeOutputValidator extends OutputValidator {
-    public FailsafeOutputValidator(OutputValidator source) {
-        super(source.verifier);
+public class VerificationException extends Exception {
+    public VerificationException() {
+        super();
     }
 
-    @Override
-    public OutputValidator verifyErrorFree(int total) {
-        try {
-            verifier.verifyErrorFreeLog();
-            this.assertIntegrationTestSuiteResults(total, 0, 0, 0);
-            return this;
-        } catch (VerificationException e) {
-            throw new SurefireVerifierException(e);
-        }
+    public VerificationException(String message) {
+        super(message);
+    }
+
+    public VerificationException(Throwable cause) {
+        super(cause);
+    }
+
+    public VerificationException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

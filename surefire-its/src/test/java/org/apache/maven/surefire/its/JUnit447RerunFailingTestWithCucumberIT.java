@@ -20,9 +20,9 @@ package org.apache.maven.surefire.its;
 
 import java.util.ArrayList;
 
-import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.VerificationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
