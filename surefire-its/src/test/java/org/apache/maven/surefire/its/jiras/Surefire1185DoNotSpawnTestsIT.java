@@ -18,9 +18,9 @@
  */
 package org.apache.maven.surefire.its.jiras;
 
-import org.apache.maven.shared.verifier.VerificationException;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
+import org.apache.maven.surefire.its.fixture.VerificationException;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsString;
