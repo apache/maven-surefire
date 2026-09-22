@@ -85,6 +85,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     private final ConcurrentMap<TestIdentifier, Long> testStartTime = new ConcurrentHashMap<>();
     private final ConcurrentMap<TestIdentifier, TestExecutionResult> failures = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, TestIdentifier> runningTestIdentifiersByUniqueId = new ConcurrentHashMap<>();
+    /** Test sources observed below each report root in the current execution plan. */
+    private final ConcurrentMap<String, Set<String>> classSourcesByRoot = new ConcurrentHashMap<>();
+    /** The latest completion report for each source, used when the top-level container is flushed. */
+    private final ConcurrentMap<String, ConcurrentMap<String, SimpleReportEntry>> classReportsByRoot =
+            new ConcurrentHashMap<>();
+    /** A source gets one test-set-start event per report root. */
+    private final Set<String> startedClassSources = ConcurrentHashMap.newKeySet();
     // Some custom runners execute tests removed by post-discovery filtering. Do not
     // report those executions or associate their output with a targeted rerun.
     private final ThreadLocal<Boolean> suppressOutput = new ThreadLocal<>();
@@ -113,10 +120,14 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     @Override
     public void testPlanExecutionStarted(TestPlan testPlan) {
         this.testPlan = testPlan;
+        classSourcesByRoot.clear();
+        classReportsByRoot.clear();
+        startedClassSources.clear();
     }
 
     @Override
     public void testPlanExecutionFinished(TestPlan testPlan) {
+        flushAllClassRoots();
         this.testPlan = null;
         testStartTime.clear();
         suppressOutput.remove();
@@ -134,7 +145,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         if (isClassContainer(testIdentifier)) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
-            runListener.testSetStarting(createReportEntry(testIdentifier));
+            startClassTestSet(testIdentifier);
         } else if (testIdentifier.isTest()) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
             runListener.testStarting(createReportEntry(testIdentifier));
@@ -188,8 +199,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         runListener.testError(reportEntry);
                     }
                     if (isClass || isRootContainer) {
-                        runListener.testSetCompleted(
-                                createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+                        SimpleReportEntry completion =
+                                createReportEntry(testIdentifier, null, systemProps(), null, elapsed);
+                        if (isClass) {
+                            completeClassContainer(testIdentifier, completion);
+                        } else {
+                            runListener.testSetCompleted(completion);
+                        }
                     }
                     // Do not record AfterAll/AfterClass container failures for rerun: the test
                     // methods already passed, and re-executing them cannot fix a deterministic
@@ -207,8 +223,13 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                             classesWithSuccessfulTests.add(succeeded.getSourceName());
                         }
                     } else {
-                        runListener.testSetCompleted(
-                                createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+                        SimpleReportEntry completion =
+                                createReportEntry(testIdentifier, null, systemProps(), null, elapsed);
+                        if (isClass) {
+                            completeClassContainer(testIdentifier, completion);
+                        } else {
+                            runListener.testSetCompleted(completion);
+                        }
                     }
             }
         }
@@ -219,7 +240,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     private void reportAbortedClass(
             TestIdentifier testIdentifier, TestExecutionResult testExecutionResult, Integer elapsed) {
         if (classContainersWithStartedTests.contains(testIdentifier.getUniqueId())) {
-            runListener.testSetCompleted(
+            completeClassContainer(
+                    testIdentifier,
                     createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
             return;
         }
@@ -241,7 +263,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             }
         }
 
-        runListener.testSetCompleted(createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+        completeClassContainer(testIdentifier, createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
     }
 
     private void recordStartedTest(TestIdentifier testIdentifier) {
@@ -266,6 +288,94 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         .getSource()
                         .filter(ClassSource.class::isInstance)
                         .isPresent();
+    }
+
+    private void startClassTestSet(TestIdentifier testIdentifier) {
+        String sourceName = getClassSourceName(testIdentifier);
+        if (sourceName == null) {
+            return;
+        }
+        String rootId = getClassRootId(testIdentifier);
+        classSourcesByRoot.computeIfAbsent(rootId, ignored -> ConcurrentHashMap.newKeySet()).add(sourceName);
+        classReportsByRoot
+                .computeIfAbsent(rootId, ignored -> new ConcurrentHashMap<>())
+                .putIfAbsent(sourceName, createReportEntry(testIdentifier));
+        if (startedClassSources.add(classSourceKey(rootId, sourceName))) {
+            runListener.testSetStarting(createReportEntry(testIdentifier));
+        }
+    }
+
+    private void completeClassContainer(TestIdentifier testIdentifier, SimpleReportEntry completion) {
+        String sourceName = getClassSourceName(testIdentifier);
+        if (sourceName == null) {
+            runListener.testSetCompleted(completion);
+            return;
+        }
+        String rootId = getClassRootId(testIdentifier);
+        classSourcesByRoot.computeIfAbsent(rootId, ignored -> ConcurrentHashMap.newKeySet()).add(sourceName);
+        classReportsByRoot
+                .computeIfAbsent(rootId, ignored -> new ConcurrentHashMap<>())
+                .put(sourceName, completion);
+        if (rootId.equals(testIdentifier.getUniqueId())) {
+            flushClassRoot(rootId);
+        }
+    }
+
+    private void flushAllClassRoots() {
+        for (String rootId : new LinkedHashSet<>(classSourcesByRoot.keySet())) {
+            flushClassRoot(rootId);
+        }
+    }
+
+    private void flushClassRoot(String rootId) {
+        Set<String> sourceNames = classSourcesByRoot.remove(rootId);
+        Map<String, SimpleReportEntry> reports = classReportsByRoot.remove(rootId);
+        if (sourceNames == null || reports == null) {
+            return;
+        }
+        for (String sourceName : sourceNames) {
+            SimpleReportEntry report = reports.get(sourceName);
+            if (report != null) {
+                runListener.testSetCompleted(report);
+            }
+            startedClassSources.remove(classSourceKey(rootId, sourceName));
+        }
+    }
+
+    private String getClassRootId(TestIdentifier testIdentifier) {
+        if (!hasClassTemplateInvocation(testIdentifier.getUniqueId())) {
+            return testIdentifier.getUniqueId();
+        }
+        TestIdentifier root = testIdentifier;
+        Optional<TestIdentifier> parent = resolveParent(root);
+        while (parent.isPresent()) {
+            if (isClassContainer(parent.get())) {
+                root = parent.get();
+            }
+            parent = resolveParent(parent.get());
+        }
+        return root.getUniqueId();
+    }
+
+    private static String classSourceKey(String rootId, String sourceName) {
+        return rootId + '\n' + sourceName;
+    }
+
+    private static boolean hasClassTemplateInvocation(String uniqueId) {
+        try {
+            return UniqueId.parse(uniqueId).getSegments().stream()
+                    .anyMatch(segment -> "class-template-invocation".equals(segment.getType()));
+        } catch (RuntimeException ignored) {
+            return false;
+        }
+    }
+
+    private static String getClassSourceName(TestIdentifier testIdentifier) {
+        return testIdentifier.getSource()
+                .filter(ClassSource.class::isInstance)
+                .map(ClassSource.class::cast)
+                .map(ClassSource::getClassName)
+                .orElse(null);
     }
 
     private Integer computeElapsedTime(TestIdentifier testIdentifier) {
@@ -337,11 +447,11 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         if (isClass) {
             SimpleReportEntry report = createReportEntry(testIdentifier);
-            runListener.testSetStarting(report);
+            startClassTestSet(testIdentifier);
             for (TestIdentifier child : testPlan.getChildren(testIdentifier)) {
                 runListener.testSkipped(createReportEntry(child, null, emptyMap(), reason, null));
             }
-            runListener.testSetCompleted(report);
+            completeClassContainer(testIdentifier, report);
         } else {
             runListener.testSkipped(createReportEntry(testIdentifier, null, emptyMap(), reason, null));
         }
