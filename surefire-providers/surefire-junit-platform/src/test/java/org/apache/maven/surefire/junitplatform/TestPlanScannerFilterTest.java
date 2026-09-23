@@ -25,12 +25,18 @@ import org.junit.Test;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.engine.Filter;
+import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.core.LauncherFactory;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link TestPlanScannerFilter}.
@@ -72,6 +78,18 @@ public class TestPlanScannerFilterTest {
     @org.junit.jupiter.api.Test
     public void classWithNestedTestFactoryIsAccepted() {
         assertTrue(newFilter().accept(ClassWithNestedTestFactory.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    public void discoveryFailureIncludesRootCauseMessage() {
+        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        Launcher launcher = mock(Launcher.class);
+        when(launcher.discover(any())).thenThrow(new JUnitException("engine discovery failed", rootCause));
+        TestPlanScannerFilter filter = new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0]);
+
+        JUnitException failure = assertThrows(JUnitException.class, () -> filter.accept(ClassWithTestMethods.class));
+
+        assertTrue(failure.getMessage().contains(rootCause.getMessage()));
     }
 
     private static TestPlanScannerFilter newFilter() {
