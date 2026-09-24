@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
@@ -47,6 +48,7 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
+import org.junit.experimental.categories.Category;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -61,6 +63,7 @@ import org.junit.platform.engine.discovery.ClassSelector;
 import org.junit.platform.engine.discovery.UniqueIdSelector;
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor;
 import org.junit.platform.engine.support.descriptor.ClassSource;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.LauncherSession;
@@ -86,6 +89,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CONFIGURATION_PARAMETERS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1144,6 +1148,38 @@ public class JUnitPlatformProviderTest {
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
         assertEquals(3, provider.getFilters().length);
+    }
+
+    @Test
+    public void categoryFiltersIgnoreUnresolvableMethodSources() {
+        Map<String, String> properties = new HashMap<>();
+        properties.put(JUNIT_VINTAGE_DETECTED, "true");
+        properties.put(GROUPS_PROP, "category");
+        properties.put(EXCLUDEDGROUPS_PROP, "category");
+
+        ProviderParameters providerParameters = providerParametersMock(TestClass1.class);
+        when(providerParameters.getProviderProperties()).thenReturn(properties);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+        TestDescriptor descriptor =
+                new AbstractTestDescriptor(
+                        UniqueId.forEngine("spock")
+                                .append("spec", "ExampleSpec")
+                                .append("feature", "addition works"),
+                        "addition works",
+                        MethodSource.from(TestClass1.class.getName(), "addition works")) {
+                    @Override
+                    public Type getType() {
+                        return Type.TEST;
+                    }
+                };
+
+        assertFalse(provider.getIncludeCategoryFilter(Arrays.asList("category"), Optional.of(Category.class))
+                .apply(descriptor)
+                .included());
+        assertTrue(provider.getExcludeCategoryFilter(Arrays.asList("category"), Optional.of(Category.class))
+                .apply(descriptor)
+                .included());
     }
 
     @Test
