@@ -24,6 +24,8 @@ import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -110,6 +112,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private final Filter<?>[] filters;
 
     private Map<String, String> configurationParameters = new HashMap<>();
+
+    private boolean excludeTestNgEngine;
 
     private final CommandChainReader commandsReader;
 
@@ -212,9 +216,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
         try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession(cancellationToken)) {
             LauncherAdapter launcher = launcherSession.getLauncher();
             if (forkTestSet instanceof TestsToRun) {
+                // The TestNG engine is not skipped here on purpose: reading the classes eagerly would
+                // advance the iteration state which TestsToRun exposes through iterated().
                 invokeAllTests(launcher, (TestsToRun) forkTestSet, adapter);
             } else if (forkTestSet instanceof Class) {
-                invokeAllTests(launcher, fromClass((Class<?>) forkTestSet), adapter);
+                Class<?> testClass = (Class<?>) forkTestSet;
+                excludeTestNgEngineIfPossible(Collections.singletonList(testClass.getName()));
+                invokeAllTests(launcher, fromClass(testClass), adapter);
             } else if (forkTestSet == null) {
                 invokeAllTests(launcher, scanClasspath(launcher), adapter);
             } else {
@@ -234,10 +242,21 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private TestsToRun scanClasspath(LauncherAdapter launcher) {
-        TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, filters);
         ScanResult scanResult = parameters.getScanResult();
+        List<String> candidateClassNames = scannedClassNames(scanResult);
+        excludeTestNgEngineIfPossible(candidateClassNames);
+        TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, allFilters(), candidateClassNames);
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
+    }
+
+    private static List<String> scannedClassNames(ScanResult scanResult) {
+        int size = scanResult.size();
+        List<String> classNames = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            classNames.add(scanResult.getClassName(i));
+        }
+        return classNames;
     }
 
     private void invokeAllTests(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter)
@@ -394,7 +413,32 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private LauncherDiscoveryRequestBuilder newRequest() {
 
-        return request().filters(filters).configurationParameters(getConfigurationParameters());
+        return request().filters(allFilters()).configurationParameters(getConfigurationParameters());
+    }
+
+    /**
+     * @return the include/exclude filters, extended by an engine filter which keeps the TestNG engine out of
+     *     the request when it was proven that it cannot contribute any test
+     */
+    private Filter<?>[] allFilters() {
+        if (!excludeTestNgEngine) {
+            return filters;
+        }
+        Filter<?>[] allFilters = Arrays.copyOf(filters, filters.length + 1);
+        allFilters[filters.length] = EngineFilter.excludeEngines(TestNgTestClassDetector.TESTNG_ENGINE_ID);
+        return allFilters;
+    }
+
+    /**
+     * Excludes the TestNG engine when none of the given classes could be a TestNG test class. The engine must
+     * never be skipped for a class which was not inspected, so this is only ever called with the complete set
+     * of classes which is about to be handed over to the platform.
+     *
+     * @param classNames the names of every class which is about to be handed over to the platform
+     */
+    private void excludeTestNgEngineIfPossible(Collection<String> classNames) {
+        excludeTestNgEngine =
+                TestNgTestClassDetector.canExcludeTestNgEngine(parameters.getTestClassLoader(), classNames);
     }
 
     private Filter<?>[] newFilters() {
