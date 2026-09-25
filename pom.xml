@@ -277,6 +277,43 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <inputExcludes combine.children="append">
+
+              <exclude>Jenkinsfile</exclude>
+              <exclude>README.md</exclude>
+              <exclude>CLAUDE.md</exclude>
+              <exclude>.editorconfig</exclude>
+              <exclude>.gitignore</exclude>
+              <exclude>.git/**/*</exclude>
+              <exclude>**/.github/**</exclude>
+              <exclude>**/.idea</exclude>
+              <exclude>**/.svn/**/*</exclude>
+              <exclude>**/*.iml</exclude>
+              <exclude>**/*.ipr</exclude>
+              <exclude>**/*.iws</exclude>
+              <exclude>**/*.versionsBackup</exclude>
+              <exclude>**/dependency-reduced-pom.xml</exclude>
+              <exclude>.repository/**</exclude>
+              <!-- jenkins with local maven repository -->
+              <exclude>src/test/resources/**/*</exclude>
+              <exclude>src/test/resources/**/*.css</exclude>
+              <exclude>**/*.jj</exclude>
+              <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider</exclude>
+              <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.extensions.ForkedProcessTimeoutExtension</exclude>
+              <exclude>DEPENDENCIES</exclude>
+              <exclude>.m2/**</exclude>
+              <exclude>.m2</exclude>
+              <exclude>.travis.yml</exclude>
+              <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
+              <exclude>**/.gitattributes</exclude>
+
+            </inputExcludes>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
@@ -396,49 +433,7 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>rat-check</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <excludes combine.children="append">
-                <exclude>Jenkinsfile</exclude>
-                <exclude>README.md</exclude>
-                <exclude>CLAUDE.md</exclude>
-                <exclude>.editorconfig</exclude>
-                <exclude>.gitignore</exclude>
-                <exclude>.git/**/*</exclude>
-                <exclude>**/.github/**</exclude>
-                <exclude>**/.idea</exclude>
-                <exclude>**/.svn/**/*</exclude>
-                <exclude>**/*.iml</exclude>
-                <exclude>**/*.ipr</exclude>
-                <exclude>**/*.iws</exclude>
-                <exclude>**/*.versionsBackup</exclude>
-                <exclude>**/dependency-reduced-pom.xml</exclude>
-                <exclude>.repository/**</exclude>
-                <!-- jenkins with local maven repository -->
-                <exclude>src/test/resources/**/*</exclude>
-                <exclude>src/test/resources/**/*.css</exclude>
-                <exclude>**/*.jj</exclude>
-                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.api.provider.SurefireProvider</exclude>
-                <exclude>src/main/resources/META-INF/services/org.apache.maven.surefire.extensions.ForkedProcessTimeoutExtension</exclude>
-                <exclude>DEPENDENCIES</exclude>
-                <exclude>.m2/**</exclude>
-                <exclude>.m2</exclude>
-                <exclude>.travis.yml</exclude>
-                <exclude>.mvn/wrapper/maven-wrapper.properties</exclude>
-                <exclude>**/.gitattributes</exclude>
-              </excludes>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
@@ -493,6 +488,7 @@
   </reporting>
 
   <profiles>
+
     <profile>
       <!-- First, install the project without tests -> mvn install -DskipTests
         This is a workaround for IntelliJ IDEA, see https://youtrack.jetbrains.com/issue/IDEA-148573
