@@ -84,7 +84,7 @@ All test frameworks execute through the unified JUnit Platform provider (`surefi
 
 ### Integration Tests
 
-`surefire-its` contains integration tests that launch real Maven builds against fixture projects in `surefire-its/src/test/resources/`. Requires `-Prun-its`. Uses `maven-verifier` to invoke Maven and assert on build output.
+`surefire-its` contains integration tests that launch real Maven builds against fixture projects in `surefire-its/src/test/resources/`. Requires `-Prun-its`. Uses `maven-executor` (via the `fixture.Verifier` wrapper) to invoke Maven and assert on build output.
 
 ## Key Conventions
 
