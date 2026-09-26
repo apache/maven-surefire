@@ -45,6 +45,12 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
         requiresDependencyResolution = ResolutionScope.TEST)
 public class SurefireMojo extends AbstractSurefireMojo implements SurefireReportParameters {
 
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        warnIfSuiteXmlFilesConfigured(suiteXmlFiles);
+        super.execute();
+    }
+
     /**
      * The directory containing generated classes of the project being tested. This will be included after the test
      * classes in the test classpath.
