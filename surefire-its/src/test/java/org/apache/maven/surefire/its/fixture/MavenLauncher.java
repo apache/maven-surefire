@@ -76,8 +76,10 @@ public final class MavenLauncher {
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
         this.cli = cli == null ? null : cli.clone();
-        // by default use embedded mode
-        this.forkJvm = false;
+        // Use forked mode for Maven 4+ because maven-verifier 2.0.0-M1's embedded mode
+        // uses reflection against MavenCling.doMain() with an incompatible method signature.
+        // Once surefire migrates from maven-verifier to maven-executor, this can be removed.
+        this.forkJvm = isMaven4();
         resetGoals();
         resetCliOptions();
     }
@@ -407,6 +409,32 @@ public final class MavenLauncher {
         return defaultCliOptions == null
                 ? new Verifier(basedir, settingsFile, false)
                 : new Verifier(basedir, settingsFile, false, defaultCliOptions);
+    }
+
+    /**
+     * Detects if the current Maven installation is version 4.x or later by checking for the
+     * presence of {@code maven-cli-*.jar} in the Maven home lib directory. Maven 4 introduced
+     * the {@code maven-cli} module which is not present in Maven 3.x installations.
+     *
+     * @return {@code true} if Maven 4+ is detected
+     */
+    private static boolean isMaven4() {
+        String mavenHome = System.getProperty("maven.home", "");
+        if (mavenHome.isEmpty()) {
+            return false;
+        }
+        File libDir = new File(mavenHome, "lib");
+        if (libDir.isDirectory()) {
+            String[] files = libDir.list();
+            if (files != null) {
+                for (String file : files) {
+                    if (file.startsWith("maven-cli-")) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private static File settingsXmlPath() {

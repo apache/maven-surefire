@@ -53,7 +53,7 @@ public final class CountdownCloseable implements Closeable {
      * @throws InterruptedException see {@link Object#wait()}
      */
     public synchronized void awaitClosed() throws InterruptedException {
-        if (countdown > 0) {
+        while (countdown > 0) {
             wait();
         }
     }
