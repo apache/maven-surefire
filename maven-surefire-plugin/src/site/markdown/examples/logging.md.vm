@@ -77,3 +77,13 @@ To disable all filtering, use an empty value via command line:
 ```bash
 mvn test -Dsurefire.stackTraceFilterPrefixes=""
 ```
+
+On Java 9 and later, stack capture uses `StackWalker` by default. If that causes a problem in a test JVM, set the JVM system property `surefire.stackTrace.disableStackWalker=true` to use `Thread.getStackTrace()` while retaining stack capture. For forked tests, pass the property through `argLine`:
+
+```xml
+<configuration>
+  <argLine>-Dsurefire.stackTrace.disableStackWalker=true</argLine>
+</configuration>
+```
+
+If `argLine` already contains JVM options, append this property rather than replacing them.
