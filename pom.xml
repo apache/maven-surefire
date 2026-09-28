@@ -102,7 +102,7 @@
     <commonsIoVersion>2.22.0</commonsIoVersion>
     <plexus-java-version>1.6.0</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
-    <mavenSharedUtilsVersion>3.4.2</mavenSharedUtilsVersion>
+    <mavenSharedUtilsVersion>3.5.0</mavenSharedUtilsVersion>
     <jacocoVersion>0.8.15</jacocoVersion>
     <testngVersion>5.11</testngVersion>
     <maven.surefire.scm.devConnection>scm:git:https://github.com/apache/maven-surefire.git</maven.surefire.scm.devConnection>
