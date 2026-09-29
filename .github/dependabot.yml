@@ -37,6 +37,9 @@ updates:
       versions: [ ">=2.0"]
     - dependency-name: "org.mockito:*"
       versions: [ ">=5.0"]
+    # JUnit 6 requires Java 17; the build still runs on JDK 8
+    - dependency-name: "org.junit*"
+      versions: [">= 6.0.0"]
 - package-ecosystem: "github-actions"
   target-branch: "master"
   labels:
