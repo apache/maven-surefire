@@ -965,8 +965,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     @Inject
     private ToolchainManager toolchainManager;
 
-    @Inject
-    private LocationManager locationManager;
+    private LocationManager locationManager = new LocationManager();
 
     @Inject
     private ProviderDetector providerDetector;
