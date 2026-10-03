@@ -38,6 +38,8 @@ public class Surefire1396CustomProviderClassPathIT extends SurefireJUnit4Integra
     @Test
     public void pluggableProviderClasspathCorrect() {
         unpack("surefire-1396-pluggableproviders-classpath")
+                // properties in dependency POM are not interpolated by default - since Maven 3.10.0
+                .sysProp("maven.model.dependencyInterpolation.full", "true")
                 .setForkJvm()
                 .maven()
                 .showExceptionMessages()

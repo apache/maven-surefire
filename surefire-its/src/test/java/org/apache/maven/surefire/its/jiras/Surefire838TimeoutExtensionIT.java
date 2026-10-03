@@ -43,6 +43,8 @@ public class Surefire838TimeoutExtensionIT extends SurefireJUnit4IntegrationTest
     @Test
     public void extensionInvokedOnTimeout() {
         OutputValidator validator = unpack("surefire-838-timeout-extension")
+                // properties in dependency POM are not interpolated by default - since Maven 3.10.0
+                .sysProp("maven.model.dependencyInterpolation.full", "true")
                 .maven()
                 .withFailure()
                 .executeTest()

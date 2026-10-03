@@ -235,6 +235,7 @@
               <systemPropertyVariables>
                 <surefire.version>${project.version}</surefire.version>
                 <maven.home>${maven.home}</maven.home>
+                <maven.repo.local>${settings.localRepository}</maven.repo.local>
                 <maven.settings.file>${project.build.directory}/private/settings.xml</maven.settings.file>
                 <maven.toolchains.file>${project.build.directory}/private/toolchains.xml</maven.toolchains.file>
                 <maven.test.tmpdir>${project.build.directory}</maven.test.tmpdir>
