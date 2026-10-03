@@ -27,12 +27,17 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -1144,8 +1149,39 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private DefaultScanResult scanDirectories() throws MojoFailureException {
-        DirectoryScanner scanner = new DirectoryScanner(getTestClassesDirectory(), getIncludedAndExcludedTests());
+        File scanDir = getTestClassesDirectory();
+        // Maven 4 Module Source Hierarchy: test classes may be nested under <module>/
+        if (scanDir != null) {
+            DefaultScanResult nestedResult =
+                    scanNestedModuleTestDirectories(scanDir, nestedModuleDirectories(getMainBuildPath()));
+            if (nestedResult != null) {
+                return nestedResult;
+            }
+        }
+        DirectoryScanner scanner = new DirectoryScanner(scanDir, getIncludedAndExcludedTests());
         return scanner.scan();
+    }
+
+    /**
+     * Scans each nested {@code target/test-classes/<module>/} directory of a Maven 4
+     * module source hierarchy build and unions the results.
+     *
+     * @param scanDir the test classes directory
+     * @param nestedModuleDirectories the per-module build output directories, may be empty
+     * @return the union of all nested scans, or null if no nested test directory exists
+     * @throws MojoFailureException if the include/exclude filter is malformed
+     */
+    private DefaultScanResult scanNestedModuleTestDirectories(File scanDir, List<File> nestedModuleDirectories)
+            throws MojoFailureException {
+        DefaultScanResult nestedResult = null;
+        for (File nestedModule : nestedModuleDirectories) {
+            File nestedTestDir = new File(scanDir, nestedModule.getName());
+            if (nestedTestDir.isDirectory()) {
+                DefaultScanResult scan = new DirectoryScanner(nestedTestDir, getIncludedAndExcludedTests()).scan();
+                nestedResult = nestedResult == null ? scan : nestedResult.append(scan);
+            }
+        }
+        return nestedResult;
     }
 
     List<Artifact> getProjectTestArtifacts() {
@@ -1523,18 +1559,117 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         boolean isJpmsModule =
                 buildPath.isDirectory() ? new File(buildPath, "module-info.class").exists() : isModule(buildPath);
 
+        // Maven 4 Module Source Hierarchy: classes may be in target/classes/<module>/
+        if (!isJpmsModule && buildPath.isDirectory()) {
+            List<File> nestedModuleDirectories = findNestedModuleDescriptors(buildPath);
+            if (!nestedModuleDirectories.isEmpty()) {
+                return resolveNestedModuleDescriptors(jdkHome, nestedModuleDirectories, isMainDescriptor);
+            }
+        }
+
         if (!isJpmsModule) {
             return new ResolvePathResultWrapper(null, isMainDescriptor);
         }
 
+        ResolvePathResult result = resolveModuleDescriptor(jdkHome, buildPath);
+        return new ResolvePathResultWrapper(result, isMainDescriptor);
+    }
+
+    /**
+     * Resolves the descriptors of all modules of a Maven 4 module source hierarchy build.
+     * The primary module drives test scanning and {@code --patch-module}, so a module
+     * with a nested test output directory is preferred; the remaining modules travel as
+     * additional results in the wrapper.
+     *
+     * @param jdkHome the JDK to parse module descriptors with
+     * @param nestedModuleDirectories the nested module directories, each containing a module-info.class
+     * @param isMainDescriptor whether the descriptors stem from the main build output
+     * @return wrapper with the primary descriptor and all sibling descriptors
+     */
+    private ResolvePathResultWrapper resolveNestedModuleDescriptors(
+            File jdkHome, List<File> nestedModuleDirectories, boolean isMainDescriptor) {
+        ResolvePathResult primary = null;
+        List<ResolvePathResult> additional = new ArrayList<>();
+        for (File moduleDir : orderModulesWithTestsFirst(nestedModuleDirectories)) {
+            ResolvePathResult result = resolveModuleDescriptor(jdkHome, moduleDir);
+            if (result != null) {
+                if (primary == null) {
+                    primary = result;
+                } else {
+                    additional.add(result);
+                }
+            }
+        }
+        return new ResolvePathResultWrapper(primary, isMainDescriptor, additional);
+    }
+
+    private List<File> orderModulesWithTestsFirst(List<File> moduleDirs) {
+        List<File> ordered = new ArrayList<>(moduleDirs.size());
+        List<File> withoutTests = new ArrayList<>();
+        for (File moduleDir : moduleDirs) {
+            if (hasNestedTestDirectory(moduleDir)) {
+                ordered.add(moduleDir);
+            } else {
+                withoutTests.add(moduleDir);
+            }
+        }
+        ordered.addAll(withoutTests);
+        return ordered;
+    }
+
+    private ResolvePathResult resolveModuleDescriptor(File jdkHome, File buildPath) {
         try {
             ResolvePathRequest<?> request = ResolvePathRequest.ofFile(buildPath).setJdkHome(jdkHome);
             ResolvePathResult result = getLocationManager().resolvePath(request);
-            boolean isEmpty = result.getModuleNameSource() == null;
-            return new ResolvePathResultWrapper(isEmpty ? null : result, isMainDescriptor);
+            return result.getModuleNameSource() == null ? null : result;
         } catch (Exception e) {
-            return new ResolvePathResultWrapper(null, isMainDescriptor);
+            return null;
         }
+    }
+
+    private boolean hasNestedTestDirectory(File moduleDir) {
+        File testClassesDir = getTestClassesDirectory();
+        return testClassesDir != null && new File(testClassesDir, moduleDir.getName()).isDirectory();
+    }
+
+    /**
+     * The per-module subdirectories of a Maven 4 Module Source Hierarchy build output
+     * ({@code target/classes/<module>/}, each containing a module-info.class), sorted by
+     * name. Empty for the classic layout: a module-info.class at the root wins, even if a
+     * subdirectory happens to share the module's name (module named after its root
+     * package), and a missing directory yields no modules either.
+     *
+     * @param buildPath the build output directory (e.g., target/classes)
+     * @return the nested module directories, may be empty
+     */
+    private static List<File> nestedModuleDirectories(File buildPath) {
+        if (buildPath == null || !buildPath.isDirectory() || new File(buildPath, "module-info.class").exists()) {
+            return emptyList();
+        }
+        return findNestedModuleDescriptors(buildPath);
+    }
+
+    /**
+     * Searches for all immediate subdirectories of the given directory containing a
+     * module-info.class. A Maven 4 Module Source Hierarchy build may compile several
+     * Java modules into one build output directory, one subdirectory per module.
+     *
+     * @param buildPath the build output directory (e.g., target/classes)
+     * @return the subdirectories containing a module-info.class, sorted by name, may be empty
+     */
+    private static List<File> findNestedModuleDescriptors(File buildPath) {
+        List<File> moduleDirs = new ArrayList<>();
+        File[] subdirs = buildPath.listFiles(File::isDirectory);
+        if (subdirs != null) {
+            // deterministic order independent of filesystem iteration order
+            Arrays.sort(subdirs);
+            for (File subdir : subdirs) {
+                if (new File(subdir, "module-info.class").exists()) {
+                    moduleDirs.add(subdir);
+                }
+            }
+        }
+        return moduleDirs;
     }
 
     private static boolean isModule(File jar) {
@@ -2083,22 +2218,35 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         final ProviderRequirements providerRequirements;
         final Classpath testModulepath;
+        List<ResolvePathResult> additionalModules = moduleDescriptor.getAdditionalResults();
+        ModuleInfoPatchArgsFile moduleInfoPatchArgs = null;
+        String reflectiveOpensTargets = null;
+        Set<String> movedTestScopeModules = new LinkedHashSet<>();
         if (isMainDescriptor) {
             providerRequirements = new ProviderRequirements(true, true, false);
-            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
-                    .setIncludeAllProviders(true)
-                    .setJdkHome(javaHome)
-                    .setIncludeStatic(true)
-                    .setModuleDescriptor(javaModuleDescriptor);
+            moduleInfoPatchArgs = ModuleInfoPatchArgsFile.load(getTestClassesDirectory());
 
-            ResolvePathsResult<String> result = getLocationManager().resolvePaths(req);
-            for (Entry<String, Exception> entry : result.getPathExceptions().entrySet()) {
-                // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
-                getConsoleLogger().warning("Exception for '" + entry.getKey() + "'.", entry.getValue());
+            ModulePathSplit split =
+                    resolveModulePathSplit(testClasspath, javaModuleDescriptor, additionalModules, javaHome);
+            List<String> classpathElements = new ArrayList<>(split.classpath.getClassPath());
+            List<String> modulepathElements = new ArrayList<>(split.modulepath.getClassPath());
+            Map<String, JavaModuleDescriptor> elementDescriptors = split.elementDescriptors;
+
+            if (moduleInfoPatchArgs != null) {
+                List<String> providerClasspathElements = new ArrayList<>(providerClasspath.getClassPath());
+                movedTestScopeModules = moveTestScopeModulesToModulePath(
+                        moduleInfoPatchArgs,
+                        classpathElements,
+                        modulepathElements,
+                        providerClasspathElements,
+                        elementDescriptors,
+                        javaModuleDescriptor,
+                        javaHome);
+                providerClasspath = new Classpath(providerClasspathElements);
+                reflectiveOpensTargets = opensTargets(moduleInfoPatchArgs.getAddedModules(), movedTestScopeModules);
             }
-
-            testClasspath = new Classpath(result.getClasspathElements());
-            testModulepath = new Classpath(result.getModulepathElements().keySet());
+            testClasspath = new Classpath(classpathElements);
+            testModulepath = new Classpath(modulepathElements);
 
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
@@ -2111,12 +2259,29 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
+        File patchFile = null;
+        List<String[]> additionalModuleArgs = new ArrayList<>();
+        if (isMainDescriptor) {
+            File testDir = getTestClassesDirectory();
+            patchFile = resolveModularPatchDirectory(testDir, javaModuleDescriptor.name());
+            boolean nestedLayout = patchFile != null && !patchFile.equals(testDir);
+
+            if (nestedLayout) {
+                // The primary module should only open its own test packages, not those
+                // of sibling modules scanned from the other nested test directories.
+                packages.clear();
+                packages.addAll(scanTestPackages(patchFile));
+                additionalModuleArgs = createAdditionalModuleArgs(testDir, additionalModules, reflectiveOpensTargets);
+            }
+
+            if (moduleInfoPatchArgs != null) {
+                additionalModuleArgs.addAll(createHandoffPassThroughArgs(
+                        movedTestScopeModules, packages, javaModuleDescriptor.name(), reflectiveOpensTargets));
+            }
+        }
+
         ModularClasspath modularClasspath = new ModularClasspath(
-                javaModuleDescriptor.name(),
-                testModulepath.getClassPath(),
-                packages,
-                isMainDescriptor ? getTestClassesDirectory() : null,
-                isMainDescriptor);
+                javaModuleDescriptor.name(), testModulepath.getClassPath(), packages, patchFile, isMainDescriptor);
 
         Artifact[] additionalInProcArtifacts = {
             getCommonArtifact(),
@@ -2148,9 +2313,366 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         getConsoleLogger().debug(inProcClasspath.getCompactLogMessage("in-process(compact) classpath:"));
 
         ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum(getEnableProcessChecker());
-        List<String[]> jpmsArgs = providerInfo.getJpmsArguments(providerRequirements);
+        List<String[]> javaModulesArgs = new ArrayList<>(providerInfo.getJpmsArguments(providerRequirements));
+        javaModulesArgs.addAll(additionalModuleArgs);
         return new StartupConfiguration(
-                providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
+                providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, javaModulesArgs);
+    }
+
+    /**
+     * Splits the test classpath into classpath and module path: a plain resolution
+     * against the primary module descriptor for the single-module case, the union split
+     * over all modules for a multi-module source hierarchy build.
+     *
+     * @param testClasspath the unsplit test classpath
+     * @param javaModuleDescriptor the primary module descriptor
+     * @param additionalModules the sibling module descriptors, empty for a single module
+     * @param javaHome the JDK used for path resolution
+     * @return the classpath/module-path split
+     * @throws IOException if the location manager fails to resolve the paths
+     */
+    private ModulePathSplit resolveModulePathSplit(
+            Classpath testClasspath,
+            JavaModuleDescriptor javaModuleDescriptor,
+            List<ResolvePathResult> additionalModules,
+            String javaHome)
+            throws IOException {
+        if (additionalModules.isEmpty()) {
+            ResolvePathsResult<String> result =
+                    resolveTestClasspath(testClasspath.getClassPath(), javaModuleDescriptor, javaHome);
+            return new ModulePathSplit(
+                    new Classpath(new ArrayList<>(result.getClasspathElements())),
+                    new Classpath(new ArrayList<>(result.getModulepathElements().keySet())),
+                    result.getPathElements());
+        }
+        return resolveModulePathSplitForAllModules(
+                testClasspath.getClassPath(), javaModuleDescriptor, additionalModules, javaHome);
+    }
+
+    /**
+     * The directory patched into the module under test: the per-module nested test
+     * output directory ({@code target/test-classes/<module>/}) for a Maven 4 Module
+     * Source Hierarchy build, the test output directory itself otherwise. Only the main
+     * build output layout decides — a test-classes subdirectory merely sharing the
+     * module name (module named after its root package) must not switch the layout.
+     *
+     * @param testDir the test output directory, may be null
+     * @param moduleName the name of the module under test
+     * @return the patch directory, or null without a test output directory
+     */
+    private File resolveModularPatchDirectory(File testDir, String moduleName) {
+        if (testDir != null
+                && testDir.isDirectory()
+                && !nestedModuleDirectories(getMainBuildPath()).isEmpty()) {
+            File nestedTestDir = new File(testDir, moduleName);
+            if (nestedTestDir.isDirectory()) {
+                return nestedTestDir;
+            }
+        }
+        return testDir;
+    }
+
+    /**
+     * The pass-through arguments accompanying a verbatim {@code module-info-patch.args}
+     * emission. Two cases: every moved module becomes an explicit resolution root
+     * (classpath consumers, e.g. the surefire provider using the JUnit launcher API, can
+     * only reach boot-layer modules that are resolved), and the {@code --add-opens} for
+     * reflective test access are generated here — not in the fork configuration — because
+     * only this side knows the moved module closure (the reflecting engine, e.g.
+     * org.junit.platform.commons, may only be on the module path via a transitive
+     * requires of the file's added modules).
+     *
+     * @param movedTestScopeModules the module names moved to the module path
+     * @param packages the test packages of the module under test
+     * @param moduleName the name of the module under test
+     * @param reflectiveOpensTargets the target module list for {@code --add-opens}
+     * @return the pass-through arguments for the forked JVM
+     */
+    private static List<String[]> createHandoffPassThroughArgs(
+            Set<String> movedTestScopeModules,
+            Collection<String> packages,
+            String moduleName,
+            String reflectiveOpensTargets) {
+        List<String[]> args = new ArrayList<>();
+        if (!movedTestScopeModules.isEmpty()) {
+            args.add(new String[] {"--add-modules", String.join(",", movedTestScopeModules)});
+        }
+        for (String pkg : packages) {
+            args.add(new String[] {"--add-opens", moduleName + "/" + pkg + "=" + reflectiveOpensTargets});
+        }
+        return args;
+    }
+
+    /**
+     * Splits the test classpath of a multi-module source hierarchy build into classpath
+     * and module path. The fork has a single boot layer, so an element required on the
+     * module path by ANY of the modules must end up there.
+     *
+     * @param testClasspathElements the unsplit test classpath elements
+     * @param primary the primary module descriptor
+     * @param additionalModules the sibling module descriptors
+     * @param javaHome the JDK used for path resolution
+     * @return the classpath/module-path split
+     * @throws IOException if the location manager fails to resolve the paths
+     */
+    private ModulePathSplit resolveModulePathSplitForAllModules(
+            List<String> testClasspathElements,
+            JavaModuleDescriptor primary,
+            List<ResolvePathResult> additionalModules,
+            String javaHome)
+            throws IOException {
+        Set<String> modulepathElements = new LinkedHashSet<>();
+        Set<String> classpathElements = new LinkedHashSet<>();
+        Map<String, JavaModuleDescriptor> elementDescriptors = new LinkedHashMap<>();
+        List<JavaModuleDescriptor> allDescriptors = new ArrayList<>();
+        allDescriptors.add(primary);
+        for (ResolvePathResult additional : additionalModules) {
+            allDescriptors.add(additional.getModuleDescriptor());
+        }
+        for (JavaModuleDescriptor descriptor : allDescriptors) {
+            ResolvePathsResult<String> result = resolveTestClasspath(testClasspathElements, descriptor, javaHome);
+            modulepathElements.addAll(result.getModulepathElements().keySet());
+            classpathElements.addAll(result.getClasspathElements());
+            elementDescriptors.putAll(result.getPathElements());
+        }
+        classpathElements.removeAll(modulepathElements);
+        return new ModulePathSplit(
+                new Classpath(new ArrayList<>(classpathElements)),
+                new Classpath(new ArrayList<>(modulepathElements)),
+                elementDescriptors);
+    }
+
+    /**
+     * Classpath, module path and per-element module descriptors resulting from
+     * {@link #resolveModulePathSplit}.
+     */
+    private static final class ModulePathSplit {
+        private final Classpath classpath;
+        private final Classpath modulepath;
+        private final Map<String, JavaModuleDescriptor> elementDescriptors;
+
+        private ModulePathSplit(
+                Classpath classpath, Classpath modulepath, Map<String, JavaModuleDescriptor> elementDescriptors) {
+            this.classpath = classpath;
+            this.modulepath = modulepath;
+            this.elementDescriptors = elementDescriptors;
+        }
+    }
+
+    /**
+     * Moves the classpath elements providing the requested modules — plus the transitive
+     * {@code requires} closure available on the classpath — to the module path. Requested
+     * modules without a matching classpath element (unknown, or already on the module path)
+     * are skipped silently.
+     *
+     * @param requestedModules module names from the handoff file's {@code --add-modules}
+     * @param classpathElements mutable classpath element list (elements are removed)
+     * @param modulepathElements mutable module path element list (elements are added)
+     * @param elementDescriptors module descriptor per element, from the path resolution
+     * @return the names of the modules actually moved, in resolution order
+     */
+    static Collection<String> moveHandoffModulesToModulePath(
+            Set<String> requestedModules,
+            List<String> classpathElements,
+            List<String> modulepathElements,
+            Map<String, JavaModuleDescriptor> elementDescriptors) {
+        Map<String, String> classpathElementByModule = new LinkedHashMap<>();
+        for (String element : classpathElements) {
+            JavaModuleDescriptor descriptor = elementDescriptors.get(element);
+            if (descriptor != null && descriptor.name() != null) {
+                classpathElementByModule.putIfAbsent(descriptor.name(), element);
+            }
+        }
+
+        List<String> moved = new ArrayList<>();
+        Deque<String> queue = new ArrayDeque<>(requestedModules);
+        while (!queue.isEmpty()) {
+            String moduleName = queue.removeFirst();
+            String element = classpathElementByModule.remove(moduleName);
+            if (element == null) {
+                continue;
+            }
+            classpathElements.remove(element);
+            modulepathElements.add(element);
+            moved.add(moduleName);
+            for (JavaModuleDescriptor.JavaRequires requires :
+                    elementDescriptors.get(element).requires()) {
+                queue.addLast(requires.name());
+            }
+        }
+        return moved;
+    }
+
+    /**
+     * Java Modules arguments patching each sibling module of a module source hierarchy
+     * build with its own test classes ({@code --patch-module}), letting it read the
+     * unnamed module ({@code --add-reads}, JUnit is on the classpath) and opening its
+     * test packages for reflection ({@code --add-opens}). Passed to the fork through the
+     * argument file via {@link StartupConfiguration#getJpmsArguments()}.
+     *
+     * @param testDir the test classes directory containing the nested per-module directories
+     * @param additionalModules the sibling module descriptors
+     * @return the Java Modules arguments, one option/value pair per entry
+     * @throws MojoExecutionException if scanning a nested test directory fails
+     */
+    private List<String[]> createAdditionalModuleArgs(
+            File testDir, List<ResolvePathResult> additionalModules, String reflectiveOpensTargets)
+            throws MojoExecutionException {
+        List<String[]> args = new ArrayList<>();
+        for (ResolvePathResult additional : additionalModules) {
+            String additionalName = additional.getModuleDescriptor().name();
+            File additionalTestDir = new File(testDir, additionalName);
+            if (additionalTestDir.isDirectory()) {
+                String escapedPath = additionalTestDir.getPath().replace("\\", "\\\\");
+                args.add(new String[] {"--patch-module", additionalName + "=\"" + escapedPath + "\""});
+                if (reflectiveOpensTargets == null) {
+                    args.add(new String[] {"--add-reads", additionalName + "=ALL-UNNAMED"});
+                } else {
+                    // the handoff file carries the developer's --add-reads; surefire only
+                    // has to make the patched sibling a resolution root
+                    args.add(new String[] {"--add-modules", additionalName});
+                }
+                String opensTargets = reflectiveOpensTargets == null ? "ALL-UNNAMED" : reflectiveOpensTargets;
+                for (String pkg : scanTestPackages(additionalTestDir)) {
+                    args.add(new String[] {"--add-opens", additionalName + "/" + pkg + "=" + opensTargets});
+                }
+            }
+        }
+        return args;
+    }
+
+    /**
+     * #3090: with a {@code module-info-patch.args} handoff file present, the
+     * modules listed by its {@code --add-modules} (test-scope dependencies, e.g. the JUnit
+     * engine) must be named modules in the fork's boot layer, so their elements move to the
+     * module path — together with their transitive {@code requires} closure and every
+     * classpath element (test or provider classpath) requiring one of the moved modules.
+     *
+     * @return the names of all moved modules
+     * @throws IOException if the provider classpath cannot be resolved
+     */
+    private Set<String> moveTestScopeModulesToModulePath(
+            ModuleInfoPatchArgsFile moduleInfoPatchArgs,
+            List<String> classpathElements,
+            List<String> modulepathElements,
+            List<String> providerClasspathElements,
+            Map<String, JavaModuleDescriptor> elementDescriptors,
+            JavaModuleDescriptor javaModuleDescriptor,
+            String javaHome)
+            throws IOException {
+        Set<String> movedModules = new LinkedHashSet<>(moveHandoffModulesToModulePath(
+                moduleInfoPatchArgs.getAddedModules(), classpathElements, modulepathElements, elementDescriptors));
+
+        // No classpath element may require a module that just moved (e.g.
+        // junit-platform-launcher uses internals of org.junit.platform.commons; the two
+        // must stay in the same world) — move the reverse requires closure as well,
+        // including the provider classpath.
+        Map<String, JavaModuleDescriptor> providerDescriptors = resolveTestClasspath(
+                        providerClasspathElements, javaModuleDescriptor, javaHome)
+                .getPathElements();
+        boolean changed = true;
+        while (changed) {
+            int before = movedModules.size();
+            moveModulesRequiringMovedModules(movedModules, classpathElements, modulepathElements, elementDescriptors);
+            moveModulesRequiringMovedModules(
+                    movedModules, providerClasspathElements, modulepathElements, providerDescriptors);
+            changed = movedModules.size() > before;
+        }
+
+        if (!movedModules.isEmpty()) {
+            getConsoleLogger().debug("Moved test-scope modules to the module path: " + movedModules);
+        }
+        return movedModules;
+    }
+
+    /**
+     * Moves every classpath element whose module {@code requires} one of the given
+     * module-path modules to the module path as well, until a fixpoint is reached.
+     * Named modules accessing each other's internals (e.g. junit-platform-launcher and
+     * org.junit.platform.commons) must live in the same world; splitting them between
+     * classpath and module path fails with {@code IllegalAccessError} at runtime.
+     * Automatic modules have no {@code requires} and are never moved by this rule.
+     *
+     * @param modulePathModules module names already on the module path; moved names are added
+     * @param classpathElements mutable classpath element list (elements are removed)
+     * @param modulepathElements mutable module path element list (elements are added)
+     * @param elementDescriptors module descriptor per element, from the path resolution
+     */
+    static void moveModulesRequiringMovedModules(
+            Set<String> modulePathModules,
+            List<String> classpathElements,
+            List<String> modulepathElements,
+            Map<String, JavaModuleDescriptor> elementDescriptors) {
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (Iterator<String> it = classpathElements.iterator(); it.hasNext(); ) {
+                String element = it.next();
+                JavaModuleDescriptor descriptor = elementDescriptors.get(element);
+                if (descriptor == null || descriptor.name() == null) {
+                    continue;
+                }
+                for (JavaModuleDescriptor.JavaRequires requires : descriptor.requires()) {
+                    if (modulePathModules.contains(requires.name())) {
+                        it.remove();
+                        modulepathElements.add(element);
+                        modulePathModules.add(descriptor.name());
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Target list for the auto-generated {@code --add-opens} of test packages when the
+     * handoff file is present: the unnamed module (provider/booter on the classpath) plus
+     * the file's added modules and every module moved to the module path with them — the
+     * reflecting engine (e.g. {@code org.junit.platform.commons}) may only be there via a
+     * transitive {@code requires}.
+     *
+     * @param addedModules module names from the handoff file's {@code --add-modules}
+     * @param movedModules module names moved by {@link #moveHandoffModulesToModulePath}
+     * @return comma-separated target module list, starting with ALL-UNNAMED
+     */
+    static String opensTargets(Set<String> addedModules, Collection<String> movedModules) {
+        Set<String> targets = new LinkedHashSet<>(addedModules);
+        targets.addAll(movedModules);
+        StringBuilder result = new StringBuilder("ALL-UNNAMED");
+        for (String target : targets) {
+            result.append(',').append(target);
+        }
+        return result.toString();
+    }
+
+    private ResolvePathsResult<String> resolveTestClasspath(
+            List<String> testClasspathElements, JavaModuleDescriptor descriptor, String javaHome) throws IOException {
+        ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspathElements)
+                .setIncludeAllProviders(true)
+                .setJdkHome(javaHome)
+                .setIncludeStatic(true)
+                .setModuleDescriptor(descriptor);
+
+        ResolvePathsResult<String> result = getLocationManager().resolvePaths(req);
+        for (Entry<String, Exception> entry : result.getPathExceptions().entrySet()) {
+            // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
+            getConsoleLogger().warning("Exception for '" + entry.getKey() + "'.", entry.getValue());
+        }
+        return result;
+    }
+
+    private SortedSet<String> scanTestPackages(File testClassesDir) throws MojoExecutionException {
+        SortedSet<String> testPackages = new TreeSet<>();
+        try {
+            DefaultScanResult scan = new DirectoryScanner(testClassesDir, getIncludedAndExcludedTests()).scan();
+            for (String className : scan.getClasses()) {
+                testPackages.add(substringBeforeLast(className, "."));
+            }
+        } catch (MojoFailureException e) {
+            throw new MojoExecutionException(e.getLocalizedMessage(), e);
+        }
+        return testPackages;
     }
 
     private Artifact getCommonArtifact() {
