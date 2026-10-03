@@ -117,6 +117,47 @@ class StackTraceProviderTest {
     }
 
     @Test
+    void systemPropertyCanSelectLegacyStackCapture() {
+        assumeTrue(StackWalkerStrategy.isAvailable());
+        String property = "surefire.stackTrace.disableStackWalker";
+        String previous = System.getProperty(property);
+        try {
+            System.setProperty(property, "true");
+            StackTraceProvider.configure("", DEFAULT_MAX_FRAMES);
+
+            List<String> stack = StackTraceProvider.getStack();
+            assertThat(stack.get(0)).isEqualTo("java.lang.Thread#getStackTrace");
+            assertThat(stack).contains(getClass().getName() + "#systemPropertyCanSelectLegacyStackCapture");
+        } finally {
+            if (previous == null) {
+                System.clearProperty(property);
+            } else {
+                System.setProperty(property, previous);
+            }
+        }
+    }
+
+    @Test
+    void stackWalkerRemainsDefaultWhenPropertyIsFalse() {
+        assumeTrue(StackWalkerStrategy.isAvailable());
+        String property = "surefire.stackTrace.disableStackWalker";
+        String previous = System.getProperty(property);
+        try {
+            System.setProperty(property, "false");
+            StackTraceProvider.configure("", DEFAULT_MAX_FRAMES);
+
+            assertThat(StackTraceProvider.getStack().get(0))
+                    .isEqualTo(getClass().getName() + "#stackWalkerRemainsDefaultWhenPropertyIsFalse");
+        } finally {
+            if (previous == null) {
+                System.clearProperty(property);
+            } else {
+                System.setProperty(property, previous);
+            }
+        }
+    }
+
+    @Test
     void strategyAvailabilityMatchesRuntime() {
         boolean java9OrLater = !System.getProperty("java.specification.version").startsWith("1.");
         assertThat(StackWalkerStrategy.isAvailable()).isEqualTo(java9OrLater);

@@ -37,7 +37,11 @@ public class StackTraceProvider {
     // while still providing ~50% memory savings vs unbounded stacks (typically 25-30 frames)
     public static final int DEFAULT_MAX_FRAMES = 15;
 
+    private static final String DISABLE_STACK_WALKER_PROPERTY = "surefire.stackTrace.disableStackWalker";
+
     private static volatile int maxFrames = DEFAULT_MAX_FRAMES;
+
+    private static volatile boolean useStackWalker = isStackWalkerEnabled();
 
     // Only filter JDK internal classes by default.
     // Framework classes (junit, surefire, etc.) are NOT filtered by default because:
@@ -87,6 +91,7 @@ public class StackTraceProvider {
             frameworkPrefixes = customPrefixes;
         }
         maxFrames = maxFrameCount;
+        useStackWalker = isStackWalkerEnabled();
     }
 
     /**
@@ -95,7 +100,8 @@ public class StackTraceProvider {
      * Returns an empty list if max frames is set to 0 or negative.
      * <p>
      * On Java 9+ this uses the lazy {@code java.lang.StackWalker} API (via {@link StackWalkerStrategy}) to reduce
-     * memory usage and improve performance; on Java 8, or if the {@code StackWalker} call fails, it falls back to
+     * memory usage and improve performance. On Java 8, if the {@code StackWalker} call fails, or if the system
+     * property {@code surefire.stackTrace.disableStackWalker} is {@code true}, it uses
      * {@link Thread#getStackTrace()}.
      *
      * @return the filtered and truncated stack trace
@@ -104,7 +110,7 @@ public class StackTraceProvider {
         if (maxFrames <= 0) {
             return Collections.emptyList();
         }
-        if (StackWalkerStrategy.isAvailable()) {
+        if (useStackWalker && StackWalkerStrategy.isAvailable()) {
             List<String> stack = StackWalkerStrategy.walk(
                     maxFrames, className -> isFrameworkClass(className) || isInternalClass(className));
             if (stack != null) {
@@ -129,6 +135,14 @@ public class StackTraceProvider {
                 .limit(maxFrames)
                 .map(e -> e.getClassName() + "#" + e.getMethodName())
                 .collect(Collectors.toList());
+    }
+
+    private static boolean isStackWalkerEnabled() {
+        try {
+            return !Boolean.getBoolean(DISABLE_STACK_WALKER_PROPERTY);
+        } catch (SecurityException e) {
+            return true;
+        }
     }
 
     private static boolean isFrameworkClass(String className) {
