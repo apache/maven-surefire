@@ -98,6 +98,8 @@ public final class ForkedBooter {
     private volatile MasterProcessChannelProcessorFactory channelProcessorFactory;
     private volatile CommandReader commandReader;
     private volatile long systemExitTimeoutInSeconds = DEFAULT_SYSTEM_EXIT_TIMEOUT_IN_SECONDS;
+    // true once System.exit has been called
+    private volatile boolean systemExitCalled;
     private volatile PingScheduler pingScheduler;
 
     private ScheduledThreadPoolExecutor jvmTerminator;
@@ -370,13 +372,18 @@ public final class ForkedBooter {
     }
 
     private void kill(int returnCode) {
-        commandReader.stop();
-        closeForkChannel();
-        Runtime.getRuntime().halt(returnCode);
+        try {
+            commandReader.stop();
+            closeForkChannel();
+        } finally {
+            // always halt, even if the cleanup above fails
+            Runtime.getRuntime().halt(returnCode);
+        }
     }
 
     private void exit1() {
         launchLastDitchDaemonShutdownThread(1);
+        systemExitCalled = true;
         System.exit(1);
     }
 
@@ -391,6 +398,7 @@ public final class ForkedBooter {
         cancelPingScheduler();
         commandReader.stop();
         closeForkChannel();
+        systemExitCalled = true;
         System.exit(0);
     }
 
@@ -443,22 +451,24 @@ public final class ForkedBooter {
                         new Runnable() {
                             @Override
                             public void run() {
-                                if (logger != null) {
-                                    logger.error("Surefire is going to kill self fork JVM. The exit has elapsed "
-                                            + systemExitTimeoutInSeconds + " seconds after System.exit(" + returnCode
-                                            + ").");
+                                // the executor hides exceptions, so kill the JVM even if logging fails
+                                try {
+                                    String reason = systemExitCalled
+                                            ? "The exit has elapsed " + systemExitTimeoutInSeconds
+                                                    + " seconds after System.exit(" + returnCode + ")."
+                                            : "Maven did not acknowledge the end of the fork (BYE_ACK) within "
+                                                    + systemExitTimeoutInSeconds + " seconds.";
+                                    if (logger != null) {
+                                        logger.error("Surefire is going to kill self fork JVM. " + reason);
+                                    }
+
+                                    DumpErrorSingleton.getSingleton()
+                                            .dumpText("Thread dump for process (" + getProcessName() + "). " + reason
+                                                    + NL
+                                                    + generateThreadDump());
+                                } finally {
+                                    kill(returnCode);
                                 }
-
-                                DumpErrorSingleton.getSingleton()
-                                        .dumpText("Thread dump for process ("
-                                                + getProcessName()
-                                                + ") after "
-                                                + systemExitTimeoutInSeconds
-                                                + " seconds shutdown timeout:"
-                                                + NL
-                                                + generateThreadDump());
-
-                                kill(returnCode);
                             }
                         },
                         systemExitTimeoutInSeconds,
@@ -610,10 +620,17 @@ public final class ForkedBooter {
     }
 
     private static String generateThreadDump() {
-        StringBuilder dump = new StringBuilder();
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds(), 100);
+        return generateThreadDump(threadMXBean.getThreadInfo(threadMXBean.getAllThreadIds(), 100));
+    }
+
+    private static String generateThreadDump(ThreadInfo[] threadInfos) {
+        StringBuilder dump = new StringBuilder();
         for (ThreadInfo threadInfo : threadInfos) {
+            // null means the thread ended in the meantime
+            if (threadInfo == null) {
+                continue;
+            }
             dump.append('"');
             dump.append(threadInfo.getThreadName());
             dump.append("\" ");

@@ -77,6 +77,23 @@ public class ForkedBooterTest {
         assertThat(dump).contains("   java.lang.Thread.State: ").contains("        at ");
     }
 
+    /**
+     * A thread that ends during the dump shows up as null. This used to throw an NPE
+     * and the fork never got killed. See issue #3500.
+     */
+    @Test
+    public void shouldSkipThreadsThatEndedWhileGeneratingThreadDump() throws Exception {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        ThreadInfo current = threadMXBean.getThreadInfo(Thread.currentThread().getId(), 100);
+        ThreadInfo[] threadInfos = {null, current, null};
+
+        String dump = (String) invokeMethod(ForkedBooter.class, "generateThreadDump", (Object) threadInfos);
+
+        assertThat(dump)
+                .contains("\"" + Thread.currentThread().getName() + "\"")
+                .doesNotContain("\"null\"");
+    }
+
     @Test
     public void shouldFindCurrentProcessName() throws Exception {
         String process = ManagementFactory.getRuntimeMXBean().getName();
