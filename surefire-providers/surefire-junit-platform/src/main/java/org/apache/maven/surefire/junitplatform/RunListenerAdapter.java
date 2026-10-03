@@ -134,7 +134,12 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         if (isClassContainer(testIdentifier)) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
-            runListener.testSetStarting(createReportEntry(testIdentifier));
+            // Only top-level class containers open a Surefire test set. @Nested ClassSource
+            // containers share the outer sourceName; starting/completing them as separate
+            // sets resets stats and overwrites the outer TXT report with Tests run: 0 (#3356).
+            if (isSurefireTestSetContainer(testIdentifier)) {
+                runListener.testSetStarting(createReportEntry(testIdentifier));
+            }
         } else if (testIdentifier.isTest()) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
             runListener.testStarting(createReportEntry(testIdentifier));
@@ -187,7 +192,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     } else {
                         runListener.testError(reportEntry);
                     }
-                    if (isClass || isRootContainer) {
+                    if (isSurefireTestSetContainer(testIdentifier) || isRootContainer) {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
@@ -206,7 +211,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         if (succeeded.getSourceName() != null) {
                             classesWithSuccessfulTests.add(succeeded.getSourceName());
                         }
-                    } else {
+                    } else if (isSurefireTestSetContainer(testIdentifier)) {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
@@ -219,8 +224,10 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     private void reportAbortedClass(
             TestIdentifier testIdentifier, TestExecutionResult testExecutionResult, Integer elapsed) {
         if (classContainersWithStartedTests.contains(testIdentifier.getUniqueId())) {
-            runListener.testSetCompleted(
-                    createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
+            if (isSurefireTestSetContainer(testIdentifier)) {
+                runListener.testSetCompleted(
+                        createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
+            }
             return;
         }
 
@@ -241,7 +248,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             }
         }
 
-        runListener.testSetCompleted(createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+        if (isSurefireTestSetContainer(testIdentifier)) {
+            runListener.testSetCompleted(createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+        }
     }
 
     private void recordStartedTest(TestIdentifier testIdentifier) {
@@ -266,6 +275,41 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         .getSource()
                         .filter(ClassSource.class::isInstance)
                         .isPresent();
+    }
+
+    /**
+     * Whether this class container should open/close a Surefire test set.
+     * {@code @Nested} ClassSource containers do not, because they report under the outer
+     * class {@code sourceName} and would otherwise reset/overwrite the outer TXT summary
+     * (#3356). Stop at an engine boundary so a class selected under {@code @Suite} (suite
+     * ClassSource above a nested Jupiter engine) still opens its own test set — same
+     * engine-boundary rule as {@link #findTopParent(TestIdentifier)}.
+     */
+    private boolean isSurefireTestSetContainer(TestIdentifier testIdentifier) {
+        if (!isClassContainer(testIdentifier)) {
+            return false;
+        }
+        // Name equality is wrong for JUnit 6 parameterized-class invocations: both the
+        // template and each invocation are ClassSource containers with the same
+        // sourceName/qualifiedClassName, so walk ancestors instead of comparing names.
+        TestPlan currentTestPlan = testPlan;
+        if (currentTestPlan == null) {
+            return true;
+        }
+        Optional<TestIdentifier> parent = currentTestPlan.getParent(testIdentifier);
+        while (parent.isPresent()) {
+            TestIdentifier ancestor = parent.get();
+            // Suite hierarchy: SuiteClass -> nested engine -> TestClass. Stop here so the
+            // selected test class is still a Surefire test-set root.
+            if (isEngineIdentifier(ancestor)) {
+                return true;
+            }
+            if (isClassContainer(ancestor)) {
+                return false;
+            }
+            parent = currentTestPlan.getParent(ancestor);
+        }
+        return true;
     }
 
     private Integer computeElapsedTime(TestIdentifier testIdentifier) {
@@ -336,12 +380,27 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         testStartTime.remove(testIdentifier);
 
         if (isClass) {
+            boolean openTestSet = isSurefireTestSetContainer(testIdentifier);
             SimpleReportEntry report = createReportEntry(testIdentifier);
-            runListener.testSetStarting(report);
-            for (TestIdentifier child : testPlan.getChildren(testIdentifier)) {
-                runListener.testSkipped(createReportEntry(child, null, emptyMap(), reason, null));
+            if (openTestSet) {
+                runListener.testSetStarting(report);
             }
-            runListener.testSetCompleted(report);
+            // Walk leaf tests (not only direct children) so a skipped @Nested container that
+            // itself contains another nested container still counts one skip per test method.
+            List<TestIdentifier> skippedTests = testPlan.getDescendants(testIdentifier).stream()
+                    .filter(TestIdentifier::isTest)
+                    .sorted(comparing(TestIdentifier::getUniqueId))
+                    .collect(toList());
+            if (skippedTests.isEmpty()) {
+                runListener.testSkipped(createReportEntry(testIdentifier, null, emptyMap(), reason, null));
+            } else {
+                for (TestIdentifier test : skippedTests) {
+                    runListener.testSkipped(createReportEntry(test, null, emptyMap(), reason, null));
+                }
+            }
+            if (openTestSet) {
+                runListener.testSetCompleted(report);
+            }
         } else {
             runListener.testSkipped(createReportEntry(testIdentifier, null, emptyMap(), reason, null));
         }
