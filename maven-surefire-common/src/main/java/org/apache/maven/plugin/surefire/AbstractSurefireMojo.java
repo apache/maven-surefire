@@ -1105,6 +1105,19 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return consoleLogger;
     }
 
+    /**
+     * Logs the removal of the deprecated TestNG suite XML configuration while retaining the parameter for
+     * compatibility with existing builds.
+     *
+     * @param suiteXmlFiles configured suite XML files
+     */
+    protected final void warnIfSuiteXmlFilesConfigured(File[] suiteXmlFiles) {
+        if (suiteXmlFiles != null && suiteXmlFiles.length > 0) {
+            getConsoleLogger().warning("The suiteXmlFiles parameter is deprecated and no longer supported; "
+                    + "use groups or JUnit suite support instead.");
+        }
+    }
+
     private Toolchain getToolchain() throws MojoFailureException {
         Toolchain tc = null;
 
