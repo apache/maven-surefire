@@ -53,6 +53,7 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.junit.platform.commons.PreconditionViolationException;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
@@ -502,10 +503,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
             boolean hasCategoryClass = false, hasCategoryMethod = false;
             if (methodSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                    hasCategoryMethod = hasCategoryAnnotationValue(methodSource.get(), categoryClass.get(), categories);
                 }
             }
 
@@ -536,10 +534,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
             boolean hasCategoryClass = false, hasCategoryMethod = false;
             if (methodSource.isPresent()) {
                 if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
+                    hasCategoryMethod = hasCategoryAnnotationValue(methodSource.get(), categoryClass.get(), categories);
                 }
             }
 
@@ -566,6 +561,19 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private boolean hasCategoryAnnotationValue(Method method, Class<?> categoryClass, List<String> categories) {
         return hasCategoryAnnotationValue(method.getAnnotations(), categoryClass, categories);
+    }
+
+    private boolean hasCategoryAnnotationValue(
+            MethodSource methodSource, Class<?> categoryClass, List<String> categories) {
+        if (hasCategoryAnnotationValue(methodSource.getJavaClass(), categoryClass, categories)) {
+            return true;
+        }
+        try {
+            return hasCategoryAnnotationValue(methodSource.getJavaMethod(), categoryClass, categories);
+        } catch (PreconditionViolationException e) {
+            // Some engines use display names instead of reflective method names in their MethodSource.
+            return false;
+        }
     }
 
     private boolean hasCategoryAnnotationValue(
