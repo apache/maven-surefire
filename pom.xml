@@ -96,7 +96,7 @@
     <junit.jupiter.execution.parallel.mode.default>same_thread</junit.jupiter.execution.parallel.mode.default>
     <mavenVersion>3.10.0</mavenVersion>
     <mavenVersion.prerequisite>3.6.3</mavenVersion.prerequisite>
-    <resolverVersion>1.9.27</resolverVersion>
+    <resolverVersion>2.0.24</resolverVersion>
     <commonsLang3Version>3.21.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
     <commonsIoVersion>2.22.0</commonsIoVersion>

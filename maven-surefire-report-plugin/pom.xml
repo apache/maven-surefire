@@ -179,7 +179,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-http</artifactId>
+      <artifactId>maven-resolver-transport-apache</artifactId>
       <version>${resolverVersion}</version>
       <scope>test</scope>
     </dependency>
