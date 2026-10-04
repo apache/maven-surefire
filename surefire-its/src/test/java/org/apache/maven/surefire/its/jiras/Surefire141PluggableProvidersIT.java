@@ -44,6 +44,8 @@ public class Surefire141PluggableProvidersIT extends SurefireJUnit4IntegrationTe
     @Test
     public void pluggableProviderPresent() {
         unpack("surefire-141-pluggableproviders")
+                // properties in dependency POM are not interpolated by default - since Maven 3.10.0
+                .sysProp("maven.model.dependencyInterpolation.full", "true")
                 .setForkJvm()
                 .maven()
                 .showExceptionMessages()
@@ -60,6 +62,8 @@ public class Surefire141PluggableProvidersIT extends SurefireJUnit4IntegrationTe
 
         OutputValidator validator = unpack("surefire-141-pluggableproviders")
                 .setForkJvm()
+                // properties in dependency POM are not interpolated by default - since Maven 3.10.0
+                .sysProp("maven.model.dependencyInterpolation.full", "true")
                 .sysProp("invokeCrash", "runtimeException")
                 .maven()
                 .withFailure()
@@ -81,6 +85,8 @@ public class Surefire141PluggableProvidersIT extends SurefireJUnit4IntegrationTe
 
         OutputValidator validator = unpack("surefire-141-pluggableproviders")
                 .setForkJvm()
+                // properties in dependency POM are not interpolated by default - since Maven 3.10.0
+                .sysProp("maven.model.dependencyInterpolation.full", "true")
                 .sysProp("invokeCrash", "reporterException")
                 .maven()
                 .withFailure()
@@ -102,6 +108,8 @@ public class Surefire141PluggableProvidersIT extends SurefireJUnit4IntegrationTe
 
         OutputValidator validator = unpack("surefire-141-pluggableproviders")
                 .setForkJvm()
+                // properties in dependency POM are not interpolated by default - since Maven 3.10.0
+                .sysProp("maven.model.dependencyInterpolation.full", "true")
                 .sysProp("constructorCrash", "runtimeException")
                 .maven()
                 .withFailure()
