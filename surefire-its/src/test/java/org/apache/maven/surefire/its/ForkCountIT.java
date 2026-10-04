@@ -21,20 +21,22 @@ package org.apache.maven.surefire.its;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.apache.maven.surefire.its.fixture.SurefireLauncher;
 import org.apache.maven.surefire.its.fixture.TestFile;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * Test forkCount and reuseForks
+ * Checks forkCount and reuseForks with both JUnit 4 and TestNG.
  *
  * @author <a href="mailto:dfabulich@apache.org">Dan Fabulich</a>
  */
@@ -47,28 +49,39 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
         unpack(ForkCountIT.class, "test-helper-dump-pid-plugin", "plugin").executeInstall();
     }
 
-    @Test
-    public void testForkNever() {
-        String[] pids = doTest(unpack(getProject()).setForkJvm().forkNever());
+    // Both projects run from this class so the dump-pid plugin is only installed once.
+    // On Windows, installing it again fails if another build still has the jar open.
+    static Stream<String> projects() {
+        return Stream.of("fork-count", "fork-count-testng");
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkNever(String project) {
+        String[] pids = doTest(unpack(project, "-" + project).setForkJvm().forkNever());
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
         assertEquals(getMainPID(), pids[0], "my pid is equal to pid 1 of the test");
     }
 
-    @Test
-    public void testForkOncePerThreadSingleThread() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkOncePerThreadSingleThread(String project) {
         int threadCount = 1;
-        String[] pids = doTest(
-                unpack(getProject()).setForkJvm().forkPerThread(threadCount).threadCount(threadCount));
+        String[] pids = doTest(unpack(project, "-" + project)
+                .setForkJvm()
+                .forkPerThread(threadCount)
+                .threadCount(threadCount));
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
-    @Test
-    public void testForkOncePerThreadTwoThreads() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkOncePerThreadTwoThreads(String project) {
         int threadCount = 2;
-        String[] pids = doTest(unpack(getProject())
+        String[] pids = doTest(unpack(project, "-" + project)
                 .setForkJvm()
                 .forkPerThread(threadCount)
                 .threadCount(threadCount)
@@ -77,34 +90,46 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
-    @Test
-    public void testForkCountOneNoReuse() {
-        String[] pids = doTest(unpack(getProject()).setForkJvm().forkCount(1).reuseForks(false));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkCountOneNoReuse(String project) {
+        String[] pids =
+                doTest(unpack(project, "-" + project).setForkJvm().forkCount(1).reuseForks(false));
         assertDifferentPids(pids);
         assertEndWith(pids, "_1_1", 3);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
-    @Test
-    public void testForkCountOneReuse() {
-        String[] pids = doTest(unpack(getProject()).setForkJvm().forkCount(1).reuseForks(true));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkCountOneReuse(String project) {
+        String[] pids =
+                doTest(unpack(project, "-" + project).setForkJvm().forkCount(1).reuseForks(true));
         assertSamePids(pids);
         assertEndWith(pids, "_1_1", 3);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
-    @Test
-    public void testForkCountTwoNoReuse() {
-        String[] pids = doTest(
-                unpack(getProject()).setForkJvm().forkCount(2).reuseForks(false).addGoal("-DsleepLength=7200"));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkCountTwoNoReuse(String project) {
+        String[] pids = doTest(unpack(project, "-" + project)
+                .setForkJvm()
+                .forkCount(2)
+                .reuseForks(false)
+                .addGoal("-DsleepLength=7200"));
         assertDifferentPids(pids);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
 
-    @Test
-    public void testForkCountTwoReuse() {
-        String[] pids = doTest(
-                unpack(getProject()).setForkJvm().forkCount(2).reuseForks(true).addGoal("-DsleepLength=7200"));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkCountTwoReuse(String project) {
+        String[] pids = doTest(unpack(project, "-" + project)
+                .setForkJvm()
+                .forkCount(2)
+                .reuseForks(true)
+                .addGoal("-DsleepLength=7200"));
         assertDifferentPids(pids, 2);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
@@ -125,9 +150,10 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
         assertEquals(numOfDifferentPids, pidSet.size(), "number of different pids is not as expected");
     }
 
-    @Test
-    public void testForkOnce() {
-        String[] pids = doTest(unpack(getProject()).setForkJvm().forkOnce());
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("projects")
+    public void testForkOnce(String project) {
+        String[] pids = doTest(unpack(project, "-" + project).setForkJvm().forkOnce());
         assertSamePids(pids);
         assertNotEquals(pids[0], getMainPID(), "pid 1 is not the same as the main process' pid");
     }
@@ -169,9 +195,5 @@ public class ForkCountIT extends SurefireJUnit4IntegrationTestCase {
             pids[i - 1] = pid;
         }
         return pids;
-    }
-
-    protected String getProject() {
-        return "fork-count";
     }
 }
