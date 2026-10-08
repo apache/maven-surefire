@@ -698,6 +698,73 @@ public class JUnitPlatformProviderTest {
     }
 
     @Test
+    public void looksUpEnclosingClassesOnlyWhenAClassIsRejectedByThePatterns() {
+        String nestedClassName = NestingTest.Level1NestedTest.class.getName();
+        List<String> loadedClassNames = new ArrayList<>();
+        ClassLoader recordingClassLoader = new ClassLoader(JUnitPlatformProviderTest.class.getClassLoader()) {
+            @Override
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
+                loadedClassNames.add(name);
+                return super.loadClass(name);
+            }
+        };
+
+        ClassNameFilter filter = scanListFilter(
+                singletonMap(INCLUDES_SCAN_LIST, nestedClassName),
+                recordingClassLoader,
+                NestingTest.Level1NestedTest.class);
+
+        assertTrue(filter.apply(nestedClassName).included());
+        assertThat(loadedClassNames).doesNotContain(nestedClassName);
+
+        assertTrue(filter.apply(NestingTest.class.getName()).included());
+        assertThat(loadedClassNames).contains(nestedClassName);
+    }
+
+    @Test
+    public void includesEnclosingClassWhenTheScannedClassCannotBeInspected() {
+        String nestedClassName = NestingTest.Level1NestedTest.class.getName();
+        ClassLoader failingClassLoader = new ClassLoader(JUnitPlatformProviderTest.class.getClassLoader()) {
+            @Override
+            public Class<?> loadClass(String name) throws ClassNotFoundException {
+                if (name.equals(nestedClassName)) {
+                    throw new IllegalAccessError("failed to access a class from " + name);
+                }
+                return super.loadClass(name);
+            }
+        };
+
+        ClassNameFilter filter = scanListFilter(
+                singletonMap(INCLUDES_SCAN_LIST, nestedClassName),
+                failingClassLoader,
+                NestingTest.Level1NestedTest.class);
+
+        assertTrue(filter.apply(NestingTest.class.getName()).included());
+        assertFalse(filter.apply(LegalDollarClass.class.getName()).included());
+    }
+
+    /**
+     * On Java 8 and 11, {@code getEnclosingClass()} fails for some of these member classes, because their outer
+     * class lists a class in its {@code InnerClasses} that it is not allowed to access (#3511).
+     */
+    @Test
+    public void includesEnclosingClassWhenItsInnerClassesListAnInaccessibleClass() {
+        String includes = String.join(
+                ",",
+                OuterWithInaccessibleReference.First.class.getName(),
+                OuterWithInaccessibleReference.Second.class.getName(),
+                OuterWithInaccessibleReference.Third.class.getName());
+
+        ClassNameFilter filter = scanListFilter(
+                singletonMap(INCLUDES_SCAN_LIST, includes),
+                OuterWithInaccessibleReference.First.class,
+                OuterWithInaccessibleReference.Second.class,
+                OuterWithInaccessibleReference.Third.class);
+
+        assertTrue(filter.apply(OuterWithInaccessibleReference.class.getName()).included());
+    }
+
+    @Test
     public void appliesExcludePatternsOnTopOfIncludePatterns() {
         Map<String, String> scanList = new HashMap<>();
         scanList.put(INCLUDES_SCAN_LIST, "**/AlphaTestClass.java,**/BetaTestClass.java");
@@ -743,8 +810,14 @@ public class JUnitPlatformProviderTest {
      * @return the class name filter of the provider
      */
     private static ClassNameFilter scanListFilter(Map<String, String> scanListProperties, Class<?>... scannedClasses) {
+        return scanListFilter(scanListProperties, JUnitPlatformProviderTest.class.getClassLoader(), scannedClasses);
+    }
+
+    private static ClassNameFilter scanListFilter(
+            Map<String, String> scanListProperties, ClassLoader testClassLoader, Class<?>... scannedClasses) {
         ProviderParameters parameters = providerParametersMock(new TestListResolver(""), scannedClasses);
         when(parameters.getProviderProperties()).thenReturn(scanListProperties);
+        when(parameters.getTestClassLoader()).thenReturn(testClassLoader);
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(parameters);
 
