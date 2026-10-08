@@ -897,6 +897,154 @@ public class RunListenerAdapterTest {
     }
 
     @Test
+    public void nestedClassSharesTheTestSetOfItsOuterClass() throws Exception {
+        EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-jupiter"), "JUnit Jupiter");
+        TestDescriptor outer = newOuterClassDescriptor(engine);
+        TestDescriptor nested = newNestedClassDescriptor(outer);
+        outer.addChild(newMethodDescriptor(outer.getUniqueId().append("method", "outer"), MY_TEST_METHOD_NAME));
+        nested.addChild(newMethodDescriptor(nested.getUniqueId().append("method", "inner"), MY_TEST_METHOD_NAME));
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        executeSuccessfully(engine);
+
+        assertOneTestSetFor(MyTestClass.class, 2);
+    }
+
+    @Test
+    public void nestedJUnit3SuitesShareTheTestSetOfTheirOuterClass() throws Exception {
+        // Like Guava's testlib: suite() nests a TestSuite per tester class, again for every feature set.
+        // Vintage gives each of those suites a ClassSource (#3511).
+        EngineDescriptor engine = new EngineDescriptor(UniqueId.forEngine("junit-vintage"), "JUnit Vintage");
+        TestDescriptor runner = newClassContainer(
+                engine.getUniqueId().append("runner", MyTestClass.class.getName()), MyTestClass.class);
+        engine.addChild(runner);
+        for (String size : new String[] {"one", "several"}) {
+            TestDescriptor features = newContainer(runner.getUniqueId().append("test", size), "[size: " + size + "]");
+            TestDescriptor tester = newClassContainer(
+                    features.getUniqueId().append("test", MyNestedTestClass.class.getName()), MyNestedTestClass.class);
+            tester.addChild(newMethodDescriptor(tester.getUniqueId().append("test", "test"), MY_TEST_METHOD_NAME));
+            features.addChild(tester);
+            runner.addChild(features);
+        }
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        executeSuccessfully(engine);
+
+        assertOneTestSetFor(MyTestClass.class, 2);
+    }
+
+    @Test
+    public void classesInsideASuiteKeepTheirOwnTestSet() throws Exception {
+        EngineDescriptor suiteEngine =
+                new EngineDescriptor(UniqueId.forEngine("junit-platform-suite"), "JUnit Platform Suite");
+        TestDescriptor suiteClass = newClassContainer(
+                suiteEngine.getUniqueId().append("suite", MySuiteClass.class.getName()), MySuiteClass.class);
+        TestDescriptor jupiterEngine =
+                newContainer(suiteClass.getUniqueId().append("engine", "junit-jupiter"), "JUnit Jupiter");
+        TestDescriptor testClass = newClassContainer(
+                jupiterEngine.getUniqueId().append("class", MyTestClass.class.getName()), MyTestClass.class);
+        testClass.addChild(newMethodDescriptor(testClass.getUniqueId().append("method", "m"), MY_TEST_METHOD_NAME));
+        jupiterEngine.addChild(testClass);
+        suiteClass.addChild(jupiterEngine);
+        suiteEngine.addChild(suiteClass);
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(suiteEngine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        executeSuccessfully(suiteEngine);
+
+        ArgumentCaptor<TestSetReportEntry> started = ArgumentCaptor.forClass(TestSetReportEntry.class);
+        verify(listener, times(2)).testSetStarting(started.capture());
+        assertThat(started.getAllValues())
+                .extracting(ReportEntry::getSourceName)
+                .containsExactly(MySuiteClass.class.getName(), MyTestClass.class.getName());
+        verify(listener, times(2)).testSetCompleted(any());
+    }
+
+    @Test
+    public void classUnderAContainerWithoutClassKeepsItsOwnTestSet() throws Exception {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor group = newContainer(engine.getUniqueId().append("group", "g"), "group");
+        TestDescriptor testClass = newClassContainer(group.getUniqueId().append("class", "c"), MyTestClass.class);
+        testClass.addChild(newMethodDescriptor(testClass.getUniqueId().append("method", "m"), MY_TEST_METHOD_NAME));
+        group.addChild(testClass);
+        engine.addChild(group);
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        executeSuccessfully(engine);
+
+        assertOneTestSetFor(MyTestClass.class, 1);
+    }
+
+    @Test
+    public void failingNestedClassIsReportedInTheTestSetOfItsOuterClass() throws Exception {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor outer = newOuterClassDescriptor(engine);
+        TestDescriptor nested = newNestedClassDescriptor(outer);
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(outer));
+        adapter.executionStarted(TestIdentifier.from(nested));
+        adapter.executionFinished(TestIdentifier.from(nested), failed(new RuntimeException("BeforeAll failed")));
+        adapter.executionFinished(TestIdentifier.from(outer), successful());
+
+        InOrder inOrder = inOrder(listener);
+        inOrder.verify(listener).testSetStarting(any());
+        ArgumentCaptor<ReportEntry> error = ArgumentCaptor.forClass(ReportEntry.class);
+        inOrder.verify(listener).testError(error.capture());
+        inOrder.verify(listener).testSetCompleted(any());
+        inOrder.verifyNoMoreInteractions();
+        assertThat(error.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+        assertThat(error.getValue().getName()).isEqualTo("initializationError");
+    }
+
+    @Test
+    public void skippedNestedClassIsReportedInTheTestSetOfItsOuterClass() throws Exception {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor outer = newOuterClassDescriptor(engine);
+        TestDescriptor nested = newNestedClassDescriptor(outer);
+        nested.addChild(newMethodDescriptor(nested.getUniqueId().append("method", "m"), MY_NAMED_TEST_METHOD_NAME));
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(outer));
+        adapter.executionSkipped(TestIdentifier.from(nested), "disabled");
+        adapter.executionFinished(TestIdentifier.from(outer), successful());
+
+        InOrder inOrder = inOrder(listener);
+        inOrder.verify(listener).testSetStarting(any());
+        ArgumentCaptor<ReportEntry> skipped = ArgumentCaptor.forClass(ReportEntry.class);
+        inOrder.verify(listener).testSkipped(skipped.capture());
+        inOrder.verify(listener).testSetCompleted(any());
+        inOrder.verifyNoMoreInteractions();
+        assertThat(skipped.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+        assertThat(skipped.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
+    }
+
+    @Test
+    public void abortedNestedClassIsReportedInTheTestSetOfItsOuterClass() throws Exception {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor outer = newOuterClassDescriptor(engine);
+        TestDescriptor nested = newNestedClassDescriptor(outer);
+        nested.addChild(newMethodDescriptor(nested.getUniqueId().append("method", "m"), MY_NAMED_TEST_METHOD_NAME));
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        adapter.executionStarted(TestIdentifier.from(engine));
+        adapter.executionStarted(TestIdentifier.from(outer));
+        adapter.executionStarted(TestIdentifier.from(nested));
+        adapter.executionFinished(TestIdentifier.from(nested), aborted(new TestSkippedException("assumption")));
+        adapter.executionFinished(TestIdentifier.from(outer), successful());
+
+        InOrder inOrder = inOrder(listener);
+        inOrder.verify(listener).testSetStarting(any());
+        ArgumentCaptor<ReportEntry> skipped = ArgumentCaptor.forClass(ReportEntry.class);
+        inOrder.verify(listener).testAssumptionFailure(skipped.capture());
+        inOrder.verify(listener).testSetCompleted(any());
+        inOrder.verifyNoMoreInteractions();
+        assertThat(skipped.getValue().getSourceName()).isEqualTo(MyTestClass.class.getName());
+        assertThat(skipped.getValue().getName()).isEqualTo(MY_NAMED_TEST_METHOD_NAME);
+    }
+
+    @Test
     public void notifiedWithParentDisplayNameWhenTestClassUnknown() {
         // Set up a test plan
         TestPlan plan = TestPlan.from(
@@ -1145,6 +1293,66 @@ public class RunListenerAdapterTest {
         assertEquals("Run a dummy cucumber test", entry.getName());
     }
 
+    private void executeSuccessfully(TestDescriptor descriptor) {
+        TestIdentifier identifier = TestIdentifier.from(descriptor);
+        adapter.executionStarted(identifier);
+        for (TestDescriptor child : descriptor.getChildren()) {
+            executeSuccessfully(child);
+        }
+        adapter.executionFinished(identifier, successful());
+    }
+
+    private void assertOneTestSetFor(Class<?> testClass, int testCount) {
+        InOrder inOrder = inOrder(listener);
+        ArgumentCaptor<TestSetReportEntry> started = ArgumentCaptor.forClass(TestSetReportEntry.class);
+        inOrder.verify(listener).testSetStarting(started.capture());
+        ArgumentCaptor<ReportEntry> succeeded = ArgumentCaptor.forClass(ReportEntry.class);
+        inOrder.verify(listener, times(testCount)).testSucceeded(succeeded.capture());
+        ArgumentCaptor<TestSetReportEntry> completed = ArgumentCaptor.forClass(TestSetReportEntry.class);
+        inOrder.verify(listener).testSetCompleted(completed.capture());
+        verify(listener).testSetStarting(any());
+        verify(listener).testSetCompleted(any());
+
+        assertThat(started.getValue().getSourceName()).isEqualTo(testClass.getName());
+        assertThat(completed.getValue().getSourceName()).isEqualTo(testClass.getName());
+        assertThat(succeeded.getAllValues())
+                .extracting(ReportEntry::getSourceName)
+                .containsOnly(testClass.getName());
+    }
+
+    private static TestDescriptor newOuterClassDescriptor(EngineDescriptor engine) {
+        TestDescriptor outer =
+                newClassContainer(engine.getUniqueId().append("class", MyTestClass.class.getName()), MyTestClass.class);
+        engine.addChild(outer);
+        return outer;
+    }
+
+    private static TestDescriptor newNestedClassDescriptor(TestDescriptor outer) {
+        TestDescriptor nested = newClassContainer(
+                outer.getUniqueId().append("nested-class", MyNestedTestClass.class.getSimpleName()),
+                MyNestedTestClass.class);
+        outer.addChild(nested);
+        return nested;
+    }
+
+    private static TestDescriptor newClassContainer(UniqueId uniqueId, Class<?> testClass) {
+        return new AbstractTestDescriptor(uniqueId, testClass.getSimpleName(), ClassSource.from(testClass)) {
+            @Override
+            public Type getType() {
+                return CONTAINER;
+            }
+        };
+    }
+
+    private static TestDescriptor newContainer(UniqueId uniqueId, String displayName) {
+        return new AbstractTestDescriptor(uniqueId, displayName) {
+            @Override
+            public Type getType() {
+                return CONTAINER;
+            }
+        };
+    }
+
     private static TestDescriptor newParameterizedClassTemplateDescriptor(UniqueId engineId) {
         return new ClassTestDescriptor(
                 engineId.append("class-template", MyTestClass.class.getName()),
@@ -1323,6 +1531,8 @@ public class RunListenerAdapterTest {
     }
 
     private static class MySuiteClass {}
+
+    private static class MyNestedTestClass {}
 
     static class TestMethodTestDescriptorWithDisplayName extends AbstractTestDescriptor {
         private TestMethodTestDescriptorWithDisplayName(
