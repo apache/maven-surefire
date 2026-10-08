@@ -21,8 +21,10 @@ package org.apache.maven.surefire.junitplatform;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
@@ -31,6 +33,7 @@ import org.apache.maven.surefire.api.report.Stoppable;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestReportListener;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
+import org.apache.maven.surefire.api.util.internal.ClassMethod;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -58,6 +61,7 @@ import org.opentest4j.TestSkippedException;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -123,6 +127,60 @@ public class RunListenerAdapterTest {
         verify(listener).testStarting(any());
         verify(listener).testSucceeded(any());
         verifyNoMoreInteractions(listener);
+    }
+
+    @Test
+    public void forgetsTheRunIdOfATestThatPassed() throws Exception {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor testClass = newClassDescriptor(engine.getUniqueId());
+        TestDescriptor test =
+                newMethodDescriptor(testClass.getUniqueId().append("method", MY_TEST_METHOD_NAME), MY_TEST_METHOD_NAME);
+        engine.addChild(testClass);
+        testClass.addChild(test);
+        adapter.testPlanExecutionStarted(TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY));
+
+        adapter.executionStarted(TestIdentifier.from(testClass));
+        adapter.executionStarted(TestIdentifier.from(test));
+        adapter.executionFinished(TestIdentifier.from(test), successful());
+        adapter.executionFinished(TestIdentifier.from(testClass), successful());
+
+        assertThat(indexedTestIds()).doesNotContain(test.getUniqueId().toString());
+        assertThat((Set<?>) getInternalState(adapter, "classContainersWithStartedTests"))
+                .isEmpty();
+    }
+
+    @Test
+    public void rerunOfAFailedTestReportsUnderTheSameRunId() throws Exception {
+        EngineDescriptor engine = newEngineDescriptor();
+        TestDescriptor testClass = newClassDescriptor(engine.getUniqueId());
+        TestDescriptor test =
+                newMethodDescriptor(testClass.getUniqueId().append("method", MY_TEST_METHOD_NAME), MY_TEST_METHOD_NAME);
+        engine.addChild(testClass);
+        testClass.addChild(test);
+        TestPlan plan = TestPlan.from(false, singleton(engine), CONFIG_PARAMS, OUTPUT_DIRECTORY);
+
+        adapter.testPlanExecutionStarted(plan);
+        adapter.executionStarted(TestIdentifier.from(testClass));
+        adapter.executionStarted(TestIdentifier.from(test));
+        adapter.executionFinished(TestIdentifier.from(test), failed(new AssertionError("fails the first time")));
+        adapter.executionFinished(TestIdentifier.from(testClass), successful());
+
+        adapter.setRunMode(RERUN_TEST_AFTER_FAILURE);
+        adapter.setRerunTestIds(singleton(test.getUniqueId()));
+        adapter.reset();
+        adapter.testPlanExecutionStarted(plan);
+        adapter.executionStarted(TestIdentifier.from(testClass));
+        adapter.executionStarted(TestIdentifier.from(test));
+        adapter.executionFinished(TestIdentifier.from(test), successful());
+        adapter.executionFinished(TestIdentifier.from(testClass), successful());
+
+        ArgumentCaptor<ReportEntry> failedRun = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener).testFailed(failedRun.capture());
+        ArgumentCaptor<ReportEntry> rerun = ArgumentCaptor.forClass(ReportEntry.class);
+        verify(listener).testSucceeded(rerun.capture());
+        assertThat(rerun.getValue().getTestRunId())
+                .isEqualTo(failedRun.getValue().getTestRunId());
+        assertThat(indexedTestIds()).doesNotContain(test.getUniqueId().toString());
     }
 
     @Test
@@ -1238,6 +1296,13 @@ public class RunListenerAdapterTest {
                 new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
     }
 
+    private static TestDescriptor newClassDescriptor(UniqueId parentId) {
+        return new ClassTestDescriptor(
+                parentId.append("class", MyTestClass.class.getName()),
+                MyTestClass.class,
+                new DefaultJupiterConfiguration(CONFIG_PARAMS, OUTPUT_DIRECTORY));
+    }
+
     private static TestIdentifier newSourcelessChildIdentifierWithParent(
             TestPlan testPlan, String parentDisplay, TestSource parentTestSource) {
         // A parent test identifier with a name.
@@ -1341,5 +1406,11 @@ public class RunListenerAdapterTest {
         Field field = target.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return (T) field.get(target);
+    }
+
+    private List<String> indexedTestIds() throws Exception {
+        Map<ClassMethod, Long> indexes =
+                getInternalState(getInternalState(adapter, "classMethodIndexer"), "testIdMapping");
+        return indexes.keySet().stream().map(ClassMethod::getMethod).collect(toList());
     }
 }

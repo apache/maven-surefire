@@ -140,6 +140,7 @@ import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumbe
 import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT4_ONLY_DETECTED;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
@@ -3235,6 +3236,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         && !testDeps.containsKey("org.junit.vintage:junit-vintage-engine")
                         && !pluginDeps.containsKey("org.junit.vintage:junit-vintage-engine")) {
                     getProperties().setProperty(JUNIT_VINTAGE_DETECTED, "true");
+                    if (testNgArtifact == null
+                            && !hasDependencyJupiterAPI(testDeps)
+                            && !hasDependencyPlatformEngine(testDeps)
+                            && !hasDependencyPlatformEngine(pluginDeps)) {
+                        getProperties().setProperty(JUNIT4_ONLY_DETECTED, "true");
+                    }
                     if (!hasDependencyPlatformEngine(providerArtifacts)) {
                         // TODO exclude transitive deps (hamcrest etc...)
                         consoleLogger.debug("Test dependencies contain JUnit4. Resolving " + engineCoordinates + ":"

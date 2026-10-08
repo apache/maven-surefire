@@ -52,6 +52,14 @@ public final class ClassMethodIndexer {
         return indexClassMethod(clazz, null);
     }
 
+    /**
+     * Drops the index of a method that will not run again, so it does not stay in memory.
+     * Indexing the method again gives it a new index.
+     */
+    public void forgetClassMethod(String clazz, String method) {
+        testIdMapping.remove(new ClassMethod(requireNonNull(clazz), requireNonNull(method)));
+    }
+
     public Long getLocalIndex() {
         return testLocalMapping.get();
     }

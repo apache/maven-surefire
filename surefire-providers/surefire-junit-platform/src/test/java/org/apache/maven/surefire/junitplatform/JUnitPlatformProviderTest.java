@@ -86,6 +86,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT4_ONLY_DETECTED;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CONFIGURATION_PARAMETERS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -328,6 +329,57 @@ public class JUnitPlatformProviderTest {
         assertEquals(TestClass1.TESTS_SUCCEEDED + TestClass2.TESTS_SUCCEEDED, summary.getTestsSucceededCount());
         assertEquals(TestClass1.TESTS_ABORTED + TestClass2.TESTS_ABORTED, summary.getTestsAbortedCount());
         assertEquals(TestClass1.TESTS_FAILED + TestClass2.TESTS_FAILED, summary.getTestsFailedCount());
+    }
+
+    @Test
+    public void junit4OnlyProjectRunsOneTestClassPerLaunch() throws Exception {
+        ProviderParameters parameters = providerParametersMock();
+        when(parameters.getProviderProperties()).thenReturn(singletonMap(JUNIT4_ONLY_DETECTED, "true"));
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
+
+        invokeProvider(provider, newTestsToRun(TestClass1.class, TestClass2.class));
+
+        assertThat(executionListener.summaries).hasSize(2);
+        assertEquals(TestClass1.TESTS_FOUND, executionListener.summaries.get(0).getTestsFoundCount());
+        assertEquals(TestClass2.TESTS_FOUND, executionListener.summaries.get(1).getTestsFoundCount());
+    }
+
+    @Test
+    public void junit4OnlyProjectRunningClassesInParallelKeepsOneLaunch() throws Exception {
+        Map<String, String> properties = new HashMap<>();
+        properties.put(JUNIT4_ONLY_DETECTED, "true");
+        properties.put("junit.vintage.execution.parallel.enabled", "true");
+        properties.put("junit.vintage.execution.parallel.classes", "true");
+        ProviderParameters parameters = providerParametersMock();
+        when(parameters.getProviderProperties()).thenReturn(properties);
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
+
+        invokeProvider(provider, newTestsToRun(TestClass1.class, TestClass2.class));
+
+        assertThat(executionListener.summaries).hasSize(1);
+        assertEquals(
+                TestClass1.TESTS_FOUND + TestClass2.TESTS_FOUND,
+                executionListener.summaries.get(0).getTestsFoundCount());
+    }
+
+    @Test
+    public void junit4OnlyProjectRerunsFailingTestsAfterTheLastClass() throws Exception {
+        ProviderParameters parameters = providerParametersMock();
+        when(parameters.getProviderProperties()).thenReturn(singletonMap(JUNIT4_ONLY_DETECTED, "true"));
+        when(parameters.getTestRequest().getRerunFailingTestsCount()).thenReturn(1);
+        TestPlanSummaryListener executionListener = new TestPlanSummaryListener();
+        JUnitPlatformProvider provider =
+                new JUnitPlatformProvider(parameters, createLauncherSessionWithListeners(executionListener));
+
+        invokeProvider(provider, newTestsToRun(TestClass1.class, TestClass2.class));
+
+        assertThat(executionListener.summaries).hasSize(3);
+        TestExecutionSummary rerun = executionListener.summaries.get(2);
+        assertEquals(TestClass1.TESTS_FAILED + TestClass2.TESTS_FAILED, rerun.getTestsFoundCount());
     }
 
     @Test

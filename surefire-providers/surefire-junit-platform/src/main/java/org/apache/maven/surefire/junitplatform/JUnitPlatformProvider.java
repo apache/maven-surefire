@@ -79,6 +79,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.GROUPS_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDES_SCAN_LIST;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
+import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT4_ONLY_DETECTED;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT_VINTAGE_DETECTED;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
@@ -273,7 +274,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         testExecutionListeners.add(adapter);
         testExecutionListeners.addAll(createTestExecutionListeners());
 
-        if (testsToRun.allowEagerReading()) {
+        if (testsToRun.allowEagerReading() && !runsOneClassAtATime()) {
             List<DiscoverySelector> selectors = new ArrayList<>();
             testsToRun.iterator().forEachRemaining(c -> selectors.add(selectClass(c.getName())));
 
@@ -285,6 +286,17 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 launcher.execute(builder.build(), testExecutionListeners.toArray(new TestExecutionListener[0]));
             });
         }
+    }
+
+    /**
+     * JUnit 3 and 4 classes run one at a time, as they did up to 3.5.x. Running them all together keeps every
+     * test in memory, which is too much for big suites (#3511). Classes running in parallel still run together.
+     */
+    private boolean runsOneClassAtATime() {
+        Map<String, String> configuration = getConfigurationParameters();
+        boolean parallelClasses = Boolean.parseBoolean(configuration.get("junit.vintage.execution.parallel.enabled"))
+                && Boolean.parseBoolean(configuration.get("junit.vintage.execution.parallel.classes"));
+        return Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT4_ONLY_DETECTED)) && !parallelClasses;
     }
 
     /**
