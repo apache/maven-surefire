@@ -109,6 +109,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private final Filter<?>[] filters;
 
+    private Set<String> enclosingClassNames;
+
     private Map<String, String> configurationParameters = new HashMap<>();
 
     private final CommandChainReader commandsReader;
@@ -414,12 +416,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
                     excludesList.map(Collections::singletonList).orElse(Collections.emptyList()));
             String includedReason = "Included by includes/excludes " + scanListResolver;
             String excludedReason = "Not included by includes/excludes " + scanListResolver;
-            Set<String> enclosingClassNames = getEnclosingClassNames();
             ClassNameFilter classNameFilter =
                     className -> scanListResolver.shouldRun(TestListResolver.toClassFileName(className), null)
                             ? FilterResult.included(includedReason)
                             : FilterResult.excluded(excludedReason);
-            filters.add(includeEnclosingClasses(classNameFilter, enclosingClassNames));
+            filters.add(includeEnclosingClasses(classNameFilter));
         }
 
         boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
@@ -461,31 +462,51 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return filters.toArray(new Filter<?>[0]);
     }
 
-    private Set<String> getEnclosingClassNames() {
-        Set<String> enclosingClassNames = new LinkedHashSet<>();
-        ScanResult scanResult = parameters.getScanResult();
-        for (int i = 0; i < scanResult.size(); i++) {
-            String className = scanResult.getClassName(i);
-            Class<?> testClass;
-            try {
-                testClass = parameters.getTestClassLoader().loadClass(className);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException("Unable to create test class '" + className + "'", e);
-            }
-            for (Class<?> enclosingClass = testClass.getEnclosingClass();
-                    enclosingClass != null;
-                    enclosingClass = enclosingClass.getEnclosingClass()) {
-                enclosingClassNames.add(enclosingClass.getName());
-            }
+    /**
+     * Gives back the names of the classes that enclose a scanned class. They are only looked up the first time
+     * someone asks, because most runs never need them.
+     */
+    private synchronized Set<String> getEnclosingClassNames() {
+        if (enclosingClassNames == null) {
+            enclosingClassNames = findEnclosingClassNames();
         }
         return enclosingClassNames;
     }
 
-    private static ClassNameFilter includeEnclosingClasses(
-            ClassNameFilter classNameFilter, Set<String> enclosingClassNames) {
-        return className -> enclosingClassNames.contains(className)
-                ? FilterResult.included("Enclosing class of an included test class")
-                : classNameFilter.apply(className);
+    private Set<String> findEnclosingClassNames() {
+        Set<String> names = new LinkedHashSet<>();
+        ScanResult scanResult = parameters.getScanResult();
+        for (int i = 0; i < scanResult.size(); i++) {
+            String className = scanResult.getClassName(i);
+            try {
+                Class<?> testClass = parameters.getTestClassLoader().loadClass(className);
+                for (Class<?> enclosingClass = testClass.getEnclosingClass();
+                        enclosingClass != null;
+                        enclosingClass = enclosingClass.getEnclosingClass()) {
+                    names.add(enclosingClass.getName());
+                }
+            } catch (ClassNotFoundException | LinkageError e) {
+                // Java 8 and 11 can throw an IllegalAccessError here (#3511), so use the class name instead.
+                addEnclosingClassNamesFromBinaryName(className, names);
+            }
+        }
+        return names;
+    }
+
+    private static void addEnclosingClassNamesFromBinaryName(String className, Set<String> names) {
+        for (int dollar = className.lastIndexOf('$'); dollar > 0; dollar = className.lastIndexOf('$', dollar - 1)) {
+            names.add(className.substring(0, dollar));
+        }
+    }
+
+    private ClassNameFilter includeEnclosingClasses(ClassNameFilter classNameFilter) {
+        return className -> {
+            FilterResult result = classNameFilter.apply(className);
+            if (result.included() || !getEnclosingClassNames().contains(className)) {
+                return result;
+            }
+            return FilterResult.included("Enclosing class of an included test class");
+        };
     }
 
     Filter<?>[] getFilters() {
