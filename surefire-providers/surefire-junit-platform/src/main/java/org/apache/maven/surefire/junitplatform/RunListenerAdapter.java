@@ -134,7 +134,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
 
         if (isClassContainer(testIdentifier)) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
-            runListener.testSetStarting(createReportEntry(testIdentifier));
+            if (opensTestSet(testIdentifier)) {
+                runListener.testSetStarting(createReportEntry(testIdentifier));
+            }
         } else if (testIdentifier.isTest()) {
             testStartTime.put(testIdentifier, System.currentTimeMillis());
             runListener.testStarting(createReportEntry(testIdentifier));
@@ -150,6 +152,8 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         suppressOutput.remove();
 
         boolean isClass = isClassContainer(testIdentifier);
+
+        boolean isTestSet = isClass && opensTestSet(testIdentifier);
 
         boolean isTest = testIdentifier.isTest();
 
@@ -171,7 +175,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         runListener.testAssumptionFailure(
                                 createReportEntry(testIdentifier, testExecutionResult, elapsed));
                     } else if (isClass) {
-                        reportAbortedClass(testIdentifier, testExecutionResult, elapsed);
+                        reportAbortedClass(testIdentifier, testExecutionResult, elapsed, isTestSet);
                     } else {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
@@ -187,7 +191,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     } else {
                         runListener.testError(reportEntry);
                     }
-                    if (isClass || isRootContainer) {
+                    if (isTestSet || isRootContainer) {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
@@ -206,7 +210,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         if (succeeded.getSourceName() != null) {
                             classesWithSuccessfulTests.add(succeeded.getSourceName());
                         }
-                    } else {
+                    } else if (isTestSet) {
                         runListener.testSetCompleted(
                                 createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
                     }
@@ -217,10 +221,15 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
     }
 
     private void reportAbortedClass(
-            TestIdentifier testIdentifier, TestExecutionResult testExecutionResult, Integer elapsed) {
+            TestIdentifier testIdentifier,
+            TestExecutionResult testExecutionResult,
+            Integer elapsed,
+            boolean isTestSet) {
         if (classContainersWithStartedTests.contains(testIdentifier.getUniqueId())) {
-            runListener.testSetCompleted(
-                    createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
+            if (isTestSet) {
+                runListener.testSetCompleted(
+                        createReportEntry(testIdentifier, testExecutionResult, systemProps(), null, elapsed));
+            }
             return;
         }
 
@@ -241,7 +250,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             }
         }
 
-        runListener.testSetCompleted(createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+        if (isTestSet) {
+            runListener.testSetCompleted(createReportEntry(testIdentifier, null, systemProps(), null, elapsed));
+        }
     }
 
     private void recordStartedTest(TestIdentifier testIdentifier) {
@@ -266,6 +277,17 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                         .getSource()
                         .filter(ClassSource.class::isInstance)
                         .isPresent();
+    }
+
+    /**
+     * A class gets its own test set only when its tests are reported under its name. Classes inside another
+     * one, like JUnit 5 {@code @Nested} classes or the nested suites of a JUnit 3 {@code suite()}, report into
+     * the outer class and share its test set. Giving each of them a set of its own made Surefire rewrite the
+     * outer class report again and again (#3511).
+     */
+    private boolean opensTestSet(TestIdentifier classContainer) {
+        TestIdentifier reportedUnder = findTopParent(classContainer);
+        return reportedUnder.getUniqueId().equals(classContainer.getUniqueId()) || !hasClassSource(reportedUnder);
     }
 
     private Integer computeElapsedTime(TestIdentifier testIdentifier) {
@@ -336,12 +358,17 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
         testStartTime.remove(testIdentifier);
 
         if (isClass) {
+            boolean isTestSet = opensTestSet(testIdentifier);
             SimpleReportEntry report = createReportEntry(testIdentifier);
-            runListener.testSetStarting(report);
+            if (isTestSet) {
+                runListener.testSetStarting(report);
+            }
             for (TestIdentifier child : testPlan.getChildren(testIdentifier)) {
                 runListener.testSkipped(createReportEntry(child, null, emptyMap(), reason, null));
             }
-            runListener.testSetCompleted(report);
+            if (isTestSet) {
+                runListener.testSetCompleted(report);
+            }
         } else {
             runListener.testSkipped(createReportEntry(testIdentifier, null, emptyMap(), reason, null));
         }
