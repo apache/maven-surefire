@@ -116,6 +116,7 @@ import org.apache.maven.surefire.shared.utils.io.FileUtils;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.ToolchainPrivate;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
@@ -1111,12 +1112,20 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         if (getJdkToolchain() != null) {
             List<Toolchain> tcs = getToolchainManager().getToolchains(getSession(), "jdk", getJdkToolchain());
-            if (tcs.isEmpty()) {
-                throw new MojoFailureException(
-                        "Requested toolchain specification did not match any configured toolchain: "
-                                + getJdkToolchain());
+            if (!tcs.isEmpty()) {
+                tc = tcs.get(0);
+            } else {
+                Toolchain toolchainFromBuildContext =
+                        getToolchainManager().getToolchainFromBuildContext("jdk", getSession());
+                if (toolchainFromBuildContext instanceof ToolchainPrivate
+                        && ((ToolchainPrivate) toolchainFromBuildContext).matchesRequirements(getJdkToolchain())) {
+                    tc = toolchainFromBuildContext;
+                } else {
+                    throw new MojoFailureException(
+                            "Requested toolchain specification did not match any configured toolchain: "
+                                    + getJdkToolchain());
+                }
             }
-            tc = tcs.get(0);
         }
 
         if (tc == null) {
