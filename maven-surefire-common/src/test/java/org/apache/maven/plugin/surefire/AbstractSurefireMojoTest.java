@@ -161,6 +161,28 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void warnsWhenSuiteXmlFilesAreConfigured() {
+        Logger logger = mock(Logger.class);
+        mojo.setLogger(logger);
+
+        mojo.warnIfSuiteXmlFilesConfigured(new File[] {new File("suite.xml")});
+
+        verify(logger).warn("The suiteXmlFiles parameter is deprecated and no longer supported; "
+                + "use groups or JUnit suite support instead.");
+    }
+
+    @Test
+    public void doesNotWarnWhenSuiteXmlFilesAreNotConfigured() {
+        Logger logger = mock(Logger.class);
+        mojo.setLogger(logger);
+
+        mojo.warnIfSuiteXmlFilesConfigured(null);
+        mojo.warnIfSuiteXmlFilesConfigured(new File[0]);
+
+        verify(logger, times(0)).warn(anyString());
+    }
+
+    @Test
     public void shouldAddRunOrderParametersToProviderProperties() throws Exception {
         MavenProject project = mock(MavenProject.class);
         Artifact projectArtifact = mojo.getMojoArtifact();

@@ -49,6 +49,12 @@ import static org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils.writ
         threadSafe = true)
 public class IntegrationTestMojo extends AbstractSurefireMojo {
 
+    @Override
+    public void execute() throws MojoExecutionException, MojoFailureException {
+        warnIfSuiteXmlFilesConfigured(suiteXmlFiles);
+        super.execute();
+    }
+
     private static final String FAILSAFE_IN_PROGRESS_CONTEXT_KEY = "failsafe-in-progress";
 
     /**
