@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -484,6 +485,109 @@ public class AbstractSurefireMojoJava7PlusTest {
         result = invokeMethod(AbstractSurefireMojo.class, "join", methodArgTypes, args);
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void shouldFindNestedModuleDescriptors() throws Exception {
+        // target/classes/{com.example.one,com.example.two}/module-info.class plus a non-module dir
+        File tempDir = Files.createTempDirectory("surefire-test-nested-modules").toFile();
+        File moduleOne = new File(tempDir, "com.example.one");
+        File moduleTwo = new File(tempDir, "com.example.two");
+        File descriptorOne = new File(moduleOne, "module-info.class");
+        File descriptorTwo = new File(moduleTwo, "module-info.class");
+        File plainDir = new File(tempDir, "META-INF");
+        try {
+            moduleOne.mkdirs();
+            moduleTwo.mkdirs();
+            descriptorOne.createNewFile();
+            descriptorTwo.createNewFile();
+            plainDir.mkdirs();
+
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            // sorted by name for deterministic module ordering
+            assertThat(result).extracting(File::getName).containsExactly("com.example.one", "com.example.two");
+        } finally {
+            descriptorOne.delete();
+            descriptorTwo.delete();
+            moduleOne.delete();
+            moduleTwo.delete();
+            plainDir.delete();
+            tempDir.delete();
+        }
+    }
+
+    @Test
+    public void shouldFindNoNestedModuleDescriptorsInFlatLayout() throws Exception {
+        // plain package directories without module-info.class must not count as modules
+        File tempDir = Files.createTempDirectory("surefire-test-flat").toFile();
+        File pkgDir = new File(tempDir, "com/example");
+        File classFile = new File(pkgDir, "Foo.class");
+        try {
+            pkgDir.mkdirs();
+            classFile.createNewFile();
+
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            assertThat(result).isEmpty();
+        } finally {
+            classFile.delete();
+            pkgDir.delete();
+            pkgDir.getParentFile().delete();
+            tempDir.delete();
+        }
+    }
+
+    @Test
+    public void shouldFindNoNestedModuleDescriptorsInEmptyDirectory() throws Exception {
+        File tempDir = Files.createTempDirectory("surefire-test-empty").toFile();
+        try {
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "findNestedModuleDescriptors", tempDir);
+            assertThat(result).isEmpty();
+        } finally {
+            tempDir.delete();
+        }
+    }
+
+    @Test
+    public void shouldNotTreatClassicModularLayoutAsNested() throws Exception {
+        // Classic layout with a root module descriptor: module "it" with root package "it"
+        // produces target/classes/module-info.class and target/classes/it/ — the package
+        // directory sharing the module name must NOT switch surefire to the nested layout.
+        File tempDir =
+                Files.createTempDirectory("surefire-test-classic-modular").toFile();
+        File rootDescriptor = new File(tempDir, "module-info.class");
+        File pkgDir = new File(tempDir, "it");
+        File classFile = new File(pkgDir, "Main.class");
+        try {
+            rootDescriptor.createNewFile();
+            pkgDir.mkdirs();
+            classFile.createNewFile();
+
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "nestedModuleDirectories", tempDir);
+            assertThat(result).isEmpty();
+        } finally {
+            classFile.delete();
+            pkgDir.delete();
+            rootDescriptor.delete();
+            tempDir.delete();
+        }
+    }
+
+    @Test
+    public void shouldTreatModuleSourceHierarchyLayoutAsNested() throws Exception {
+        File tempDir = Files.createTempDirectory("surefire-test-nested-layout").toFile();
+        File moduleDir = new File(tempDir, "com.example");
+        File descriptor = new File(moduleDir, "module-info.class");
+        try {
+            moduleDir.mkdirs();
+            descriptor.createNewFile();
+
+            List<File> result = invokeMethod(AbstractSurefireMojo.class, "nestedModuleDirectories", tempDir);
+            assertThat(result).extracting(File::getName).containsExactly("com.example");
+        } finally {
+            descriptor.delete();
+            moduleDir.delete();
+            tempDir.delete();
+        }
     }
 
     private static File mockFile(String absolutePath) {
