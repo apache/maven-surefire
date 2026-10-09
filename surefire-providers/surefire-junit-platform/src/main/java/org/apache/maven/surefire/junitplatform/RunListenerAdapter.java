@@ -172,8 +172,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             switch (testExecutionResult.getStatus()) {
                 case ABORTED:
                     if (isTest) {
-                        runListener.testAssumptionFailure(
-                                createReportEntry(testIdentifier, testExecutionResult, elapsed));
+                        SimpleReportEntry aborted = createReportEntry(testIdentifier, testExecutionResult, elapsed);
+                        runListener.testAssumptionFailure(aborted);
+                        forgetTestRunId(testIdentifier, aborted);
                     } else if (isClass) {
                         reportAbortedClass(testIdentifier, testExecutionResult, elapsed, isTestSet);
                     } else {
@@ -207,6 +208,7 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                     if (isTest) {
                         SimpleReportEntry succeeded = createReportEntry(testIdentifier, null, elapsed);
                         runListener.testSucceeded(succeeded);
+                        forgetTestRunId(testIdentifier, succeeded);
                         if (succeeded.getSourceName() != null) {
                             classesWithSuccessfulTests.add(succeeded.getSourceName());
                         }
@@ -217,6 +219,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             }
         }
 
+        if (isClass) {
+            classContainersWithStartedTests.remove(testIdentifier.getUniqueId());
+        }
         runningTestIdentifiersByUniqueId.remove(testIdentifier.getUniqueId());
     }
 
@@ -246,7 +251,9 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
             runListener.testAssumptionFailure(createReportEntry(testIdentifier, testExecutionResult, elapsed));
         } else {
             for (TestIdentifier test : targetedTests) {
-                runListener.testAssumptionFailure(createReportEntry(test, testExecutionResult, null));
+                SimpleReportEntry aborted = createReportEntry(test, testExecutionResult, null);
+                runListener.testAssumptionFailure(aborted);
+                forgetTestRunId(test, aborted);
             }
         }
 
@@ -268,6 +275,16 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 classContainersWithStartedTests.add(ancestor.getUniqueId());
             }
             parent = currentTestPlan.getParent(ancestor);
+        }
+    }
+
+    /**
+     * A test that passed or was skipped will not run again, so we can forget its id. Keeping all of them made big
+     * suites run out of memory (#3511). Failed tests keep their id for the rerun.
+     */
+    private void forgetTestRunId(TestIdentifier testIdentifier, SimpleReportEntry report) {
+        if (testIdentifier.isTest()) {
+            classMethodIndexer.forgetClassMethod(report.getSourceName(), testIdentifier.getUniqueId());
         }
     }
 
@@ -364,13 +381,17 @@ final class RunListenerAdapter implements TestExecutionListener, TestOutputRecei
                 runListener.testSetStarting(report);
             }
             for (TestIdentifier child : testPlan.getChildren(testIdentifier)) {
-                runListener.testSkipped(createReportEntry(child, null, emptyMap(), reason, null));
+                SimpleReportEntry skipped = createReportEntry(child, null, emptyMap(), reason, null);
+                runListener.testSkipped(skipped);
+                forgetTestRunId(child, skipped);
             }
             if (isTestSet) {
                 runListener.testSetCompleted(report);
             }
         } else {
-            runListener.testSkipped(createReportEntry(testIdentifier, null, emptyMap(), reason, null));
+            SimpleReportEntry skipped = createReportEntry(testIdentifier, null, emptyMap(), reason, null);
+            runListener.testSkipped(skipped);
+            forgetTestRunId(testIdentifier, skipped);
         }
     }
 

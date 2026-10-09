@@ -73,4 +73,16 @@ public class ClassMethodIndexerTest {
         assertThat(indexer.indexClassMethod(getClass().getName(), "first")).isEqualTo(first);
         assertThat(indexer.getLocalIndex()).isEqualTo(first);
     }
+
+    @Test
+    public void forgottenMethodGetsANewIndex() {
+        ClassMethodIndexer indexer = new ClassMethodIndexer();
+        long kept = indexer.indexClassMethod(getClass().getName(), "kept");
+        long forgotten = indexer.indexClassMethod(getClass().getName(), "forgotten");
+
+        indexer.forgetClassMethod(getClass().getName(), "forgotten");
+
+        assertThat(indexer.indexClassMethod(getClass().getName(), "kept")).isEqualTo(kept);
+        assertThat(indexer.indexClassMethod(getClass().getName(), "forgotten")).isNotEqualTo(forgotten);
+    }
 }

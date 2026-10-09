@@ -50,6 +50,11 @@ public class ProviderParameterNames {
 
     public static final String JUNIT_VINTAGE_DETECTED = "junit.vintage.engine.detected";
 
+    /**
+     * Set when the project only has JUnit 3 or 4 tests.
+     */
+    public static final String JUNIT4_ONLY_DETECTED = "junit4.only.detected";
+
     public static final String INCLUDES_SCAN_LIST = "junit.includes.scan.list";
 
     public static final String EXCLUDES_SCAN_LIST = "junit.excludes.scan.list";
