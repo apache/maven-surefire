@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,8 @@ import org.apache.maven.surefire.shared.utils.StringUtils;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassNameFilter;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -103,6 +106,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
     static final String CONFIGURATION_PARAMETERS = "configurationParameters";
 
     private static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
+
+    private static final String VINTAGE_ENGINE_ID = "junit-vintage";
 
     private final ProviderParameters parameters;
 
@@ -440,20 +445,25 @@ public class JUnitPlatformProvider extends AbstractProvider {
         if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED)) && !useTestNG) {
             getPropertiesList(GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
             getPropertiesList(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags).ifPresent(filters::add);
-        } else if (!useTestNG) {
-            Optional<Class<?>> categoryClass = getCategoryClass();
-            if (categoryClass.isPresent()) {
-                getPropertiesList(GROUPS_PROP)
-                        .map(strings -> getIncludeCategoryFilter(strings, categoryClass))
-                        .ifPresent(filters::add);
-            }
-        }
-
-        if (!useTestNG) {
             Optional<Class<?>> categoryClass = getCategoryClass();
             if (categoryClass.isPresent()) {
                 getPropertiesList(EXCLUDEDGROUPS_PROP)
-                        .map(strings -> getExcludeCategoryFilter(strings, categoryClass))
+                        .map(strings -> byEngine(
+                                getExcludeCategoryFilter(strings, categoryClass),
+                                descriptor -> FilterResult.included("Not a JUnit 4 test")))
+                        .ifPresent(filters::add);
+            }
+        } else if (!useTestNG) {
+            // JUnit 4 tests use @Category, all other tests use tags (#3468, #3503)
+            Optional<Class<?>> categoryClass = getCategoryClass();
+            if (categoryClass.isPresent()) {
+                getPropertiesList(GROUPS_PROP)
+                        .map(strings -> byEngine(
+                                getIncludeCategoryFilter(strings, categoryClass), TagFilter.includeTags(strings)))
+                        .ifPresent(filters::add);
+                getPropertiesList(EXCLUDEDGROUPS_PROP)
+                        .map(strings -> byEngine(
+                                getExcludeCategoryFilter(strings, categoryClass), TagFilter.excludeTags(strings)))
                         .ifPresent(filters::add);
             }
         }
@@ -526,79 +536,60 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     PostDiscoveryFilter getIncludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
-
-        return testDescriptor -> {
-            Optional<MethodSource> methodSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof MethodSource)
-                    .map(testSource -> (MethodSource) testSource);
-            boolean hasCategoryClass = false, hasCategoryMethod = false;
-            if (methodSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            Optional<ClassSource> classSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof ClassSource)
-                    .map(testSource -> (ClassSource) testSource);
-            if (classSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotationValue(
-                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            return hasCategoryClass || hasCategoryMethod
-                    ? FilterResult.included("Category found")
-                    : FilterResult.excluded("Does not have category annotation");
-        };
+        return testDescriptor -> hasCategory(testDescriptor, categoryClass, categories)
+                ? FilterResult.included("Category found")
+                : FilterResult.excluded("Does not have category annotation");
     }
 
     PostDiscoveryFilter getExcludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
-
-        return testDescriptor -> {
-            Optional<MethodSource> methodSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof MethodSource)
-                    .map(testSource -> (MethodSource) testSource);
-            boolean hasCategoryClass = false, hasCategoryMethod = false;
-            if (methodSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            Optional<ClassSource> classSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof ClassSource)
-                    .map(testSource -> (ClassSource) testSource);
-            if (classSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotationValue(
-                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            return hasCategoryClass || hasCategoryMethod
-                    ? FilterResult.excluded("Does have exclude category annotation")
-                    : FilterResult.included("Does not have category excluded found");
-        };
+        return testDescriptor -> hasCategory(testDescriptor, categoryClass, categories)
+                ? FilterResult.excluded("Does have exclude category annotation")
+                : FilterResult.included("Does not have category excluded found");
     }
 
-    private boolean hasCategoryAnnotationValue(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
-        return hasCategoryAnnotationValue(clazz.getAnnotations(), categoryClass, categories);
+    /**
+     * Uses the first filter for JUnit 4 tests and the second one for everything else.
+     */
+    private static PostDiscoveryFilter byEngine(PostDiscoveryFilter vintageFilter, PostDiscoveryFilter otherFilter) {
+        return testDescriptor ->
+                isVintage(testDescriptor) ? vintageFilter.apply(testDescriptor) : otherFilter.apply(testDescriptor);
     }
 
-    private boolean hasCategoryAnnotationValue(Method method, Class<?> categoryClass, List<String> categories) {
-        return hasCategoryAnnotationValue(method.getAnnotations(), categoryClass, categories);
+    private static boolean isVintage(TestDescriptor testDescriptor) {
+        return testDescriptor
+                .getUniqueId()
+                .getEngineId()
+                .filter(VINTAGE_ENGINE_ID::equals)
+                .isPresent();
+    }
+
+    private boolean hasCategory(
+            TestDescriptor testDescriptor, Optional<Class<?>> categoryClass, List<String> categories) {
+        if (!categoryClass.isPresent()) {
+            return false;
+        }
+        TestSource source = testDescriptor.getSource().orElse(null);
+        if (source instanceof MethodSource) {
+            MethodSource methodSource = (MethodSource) source;
+            return hasCategoryAnnotationValue(methodSource::getJavaMethod, categoryClass.get(), categories)
+                    || hasCategoryAnnotationValue(methodSource::getJavaClass, categoryClass.get(), categories);
+        }
+        if (source instanceof ClassSource) {
+            return hasCategoryAnnotationValue(((ClassSource) source)::getJavaClass, categoryClass.get(), categories);
+        }
+        return false;
+    }
+
+    private boolean hasCategoryAnnotationValue(
+            Supplier<? extends AnnotatedElement> element, Class<?> categoryClass, List<String> categories) {
+        AnnotatedElement annotatedElement;
+        try {
+            annotatedElement = element.get();
+        } catch (RuntimeException e) {
+            // not always real code, a Spock feature name is not a Java method
+            return false;
+        }
+        return hasCategoryAnnotationValue(annotatedElement.getAnnotations(), categoryClass, categories);
     }
 
     private boolean hasCategoryAnnotationValue(
