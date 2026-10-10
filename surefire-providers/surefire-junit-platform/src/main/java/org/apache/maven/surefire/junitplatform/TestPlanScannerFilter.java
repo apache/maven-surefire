@@ -19,24 +19,28 @@
 package org.apache.maven.surefire.junitplatform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
+import org.junit.platform.engine.TestEngine;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.support.descriptor.ClassSource;
 import org.junit.platform.engine.support.descriptor.MethodSource;
+import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestIdentifier;
 import org.junit.platform.launcher.TestPlan;
 
-import static java.util.Collections.emptySet;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.request;
 
@@ -47,6 +51,10 @@ import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.r
  * class. Discovery is not free: engines may execute arbitrary user code while discovering, and the TestNG
  * engine even starts a real TestNG suite because it relies on TestNG's dry-run mode. Discovering once per
  * scanned class multiplied those side effects by the number of test classes.
+ * <p>
+ * TestNG test classes skip discovery: {@link TestNgTestClassDetector} spots them and they are accepted as
+ * is. The other classes are discovered without the TestNG engine, so the only TestNG dry run left is the
+ * one done right before the tests run.
  *
  * @since 2.22.0
  */
@@ -54,9 +62,31 @@ final class TestPlanScannerFilter implements ScannerFilter {
 
     private final Set<String> classNamesWithTests;
 
+    /**
+     * @param launcher discovers the classes which are not TestNG test classes
+     * @param includeAndExcludeFilters the filters for that discovery
+     * @param candidateClassNames the scanned class names
+     * @param testNgClassNames the TestNG test classes, accepted without discovery
+     */
     TestPlanScannerFilter(
-            LauncherAdapter launcher, Filter<?>[] includeAndExcludeFilters, Collection<String> candidateClassNames) {
-        classNamesWithTests = discoverClassNamesWithTests(launcher, includeAndExcludeFilters, candidateClassNames);
+            LauncherAdapter launcher,
+            Filter<?>[] includeAndExcludeFilters,
+            Collection<String> candidateClassNames,
+            Collection<String> testNgClassNames) {
+        Set<String> otherClassNames = new LinkedHashSet<>(candidateClassNames);
+        otherClassNames.removeAll(testNgClassNames);
+        Filter<?>[] filters = includeAndExcludeFilters;
+        if (!testNgClassNames.isEmpty()) {
+            if (!otherClassNames.isEmpty() && !hasEngineOtherThanTestNg()) {
+                // Nothing but TestNG could run these, and they are not TestNG tests.
+                otherClassNames.clear();
+            }
+            filters = Arrays.copyOf(includeAndExcludeFilters, includeAndExcludeFilters.length + 1);
+            filters[includeAndExcludeFilters.length] =
+                    EngineFilter.excludeEngines(TestNgTestClassDetector.TESTNG_ENGINE_ID);
+        }
+        classNamesWithTests = discoverClassNamesWithTests(launcher, filters, otherClassNames);
+        classNamesWithTests.addAll(testNgClassNames);
     }
 
     @Override
@@ -70,7 +100,7 @@ final class TestPlanScannerFilter implements ScannerFilter {
 
         Set<String> candidates = new LinkedHashSet<>(candidateClassNames);
         if (candidates.isEmpty()) {
-            return emptySet();
+            return new HashSet<>();
         }
 
         List<DiscoverySelector> selectors = new ArrayList<>(candidates.size());
@@ -90,6 +120,28 @@ final class TestPlanScannerFilter implements ScannerFilter {
             collectClassNames(testPlan, root, candidates, discovered);
         }
         return discovered;
+    }
+
+    /**
+     * Finds the engines the same way the launcher does. If TestNG is the only one, leaving it out would make
+     * the launcher warn that all engines were excluded.
+     */
+    private static boolean hasEngineOtherThanTestNg() {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader == null) {
+            classLoader = ClassLoader.getSystemClassLoader();
+        }
+        try {
+            for (TestEngine engine : ServiceLoader.load(TestEngine.class, classLoader)) {
+                if (!TestNgTestClassDetector.TESTNG_ENGINE_ID.equals(engine.getId())) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (ServiceConfigurationError | LinkageError e) {
+            // Leave broken engines to the launcher, like before.
+            return true;
+        }
     }
 
     private static void collectClassNames(

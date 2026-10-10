@@ -70,6 +70,28 @@ class TestNgTestClassDetectorTest {
     }
 
     @Test
+    void concreteTestNgTestClassIsRunnable() {
+        assertTrue(detector.isRunnableTestNgTestClass(ClassWithAnnotatedMethod.class));
+    }
+
+    @Test
+    void abstractTestNgTestClassIsNotRunnable() {
+        assertFalse(detector.isRunnableTestNgTestClass(AbstractClassWithAnnotatedMethod.class));
+    }
+
+    @Test
+    void interfaceWithAnnotatedMethodIsNotRunnable() {
+        assertFalse(detector.isRunnableTestNgTestClass(AnnotatedInterface.class));
+    }
+
+    @Test
+    void noTestNgTestClassIsFoundWhenTestNgIsNotOnTheClassPath() {
+        assertTrue(TestNgTestClassDetector.findTestNgTestClasses(
+                        getClass().getClassLoader(), singletonList(ClassWithAnnotatedMethod.class.getName()))
+                .isEmpty());
+    }
+
+    @Test
     void engineIsNotExcludedWhenTestNgIsNotOnTheClassPath() {
         assertFalse(TestNgTestClassDetector.canExcludeTestNgEngine(
                 getClass().getClassLoader(), singletonList(PlainClass.class.getName())));
@@ -111,6 +133,12 @@ class TestNgTestClassDetectorTest {
     }
 
     static class SubclassOfClassWithAnnotatedMethod extends ClassWithAnnotatedMethod {}
+
+    abstract static class AbstractClassWithAnnotatedMethod {
+
+        @TestNgLikeTest
+        void test() {}
+    }
 
     interface AnnotatedInterface {
 

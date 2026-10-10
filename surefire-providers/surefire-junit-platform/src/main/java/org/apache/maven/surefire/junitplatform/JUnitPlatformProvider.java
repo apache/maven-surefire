@@ -245,7 +245,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
         ScanResult scanResult = parameters.getScanResult();
         List<String> candidateClassNames = scannedClassNames(scanResult);
         excludeTestNgEngineIfPossible(candidateClassNames);
-        TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, allFilters(), candidateClassNames);
+        Set<String> testNgClassNames =
+                TestNgTestClassDetector.findTestNgTestClasses(parameters.getTestClassLoader(), candidateClassNames);
+        TestPlanScannerFilter filter =
+                new TestPlanScannerFilter(launcher, allFilters(), candidateClassNames, testNgClassNames);
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
     }

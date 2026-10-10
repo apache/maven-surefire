@@ -20,7 +20,10 @@ package org.apache.maven.surefire.junitplatform;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 
@@ -30,8 +33,8 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
  * The TestNG engine starts a real TestNG suite whenever it is asked to discover tests, because it uses
  * TestNG's dry-run mode to tell test classes from other classes. It does so for every class selector it
  * receives, even for classes which are obviously not TestNG tests, and a started suite notifies every
- * registered {@code ISuiteListener}. Surefire therefore keeps the engine out of the discovery request
- * altogether when none of the classes it is about to hand over could be a TestNG test.
+ * registered {@code ISuiteListener}. So Surefire leaves the engine out when none of the classes could be a
+ * TestNG test, and it never asks the engine while scanning: TestNG test classes are spotted here instead.
  * <p>
  * The detection mirrors the engine's own {@code IsTestNGTestClass}: a class qualifies when
  * {@code org.testng.annotations.Test} is present on the class hierarchy or directly on one of its methods.
@@ -84,6 +87,35 @@ final class TestNgTestClassDetector {
             }
         }
         return true;
+    }
+
+    /**
+     * Finds the scanned classes TestNG would run.
+     *
+     * @param testClassLoader the class loader of the tests
+     * @param classNames the scanned class names
+     * @return the TestNG test classes, empty if TestNG is not on the test class path
+     */
+    static Set<String> findTestNgTestClasses(ClassLoader testClassLoader, Collection<String> classNames) {
+        Set<String> testNgClassNames = new LinkedHashSet<>();
+        TestNgTestClassDetector detector = tryCreate(testClassLoader);
+        if (detector == null) {
+            return testNgClassNames;
+        }
+        for (String className : classNames) {
+            Class<?> testClass = ReflectionUtils.tryLoadClass(testClassLoader, className);
+            if (testClass != null && detector.isRunnableTestNgTestClass(testClass)) {
+                testNgClassNames.add(className);
+            }
+        }
+        return testNgClassNames;
+    }
+
+    /**
+     * Like {@link #isTestNgTestClass(Class)}, but TestNG skips abstract classes and interfaces, so we do too.
+     */
+    boolean isRunnableTestNgTestClass(Class<?> candidate) {
+        return !Modifier.isAbstract(candidate.getModifiers()) && isTestNgTestClass(candidate);
     }
 
     boolean isTestNgTestClass(Class<?> candidate) {
