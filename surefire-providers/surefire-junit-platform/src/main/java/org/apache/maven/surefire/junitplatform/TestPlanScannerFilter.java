@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.junitplatform;
 
 import org.apache.maven.surefire.api.util.ScannerFilter;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestPlan;
@@ -48,7 +49,22 @@ final class TestPlanScannerFilter implements ScannerFilter {
                 .filters(includeAndExcludeFilters)
                 .build();
 
-        TestPlan testPlan = launcher.discover(discoveryRequest);
+        TestPlan testPlan;
+        try {
+            testPlan = launcher.discover(discoveryRequest);
+        } catch (JUnitException e) {
+            Throwable rootCause = e;
+            while (rootCause.getCause() != null) {
+                rootCause = rootCause.getCause();
+            }
+            if (rootCause == e || rootCause.getMessage() == null) {
+                throw e;
+            }
+            String message = e.getMessage() == null
+                    ? rootCause.getMessage()
+                    : e.getMessage() + ": " + rootCause.getMessage();
+            throw new JUnitException(message, e);
+        }
 
         return testPlan.containsTests();
     }
