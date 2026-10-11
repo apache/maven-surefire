@@ -3178,7 +3178,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
             boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
-            return hasTestDescriptor ? getJpmsArgs() : Collections.emptyList();
+            // Provider dependencies stay on the classpath, so only open Commons when it is a test module.
+            boolean junitPlatformCommonsOnModulePath =
+                    testClasspath.getTestDependencies().containsKey(PROVIDER_DEP_GID + ":junit-platform-commons");
+            return hasTestDescriptor && junitPlatformCommonsOnModulePath ? getJpmsArgs() : Collections.emptyList();
         }
 
         @Override
