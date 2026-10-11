@@ -354,6 +354,16 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * should not be checked into version control. The "XXXXX" is the SHA1 checksum of the entire surefire
      * configuration, so different configurations will have different statistics files, meaning if you change any
      * configuration settings you will re-run once before new statistics data can be established.
+     * <br>
+     * <br>
+     * Since 3.6.0, {@code alphabetical}, {@code reversealphabetical} and {@code random} also sort the test methods
+     * inside each class for JUnit 5/6 tests. A class with {@code @TestMethodOrder} keeps its own order. To keep the
+     * JUnit default method order, add an empty {@code junit.jupiter.testmethod.order.default=} to
+     * {@code configurationParameters} in {@code properties}. It has no effect in {@code junit-platform.properties}
+     * or as a system property.
+     * <br>
+     * <br>
+     * {@code hourly} was removed in 3.6.0. Use {@code random} instead.
      *
      * @since 2.7
      */

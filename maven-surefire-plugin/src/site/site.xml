@@ -28,7 +28,7 @@
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
-      <item name="What's New in 3.6.0" href="whats-new-3-6-0.html"/>
+      <item name="What's New in 3.6.x" href="whats-new-3-6-x.html"/>
       <item name="Plugin Documentation" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <item name="API" href="api.html"/>
