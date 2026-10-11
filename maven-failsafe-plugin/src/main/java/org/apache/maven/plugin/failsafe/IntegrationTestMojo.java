@@ -80,7 +80,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * or {@code -Dmaven.test.skip} to skip both unit and integration tests. The {@code <skipTests>} element
      * is still honored when set explicitly in the plugin {@code <configuration>}.
      *
-     * @since 3.6.0
+     * @since 2.4
      * @deprecated use {@code skipITs} instead
      */
     @Deprecated
@@ -205,7 +205,9 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code forkedProcessTimeoutInSeconds}
      */
+    @Deprecated
     @Parameter(property = "failsafe.parallel.timeout")
     private double parallelTestsTimeoutInSeconds;
 
@@ -219,7 +221,9 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code forkedProcessTimeoutInSeconds}
      */
+    @Deprecated
     @Parameter(property = "failsafe.parallel.forcedTimeout")
     private double parallelTestsTimeoutForcedInSeconds;
 
@@ -324,14 +328,12 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     private int rerunFailingTestsCount;
 
     /**
-     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
-     * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
-     * {@code includes} and {@code excludes}.<br>
-     * This parameter is ignored if the {@code test} parameter is specified (allowing you to run a single test
-     * instead of an entire suite).
+     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations.
+     * The build fails if this is set.
      *
      * @since 2.2
-     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
+     * @deprecated not supported since 3.6.0, use {@code groups}, {@code includes} or a JUnit Platform
+     * {@code @Suite} class
      */
     @Parameter(property = "failsafe.suiteXmlFiles")
     @Deprecated
@@ -603,6 +605,11 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     @SuppressWarnings("deprecation")
     protected boolean isSkipExecution() {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
+    }
+
+    @Override
+    protected File[] getSuiteXmlFiles() {
+        return suiteXmlFiles;
     }
 
     @Override

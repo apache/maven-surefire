@@ -80,6 +80,36 @@ per-provider implementations (`LegacyPojoStackTraceWriter`, `JUnit4StackTraceWri
 by a new `StackTraceProvider` and `DefaultStackTraceWriter` that work uniformly across all test frameworks.
 The new implementation includes configurable frame filtering and truncation.
 
+### Parameter Changes
+
+These apply to both `surefire:test` and `failsafe:integration-test` unless noted otherwise.
+
+| Parameter | What changed | What to do |
+|-----------|--------------|------------|
+| `suiteXmlFiles` | Not supported anymore: the JUnit Platform can't run TestNG suite XML files. 3.6.0 ignores it, 3.6.1 fails the build. | Use `groups`, `includes`/`excludes` or a JUnit Platform `@Suite` class, or stay on 3.5.x. |
+| `skipTests` (Failsafe only) | Deprecated. `-DskipTests` no longer skips integration tests. Setting `<skipTests>` in the Failsafe configuration still works. | Use `-DskipITs`, or `-Dmaven.test.skip` to skip everything. |
+| `perCoreThreadCount` | Deprecated and ignored. `threadCount` is no longer multiplied by the number of CPU cores. | Set `threadCount` to the number of threads you want. |
+| `useUnlimitedThreads` | Deprecated and ignored. | Use `threadCount`. |
+| `threadCountSuites` | Deprecated and ignored. The JUnit Platform has no suite level parallelism. | Use `threadCount`, `threadCountClasses` or `threadCountMethods`. |
+| `parallelOptimized` | Deprecated and ignored. | Remove it. |
+| `parallelTestsTimeoutInSeconds`, `parallelTestsTimeoutForcedInSeconds` | Deprecated and ignored. | Use `forkedProcessTimeoutInSeconds`. |
+| `objectFactory` | Deprecated and ignored. The TestNG engine has no such option. | Remove it. |
+| `parallel` | Only some values still work, see below. | |
+| `encoding` (`failsafe:verify` only) | Removed in 3.5.5. It had been deprecated since 2.20.1 and did nothing. | Remove it. |
+
+Since 3.6.1 you get a warning when one of the ignored parameters is set. A legacy provider added as a plugin
+dependency still uses them (see *Transitional: Using a Legacy Provider with 3.6.0* below).
+
+Which `parallel` values still work:
+
+- **JUnit 4**: `classes`, `methods` and `classesAndMethods` (or `both`). The number of threads comes from
+  `threadCount`, or else the larger of `threadCountClasses` and `threadCountMethods`. `suites`,
+  `suitesAndClasses`, `suitesAndMethods` and `all` aren't supported.
+- **TestNG**: `methods`, `classes`, `tests` and `instances`, with `threadCount`. Before 3.6.1, `tests` and
+  `instances` failed the build.
+- **JUnit 5/6**: `parallel` isn't used. Use the Jupiter `junit.jupiter.execution.parallel.*` settings instead,
+  see [Using JUnit 5 Platform](examples/junit-platform.html).
+
 ## Migration Guide
 
 ### JUnit 5/6 Users
@@ -128,12 +158,12 @@ Ensure your TestNG version is **6.14.3 or later**. Surefire will automatically u
 </dependency>
 ```
 
-TestNG configuration (groups, listeners, suites, etc.) continues to work through Surefire's plugin
+TestNG configuration (groups, listeners, reporters, parallel, etc.) continues to work through Surefire's plugin
 configuration and is mapped to the JUnit Platform infrastructure.
 
-The `suiteXmlFiles` configuration for TestNG is no longer supported. You must now use groups or Junit suite support
-
-
+TestNG suite XML files (`suiteXmlFiles`) are no longer supported, and since 3.6.1 the build fails if they're set.
+Pick your tests with `groups`, `includes`/`excludes` or a JUnit Platform `@Suite` class instead.
+See [Parameter Changes](#Parameter_Changes) for the other parameters that changed.
 
 ### Staying on Surefire 3.5.x
 
@@ -166,7 +196,8 @@ As a transitional measure, you can add a legacy provider from the 3.5.x line as 
 </plugin>
 ```
 
-Note: this backward compatibility may not be maintained in future releases.
+Note: this backward compatibility may not be maintained in future releases. TestNG suite XML files don't work
+this way either.
 
 ## Further Reading
 

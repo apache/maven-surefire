@@ -37,6 +37,20 @@ Parallel Test Execution
 
 Basically, there are two ways in ${project.artifactId} to achieve parallel test execution.
 
+**Since 3.6.0** all tests run on the JUnit Platform, and only some of the options below still work:
+
+- JUnit 4: `parallel` set to `classes`, `methods` or `classesAndMethods`, with `threadCount` (or else the larger
+  of `threadCountClasses` and `threadCountMethods`).
+- TestNG: `parallel` set to `methods`, `classes`, `tests` or `instances`, with `threadCount`.
+- JUnit 5/6: use the Jupiter `junit.jupiter.execution.parallel.*` settings, see
+  [Using JUnit 5 Platform](./junit-platform.html).
+
+Everything else is ignored: the suite values of `parallel` (`suites`, `suitesAndClasses`, `suitesAndMethods`, `all`) and
+the deprecated `perCoreThreadCount`, `useUnlimitedThreads`, `threadCountSuites`, `parallelOptimized`,
+`parallelTestsTimeoutInSeconds` and `parallelTestsTimeoutForcedInSeconds`. The rest of this section describes how
+the JUnit 4.7 provider of 3.5.x used them. See [What's New in 3.6.0](../whats-new-3-6-0.html#Parameter_Changes)
+for details.
+
 The most obvious one is by using the `parallel` parameter. The possible values depend on the test provider used. For JUnit 4.7 and onwards, this may be `methods`, `classes`, `both`, `suites`, `suitesAndClasses`, `suitesAndMethods`, `classesAndMethods` or `all`. As a prerequisite in JUnit tests, the JUnit runner should extend `org.junit.runners.ParentRunner`. If no runner is specified through the annotation `@org.junit.runner.RunWith`, the prerequisite is accomplished.
 
 As of ${project.artifactId}:2.16, the value "`both`" is deprecated but it still can be used and behaves same as `classesAndMethods`.
