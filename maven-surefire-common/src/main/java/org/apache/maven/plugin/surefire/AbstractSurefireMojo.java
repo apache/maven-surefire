@@ -672,7 +672,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * are per cpu core.
      *
      * @since 2.5
+     * @deprecated not used on the JUnit Platform since 3.6.0, {@code threadCount} is no longer multiplied by the
+     * number of CPU cores
      */
+    @Deprecated
     @Parameter(property = "perCoreThreadCount", defaultValue = "true")
     private boolean perCoreThreadCount;
 
@@ -682,14 +685,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * {@code perCoreThreadCount} and {@code threadCount}. Defaults to "false".
      *
      * @since 2.5
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code threadCount}
      */
+    @Deprecated
     @Parameter(property = "useUnlimitedThreads", defaultValue = "false")
     private boolean useUnlimitedThreads;
 
     /**
      * (TestNG provider) When you use the parameter {@code parallel}, TestNG will try to run all your test methods
      * in separate threads, except for methods that depend on each other, which will be run in the same thread in order
-     * to respect their order of execution.  Supports two values: {@code classes} or {@code methods}.
+     * to respect their order of execution. Supports {@code methods}, {@code classes}, {@code tests} and
+     * {@code instances}.
      * <br>
      * (JUnit 4.7 provider) Supports values {@code classes}, {@code methods}, {@code both} to run
      * in separate threads been controlled by {@code threadCount}.
@@ -715,7 +721,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * True by default.
      *
      * @since 2.17
+     * @deprecated not used on the JUnit Platform since 3.6.0
      */
+    @Deprecated
     @Parameter(property = "parallelOptimized", defaultValue = "true")
     private boolean parallelOptimized;
 
@@ -734,7 +742,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * The default value <b>0</b> behaves same as unspecified one.
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, it has no suite level parallelism
      */
+    @Deprecated
     @Parameter(property = "threadCountSuites", defaultValue = "0")
     private int threadCountSuites;
 
@@ -851,7 +861,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * (TestNG only) Define the factory class used to create all test instances.
      *
      * @since 2.5
+     * @deprecated not used on the JUnit Platform since 3.6.0, the TestNG engine has no such option
      */
+    @Deprecated
     @Parameter(property = "objectFactory")
     private String objectFactory;
 
@@ -1192,6 +1204,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     boolean verifyParameters() throws MojoFailureException, MojoExecutionException {
         setProperties(new SurefireProperties(getProperties()));
+
+        ensureNoSuiteXmlFiles();
 
         String jvmToUse = getJvm();
         if (toolchain != null) {
@@ -1621,7 +1635,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
-    void convertJunitCoreParameters() throws MojoFailureException {
+    void convertJunitCoreParameters() throws MojoFailureException, MojoExecutionException {
         checkThreadCountEntity(getThreadCountSuites(), "suites");
         checkThreadCountEntity(getThreadCountClasses(), "classes");
         checkThreadCountEntity(getThreadCountMethods(), "methods");
@@ -1717,7 +1731,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         logDebugOrCliShowErrors(message);
     }
 
-    private void checkNonForkedThreads(String parallel) throws MojoFailureException {
+    private void checkNonForkedThreads(String parallel) throws MojoFailureException, MojoExecutionException {
         if ("suites".equals(parallel)) {
             if (!(getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountSuites() > 0)) {
                 throw new MojoFailureException(
@@ -1820,9 +1834,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         + "and threadCount > threadCountSuites + threadCountClasses) "
                         + "for parallel='all'");
             }
-        } else {
+        } else if (!isTestNgOnlyParallelMode(parallel)) {
             throw new MojoFailureException("Illegal parallel='" + parallel + "'");
         }
+    }
+
+    /**
+     * {@code tests} and {@code instances} only exist in TestNG, so we only accept them when TestNG is on the
+     * classpath.
+     */
+    private boolean isTestNgOnlyParallelMode(String parallel) throws MojoExecutionException {
+        return ("tests".equals(parallel) || "instances".equals(parallel)) && getTestNgArtifact() != null;
     }
 
     private boolean onlyThreadCount() {
@@ -3017,6 +3039,56 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     protected void warnIfIllegalFailOnFlakeCount() throws MojoFailureException {}
 
+    /**
+     * TestNG suite XML files from the configuration.
+     * We only read them to fail the build, they're not supported anymore.
+     */
+    protected File[] getSuiteXmlFiles() {
+        return null;
+    }
+
+    void ensureNoSuiteXmlFiles() throws MojoFailureException {
+        File[] suiteXmlFiles = getSuiteXmlFiles();
+        if (suiteXmlFiles != null && suiteXmlFiles.length != 0) {
+            throw new MojoFailureException("Parameter \"suiteXmlFiles\" is not supported since 3.6.0: "
+                    + "TestNG tests now run on the JUnit Platform, which can't read TestNG suite XML files. "
+                    + "Remove it and select tests with \"groups\", \"excludedGroups\", \"includes\" or \"excludes\" "
+                    + "(or a JUnit Platform @Suite class), or keep using maven-" + getPluginName()
+                    + "-plugin 3.5.x.");
+        }
+    }
+
+    /**
+     * Warns when a parameter the JUnit Platform doesn't use is set.
+     * Legacy providers still use them, so this only runs on the JUnit Platform path.
+     */
+    void warnIfIgnoredByJUnitPlatform() {
+        List<String> ignored = new ArrayList<>();
+        if (getUseUnlimitedThreads()) {
+            ignored.add("useUnlimitedThreads");
+        }
+        if (getThreadCountSuites() > 0) {
+            ignored.add("threadCountSuites");
+        }
+        if (!isParallelOptimized()) {
+            ignored.add("parallelOptimized");
+        }
+        if (getParallelTestsTimeoutInSeconds() > 0) {
+            ignored.add("parallelTestsTimeoutInSeconds");
+        }
+        if (getParallelTestsTimeoutForcedInSeconds() > 0) {
+            ignored.add("parallelTestsTimeoutForcedInSeconds");
+        }
+        if (getObjectFactory() != null) {
+            ignored.add("objectFactory");
+        }
+        if (!ignored.isEmpty()) {
+            getConsoleLogger()
+                    .warning("These parameters are ignored when tests run on the JUnit Platform and are deprecated: "
+                            + String.join(", ", ignored) + ".");
+        }
+    }
+
     private void printDefaultSeedIfNecessary() {
         if (getRunOrder().equals(RunOrder.RANDOM.name())) {
             if (getRunOrderRandomSeed() == null) {
@@ -3165,6 +3237,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 convertJunitEngineParameters();
                 convertGroupParameters();
                 convertJunitCoreParameters();
+                warnIfIgnoredByJUnitPlatform();
             } catch (MojoFailureException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }

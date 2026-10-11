@@ -1917,6 +1917,93 @@ public class AbstractSurefireMojoTest {
                 .isEqualTo("Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'.");
     }
 
+    @Test
+    public void shouldFailWhenSuiteXmlFilesAreSet() {
+        Mojo mojo = new Mojo() {
+            @Override
+            protected File[] getSuiteXmlFiles() {
+                return new File[] {new File("testng.xml")};
+            }
+
+            @Override
+            protected String getPluginName() {
+                return "surefire";
+            }
+        };
+
+        MojoFailureException m = assertThrows(MojoFailureException.class, mojo::verifyParameters);
+        assertThat(m.getMessage())
+                .startsWith("Parameter \"suiteXmlFiles\" is not supported since 3.6.0")
+                .endsWith("or keep using maven-surefire-plugin 3.5.x.");
+    }
+
+    @Test
+    public void shouldAcceptEmptySuiteXmlFiles() throws Exception {
+        Mojo mojo = new Mojo() {
+            @Override
+            protected File[] getSuiteXmlFiles() {
+                return new File[0];
+            }
+        };
+
+        mojo.ensureNoSuiteXmlFiles();
+    }
+
+    @Test
+    public void shouldAcceptTestNgOnlyParallelModesWithTestNg() throws Exception {
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+        mojo.setTestNGArtifactName("org.testng:testng");
+        setProjectDepedenciesToMojo(new DefaultArtifact(
+                "org.testng", "testng", createFromVersion("7.4.0"), "test", "jar", null, mock(ArtifactHandler.class)));
+
+        invokeMethod(mojo, "checkNonForkedThreads", "tests");
+        invokeMethod(mojo, "checkNonForkedThreads", "instances");
+    }
+
+    @Test
+    public void shouldRejectTestNgOnlyParallelModesWithoutTestNg() {
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+        mojo.setTestNGArtifactName("org.testng:testng");
+
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "checkNonForkedThreads", "tests"));
+        assertThat(e.getCause()).isInstanceOf(MojoFailureException.class).hasMessage("Illegal parallel='tests'");
+    }
+
+    @Test
+    public void shouldWarnAboutParametersIgnoredByJUnitPlatform() {
+        Logger logger = mock(Logger.class);
+        Mojo mojo = new Mojo();
+        mojo.setLogger(logger);
+        mojo.setUseUnlimitedThreads(true);
+        mojo.setThreadCountSuites(2);
+        mojo.setParallelOptimized(false);
+        mojo.setObjectFactory("org.example.MyObjectFactory");
+
+        mojo.warnIfIgnoredByJUnitPlatform();
+
+        verify(logger)
+                .warn("These parameters are ignored when tests run on the JUnit Platform and are deprecated: "
+                        + "useUnlimitedThreads, threadCountSuites, parallelOptimized, objectFactory.");
+    }
+
+    @Test
+    public void shouldNotWarnWhenIgnoredParametersKeepTheirDefaults() {
+        Logger logger = mock(Logger.class);
+        Mojo mojo = new Mojo();
+        mojo.setLogger(logger);
+        mojo.setParallelOptimized(true);
+
+        mojo.warnIfIgnoredByJUnitPlatform();
+
+        verify(logger, times(0)).warn(anyString());
+    }
+
     private void setProjectDepedenciesToMojo(Artifact... deps) {
         for (Artifact dep : deps) {
             mojo.getProjectArtifactMap().put(dep.getGroupId() + ":" + dep.getArtifactId(), dep);

@@ -160,7 +160,9 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code forkedProcessTimeoutInSeconds}
      */
+    @Deprecated
     @Parameter(property = "surefire.parallel.timeout")
     private double parallelTestsTimeoutInSeconds;
 
@@ -174,7 +176,9 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code forkedProcessTimeoutInSeconds}
      */
+    @Deprecated
     @Parameter(property = "surefire.parallel.forcedTimeout")
     private double parallelTestsTimeoutForcedInSeconds;
 
@@ -287,14 +291,12 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     private int failOnFlakeCount;
 
     /**
-     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
-     * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
-     * {@code includes} and {@code excludes}.<br>
-     * This parameter is ignored if the {@code test} parameter is specified (allowing you to run a single test
-     * instead of an entire suite).
+     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations.
+     * The build fails if this is set.
      *
      * @since 2.2
-     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
+     * @deprecated not supported since 3.6.0, use {@code groups}, {@code includes} or a JUnit Platform
+     * {@code @Suite} class
      */
     @Deprecated
     @Parameter(property = "surefire.suiteXmlFiles")
@@ -897,6 +899,11 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
         if (failOnFlakeCount > 0 && rerunFailingTestsCount < 1) {
             throw new MojoFailureException("\"failOnFlakeCount\" requires rerunFailingTestsCount to be at least 1.");
         }
+    }
+
+    @Override
+    protected File[] getSuiteXmlFiles() {
+        return suiteXmlFiles;
     }
 
     @Override
