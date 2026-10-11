@@ -48,7 +48,7 @@ Basically, there are two ways in ${project.artifactId} to achieve parallel test 
 Everything else is ignored: the suite values of `parallel` (`suites`, `suitesAndClasses`, `suitesAndMethods`, `all`) and
 the deprecated `perCoreThreadCount`, `useUnlimitedThreads`, `threadCountSuites`, `parallelOptimized`,
 `parallelTestsTimeoutInSeconds` and `parallelTestsTimeoutForcedInSeconds`. The rest of this section describes how
-the JUnit 4.7 provider of 3.5.x used them. See [What's New in 3.6.0](../whats-new-3-6-0.html#Parameter_Changes)
+the JUnit 4.7 provider of 3.5.x used them. See [What's New in 3.6.x](../whats-new-3-6-x.html#Parameter_Changes)
 for details.
 
 The most obvious one is by using the `parallel` parameter. The possible values depend on the test provider used. For JUnit 4.7 and onwards, this may be `methods`, `classes`, `both`, `suites`, `suitesAndClasses`, `suitesAndMethods`, `classesAndMethods` or `all`. As a prerequisite in JUnit tests, the JUnit runner should extend `org.junit.runners.ParentRunner`. If no runner is specified through the annotation `@org.junit.runner.RunWith`, the prerequisite is accomplished.

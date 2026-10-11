@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# What's New in Surefire 3.6.0
+# What's New in Surefire 3.6.x
 
 ## Overview
 
@@ -95,6 +95,7 @@ These apply to both `surefire:test` and `failsafe:integration-test` unless noted
 | `parallelTestsTimeoutInSeconds`, `parallelTestsTimeoutForcedInSeconds` | Deprecated and ignored. | Use `forkedProcessTimeoutInSeconds`. |
 | `objectFactory` | Deprecated and ignored. The TestNG engine has no such option. | Remove it. |
 | `parallel` | Only some values still work, see below. | |
+| `runOrder` | Now also sorts JUnit 5/6 test methods. `hourly` is gone. | See [Run Order](#Run_Order) below. |
 | `encoding` (`failsafe:verify` only) | Removed in 3.5.5. It had been deprecated since 2.20.1 and did nothing. | Remove it. |
 
 Since 3.6.1 you get a warning when one of the ignored parameters is set. A legacy provider added as a plugin
@@ -109,6 +110,45 @@ Which `parallel` values still work:
   `instances` failed the build.
 - **JUnit 5/6**: `parallel` isn't used. Use the Jupiter `junit.jupiter.execution.parallel.*` settings instead,
   see [Using JUnit 5 Platform](examples/junit-platform.html).
+
+### Run Order
+
+`alphabetical`, `reversealphabetical` and `random` now sort the test methods inside each class too, not only the
+classes. This only applies to JUnit 5/6 tests. JUnit 4 and TestNG methods run in the same order as before.
+
+| `runOrder` | Methods run |
+|------------|-------------|
+| `alphabetical` | by name |
+| `reversealphabetical` | by name, reversed |
+| `random` | in random order, using `runOrderRandomSeed` |
+
+A test that only passed because its methods ran in a certain order can now fail. This often happens with
+`@TestInstance(PER_CLASS)` classes that share state between methods.
+
+To keep the JUnit default method order, either:
+
+- add `@TestMethodOrder` to the class. Surefire never overrides it. If your methods depend on each other, this is
+  the best fix: use `@TestMethodOrder(MethodOrderer.OrderAnnotation.class)` and put `@Order` on each method.
+- or clear `junit.jupiter.testmethod.order.default`, the parameter Surefire sets, in `configurationParameters`.
+  Classes are still sorted by `runOrder`.
+
+```xml
+<configuration>
+    <runOrder>alphabetical</runOrder>
+    <properties>
+        <configurationParameters>
+            junit.jupiter.testmethod.order.default=
+        </configurationParameters>
+    </properties>
+</configuration>
+```
+
+With JUnit 6 you can also set it to `org.junit.jupiter.api.MethodOrderer$Default`. Setting it in
+`junit-platform.properties` or as a system property doesn't work, the value from Surefire wins.
+
+`hourly` was removed, and the build now fails with `There's no RunOrder with the name hourly`. It ran the tests
+alphabetically during even hours and in reverse during odd hours. Use `random` instead: the seed is printed in the
+build log, so you can replay a failing order with `runOrderRandomSeed`.
 
 ## Migration Guide
 
