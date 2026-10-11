@@ -430,6 +430,14 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.apache.tooling</groupId>
+          <artifactId>atr-maven-plugin</artifactId>
+          <configuration>
+            <!-- override - the default is project.artifactId -->
+            <project>maven-surefire</project>
+          </configuration>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
