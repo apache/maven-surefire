@@ -71,8 +71,8 @@ public final class MavenLauncher {
         this.resourceName = resourceName;
         this.suffix = suffix != null ? suffix : "";
         this.cli = cli == null ? null : cli.clone();
-        // by default use embedded mode
-        this.forkJvm = false;
+        // Use forked mode for Maven 4+ (Embedded3xLauncher only supports Maven 3.x)
+        this.forkJvm = isMaven4Plus();
         resetGoals();
         resetCliOptions();
     }
@@ -396,5 +396,19 @@ public final class MavenLauncher {
 
     private static Verifier createVerifier(String basedir, String[] defaultCliOptions) throws VerificationException {
         return defaultCliOptions == null ? new Verifier(basedir) : new Verifier(basedir, defaultCliOptions);
+    }
+
+    private static boolean isMaven4Plus() {
+        String mavenHome = System.getProperty("maven.home");
+        if (mavenHome == null) {
+            return false;
+        }
+        File mavenLib = new File(mavenHome, "lib");
+        if (!mavenLib.isDirectory()) {
+            return false;
+        }
+        // Maven 4 ships maven-api-core; Maven 3 does not
+        File[] files = mavenLib.listFiles((dir, name) -> name.startsWith("maven-api-core-") && name.endsWith(".jar"));
+        return files != null && files.length > 0;
     }
 }
