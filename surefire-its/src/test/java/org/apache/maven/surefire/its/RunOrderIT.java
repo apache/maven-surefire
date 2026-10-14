@@ -89,6 +89,16 @@ public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
     }
 
     @Test
+    public void testBalancedWithMultipleForksWithoutParallel() {
+        executeBalancedWithForkCount(2);
+    }
+
+    @Test
+    public void testBalancedWithoutForkingClampsDistributionWidth() {
+        executeBalancedWithForkCount(0);
+    }
+
+    @Test
     public void testNonExistingRunOrderJUnit4() {
         unpack().forkCount(1)
                 .reuseForks(reuseForks())
@@ -152,6 +162,14 @@ public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
                 .forkCount(1)
                 .reuseForks(reuseForks())
                 .runOrder(runOrder)
+                .executeTest()
+                .verifyErrorFree(3);
+    }
+
+    private OutputValidator executeBalancedWithForkCount(int forkCount) {
+        return unpack().forkCount(forkCount)
+                .reuseForks(reuseForks())
+                .runOrder("balanced")
                 .executeTest()
                 .verifyErrorFree(3);
     }
