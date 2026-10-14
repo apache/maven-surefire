@@ -52,7 +52,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>7.4.0</version>
+            <version>7.5.1</version>
             <exclusions>
                 <exclusion>
                     <!-- TestNG only, no JUnit 4 -->
