@@ -34,33 +34,17 @@ version from the [download page](download.html).
 
 ## What's New
 
-### 3.6.0-M2
+### 3.6.0
 
-New features and enhancements:
+Surefire 3.6.0 introduces a unified [JUnit Platform provider](maven-surefire-plugin/whats-new-3-6-x.html):
+JUnit 5 runs natively, while JUnit 4 and TestNG run through the same provider. The release also
+adds support for running JUnit 5 tests in parallel and improves the XML reports.
 
-- A new [extension point](https://github.com/apache/maven-surefire/pull/3372) runs diagnosis tools
-  (such as a thread dump collector) automatically when a forked JVM times out.
-- [Random test order is now reproducible](https://issues.apache.org/jira/browse/SUREFIRE-859) — a given
-  seed produces the same class and method ordering across machines.
-- [`-DskipTests` no longer skips Failsafe](https://issues.apache.org/jira/browse/SUREFIRE-823), so unit and
-  integration tests can be controlled independently.
-- For better performance, Stack traces now use the [`StackWalker` API](https://github.com/apache/maven-surefire/pull/3374) on Java 9+.
-
-Bug fixes: see the [3.6.0-M2 milestone](https://github.com/apache/maven-surefire/milestone/81)
-for the full list of resolved issues.
-
-### 3.6.0-M1
-
-The big one: every test framework now runs through a single, unified
-[JUnit Platform provider](maven-surefire-plugin/whats-new-3-6-x.html). JUnit 5 runs natively,
-and JUnit 4 and TestNG run through it too — giving you more consistent behaviour and far less
-to configure. JUnit 5 tests can also run in parallel, and the JUnit 5 XML reports are tidier.
-
-If you're upgrading, note that 3.6.0-M1 raises the minimum versions (JUnit 4.12+, TestNG
-6.14.3+) and drops the old per-framework providers. The
-[What's New in 3.6.x](maven-surefire-plugin/whats-new-3-6-x.html) guide walks you through it,
-and the [3.6.0-M1 release notes](https://github.com/apache/maven-surefire/releases/tag/surefire-3.6.0-M1)
-list everything.
+Other highlights include an extension point for diagnosing forked JVM timeouts, reproducible random
+test ordering, independent control of unit and integration test execution, and improved stack traces
+on Java 9 and later. See the [3.6.0 release notes](https://github.com/apache/maven-surefire/releases/tag/surefire-3.6.0)
+for the complete list, and the [What's New in 3.6.x](maven-surefire-plugin/whats-new-3-6-x.html)
+guide for migration details.
 
 ### 3.5.6
 
