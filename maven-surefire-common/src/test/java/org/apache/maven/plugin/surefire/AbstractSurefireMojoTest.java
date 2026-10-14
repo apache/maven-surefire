@@ -1950,6 +1950,14 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void shouldNotValidateGroupsWhenNoTestClassesExist() throws Exception {
+        mojo.setTestClassesDirectory(tempFolder.toFile());
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
+    }
+
+    @Test
     public void shouldAcceptTestNgOnlyParallelModesWithTestNg() throws Exception {
         Artifact projectArtifact = mojo.getMojoArtifact();
         MavenProject project = mock(MavenProject.class);
