@@ -19,6 +19,9 @@ name: Verify
 
 on:
   push:
+    branches:
+      - master
+      - surefire-3.*
   pull_request:
 
 jobs:
