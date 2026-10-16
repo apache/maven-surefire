@@ -143,8 +143,13 @@ To keep the JUnit default method order, either:
 </configuration>
 ```
 
-With JUnit 6 you can also set it to `org.junit.jupiter.api.MethodOrderer$Default`. Setting it in
-`junit-platform.properties` or as a system property doesn't work, the value from Surefire wins.
+With JUnit 6 you can also set it to `org.junit.jupiter.api.MethodOrderer$Default`.
+
+Since 3.6.1, `runOrder` only sets the JUnit default class and method orderers that nobody else configured. An
+orderer set in `configurationParameters`, as a system property or in `junit-platform.properties` is kept. This
+includes one shipped by a library, like the class orderer Quarkus uses to group its tests by profile. In 3.6.0 the
+orderers from `runOrder` always won
+([#3529](https://github.com/apache/maven-surefire/issues/3529)).
 
 `hourly` was removed, and the build now fails with `There's no RunOrder with the name hourly`. It ran the tests
 alphabetically during even hours and in reverse during odd hours. Use `random` instead: the seed is printed in the
