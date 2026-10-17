@@ -451,8 +451,13 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(providerInfo.getProviderName())
                 .isEqualTo("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
         List<String[]> args = providerInfo.getJpmsArguments(providerRequirements);
-        assertThat(args)
-                .isNotEmpty()
+        assertThat(args).isEmpty();
+
+        Artifact junitPlatformCommons = new DefaultArtifact(
+                "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "jar", "", handler);
+        providerInfo =
+                mojo.newJUnitPlatformProviderInfo(new TestClassPath(singleton(junitPlatformCommons), null, null, null));
+        assertThat(providerInfo.getJpmsArguments(providerRequirements))
                 .hasSize(2)
                 .contains(
                         new String[] {
@@ -551,8 +556,12 @@ public class AbstractSurefireMojoJava7PlusTest {
         }
 
         ProviderInfo newJUnitPlatformProviderInfo() {
+            return newJUnitPlatformProviderInfo(new TestClassPath(java.util.Collections.emptyList(), null, null, null));
+        }
+
+        ProviderInfo newJUnitPlatformProviderInfo(TestClassPath testClasspath) {
             return new JUnitPlatformProviderInfo(
-                    null, null, null, null, null, null, null, null, null, null, null, null);
+                    null, null, testClasspath, null, null, null, null, null, null, null, null, null);
         }
 
         @Override
