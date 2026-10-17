@@ -53,6 +53,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.junit.jupiter.api.parallel.Resources;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
@@ -88,7 +90,9 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUD
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT4_ONLY_DETECTED;
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
+import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CLASS_ORDER_DEFAULT;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CONFIGURATION_PARAMETERS;
+import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.METHOD_ORDER_DEFAULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -141,6 +145,52 @@ public class JUnitPlatformProviderTest {
 
         assertThat(provider.getConfigurationParameters())
                 .containsEntry("junit.jupiter.execution.order.random.seed", "5678");
+    }
+
+    @Test
+    public void runOrderShouldSetBothOrderersWhenNoneIsConfigured() {
+        ProviderParameters providerParameters = providerParametersMock();
+        when(providerParameters.getProviderProperties()).thenReturn(singletonMap("runOrder", "alphabetical"));
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+
+        assertThat(provider.getConfigurationParameters())
+                .containsEntry(METHOD_ORDER_DEFAULT, "org.junit.jupiter.api.MethodOrderer$MethodName")
+                .containsEntry(CLASS_ORDER_DEFAULT, "org.junit.jupiter.api.ClassOrderer$ClassName");
+    }
+
+    @Test
+    public void runOrderShouldKeepClassOrdererFromConfigurationParameters() {
+        Map<String, String> providerProperties = new HashMap<>();
+        providerProperties.put("runOrder", "alphabetical");
+        providerProperties.put(CONFIGURATION_PARAMETERS, CLASS_ORDER_DEFAULT + "=com.acme.MyOrderer");
+        ProviderParameters providerParameters = providerParametersMock();
+        when(providerParameters.getProviderProperties()).thenReturn(providerProperties);
+
+        JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+
+        assertThat(provider.getConfigurationParameters())
+                .containsEntry(CLASS_ORDER_DEFAULT, "com.acme.MyOrderer")
+                .containsEntry(METHOD_ORDER_DEFAULT, "org.junit.jupiter.api.MethodOrderer$MethodName");
+    }
+
+    @Test
+    @ResourceLock(Resources.SYSTEM_PROPERTIES)
+    public void runOrderShouldKeepClassOrdererFromSystemProperty() {
+        ProviderParameters providerParameters = providerParametersMock();
+        when(providerParameters.getProviderProperties()).thenReturn(singletonMap("runOrder", "alphabetical"));
+
+        System.setProperty(CLASS_ORDER_DEFAULT, "com.acme.MyOrderer");
+        try {
+            JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
+
+            // left out, so JUnit uses the system property
+            assertThat(provider.getConfigurationParameters())
+                    .doesNotContainKey(CLASS_ORDER_DEFAULT)
+                    .containsEntry(METHOD_ORDER_DEFAULT, "org.junit.jupiter.api.MethodOrderer$MethodName");
+        } finally {
+            System.clearProperty(CLASS_ORDER_DEFAULT);
+        }
     }
 
     @Test

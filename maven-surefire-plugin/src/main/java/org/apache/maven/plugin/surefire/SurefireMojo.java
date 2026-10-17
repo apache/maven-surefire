@@ -323,8 +323,9 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * Since 3.6.0, {@code alphabetical}, {@code reversealphabetical} and {@code random} also sort the test methods
      * inside each class for JUnit 5/6 tests. A class with {@code @TestMethodOrder} keeps its own order. To keep the
      * JUnit default method order, add an empty {@code junit.jupiter.testmethod.order.default=} to
-     * {@code configurationParameters} in {@code properties}. It has no effect in {@code junit-platform.properties}
-     * or as a system property.
+     * {@code configurationParameters} in {@code properties}. Since 3.6.1, Surefire keeps a JUnit class or method
+     * orderer that is already set in {@code configurationParameters}, as a system property or in
+     * {@code junit-platform.properties} (Quarkus ships one there).
      * <br>
      * <br>
      * {@code hourly} was removed in 3.6.0. Use {@code random} instead.

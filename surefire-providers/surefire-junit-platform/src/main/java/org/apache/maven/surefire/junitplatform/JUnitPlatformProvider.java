@@ -56,6 +56,7 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
@@ -109,6 +110,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
 
+    static final String METHOD_ORDER_DEFAULT = "junit.jupiter.testmethod.order.default";
+
+    static final String CLASS_ORDER_DEFAULT = "junit.jupiter.testclass.order.default";
+
     private static final String VINTAGE_ENGINE_ID = "junit-vintage";
 
     private final ProviderParameters parameters;
@@ -133,11 +138,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.parameters = parameters;
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
-        setupRunOrder();
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
                 .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
         getConfigurationParameters().putAll(newConfigurationParameters());
+        setupRunOrder();
 
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
@@ -176,29 +181,35 @@ public class JUnitPlatformProvider extends AbstractProvider {
         String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
-                getConfigurationParameters()
-                        .put("junit.jupiter.testmethod.order.default", "org.junit.jupiter.api.MethodOrderer$Random");
-                getConfigurationParameters()
-                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$Random");
+                setDefaultOrderers(
+                        "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
-                        .ifPresent(seed -> getConfigurationParameters().put(JUNIT_RANDOM_SEED, seed));
+                        .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
             } else if (runOrder.equals("alphabetical")) {
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testmethod.order.default",
-                                "org.junit.jupiter.api.MethodOrderer$MethodName");
-                getConfigurationParameters()
-                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$ClassName");
+                setDefaultOrderers(
+                        "org.junit.jupiter.api.MethodOrderer$MethodName",
+                        "org.junit.jupiter.api.ClassOrderer$ClassName");
             } else if (runOrder.equals("reversealphabetical")) {
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testmethod.order.default",
-                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder");
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testclass.order.default",
-                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
+                setDefaultOrderers(
+                        "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder",
+                        "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
             }
+        }
+    }
+
+    /**
+     * Sets the JUnit orderers for runOrder, unless one is already set (Quarkus sets its own, for example).
+     */
+    private void setDefaultOrderers(String methodOrderer, String classOrderer) {
+        // what JUnit finds by itself: system properties and junit-platform.properties
+        ConfigurationParameters configuredElsewhere = request().build().getConfigurationParameters();
+        setOrdererIfMissing(METHOD_ORDER_DEFAULT, methodOrderer, configuredElsewhere);
+        setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+    }
+
+    private void setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {
+        if (!configuredElsewhere.get(key).isPresent()) {
+            getConfigurationParameters().putIfAbsent(key, orderer);
         }
     }
 
