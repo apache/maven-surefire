@@ -57,11 +57,13 @@ import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.data.Index.atIndex;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -156,6 +158,14 @@ public class AbstractSurefireMojoJava7PlusTest {
         mod.put("modular.jar", null);
         mod.put("classes", null);
         when(res.getModulepathElements()).thenReturn(mod);
+        Map<String, JavaModuleDescriptor> pathElements = new HashMap<>();
+        pathElements.put(
+                "modular.jar",
+                JavaModuleDescriptor.newModule("modular")
+                        .exports("modular.internal", singleton("modular.friend"))
+                        .build());
+        pathElements.put("classes", descriptor);
+        when(res.getPathElements()).thenReturn(pathElements);
         when(res.getPathExceptions()).thenReturn(singletonMap("java 1.8", new Exception("low version")));
         when(locationManager.resolvePaths(eq(req))).thenReturn(res);
 
@@ -217,6 +227,8 @@ public class AbstractSurefireMojoJava7PlusTest {
         ProviderInfo providerInfo = mock(ProviderInfo.class);
         when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
         when(providerInfo.getProviderClasspath()).thenReturn(providerClasspath);
+        // providers may hand back an immutable list
+        when(providerInfo.getJpmsArguments(any(ProviderRequirements.class))).thenReturn(emptyList());
 
         try (MockedStatic<ResolvePathsRequest> reqMock = mockStatic(ResolvePathsRequest.class)) {
             reqMock.when(() -> ResolvePathsRequest.ofStrings(
@@ -275,6 +287,10 @@ public class AbstractSurefireMojoJava7PlusTest {
             assertThat(mcc.getModularClasspath().getPatchFile().getAbsolutePath())
                     .isEqualTo("test-classes");
             assertThat(mcc.getModularClasspath().getModulePath()).containsExactly("modular.jar", "classes");
+            assertThat(conf.getJpmsArguments())
+                    .containsExactly(
+                            new String[] {"--add-exports", "modular/modular.internal=ALL-UNNAMED"},
+                            new String[] {"--add-opens", "abc/org.apache=modular"});
         }
     }
 

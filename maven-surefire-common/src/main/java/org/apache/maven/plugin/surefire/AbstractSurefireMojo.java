@@ -2106,6 +2106,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         final ProviderRequirements providerRequirements;
         final Classpath testModulepath;
+        final List<String[]> modulePathArgs;
         if (isMainDescriptor) {
             providerRequirements = new ProviderRequirements(true, true, false);
             ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
@@ -2126,10 +2127,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
             }
+
+            modulePathArgs = ModulePathJpmsArguments.of(result, javaModuleDescriptor.name(), packages);
         } else {
             providerRequirements = new ProviderRequirements(true, false, true);
             testModulepath = testClasspath;
             testClasspath = emptyClasspath();
+            modulePathArgs = emptyList();
         }
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
@@ -2171,7 +2175,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         getConsoleLogger().debug(inProcClasspath.getCompactLogMessage("in-process(compact) classpath:"));
 
         ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum(getEnableProcessChecker());
-        List<String[]> jpmsArgs = providerInfo.getJpmsArguments(providerRequirements);
+        List<String[]> jpmsArgs = new ArrayList<>(providerInfo.getJpmsArguments(providerRequirements));
+        jpmsArgs.addAll(modulePathArgs);
         return new StartupConfiguration(
                 providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
     }
