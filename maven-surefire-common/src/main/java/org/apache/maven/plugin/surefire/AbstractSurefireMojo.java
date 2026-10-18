@@ -2082,10 +2082,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerClasspath = classpathCache.setCachedClasspath(providerName, providerArtifacts);
         }
 
-        final ProviderRequirements providerRequirements;
+        final Set<String> testModuleNames;
         final Classpath testModulepath;
         if (isMainDescriptor) {
-            providerRequirements = new ProviderRequirements(true, true, false);
             ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
                     .setIncludeAllProviders(true)
                     .setJdkHome(javaHome)
@@ -2100,15 +2099,24 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             testClasspath = new Classpath(result.getClasspathElements());
             testModulepath = new Classpath(result.getModulepathElements().keySet());
+            testModuleNames = getModuleNamesOnModulepath(result);
 
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
             }
         } else {
-            providerRequirements = new ProviderRequirements(true, false, true);
             testModulepath = testClasspath;
             testClasspath = emptyClasspath();
+
+            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testModulepath.getClassPath())
+                    .setIncludeAllProviders(true)
+                    .setJdkHome(javaHome)
+                    .setIncludeStatic(true)
+                    .setModuleDescriptor(javaModuleDescriptor);
+            testModuleNames = getModuleNamesOnModulepath(getLocationManager().resolvePaths(req));
         }
+        ProviderRequirements providerRequirements =
+                new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor, testModuleNames);
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -2152,6 +2160,23 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         List<String[]> jpmsArgs = providerInfo.getJpmsArguments(providerRequirements);
         return new StartupConfiguration(
                 providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
+    }
+
+    private Set<String> getModuleNamesOnModulepath(ResolvePathsResult<String> resolvedPaths) {
+        if (resolvedPaths == null
+                || resolvedPaths.getModulepathElements() == null
+                || resolvedPaths.getPathElements() == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> moduleNames = new HashSet<>();
+        for (String path : resolvedPaths.getModulepathElements().keySet()) {
+            JavaModuleDescriptor descriptor = resolvedPaths.getPathElements().get(path);
+            if (descriptor != null && descriptor.name() != null) {
+                moduleNames.add(descriptor.name());
+            }
+        }
+        return moduleNames;
     }
 
     private Artifact getCommonArtifact() {
@@ -3179,8 +3204,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
             boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
             // Provider dependencies stay on the classpath, so only open Commons when it is a test module.
-            boolean junitPlatformCommonsOnModulePath =
-                    testClasspath.getTestDependencies().containsKey(PROVIDER_DEP_GID + ":junit-platform-commons");
+            boolean junitPlatformCommonsOnModulePath = forkRequirements
+                            .getTestModuleNames()
+                            .contains("org.junit.platform.commons")
+                    || testClasspath.getTestDependencies().containsKey(PROVIDER_DEP_GID + ":junit-platform-commons");
             return hasTestDescriptor && junitPlatformCommonsOnModulePath ? getJpmsArgs() : Collections.emptyList();
         }
 
