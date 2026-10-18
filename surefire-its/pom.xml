@@ -260,6 +260,10 @@
             <artifactId>maven-invoker-plugin</artifactId>
             <configuration>
               <localRepositoryPath>${settings.localRepository}</localRepositoryPath>
+              <!-- the plugins only fetch the provider when tests run, so invoker would not install it otherwise -->
+              <extraArtifacts>
+                <extraArtifact>org.apache.maven.surefire:surefire-junit-platform:${project.version}:jar</extraArtifact>
+              </extraArtifacts>
             </configuration>
             <executions>
               <execution>
