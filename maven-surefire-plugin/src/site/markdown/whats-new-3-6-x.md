@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 -->
 
-# What's New in Surefire 3.6.0
+# What's New in Surefire 3.6.x
 
 ## Overview
 
@@ -80,6 +80,81 @@ per-provider implementations (`LegacyPojoStackTraceWriter`, `JUnit4StackTraceWri
 by a new `StackTraceProvider` and `DefaultStackTraceWriter` that work uniformly across all test frameworks.
 The new implementation includes configurable frame filtering and truncation.
 
+### Parameter Changes
+
+These apply to both `surefire:test` and `failsafe:integration-test` unless noted otherwise.
+
+| Parameter | What changed | What to do |
+|-----------|--------------|------------|
+| `suiteXmlFiles` | Not supported anymore: the JUnit Platform can't run TestNG suite XML files. 3.6.0 ignores it, 3.6.1 fails the build. | Use `groups`, `includes`/`excludes` or a JUnit Platform `@Suite` class, or stay on 3.5.x. |
+| `skipTests` (Failsafe only) | Deprecated. `-DskipTests` no longer skips integration tests. Setting `<skipTests>` in the Failsafe configuration still works. | Use `-DskipITs`, or `-Dmaven.test.skip` to skip everything. |
+| `perCoreThreadCount` | Deprecated and ignored. `threadCount` is no longer multiplied by the number of CPU cores. | Set `threadCount` to the number of threads you want. |
+| `useUnlimitedThreads` | Deprecated and ignored. | Use `threadCount`. |
+| `threadCountSuites` | Deprecated and ignored. The JUnit Platform has no suite level parallelism. | Use `threadCount`, `threadCountClasses` or `threadCountMethods`. |
+| `parallelOptimized` | Deprecated and ignored. | Remove it. |
+| `parallelTestsTimeoutInSeconds`, `parallelTestsTimeoutForcedInSeconds` | Deprecated and ignored. | Use `forkedProcessTimeoutInSeconds`. |
+| `objectFactory` | Deprecated and ignored. The TestNG engine has no such option. | Remove it. |
+| `parallel` | Only some values still work, see below. | |
+| `runOrder` | Now also sorts JUnit 5/6 test methods. `hourly` is gone. | See [Run Order](#Run_Order) below. |
+| `encoding` (`failsafe:verify` only) | Removed in 3.5.5. It had been deprecated since 2.20.1 and did nothing. | Remove it. |
+
+Since 3.6.1 you get a warning when one of the ignored parameters is set. A legacy provider added as a plugin
+dependency still uses them (see *Transitional: Using a Legacy Provider with 3.6.0* below).
+
+Which `parallel` values still work:
+
+- **JUnit 4**: `classes`, `methods` and `classesAndMethods` (or `both`). The number of threads comes from
+  `threadCount`, or else the larger of `threadCountClasses` and `threadCountMethods`. `suites`,
+  `suitesAndClasses`, `suitesAndMethods` and `all` aren't supported.
+- **TestNG**: `methods`, `classes`, `tests` and `instances`, with `threadCount`. Before 3.6.1, `tests` and
+  `instances` failed the build.
+- **JUnit 5/6**: `parallel` isn't used. Use the Jupiter `junit.jupiter.execution.parallel.*` settings instead,
+  see [Using JUnit 5 Platform](examples/junit-platform.html).
+
+### Run Order
+
+`alphabetical`, `reversealphabetical` and `random` now sort the test methods inside each class too, not only the
+classes. This only applies to JUnit 5/6 tests. JUnit 4 and TestNG methods run in the same order as before.
+
+| `runOrder` | Methods run |
+|------------|-------------|
+| `alphabetical` | by name |
+| `reversealphabetical` | by name, reversed |
+| `random` | in random order, using `runOrderRandomSeed` |
+
+A test that only passed because its methods ran in a certain order can now fail. This often happens with
+`@TestInstance(PER_CLASS)` classes that share state between methods.
+
+To keep the JUnit default method order, either:
+
+- add `@TestMethodOrder` to the class. Surefire never overrides it. If your methods depend on each other, this is
+  the best fix: use `@TestMethodOrder(MethodOrderer.OrderAnnotation.class)` and put `@Order` on each method.
+- or clear `junit.jupiter.testmethod.order.default`, the parameter Surefire sets, in `configurationParameters`.
+  Classes are still sorted by `runOrder`.
+
+```xml
+<configuration>
+    <runOrder>alphabetical</runOrder>
+    <properties>
+        <configurationParameters>
+            junit.jupiter.testmethod.order.default=
+        </configurationParameters>
+    </properties>
+</configuration>
+```
+
+With JUnit 6 you can also set it to `org.junit.jupiter.api.MethodOrderer$Default`.
+
+Since 3.6.1, `runOrder` only sets the JUnit default class and method orderers that nobody else configured. An
+orderer set in `configurationParameters`, as a system property or in `junit-platform.properties` is kept. This
+includes one shipped by a library, like the class orderer Quarkus uses to group its tests by profile. In 3.6.0 the
+orderers from `runOrder` always won
+([#3529](https://github.com/apache/maven-surefire/issues/3529)).
+
+`hourly` was removed, and the build now fails with `There's no RunOrder with the name hourly`. It ran the tests
+alphabetically during even hours and in reverse during odd hours. Use `random` instead: the seed is printed in the
+build log, so you can replay a failing order with `runOrderRandomSeed`.
+
 ## Migration Guide
 
 ### JUnit 5/6 Users
@@ -128,12 +203,12 @@ Ensure your TestNG version is **6.14.3 or later**. Surefire will automatically u
 </dependency>
 ```
 
-TestNG configuration (groups, listeners, suites, etc.) continues to work through Surefire's plugin
+TestNG configuration (groups, listeners, reporters, parallel, etc.) continues to work through Surefire's plugin
 configuration and is mapped to the JUnit Platform infrastructure.
 
-The `suiteXmlFiles` configuration for TestNG is no longer supported. You must now use groups or Junit suite support
-
-
+TestNG suite XML files (`suiteXmlFiles`) are no longer supported, and since 3.6.1 the build fails if they're set.
+Pick your tests with `groups`, `includes`/`excludes` or a JUnit Platform `@Suite` class instead.
+See [Parameter Changes](#Parameter_Changes) for the other parameters that changed.
 
 ### Staying on Surefire 3.5.x
 
@@ -166,7 +241,8 @@ As a transitional measure, you can add a legacy provider from the 3.5.x line as 
 </plugin>
 ```
 
-Note: this backward compatibility may not be maintained in future releases.
+Note: this backward compatibility may not be maintained in future releases. TestNG suite XML files don't work
+this way either.
 
 ## Further Reading
 

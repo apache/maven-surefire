@@ -112,4 +112,4 @@ The following examples show how to use the ${thisPlugin} Plugin in more advanced
 - [Using Console Logs](./examples/logging.html)
 - [Shutdown of Forked JVM](./examples/shutdown.html)
 - [Run tests with Java 9](./java9.html)
-- [What's New in 3.6.0](./whats-new-3-6-0.html)
+- [What's New in 3.6.x](./whats-new-3-6-x.html)

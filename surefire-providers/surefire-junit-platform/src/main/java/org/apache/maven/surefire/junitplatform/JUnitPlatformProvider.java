@@ -56,6 +56,8 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.junit.platform.commons.JUnitException;
+import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
@@ -109,6 +111,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
 
+    static final String METHOD_ORDER_DEFAULT = "junit.jupiter.testmethod.order.default";
+
+    static final String CLASS_ORDER_DEFAULT = "junit.jupiter.testclass.order.default";
+
     private static final String VINTAGE_ENGINE_ID = "junit-vintage";
 
     private final ProviderParameters parameters;
@@ -123,6 +129,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private boolean excludeTestNgEngine;
 
+    // groups only TestNG can use, we warn about them when the tests start
+    private final List<String> testNgOnlyGroups = new ArrayList<>();
+
     private final CommandChainReader commandsReader;
 
     public JUnitPlatformProvider(ProviderParameters parameters) {
@@ -133,11 +142,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.parameters = parameters;
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
-        setupRunOrder();
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
                 .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
         getConfigurationParameters().putAll(newConfigurationParameters());
+        setupRunOrder();
 
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
@@ -176,29 +185,35 @@ public class JUnitPlatformProvider extends AbstractProvider {
         String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
-                getConfigurationParameters()
-                        .put("junit.jupiter.testmethod.order.default", "org.junit.jupiter.api.MethodOrderer$Random");
-                getConfigurationParameters()
-                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$Random");
+                setDefaultOrderers(
+                        "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
-                        .ifPresent(seed -> getConfigurationParameters().put(JUNIT_RANDOM_SEED, seed));
+                        .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
             } else if (runOrder.equals("alphabetical")) {
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testmethod.order.default",
-                                "org.junit.jupiter.api.MethodOrderer$MethodName");
-                getConfigurationParameters()
-                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$ClassName");
+                setDefaultOrderers(
+                        "org.junit.jupiter.api.MethodOrderer$MethodName",
+                        "org.junit.jupiter.api.ClassOrderer$ClassName");
             } else if (runOrder.equals("reversealphabetical")) {
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testmethod.order.default",
-                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder");
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testclass.order.default",
-                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
+                setDefaultOrderers(
+                        "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder",
+                        "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
             }
+        }
+    }
+
+    /**
+     * Sets the JUnit orderers for runOrder, unless one is already set (Quarkus sets its own, for example).
+     */
+    private void setDefaultOrderers(String methodOrderer, String classOrderer) {
+        // what JUnit finds by itself: system properties and junit-platform.properties
+        ConfigurationParameters configuredElsewhere = request().build().getConfigurationParameters();
+        setOrdererIfMissing(METHOD_ORDER_DEFAULT, methodOrderer, configuredElsewhere);
+        setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+    }
+
+    private void setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {
+        if (!configuredElsewhere.get(key).isPresent()) {
+            getConfigurationParameters().putIfAbsent(key, orderer);
         }
     }
 
@@ -214,6 +229,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
         TestReportListener<TestOutputReportEntry> runListener = reporterFactory.createTestReportListener();
+        warnAboutTestNgOnlyGroups(runListener);
         CancellationTokenAdapter cancellationToken = CancellationTokenAdapter.tryCreate();
         Stoppable stoppable = prepareFailFastSupport(cancellationToken, runListener);
         RunListenerAdapter adapter = new RunListenerAdapter(runListener, stoppable);
@@ -240,6 +256,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
             runResult = reporterFactory.close();
         }
         return runResult;
+    }
+
+    void warnAboutTestNgOnlyGroups(ConsoleLogger logger) {
+        if (!testNgOnlyGroups.isEmpty()) {
+            logger.warning("These groups are not valid JUnit tag expressions, so they only filter TestNG tests: "
+                    + String.join(", ", testNgOnlyGroups));
+        }
     }
 
     private static void setupJunitLogger() {
@@ -487,33 +510,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
             filters.add(includeEnclosingClasses(classNameFilter));
         }
 
-        boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
+        filters.addAll(newGroupFilters());
 
-        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED)) && !useTestNG) {
-            getPropertiesList(GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
-            getPropertiesList(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags).ifPresent(filters::add);
-            Optional<Class<?>> categoryClass = getCategoryClass();
-            if (categoryClass.isPresent()) {
-                getPropertiesList(EXCLUDEDGROUPS_PROP)
-                        .map(strings -> byEngine(
-                                getExcludeCategoryFilter(strings, categoryClass),
-                                descriptor -> FilterResult.included("Not a JUnit 4 test")))
-                        .ifPresent(filters::add);
-            }
-        } else if (!useTestNG) {
-            // JUnit 4 tests use @Category, all other tests use tags (#3468, #3503)
-            Optional<Class<?>> categoryClass = getCategoryClass();
-            if (categoryClass.isPresent()) {
-                getPropertiesList(GROUPS_PROP)
-                        .map(strings -> byEngine(
-                                getIncludeCategoryFilter(strings, categoryClass), TagFilter.includeTags(strings)))
-                        .ifPresent(filters::add);
-                getPropertiesList(EXCLUDEDGROUPS_PROP)
-                        .map(strings -> byEngine(
-                                getExcludeCategoryFilter(strings, categoryClass), TagFilter.excludeTags(strings)))
-                        .ifPresent(filters::add);
-            }
-        }
         of(optionallyWildcardFilter(parameters.getTestRequest().getTestListResolver()))
                 .filter(f -> !f.isEmpty())
                 .filter(f -> !f.isWildcard())
@@ -529,6 +527,74 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .ifPresent(filters::add);
 
         return filters.toArray(new Filter<?>[0]);
+    }
+
+    /**
+     * Builds the filters for groups and excludedGroups. TestNG tests are left alone, TestNG gets the groups too
+     * and filters its own tests.
+     */
+    private List<PostDiscoveryFilter> newGroupFilters() {
+        Optional<PostDiscoveryFilter> includeTags =
+                getTagExpressions(GROUPS_PROP).map(TagFilter::includeTags);
+        Optional<PostDiscoveryFilter> excludeTags =
+                getTagExpressions(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags);
+        Optional<Class<?>> categoryClass = getCategoryClass();
+        List<PostDiscoveryFilter> groupFilters = new ArrayList<>();
+        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED))) {
+            includeTags.ifPresent(groupFilters::add);
+            excludeTags.ifPresent(groupFilters::add);
+            if (categoryClass.isPresent()) {
+                getPropertiesList(EXCLUDEDGROUPS_PROP)
+                        .map(strings -> byEngine(
+                                getExcludeCategoryFilter(strings, categoryClass),
+                                descriptor -> FilterResult.included("Not a JUnit 4 test")))
+                        .ifPresent(groupFilters::add);
+            }
+        } else if (categoryClass.isPresent()) {
+            // JUnit 4 tests use @Category, all other tests use tags (#3468, #3503)
+            PostDiscoveryFilter noTagExpression = descriptor -> FilterResult.included("No tag expression to match");
+            getPropertiesList(GROUPS_PROP)
+                    .map(strings -> byEngine(
+                            getIncludeCategoryFilter(strings, categoryClass), includeTags.orElse(noTagExpression)))
+                    .ifPresent(groupFilters::add);
+            getPropertiesList(EXCLUDEDGROUPS_PROP)
+                    .map(strings -> byEngine(
+                            getExcludeCategoryFilter(strings, categoryClass), excludeTags.orElse(noTagExpression)))
+                    .ifPresent(groupFilters::add);
+        }
+        return groupFilters.stream()
+                .map(JUnitPlatformProvider::leaveTestNgTestsAlone)
+                .collect(toList());
+    }
+
+    /**
+     * Returns the groups JUnit can parse as tag expressions. With TestNG, a group can also be a regular expression
+     * JUnit can't parse, like {@code (?!slow).*}. We leave those to TestNG instead of failing the run.
+     */
+    private Optional<List<String>> getTagExpressions(String key) {
+        Optional<List<String>> groups = getPropertiesList(key);
+        if (!groups.isPresent() || parameters.getProviderProperties().get("testng.version") == null) {
+            return groups;
+        }
+        List<String> tagExpressions = new ArrayList<>();
+        for (String group : groups.get()) {
+            if (isTagExpression(group)) {
+                tagExpressions.add(group);
+            } else {
+                testNgOnlyGroups.add(group);
+            }
+        }
+        return tagExpressions.isEmpty() ? empty() : of(tagExpressions);
+    }
+
+    private static boolean isTagExpression(String group) {
+        try {
+            TagFilter.includeTags(group);
+            return true;
+        } catch (JUnitException e) {
+            // not PreconditionViolationException, JUnit 5.4 and older don't have it
+            return false;
+        }
     }
 
     /**
@@ -598,15 +664,25 @@ public class JUnitPlatformProvider extends AbstractProvider {
      * Uses the first filter for JUnit 4 tests and the second one for everything else.
      */
     private static PostDiscoveryFilter byEngine(PostDiscoveryFilter vintageFilter, PostDiscoveryFilter otherFilter) {
-        return testDescriptor ->
-                isVintage(testDescriptor) ? vintageFilter.apply(testDescriptor) : otherFilter.apply(testDescriptor);
+        return testDescriptor -> isFromEngine(testDescriptor, VINTAGE_ENGINE_ID)
+                ? vintageFilter.apply(testDescriptor)
+                : otherFilter.apply(testDescriptor);
     }
 
-    private static boolean isVintage(TestDescriptor testDescriptor) {
+    /**
+     * TestNG tests always pass here, TestNG checks their groups itself.
+     */
+    private static PostDiscoveryFilter leaveTestNgTestsAlone(PostDiscoveryFilter filter) {
+        return testDescriptor -> isFromEngine(testDescriptor, TestNgTestClassDetector.TESTNG_ENGINE_ID)
+                ? FilterResult.included("TestNG matches the groups itself")
+                : filter.apply(testDescriptor);
+    }
+
+    private static boolean isFromEngine(TestDescriptor testDescriptor, String engineId) {
         return testDescriptor
                 .getUniqueId()
                 .getEngineId()
-                .filter(VINTAGE_ENGINE_ID::equals)
+                .filter(engineId::equals)
                 .isPresent();
     }
 

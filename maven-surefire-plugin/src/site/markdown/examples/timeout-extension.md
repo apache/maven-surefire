@@ -19,51 +19,15 @@
 
 # Forked Process Timeout Extension
 
-Since **3.6.0**, Surefire and Failsafe expose an extension point that is
-invoked when a forked test JVM is killed because it exceeded
-`forkedProcessTimeoutInSeconds`. The primary motivation is to allow capturing
-diagnostic information (such as a `jstack` thread dump) about a hung test
-process before it is destroyed.
+Since **3.6.0**, when a forked test JVM runs longer than `forkedProcessTimeoutInSeconds` and gets killed,
+Surefire and Failsafe can run extensions first. Use them to grab a thread dump, a heap dump or anything else
+from the hung JVM before it's gone.
 
-## SPI
+Extensions only run when a fork actually times out, so `forkedProcessTimeoutInSeconds` must be set.
 
-Implement
-`org.apache.maven.surefire.extensions.ForkedProcessTimeoutExtension` from the
-`surefire-extensions-api` artifact:
+## Thread dumps with jstack
 
-```java
-public interface ForkedProcessTimeoutExtension {
-    // Called before the KILL signal — the forked JVM is still alive.
-    void onTimeoutDetected(ForkedProcessTimeoutContext context) throws Exception;
-
-    // Called after the forked JVM has exited.
-    void onForkExited(ForkedProcessTimeoutContext context, RunResult runResult) throws Exception;
-}
-```
-
-The `ForkedProcessTimeoutContext` exposes:
-
-| Method                | Description                                               |
-|-----------------------|-----------------------------------------------------------|
-| `getPid()`            | OS PID of the forked JVM, or `-1` if unavailable (Java 8) |
-| `getForkNumber()`     | 1-based fork number assigned by Surefire                  |
-| `getJavaExecutable()` | Path to the `java` binary used by the fork                |
-| `getReportsDirectory()` | Surefire reports directory (good place to write dumps)  |
-| `getTimeoutSeconds()` | Configured `forkedProcessTimeoutInSeconds`                |
-| `getConsoleLogger()`  | Logger to write to the Maven console                      |
-| `getExtensionContext()` | User-supplied `Map<String,String>` from the Mojo (see below) |
-
-Callback failures (any `Throwable`) are caught and logged by Surefire — they
-never affect the test result. Each callback is bounded by an internal
-30-second time limit so a misbehaving extension cannot stall test execution.
-
-## Passing configuration to extensions
-
-Extensions often need user-supplied configuration (output directory,
-toggles, etc.). Surefire and Failsafe expose a single Mojo parameter
-`forkedProcessTimeoutExtensionContext` (a `Map<String,String>`) that is
-made available to every registered extension via
-`ForkedProcessTimeoutContext.getExtensionContext()`:
+Surefire ships with a `jstack` extension. It's off by default. Turn it on in the POM:
 
 ```xml
 <plugin>
@@ -72,31 +36,122 @@ made available to every registered extension via
   <configuration>
     <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
     <forkedProcessTimeoutExtensionContext>
+      <jstack.enabled>true</jstack.enabled>
+      <!-- optional, defaults to the reports directory -->
       <jstack.output.location>${project.build.directory}/jstacks</jstack.output.location>
-      <my.custom.key>my-value</my.custom.key>
     </forkedProcessTimeoutExtensionContext>
   </configuration>
 </plugin>
 ```
 
-Keys are implementation-specific; pick a unique prefix for your extension.
+or for a single build:
 
-## Registration
+```bash
+mvn verify -Dsurefire.timeout.jstack.enabled=true
+```
 
-Extensions are discovered via the standard `ServiceLoader` mechanism from the
-**plugin classpath**. Two steps:
+Either one turns it on, for Surefire and Failsafe alike. The dump is written just before the fork is killed, to
+`surefire-timeout-jstack-<forkNumber>-<pid>.txt` in the reports directory (or `jstack.output.location` if set).
 
-1. Add a file
-   `META-INF/services/org.apache.maven.surefire.extensions.ForkedProcessTimeoutExtension`
-   to your extension JAR, containing the fully qualified class name of your
-   implementation.
-2. Declare the extension JAR as a `<dependency>` of `maven-surefire-plugin`
-   (or `maven-failsafe-plugin`) in the project POM:
+Good to know:
+
+- `jstack` is looked up in the JDK running Maven, then in `JAVA_HOME`, then on the `PATH`.
+- The fork's PID isn't available on Java 8, so no dump is taken there.
+- If `jstack` is missing, fails, or takes more than 20 seconds, you get a warning and the build carries on as usual.
+
+## Writing your own extension
+
+### 1. Depend on the API
+
+```xml
+<dependency>
+  <groupId>org.apache.maven.surefire</groupId>
+  <artifactId>surefire-extensions-api</artifactId>
+  <version>3.6.0</version>
+  <scope>provided</scope>
+</dependency>
+```
+
+The plugin supplies these classes at runtime, hence `provided`.
+
+### 2. Implement `ForkedProcessTimeoutExtension`
+
+```java
+public interface ForkedProcessTimeoutExtension {
+    // Called before the fork is killed, the JVM is still alive.
+    void onTimeoutDetected(ForkedProcessTimeoutContext context) throws Exception;
+
+    // Called after the timed-out fork has exited.
+    void onForkExited(ForkedProcessTimeoutContext context, RunResult runResult) throws Exception;
+}
+```
+
+The context gives you:
+
+| Method | What it returns |
+|--------|-----------------|
+| `getPid()` | PID of the forked JVM, or `-1` if unknown (Java 8) |
+| `getForkNumber()` | Fork number, starting at 1 |
+| `getJavaExecutable()` | The `java` binary used by the fork, may be `null` |
+| `getReportsDirectory()` | The reports directory, a good place for your files |
+| `getTimeoutSeconds()` | The configured `forkedProcessTimeoutInSeconds` |
+| `getConsoleLogger()` | Logger for the Maven console |
+| `getExtensionContext()` | The `forkedProcessTimeoutExtensionContext` map from the POM |
+
+For example, an extension taking a heap dump with `jcmd`:
+
+```java
+public class HeapDumpTimeoutExtension implements ForkedProcessTimeoutExtension {
+
+    @Override
+    public void onTimeoutDetected(ForkedProcessTimeoutContext context) throws Exception {
+        long pid = context.getPid();
+        if (pid <= 0) {
+            context.getConsoleLogger().warning("Unknown PID, no heap dump for fork " + context.getForkNumber());
+            return;
+        }
+        String dir = context.getExtensionContext()
+                .getOrDefault("heapdump.output.location", context.getReportsDirectory().getAbsolutePath());
+        File dump = new File(dir, "heap-fork-" + context.getForkNumber() + "-" + pid + ".hprof");
+        dump.getParentFile().mkdirs();
+        new ProcessBuilder("jcmd", Long.toString(pid), "GC.heap_dump", dump.getAbsolutePath())
+                .inheritIO()
+                .start()
+                .waitFor();
+    }
+
+    @Override
+    public void onForkExited(ForkedProcessTimeoutContext context, RunResult runResult) {
+        // nothing to do here, but you could upload the dump or send a notification
+    }
+}
+```
+
+### 3. Register it
+
+Add the file
+`src/main/resources/META-INF/services/org.apache.maven.surefire.extensions.ForkedProcessTimeoutExtension`
+with your class name:
+
+```
+com.example.HeapDumpTimeoutExtension
+```
+
+### 4. Add it to the plugin
+
+Add your jar as a dependency of the plugin, not as a test dependency of the project. Settings for your extension
+go in `forkedProcessTimeoutExtensionContext`; use your own key prefix so they don't clash with other extensions.
 
 ```xml
 <plugin>
   <groupId>org.apache.maven.plugins</groupId>
   <artifactId>maven-surefire-plugin</artifactId>
+  <configuration>
+    <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+    <forkedProcessTimeoutExtensionContext>
+      <heapdump.output.location>${project.build.directory}/heap-dumps</heapdump.output.location>
+    </forkedProcessTimeoutExtensionContext>
+  </configuration>
   <dependencies>
     <dependency>
       <groupId>com.example</groupId>
@@ -107,43 +162,11 @@ Extensions are discovered via the standard `ServiceLoader` mechanism from the
 </plugin>
 ```
 
-## Built-in `jstack` extension
+It works the same way with `maven-failsafe-plugin`.
 
-Surefire ships with a built-in `JstackTimeoutExtension` that captures a
-`jstack` thread dump of the forked JVM and writes it to
-`<reportsDirectory>/surefire-timeout-jstack-<forkNumber>-<pid>.txt` just
-before the JVM is killed.
+## How extensions are called
 
-It is **disabled by default**. Enable it either via system property:
-
-```bash
-mvn test -Dsurefire.timeout.jstack.enabled=true
-```
-
-…or directly in the POM through the `forkedProcessTimeoutExtensionContext`
-map (no command-line property needed):
-
-```xml
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-surefire-plugin</artifactId>
-  <configuration>
-    <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-    <forkedProcessTimeoutExtensionContext>
-      <jstack.enabled>true</jstack.enabled>
-    </forkedProcessTimeoutExtensionContext>
-  </configuration>
-</plugin>
-```
-
-### Supported extension-context keys
-
-| Key                       | Description                                                          |
-|---------------------------|----------------------------------------------------------------------|
-| `jstack.enabled`          | Set to `true` to enable the extension from the POM.                  |
-| `jstack.output.location`  | Directory where the `surefire-timeout-jstack-*.txt` files are written. When unset, defaults to the Surefire reports directory. |
-
-`jstack` is resolved from `JAVA_HOME/bin/jstack`, falling back to the
-`jstack` binary on `PATH`. The thread dump is best-effort: if `jstack` is
-missing, the PID is unknown (Java 8), or the call fails, a warning is logged
-and the test result is unaffected.
+- All registered extensions run, including the `jstack` one when it's enabled.
+- Each callback runs once per timed-out fork.
+- Each callback gets 30 seconds, then it's cancelled.
+- If an extension throws, Surefire logs a warning. The test results don't change.
