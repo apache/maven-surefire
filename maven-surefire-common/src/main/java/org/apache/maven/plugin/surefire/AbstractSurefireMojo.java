@@ -146,7 +146,6 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_OR
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
@@ -2105,44 +2104,29 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         final Set<String> testModuleNames;
-        final Classpath testModulepath;
-        final List<String[]> modulePathArgs;
+        final ModulePathJpmsArguments.Layout layout;
         if (isMainDescriptor) {
+            // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
+            for (String className : scanResult.getClasses()) {
+                packages.add(substringBeforeLast(className, "."));
+            }
+
+            layout = ModulePathJpmsArguments.forMainModule(
+                    getLocationManager(), testClasspath, javaModuleDescriptor, javaHome, packages, getConsoleLogger());
+            testModuleNames = layout.getModuleNames();
+        } else {
             ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
                     .setIncludeAllProviders(true)
                     .setJdkHome(javaHome)
                     .setIncludeStatic(true)
                     .setModuleDescriptor(javaModuleDescriptor);
-
-            ResolvePathsResult<String> result = getLocationManager().resolvePaths(req);
-            for (Entry<String, Exception> entry : result.getPathExceptions().entrySet()) {
-                // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
-                getConsoleLogger().warning("Exception for '" + entry.getKey() + "'.", entry.getValue());
-            }
-
-            testClasspath = new Classpath(result.getClasspathElements());
-            testModulepath = new Classpath(result.getModulepathElements().keySet());
-            testModuleNames = getModuleNamesOnModulepath(result);
-
-            for (String className : scanResult.getClasses()) {
-                packages.add(substringBeforeLast(className, "."));
-            }
-
-            modulePathArgs = ModulePathJpmsArguments.of(result, javaModuleDescriptor.name(), packages);
-        } else {
-            testModulepath = testClasspath;
-            testClasspath = emptyClasspath();
-
-            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testModulepath.getClassPath())
-                    .setIncludeAllProviders(true)
-                    .setJdkHome(javaHome)
-                    .setIncludeStatic(true)
-                    .setModuleDescriptor(javaModuleDescriptor);
             testModuleNames = getModuleNamesOnModulepath(getLocationManager().resolvePaths(req));
-            modulePathArgs = emptyList();
+            layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
         ProviderRequirements providerRequirements =
                 new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor, testModuleNames);
+        testClasspath = layout.getClasspath();
+        Classpath testModulepath = layout.getModulepath();
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -2184,7 +2168,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum(getEnableProcessChecker());
         List<String[]> jpmsArgs = new ArrayList<>(providerInfo.getJpmsArguments(providerRequirements));
-        jpmsArgs.addAll(modulePathArgs);
+        jpmsArgs.addAll(layout.getJpmsArguments());
         return new StartupConfiguration(
                 providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
     }
@@ -3280,13 +3264,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
             // Provider dependencies stay on the classpath, so only open Commons when it is a test module.
             boolean junitPlatformCommonsOnModulePath = forkRequirements
                             .getTestModuleNames()
                             .contains("org.junit.platform.commons")
                     || testClasspath.getTestDependencies().containsKey(PROVIDER_DEP_GID + ":junit-platform-commons");
-            return hasTestDescriptor && junitPlatformCommonsOnModulePath ? getJpmsArgs() : Collections.emptyList();
+            return junitPlatformCommonsOnModulePath
+                    ? ModulePathJpmsArguments.junitPlatformArguments(forkRequirements)
+                    : Collections.emptyList();
         }
 
         @Override
@@ -3386,20 +3371,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             alignProviderVersions(providerArtifacts, engineVersion, testDeps.get(api));
 
             return new LinkedHashSet<>(providerArtifacts.values());
-        }
-
-        private List<String[]> getJpmsArgs() {
-            List<String[]> args = new ArrayList<>();
-
-            args.add(new String[] {
-                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
-            });
-
-            args.add(new String[] {
-                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
-            });
-
-            return args;
         }
 
         private void addEngineByApi(
