@@ -32,6 +32,7 @@ public class Surefire3463TestNgExtensionFailureIT extends SurefireJUnit4Integrat
                 .maven()
                 .withFailure()
                 .executeTest()
-                .verifyTextInLog("SUREFIRE-3463-extension-failure");
+                .verifyTextInLog(
+                        "TestEngine with ID 'testng' failed to discover tests: SUREFIRE-3463-extension-failure");
     }
 }

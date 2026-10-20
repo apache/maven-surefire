@@ -45,7 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -246,7 +248,8 @@ public class TestPlanScannerFilterTest {
     public void discoveryFailureIncludesRootCauseMessage() {
         RuntimeException rootCause = new RuntimeException("listener failed during discovery");
         Launcher launcher = mock(Launcher.class);
-        when(launcher.discover(any())).thenThrow(new JUnitException("engine discovery failed", rootCause));
+        when(launcher.discover(any()))
+                .thenThrow(new JUnitException("engine discovery failed", new RuntimeException("wrapper", rootCause)));
         JUnitException failure = assertThrows(
                 JUnitException.class,
                 () -> new TestPlanScannerFilter(
@@ -255,7 +258,63 @@ public class TestPlanScannerFilterTest {
                         singletonList(ClassWithTestMethods.class.getName()),
                         emptyList()));
 
-        assertTrue(failure.getMessage().contains(rootCause.getMessage()));
+        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
+    }
+
+    @org.junit.jupiter.api.Test
+    public void discoveryFailureDoesNotDuplicateRootCauseMessage() {
+        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        Launcher launcher = mock(Launcher.class);
+        when(launcher.discover(any()))
+                .thenThrow(new JUnitException("engine discovery failed: listener failed during discovery", rootCause));
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new TestPlanScannerFilter(
+                        new LauncherAdapter(launcher, null),
+                        new Filter<?>[0],
+                        singletonList(ClassWithTestMethods.class.getName()),
+                        emptyList()));
+
+        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
+    }
+
+    @org.junit.jupiter.api.Test
+    public void executionFailureIncludesRootCauseMessage() {
+        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        Launcher launcher = mock(Launcher.class);
+        doThrow(new JUnitException("engine discovery failed", rootCause))
+                .when(launcher)
+                .execute(
+                        any(LauncherDiscoveryRequest.class),
+                        any(org.junit.platform.launcher.TestExecutionListener[].class));
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new LauncherAdapter(launcher, null)
+                        .executeWithoutCancellationToken(mock(LauncherDiscoveryRequest.class)));
+
+        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
+    }
+
+    @org.junit.jupiter.api.Test
+    public void executionFailureIncludesRootCauseMessageWithCancellationToken() {
+        assumeTrue(CancellationTokenAdapter.CANCELLATION_TOKEN_CLASS != null);
+        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        Launcher launcher = mock(Launcher.class, invocation -> {
+            if ("execute".equals(invocation.getMethod().getName())
+                    && invocation.getMethod().getParameterCount() == 1) {
+                throw new JUnitException("engine discovery failed", rootCause);
+            }
+            return null;
+        });
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new LauncherAdapter(launcher, CancellationTokenAdapter.tryCreate())
+                        .execute(mock(LauncherDiscoveryRequest.class)));
+
+        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
     }
 
     static class EmptyClass {}

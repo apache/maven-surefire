@@ -30,7 +30,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.util.ScannerFilter;
-import org.junit.platform.commons.JUnitException;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.TestEngine;
@@ -112,21 +111,7 @@ final class TestPlanScannerFilter implements ScannerFilter {
         LauncherDiscoveryRequest discoveryRequest =
                 request().selectors(selectors).filters(includeAndExcludeFilters).build();
 
-        TestPlan testPlan;
-        try {
-            testPlan = launcher.discover(discoveryRequest);
-        } catch (JUnitException e) {
-            Throwable rootCause = e;
-            while (rootCause.getCause() != null) {
-                rootCause = rootCause.getCause();
-            }
-            if (rootCause == e || rootCause.getMessage() == null) {
-                throw e;
-            }
-            String message =
-                    e.getMessage() == null ? rootCause.getMessage() : e.getMessage() + ": " + rootCause.getMessage();
-            throw new JUnitException(message, e);
-        }
+        TestPlan testPlan = launcher.discover(discoveryRequest);
 
         // The launcher prunes every descriptor which neither contains nor may register tests, so a class
         // which is still part of the test plan is a class the platform has tests for.
