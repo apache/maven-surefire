@@ -121,8 +121,6 @@ import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,7 +144,6 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_OR
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
@@ -2104,37 +2101,21 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerClasspath = classpathCache.setCachedClasspath(providerName, providerArtifacts);
         }
 
-        final ProviderRequirements providerRequirements;
-        final Classpath testModulepath;
-        final List<String[]> modulePathArgs;
+        // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
+        final ModulePathJpmsArguments.Layout layout;
         if (isMainDescriptor) {
-            providerRequirements = new ProviderRequirements(true, true, false);
-            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
-                    .setIncludeAllProviders(true)
-                    .setJdkHome(javaHome)
-                    .setIncludeStatic(true)
-                    .setModuleDescriptor(javaModuleDescriptor);
-
-            ResolvePathsResult<String> result = getLocationManager().resolvePaths(req);
-            for (Entry<String, Exception> entry : result.getPathExceptions().entrySet()) {
-                // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
-                getConsoleLogger().warning("Exception for '" + entry.getKey() + "'.", entry.getValue());
-            }
-
-            testClasspath = new Classpath(result.getClasspathElements());
-            testModulepath = new Classpath(result.getModulepathElements().keySet());
-
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
             }
 
-            modulePathArgs = ModulePathJpmsArguments.of(result, javaModuleDescriptor.name(), packages);
+            layout = ModulePathJpmsArguments.forMainModule(
+                    getLocationManager(), testClasspath, javaModuleDescriptor, javaHome, packages, getConsoleLogger());
         } else {
-            providerRequirements = new ProviderRequirements(true, false, true);
-            testModulepath = testClasspath;
-            testClasspath = emptyClasspath();
-            modulePathArgs = emptyList();
+            layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
+        testClasspath = layout.getClasspath();
+        Classpath testModulepath = layout.getModulepath();
+        ProviderRequirements providerRequirements = new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor);
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -2176,7 +2157,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum(getEnableProcessChecker());
         List<String[]> jpmsArgs = new ArrayList<>(providerInfo.getJpmsArguments(providerRequirements));
-        jpmsArgs.addAll(modulePathArgs);
+        jpmsArgs.addAll(layout.getJpmsArguments());
         return new StartupConfiguration(
                 providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
     }
@@ -3255,8 +3236,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
-            return hasTestDescriptor ? getJpmsArgs() : Collections.emptyList();
+            return ModulePathJpmsArguments.junitPlatformArguments(forkRequirements);
         }
 
         @Override
@@ -3356,20 +3336,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             alignProviderVersions(providerArtifacts, engineVersion, testDeps.get(api));
 
             return new LinkedHashSet<>(providerArtifacts.values());
-        }
-
-        private List<String[]> getJpmsArgs() {
-            List<String[]> args = new ArrayList<>();
-
-            args.add(new String[] {
-                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
-            });
-
-            args.add(new String[] {
-                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
-            });
-
-            return args;
         }
 
         private void addEngineByApi(

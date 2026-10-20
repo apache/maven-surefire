@@ -23,6 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.maven.surefire.booter.Classpath;
+import org.apache.maven.surefire.providerapi.ProviderRequirements;
 import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.ModuleNameSource;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
@@ -131,6 +133,40 @@ public class ModulePathJpmsArgumentsTest {
 
         assertThat(ModulePathJpmsArguments.of(result, "demo", singletonList("demo")))
                 .isEmpty();
+    }
+
+    @Test
+    public void shouldPutEverythingOnModulePathForTestModule() {
+        Classpath testClasspath = new Classpath(asList("test-classes", "classes", "junit.jar"));
+
+        ModulePathJpmsArguments.Layout layout = ModulePathJpmsArguments.forTestModule(testClasspath);
+
+        assertThat((Object) layout.getClasspath()).isEqualTo(Classpath.emptyClasspath());
+        assertThat(layout.getModulepath().getClassPath()).containsExactly("test-classes", "classes", "junit.jar");
+        assertThat(layout.getJpmsArguments()).isEmpty();
+    }
+
+    @Test
+    public void shouldOpenJUnitPlatformCommonsForTestModule() {
+        ProviderRequirements testModule = new ProviderRequirements(true, false, true);
+
+        assertThat(ModulePathJpmsArguments.junitPlatformArguments(testModule))
+                .containsExactly(
+                        new String[] {
+                            "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
+                        },
+                        new String[] {
+                            "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
+                        });
+    }
+
+    @Test
+    public void shouldNotOpenJUnitPlatformCommonsOtherwise() {
+        ProviderRequirements mainModule = new ProviderRequirements(true, true, false);
+        ProviderRequirements classpath = new ProviderRequirements(false, false, false);
+
+        assertThat(ModulePathJpmsArguments.junitPlatformArguments(mainModule)).isEmpty();
+        assertThat(ModulePathJpmsArguments.junitPlatformArguments(classpath)).isEmpty();
     }
 
     private static JavaModuleDescriptor.Builder newModule(String name) {
