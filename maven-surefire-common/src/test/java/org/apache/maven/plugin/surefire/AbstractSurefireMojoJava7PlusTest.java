@@ -506,7 +506,11 @@ public class AbstractSurefireMojoJava7PlusTest {
                 "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "jar", "", handler);
         providerInfo =
                 mojo.newJUnitPlatformProviderInfo(new TestClassPath(singleton(junitPlatformCommons), null, null, null));
-        assertThat(providerInfo.getJpmsArguments(providerRequirements))
+        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
+
+        ProviderRequirements commonsOnModulePath =
+                new ProviderRequirements(true, false, true, singleton("org.junit.platform.commons"));
+        assertThat(providerInfo.getJpmsArguments(commonsOnModulePath))
                 .hasSize(2)
                 .contains(
                         new String[] {

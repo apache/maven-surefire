@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.providerapi;
 
+import javax.annotation.Nonnull;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +43,7 @@ public final class ProviderRequirements {
             boolean modularPath,
             boolean mainModuleDescriptor,
             boolean testModuleDescriptor,
-            Set<String> testModuleNames) {
+            @Nonnull Set<String> testModuleNames) {
         this.modularPath = modularPath;
         this.mainModuleDescriptor = mainModuleDescriptor;
         this.testModuleDescriptor = testModuleDescriptor;
@@ -65,6 +67,7 @@ public final class ProviderRequirements {
      *
      * @return module names on the test module path
      */
+    @Nonnull
     public Set<String> getTestModuleNames() {
         return testModuleNames;
     }

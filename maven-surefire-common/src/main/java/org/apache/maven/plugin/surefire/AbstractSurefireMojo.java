@@ -122,7 +122,6 @@ import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2120,7 +2119,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     .setJdkHome(javaHome)
                     .setIncludeStatic(true)
                     .setModuleDescriptor(javaModuleDescriptor);
-            testModuleNames = getModuleNamesOnModulepath(getLocationManager().resolvePaths(req));
+            testModuleNames = ModulePathJpmsArguments.moduleNamesOnModulepath(
+                    getLocationManager().resolvePaths(req));
             layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
         ProviderRequirements providerRequirements =
@@ -2171,23 +2171,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         jpmsArgs.addAll(layout.getJpmsArguments());
         return new StartupConfiguration(
                 providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
-    }
-
-    private Set<String> getModuleNamesOnModulepath(ResolvePathsResult<String> resolvedPaths) {
-        if (resolvedPaths == null
-                || resolvedPaths.getModulepathElements() == null
-                || resolvedPaths.getPathElements() == null) {
-            return Collections.emptySet();
-        }
-
-        Set<String> moduleNames = new HashSet<>();
-        for (String path : resolvedPaths.getModulepathElements().keySet()) {
-            JavaModuleDescriptor descriptor = resolvedPaths.getPathElements().get(path);
-            if (descriptor != null && descriptor.name() != null) {
-                moduleNames.add(descriptor.name());
-            }
-        }
-        return moduleNames;
     }
 
     private Artifact getCommonArtifact() {
@@ -3264,12 +3247,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            // Provider dependencies stay on the classpath, so only open Commons when it is a test module.
-            boolean junitPlatformCommonsOnModulePath = forkRequirements
-                            .getTestModuleNames()
-                            .contains("org.junit.platform.commons")
-                    || testClasspath.getTestDependencies().containsKey(PROVIDER_DEP_GID + ":junit-platform-commons");
-            return junitPlatformCommonsOnModulePath
+            return forkRequirements.getTestModuleNames().contains("org.junit.platform.commons")
                     ? ModulePathJpmsArguments.junitPlatformArguments(forkRequirements)
                     : Collections.emptyList();
         }

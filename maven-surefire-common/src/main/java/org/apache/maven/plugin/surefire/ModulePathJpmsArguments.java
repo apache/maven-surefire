@@ -68,7 +68,7 @@ final class ModulePathJpmsArguments {
             this.classpath = classpath;
             this.modulepath = modulepath;
             this.jpmsArguments = jpmsArguments;
-            this.moduleNames = moduleNames;
+            this.moduleNames = java.util.Collections.unmodifiableSet(new HashSet<>(moduleNames));
         }
 
         Classpath getClasspath() {
@@ -183,7 +183,7 @@ final class ModulePathJpmsArguments {
         return args;
     }
 
-    private static Set<String> moduleNamesOnModulepath(ResolvePathsResult<String> result) {
+    static Set<String> moduleNamesOnModulepath(ResolvePathsResult<String> result) {
         if (result == null || result.getModulepathElements() == null || result.getPathElements() == null) {
             return java.util.Collections.emptySet();
         }

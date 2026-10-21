@@ -35,6 +35,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -144,6 +145,19 @@ public class ModulePathJpmsArgumentsTest {
         assertThat((Object) layout.getClasspath()).isEqualTo(Classpath.emptyClasspath());
         assertThat(layout.getModulepath().getClassPath()).containsExactly("test-classes", "classes", "junit.jar");
         assertThat(layout.getJpmsArguments()).isEmpty();
+    }
+
+    @Test
+    public void shouldKeepModuleNamesImmutable() {
+        HashSet<String> moduleNames = new HashSet<>(singleton("org.junit.platform.commons"));
+        ModulePathJpmsArguments.Layout layout = new ModulePathJpmsArguments.Layout(
+                Classpath.emptyClasspath(), Classpath.emptyClasspath(), emptyList(), moduleNames);
+
+        moduleNames.add("org.example.changed");
+
+        assertThat(layout.getModuleNames()).containsExactly("org.junit.platform.commons");
+        assertThatThrownBy(() -> layout.getModuleNames().add("org.example.changed"))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
