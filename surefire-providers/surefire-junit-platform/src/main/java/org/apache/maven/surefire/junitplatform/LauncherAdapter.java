@@ -98,12 +98,21 @@ final class LauncherAdapter {
             rootCause = rootCause.getCause();
         }
 
-        String causeMessage = rootCause.getMessage();
-        String message = failure.getMessage();
-        if (causeMessage == null || (message != null && message.contains(causeMessage))) {
+        if (rootCause == failure) {
             return failure;
         }
-        return new JUnitException(message == null ? causeMessage : message + ": " + causeMessage, failure);
+
+        String causeMessage = rootCause.getMessage();
+        String rootCauseDescription = rootCause.toString();
+        String message = failure.getMessage();
+        if (message != null
+                && (message.contains(rootCauseDescription)
+                        || (causeMessage != null && !causeMessage.isEmpty() && message.contains(causeMessage)))) {
+            return failure;
+        }
+        return new JUnitException(
+                message == null || message.isEmpty() ? rootCauseDescription : message + ": " + rootCauseDescription,
+                failure);
     }
 
     private static Method findExecuteMethodWithLauncherExecutionRequestParameter() {

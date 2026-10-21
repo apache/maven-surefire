@@ -258,7 +258,7 @@ public class TestPlanScannerFilterTest {
                         singletonList(ClassWithTestMethods.class.getName()),
                         emptyList()));
 
-        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
+        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
     }
 
     @org.junit.jupiter.api.Test
@@ -280,6 +280,57 @@ public class TestPlanScannerFilterTest {
     }
 
     @org.junit.jupiter.api.Test
+    public void discoveryFailureIncludesRootCauseTypeWhenMessageIsNull() {
+        IllegalStateException rootCause = new IllegalStateException();
+        Launcher launcher = mock(Launcher.class);
+        when(launcher.discover(any())).thenThrow(new JUnitException("engine discovery failed", rootCause));
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new TestPlanScannerFilter(
+                        new LauncherAdapter(launcher, null),
+                        new Filter<?>[0],
+                        singletonList(ClassWithTestMethods.class.getName()),
+                        emptyList()));
+
+        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+    }
+
+    @org.junit.jupiter.api.Test
+    public void discoveryFailureIncludesRootCauseTypeWhenMessageIsEmpty() {
+        IllegalStateException rootCause = new IllegalStateException("");
+        Launcher launcher = mock(Launcher.class);
+        when(launcher.discover(any())).thenThrow(new JUnitException("engine discovery failed", rootCause));
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new TestPlanScannerFilter(
+                        new LauncherAdapter(launcher, null),
+                        new Filter<?>[0],
+                        singletonList(ClassWithTestMethods.class.getName()),
+                        emptyList()));
+
+        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+    }
+
+    @org.junit.jupiter.api.Test
+    public void discoveryFailureWithoutCauseKeepsOriginalMessage() {
+        JUnitException original = new JUnitException("engine discovery failed");
+        Launcher launcher = mock(Launcher.class);
+        when(launcher.discover(any())).thenThrow(original);
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new TestPlanScannerFilter(
+                        new LauncherAdapter(launcher, null),
+                        new Filter<?>[0],
+                        singletonList(ClassWithTestMethods.class.getName()),
+                        emptyList()));
+
+        assertEquals("engine discovery failed", failure.getMessage());
+    }
+
+    @org.junit.jupiter.api.Test
     public void executionFailureIncludesRootCauseMessage() {
         RuntimeException rootCause = new RuntimeException("listener failed during discovery");
         Launcher launcher = mock(Launcher.class);
@@ -294,7 +345,7 @@ public class TestPlanScannerFilterTest {
                 () -> new LauncherAdapter(launcher, null)
                         .executeWithoutCancellationToken(mock(LauncherDiscoveryRequest.class)));
 
-        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
+        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
     }
 
     @org.junit.jupiter.api.Test
@@ -314,7 +365,7 @@ public class TestPlanScannerFilterTest {
                 () -> new LauncherAdapter(launcher, CancellationTokenAdapter.tryCreate())
                         .execute(mock(LauncherDiscoveryRequest.class)));
 
-        assertEquals("engine discovery failed: listener failed during discovery", failure.getMessage());
+        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
     }
 
     static class EmptyClass {}
