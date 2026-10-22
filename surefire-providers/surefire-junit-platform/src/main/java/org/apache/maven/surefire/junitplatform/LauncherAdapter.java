@@ -83,11 +83,24 @@ final class LauncherAdapter {
         } catch (JUnitException e) {
             throw withRootCauseMessage(e);
         } catch (SurefireReflectionException e) {
-            if (e.getCause() instanceof JUnitException) {
-                throw withRootCauseMessage((JUnitException) e.getCause());
+            JUnitException junitException = findJUnitException(e);
+            if (junitException != null) {
+                throw withRootCauseMessage(junitException);
             }
             throw e;
         }
+    }
+
+    static JUnitException findJUnitException(Throwable failure) {
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+        Throwable cause = failure;
+        while (cause != null && visited.add(cause)) {
+            if (cause instanceof JUnitException) {
+                return (JUnitException) cause;
+            }
+            cause = cause.getCause();
+        }
+        return null;
     }
 
     private static JUnitException withRootCauseMessage(JUnitException failure) {
@@ -105,10 +118,17 @@ final class LauncherAdapter {
         String causeMessage = rootCause.getMessage();
         String rootCauseDescription = rootCause.toString();
         String message = failure.getMessage();
-        if (message != null
-                && (message.contains(rootCauseDescription)
-                        || (causeMessage != null && !causeMessage.isEmpty() && message.contains(causeMessage)))) {
-            return failure;
+        if (message != null) {
+            if (message.contains(rootCauseDescription)) {
+                return failure;
+            }
+            if (causeMessage != null && !causeMessage.isEmpty() && message.contains(causeMessage)) {
+                String rootCauseType = rootCause.getClass().getName();
+                if (message.contains(rootCauseType)) {
+                    return failure;
+                }
+                return new JUnitException(message + ": " + rootCauseType, failure);
+            }
         }
         return new JUnitException(
                 message == null || message.isEmpty() ? rootCauseDescription : message + ": " + rootCauseDescription,
