@@ -121,6 +121,7 @@ import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
+import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2101,21 +2102,31 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerClasspath = classpathCache.setCachedClasspath(providerName, providerArtifacts);
         }
 
-        // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
+        final Set<String> testModuleNames;
         final ModulePathJpmsArguments.Layout layout;
         if (isMainDescriptor) {
+            // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
             }
 
             layout = ModulePathJpmsArguments.forMainModule(
                     getLocationManager(), testClasspath, javaModuleDescriptor, javaHome, packages, getConsoleLogger());
+            testModuleNames = layout.getModuleNames();
         } else {
+            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
+                    .setIncludeAllProviders(true)
+                    .setJdkHome(javaHome)
+                    .setIncludeStatic(true)
+                    .setModuleDescriptor(javaModuleDescriptor);
+            testModuleNames = ModulePathJpmsArguments.moduleNamesOnModulepath(
+                    getLocationManager().resolvePaths(req));
             layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
+        ProviderRequirements providerRequirements =
+                new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor, testModuleNames);
         testClasspath = layout.getClasspath();
         Classpath testModulepath = layout.getModulepath();
-        ProviderRequirements providerRequirements = new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor);
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -3236,7 +3247,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return ModulePathJpmsArguments.junitPlatformArguments(forkRequirements);
+            return forkRequirements.getTestModuleNames().contains("org.junit.platform.commons")
+                    ? ModulePathJpmsArguments.junitPlatformArguments(forkRequirements)
+                    : Collections.emptyList();
         }
 
         @Override

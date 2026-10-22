@@ -18,6 +18,12 @@
  */
 package org.apache.maven.surefire.providerapi;
 
+import javax.annotation.Nonnull;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Used to get additional provider-specific JVM arguments.
  *
@@ -27,11 +33,21 @@ public final class ProviderRequirements {
     private final boolean modularPath;
     private final boolean mainModuleDescriptor;
     private final boolean testModuleDescriptor;
+    private final Set<String> testModuleNames;
 
     public ProviderRequirements(boolean modularPath, boolean mainModuleDescriptor, boolean testModuleDescriptor) {
+        this(modularPath, mainModuleDescriptor, testModuleDescriptor, Collections.emptySet());
+    }
+
+    public ProviderRequirements(
+            boolean modularPath,
+            boolean mainModuleDescriptor,
+            boolean testModuleDescriptor,
+            @Nonnull Set<String> testModuleNames) {
         this.modularPath = modularPath;
         this.mainModuleDescriptor = mainModuleDescriptor;
         this.testModuleDescriptor = testModuleDescriptor;
+        this.testModuleNames = Collections.unmodifiableSet(new HashSet<>(testModuleNames));
     }
 
     public boolean isModularPath() {
@@ -44,5 +60,15 @@ public final class ProviderRequirements {
 
     public boolean hasTestModuleDescriptor() {
         return testModuleDescriptor;
+    }
+
+    /**
+     * Gets the names of modules on the effective test module path.
+     *
+     * @return module names on the test module path
+     */
+    @Nonnull
+    public Set<String> getTestModuleNames() {
+        return testModuleNames;
     }
 }
