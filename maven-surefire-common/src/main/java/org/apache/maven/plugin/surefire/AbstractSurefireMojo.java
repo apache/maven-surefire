@@ -2986,6 +2986,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
+        if (!containsTestClasses(getTestClassesDirectory())) {
+            return;
+        }
+
         Artifact junitArtifact = getJunitArtifact();
         if (isAnyGroupsSelected()) {
             if (getTestNgArtifact() == null) {
@@ -2999,6 +3003,29 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 }
             }
         }
+    }
+
+    private boolean containsTestClasses(File directory) {
+        if (directory == null) {
+            return false;
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {
+            return false;
+        }
+
+        for (File file : files) {
+            if (file.isDirectory()) {
+                if (containsTestClasses(file)) {
+                    return true;
+                }
+            } else if (file.getName().endsWith(".class")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void warnIfRerunClashes() throws MojoFailureException {
