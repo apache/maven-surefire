@@ -60,39 +60,39 @@ import static org.mockito.Mockito.when;
  */
 public class TestPlanScannerFilterTest {
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void emptyClassIsNotAccepted() {
         assertFalse(newFilter(EmptyClass.class).accept(EmptyClass.class), "does not accept empty class");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void classWithNoTestMethodsIsNotAccepted() {
         assertFalse(
                 newFilter(ClassWithMethods.class).accept(ClassWithMethods.class),
                 "does not accept class with no @Test methods");
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void classWithTestMethodsIsAccepted() {
         assertTrue(newFilter(ClassWithTestMethods.class).accept(ClassWithTestMethods.class));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void classWithNestedTestClassIsAccepted() {
         assertTrue(newFilter(ClassWithNestedTestClass.class).accept(ClassWithNestedTestClass.class));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void classWithDeeplyNestedTestClassIsAccepted() {
         assertTrue(newFilter(ClassWithDeeplyNestedTestClass.class).accept(ClassWithDeeplyNestedTestClass.class));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void classWithTestFactoryIsAccepted() {
         assertTrue(newFilter(ClassWithTestFactory.class).accept(ClassWithTestFactory.class));
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     public void classWithNestedTestFactoryIsAccepted() {
         assertTrue(newFilter(ClassWithNestedTestFactory.class).accept(ClassWithNestedTestFactory.class));
     }
@@ -261,6 +261,7 @@ public class TestPlanScannerFilterTest {
                         emptyList()));
 
         assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertSame(rootCause, failure.getCause().getCause().getCause());
     }
 
     @Test
@@ -297,7 +298,8 @@ public class TestPlanScannerFilterTest {
                         singletonList(ClassWithTestMethods.class.getName()),
                         emptyList()));
 
-        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertEquals("engine discovery failed: " + rootCause.getClass().getName(), failure.getMessage());
+        assertSame(rootCause, failure.getCause().getCause());
     }
 
     @Test
@@ -314,7 +316,8 @@ public class TestPlanScannerFilterTest {
                         singletonList(ClassWithTestMethods.class.getName()),
                         emptyList()));
 
-        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertEquals("engine discovery failed: " + rootCause.getClass().getName(), failure.getMessage());
+        assertSame(rootCause, failure.getCause().getCause());
     }
 
     @Test
@@ -439,7 +442,7 @@ public class TestPlanScannerFilterTest {
         @org.junit.Test
         void test1() {}
 
-        @org.junit.jupiter.api.Test
+        @Test
         public void test2() {}
     }
 
@@ -450,7 +453,7 @@ public class TestPlanScannerFilterTest {
         @Nested
         class TestClass {
 
-            @org.junit.jupiter.api.Test
+            @Test
             void test1() {}
         }
     }
@@ -466,7 +469,7 @@ public class TestPlanScannerFilterTest {
                 @Nested
                 class TestClass {
 
-                    @org.junit.jupiter.api.Test
+                    @Test
                     void test1() {}
                 }
             }

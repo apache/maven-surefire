@@ -116,7 +116,9 @@ final class LauncherAdapter {
         }
 
         String causeMessage = rootCause.getMessage();
-        String rootCauseDescription = rootCause.toString();
+        String rootCauseDescription = causeMessage == null || causeMessage.isEmpty()
+                ? rootCause.getClass().getName()
+                : rootCause.toString();
         String message = failure.getMessage();
         if (message != null) {
             if (message.contains(rootCauseDescription)) {
