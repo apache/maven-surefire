@@ -339,9 +339,9 @@ public class TestPlanScannerFilterTest {
 
     @Test
     public void executionFailureIncludesRootCauseMessage() {
-        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        RuntimeException rootCause = new RuntimeException("listener failed during execution");
         Launcher launcher = mock(Launcher.class);
-        doThrow(new JUnitException("engine discovery failed", rootCause))
+        doThrow(new JUnitException("engine execution failed", rootCause))
                 .when(launcher)
                 .execute(
                         any(LauncherDiscoveryRequest.class),
@@ -352,17 +352,17 @@ public class TestPlanScannerFilterTest {
                 () -> new LauncherAdapter(launcher, null)
                         .executeWithoutCancellationToken(mock(LauncherDiscoveryRequest.class)));
 
-        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertEquals("engine execution failed: " + rootCause, failure.getMessage());
     }
 
     @Test
     public void executionFailureIncludesRootCauseMessageWithCancellationToken() {
         assumeTrue(CancellationTokenAdapter.CANCELLATION_TOKEN_CLASS != null);
-        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        RuntimeException rootCause = new RuntimeException("listener failed during execution");
         Launcher launcher = mock(Launcher.class, invocation -> {
             if ("execute".equals(invocation.getMethod().getName())
                     && invocation.getMethod().getParameterCount() == 1) {
-                throw new JUnitException("engine discovery failed", rootCause);
+                throw new JUnitException("engine execution failed", rootCause);
             }
             return null;
         });
@@ -372,7 +372,7 @@ public class TestPlanScannerFilterTest {
                 () -> new LauncherAdapter(launcher, CancellationTokenAdapter.tryCreate())
                         .execute(mock(LauncherDiscoveryRequest.class)));
 
-        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertEquals("engine execution failed: " + rootCause, failure.getMessage());
     }
 
     @Test
@@ -387,8 +387,8 @@ public class TestPlanScannerFilterTest {
     @Test
     public void executionFailureFindsJUnitExceptionNestedInReflectionCause() {
         assumeTrue(CancellationTokenAdapter.CANCELLATION_TOKEN_CLASS != null);
-        RuntimeException rootCause = new RuntimeException("listener failed during discovery");
-        JUnitException junitException = new JUnitException("engine discovery failed", rootCause);
+        RuntimeException rootCause = new RuntimeException("listener failed during execution");
+        JUnitException junitException = new JUnitException("engine execution failed", rootCause);
         Launcher launcher = mock(Launcher.class, invocation -> {
             if ("execute".equals(invocation.getMethod().getName())
                     && invocation.getMethod().getParameterCount() == 1) {
@@ -402,7 +402,7 @@ public class TestPlanScannerFilterTest {
                 () -> new LauncherAdapter(launcher, CancellationTokenAdapter.tryCreate())
                         .execute(mock(LauncherDiscoveryRequest.class)));
 
-        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertEquals("engine execution failed: " + rootCause, failure.getMessage());
     }
 
     @Test
