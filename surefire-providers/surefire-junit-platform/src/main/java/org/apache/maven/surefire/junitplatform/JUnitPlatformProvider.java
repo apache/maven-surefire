@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -129,6 +130,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private boolean excludeTestNgEngine;
 
+    /**
+     * Whether this provider configured the class orderer of Jupiter, so Jupiter orders the classes.
+     */
+    private boolean classOrdererSetByProvider;
+
     // groups only TestNG can use, we warn about them when the tests start
     private final List<String> testNgOnlyGroups = new ArrayList<>();
 
@@ -185,7 +191,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
-                setDefaultOrderers(
+                classOrdererSetByProvider = setDefaultOrderers(
                         "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
                         .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
@@ -203,24 +209,31 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     /**
      * Sets the JUnit orderers for runOrder, unless one is already set (Quarkus sets its own, for example).
+     *
+     * @return whether the class orderer was set, that is whether Jupiter will order the classes as this
+     *     provider configured it
      */
-    private void setDefaultOrderers(String methodOrderer, String classOrderer) {
+    private boolean setDefaultOrderers(String methodOrderer, String classOrderer) {
         // what JUnit finds by itself: system properties and junit-platform.properties
         ConfigurationParameters configuredElsewhere = request().build().getConfigurationParameters();
         setOrdererIfMissing(METHOD_ORDER_DEFAULT, methodOrderer, configuredElsewhere);
-        setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+        return setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
     }
 
-    private void setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {
+    private boolean setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {
         if (!configuredElsewhere.get(key).isPresent()) {
-            getConfigurationParameters().putIfAbsent(key, orderer);
+            return getConfigurationParameters().putIfAbsent(key, orderer) == null;
         }
+        return false;
     }
 
     @Override
     public Iterable<Class<?>> getSuites() {
         try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession()) {
-            return scanClasspath(launcherSession.getLauncher());
+            // The classes are handed over one class at a time (fork distribution, tests discovered in
+            // process), so the class orderer of Jupiter never sees more than one class and the run order
+            // calculator keeps ordering them.
+            return scanClasspath(launcherSession.getLauncher(), false);
         }
     }
 
@@ -248,7 +261,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 excludeTestNgEngineIfPossible(Collections.singletonList(testClass.getName()));
                 invokeAllTests(launcher, fromClass(testClass), adapter);
             } else if (forkTestSet == null) {
-                invokeAllTests(launcher, scanClasspath(launcher), adapter);
+                invokeAllTests(launcher, scanClasspath(launcher, true), adapter);
             } else {
                 throw new IllegalArgumentException("Unexpected value of forkTestSet: " + forkTestSet);
             }
@@ -272,7 +285,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         }
     }
 
-    private TestsToRun scanClasspath(LauncherAdapter launcher) {
+    private TestsToRun scanClasspath(LauncherAdapter launcher, boolean classesReachJupiterInOneRequest) {
         ScanResult scanResult = parameters.getScanResult();
         List<String> candidateClassNames = scannedClassNames(scanResult);
         excludeTestNgEngineIfPossible(candidateClassNames);
@@ -281,7 +294,47 @@ public class JUnitPlatformProvider extends AbstractProvider {
         TestPlanScannerFilter filter =
                 new TestPlanScannerFilter(launcher, allFilters(), candidateClassNames, testNgClassNames);
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
+        return orderTestClasses(scannedClasses, classesReachJupiterInOneRequest && testNgClassNames.isEmpty());
+    }
+
+    /**
+     * Orders the scanned classes for the discovery request(s) they run in.
+     * <p>
+     * When all classes reach Jupiter in one discovery request and this provider configured its class orderer
+     * for {@code runOrder=random}, Jupiter shuffles the whole request with the seed of
+     * {@code runOrder.random.seed}. The classes must be handed over sorted then, so that Jupiter applies the
+     * single shuffle: the run order calculator shuffles with the same seed, so letting it shuffle as well
+     * would compose the permutation with itself, which can never produce some class orders and made two test
+     * classes always run alphabetically.
+     *
+     * @param jupiterShufflesTheClasses whether the class orderer of Jupiter re-orders every class, which is
+     *     the case when they all go to the platform in one discovery request and none of them is a TestNG
+     *     test
+     * @see <a href="https://github.com/apache/maven-surefire/issues/3544">Issue 3544</a>
+     */
+    private TestsToRun orderTestClasses(TestsToRun scannedClasses, boolean jupiterShufflesTheClasses) {
+        if (jupiterShufflesTheClasses
+                && classOrdererSetByProvider
+                && !runsOneClassAtATime()
+                && !isVintageEngineDetected()) {
+            return sortedAlphabetically(scannedClasses);
+        }
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
+    }
+
+    /**
+     * Sorts the classes by name, the order the run order calculator shuffles for {@code runOrder=random}.
+     * Jupiter shuffles the sorted classes, so the executed order follows from the seed alone.
+     */
+    private static TestsToRun sortedAlphabetically(TestsToRun classes) {
+        List<Class<?>> sortedClasses = new ArrayList<>();
+        classes.forEach(sortedClasses::add);
+        sortedClasses.sort(Comparator.comparing(Class::getName));
+        return new TestsToRun(new LinkedHashSet<>(sortedClasses));
+    }
+
+    private boolean isVintageEngineDetected() {
+        return Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED));
     }
 
     private static List<String> scannedClassNames(ScanResult scanResult) {
