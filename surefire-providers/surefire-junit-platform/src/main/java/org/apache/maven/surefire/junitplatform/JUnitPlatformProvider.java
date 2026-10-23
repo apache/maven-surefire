@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -109,7 +110,7 @@ import static org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder.r
 public class JUnitPlatformProvider extends AbstractProvider {
     static final String CONFIGURATION_PARAMETERS = "configurationParameters";
 
-    private static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
+    static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
 
     static final String METHOD_ORDER_DEFAULT = "junit.jupiter.testmethod.order.default";
 
@@ -188,7 +189,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 setDefaultOrderers(
                         "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
-                        .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
+                        .ifPresent(seed -> getConfigurationParameters()
+                                .putIfAbsent(
+                                        JUNIT_RANDOM_SEED,
+                                        Long.toString(deriveJupiterRandomSeed(Long.parseLong(seed)))));
             } else if (runOrder.equals("alphabetical")) {
                 setDefaultOrderers(
                         "org.junit.jupiter.api.MethodOrderer$MethodName",
@@ -215,6 +219,18 @@ public class JUnitPlatformProvider extends AbstractProvider {
         if (!configuredElsewhere.get(key).isPresent()) {
             getConfigurationParameters().putIfAbsent(key, orderer);
         }
+    }
+
+    /**
+     * Derives the seed handed to Jupiter's {@code ClassOrderer$Random}/{@code MethodOrderer$Random} from the
+     * Surefire run order seed. {@link org.apache.maven.surefire.api.util.DefaultRunOrderCalculator} already
+     * shuffles the discovered classes with the raw seed before they reach this provider; reusing that same seed
+     * for Jupiter's own class shuffle would apply the same permutation twice, which restricts the final order to
+     * permutation squares instead of a uniformly random order. Mixing the seed through {@link Random} decorrelates
+     * the two shuffles while keeping the result reproducible for a given seed.
+     */
+    static long deriveJupiterRandomSeed(long surefireSeed) {
+        return new Random(surefireSeed).nextLong();
     }
 
     @Override
