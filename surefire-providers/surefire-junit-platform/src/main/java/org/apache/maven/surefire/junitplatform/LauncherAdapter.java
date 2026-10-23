@@ -19,8 +19,13 @@
 package org.apache.maven.surefire.junitplatform;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
+import org.apache.maven.surefire.api.util.SurefireReflectionException;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
 import org.junit.platform.launcher.TestExecutionListener;
@@ -44,7 +49,11 @@ final class LauncherAdapter {
     }
 
     TestPlan discover(LauncherDiscoveryRequest discoveryRequest) {
-        return delegate.discover(discoveryRequest);
+        try {
+            return delegate.discover(discoveryRequest);
+        } catch (JUnitException e) {
+            throw withRootCauseMessage(e);
+        }
     }
 
     void execute(LauncherDiscoveryRequest discoveryRequest, TestExecutionListener... listeners) {
@@ -57,7 +66,11 @@ final class LauncherAdapter {
 
     void executeWithoutCancellationToken(
             LauncherDiscoveryRequest discoveryRequest, TestExecutionListener... listeners) {
-        delegate.execute(discoveryRequest, listeners);
+        try {
+            delegate.execute(discoveryRequest, listeners);
+        } catch (JUnitException e) {
+            throw withRootCauseMessage(e);
+        }
     }
 
     private void executeWithCancellationToken(
@@ -65,7 +78,63 @@ final class LauncherAdapter {
 
         Method executeMethod = requireNonNull(EXECUTE_METHOD_WITH_LAUNCHER_EXECUTION_REQUEST_PARAMETER);
         Object executionRequest = createExecutionRequest(discoveryRequest, listeners);
-        ReflectionUtils.invokeMethodWithArray(delegate, executeMethod, executionRequest);
+        try {
+            ReflectionUtils.invokeMethodWithArray(delegate, executeMethod, executionRequest);
+        } catch (JUnitException e) {
+            throw withRootCauseMessage(e);
+        } catch (SurefireReflectionException e) {
+            JUnitException junitException = findJUnitException(e);
+            if (junitException != null) {
+                throw withRootCauseMessage(junitException);
+            }
+            throw e;
+        }
+    }
+
+    static JUnitException findJUnitException(Throwable failure) {
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+        Throwable cause = failure;
+        while (cause != null && visited.add(cause)) {
+            if (cause instanceof JUnitException) {
+                return (JUnitException) cause;
+            }
+            cause = cause.getCause();
+        }
+        return null;
+    }
+
+    private static JUnitException withRootCauseMessage(JUnitException failure) {
+        Throwable rootCause = failure;
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+        visited.add(rootCause);
+        while (rootCause.getCause() != null && visited.add(rootCause.getCause())) {
+            rootCause = rootCause.getCause();
+        }
+
+        if (rootCause == failure) {
+            return failure;
+        }
+
+        String causeMessage = rootCause.getMessage();
+        String rootCauseDescription = causeMessage == null || causeMessage.isEmpty()
+                ? rootCause.getClass().getName()
+                : rootCause.toString();
+        String message = failure.getMessage();
+        if (message != null) {
+            if (message.contains(rootCauseDescription)) {
+                return failure;
+            }
+            if (causeMessage != null && !causeMessage.isEmpty() && message.contains(causeMessage)) {
+                String rootCauseType = rootCause.getClass().getName();
+                if (message.contains(rootCauseType)) {
+                    return failure;
+                }
+                return new JUnitException(message + ": " + rootCauseType, failure);
+            }
+        }
+        return new JUnitException(
+                message == null || message.isEmpty() ? rootCauseDescription : message + ": " + rootCauseDescription,
+                failure);
     }
 
     private static Method findExecuteMethodWithLauncherExecutionRequestParameter() {
