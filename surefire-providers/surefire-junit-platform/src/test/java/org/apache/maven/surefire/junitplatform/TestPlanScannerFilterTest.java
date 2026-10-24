@@ -303,6 +303,24 @@ public class TestPlanScannerFilterTest {
     }
 
     @Test
+    public void discoveryFailureIncludesClassLoadingExceptionType() {
+        ClassNotFoundException rootCause = new ClassNotFoundException("com.acme.MissingTest");
+        Launcher launcher = mock(Launcher.class);
+        when(launcher.discover(any())).thenThrow(new JUnitException("engine discovery failed", rootCause));
+
+        JUnitException failure = assertThrows(
+                JUnitException.class,
+                () -> new TestPlanScannerFilter(
+                        new LauncherAdapter(launcher, null),
+                        new Filter<?>[0],
+                        singletonList(ClassWithTestMethods.class.getName()),
+                        emptyList()));
+
+        assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
+        assertSame(rootCause, failure.getCause().getCause());
+    }
+
+    @Test
     public void discoveryFailureIncludesRootCauseTypeWhenMessageIsEmpty() {
         IllegalStateException rootCause = new IllegalStateException("");
         Launcher launcher = mock(Launcher.class);
