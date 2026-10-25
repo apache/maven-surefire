@@ -18,6 +18,7 @@
  */
 package org.apache.maven.plugin.surefire.report;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -274,6 +275,114 @@ public class StatelessXmlReporterTest {
         assertEquals(
                 stdErrPrefix + "?&-&amp;&#163; &amp#0;&amp#31;",
                 tcb.getChild("system-err").getValue());
+    }
+
+    @Test
+    public void testInvalidXml10CharactersAreEscaped() throws Exception {
+        String supplementaryCharacter = new String(Character.toChars(0x1F600));
+        StackTraceWriter stackTraceWriter = new DeserializedStacktraceWriter(
+                "failure\uFFFF",
+                "trimmed " + supplementaryCharacter,
+                "stack trace\uFFFE\uFFFF " + supplementaryCharacter);
+
+        Utf8RecodingDeferredFileOutputStream stdOut = new Utf8RecodingDeferredFileOutputStream("fds");
+        StringBuilder stdout = new StringBuilder(Utf8RecodingDeferredFileOutputStream.CACHE_SIZE + 16);
+        for (int i = 0; i < Utf8RecodingDeferredFileOutputStream.CACHE_SIZE - 1; i++) {
+            stdout.append('a');
+        }
+        stdout.append('\uFFFF').append(" ]]> ");
+        stdOut.write(stdout.toString(), false, null);
+
+        Utf8RecodingDeferredFileOutputStream stdErr = new Utf8RecodingDeferredFileOutputStream("fds");
+        stdErr.write("stderr\uFFFE " + supplementaryCharacter, false, null);
+
+        HashMap<String, String> systemProperties = new HashMap<>();
+        systemProperties.put("property\uFFFF", "value\uFFFE");
+
+        ReportEntry testSetReport =
+                new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, systemProperties);
+        WrappedReportEntry testSetReportEntry =
+                new WrappedReportEntry(testSetReport, SUCCESS, 1771085631L, 12, null, null, systemProperties);
+        stats.testSucceeded(testSetReportEntry);
+
+        ReportEntry failingReport = new SimpleReportEntry(
+                NORMAL_RUN,
+                0L,
+                getClass().getName(),
+                null,
+                "test\uFFFF",
+                null,
+                stackTraceWriter,
+                13,
+                "message\uFFFE",
+                systemProperties);
+        WrappedReportEntry failingReportEntry =
+                new WrappedReportEntry(failingReport, ERROR, 1771085631L, 13, stdOut, stdErr, systemProperties);
+        stats.testSucceeded(failingReportEntry);
+
+        expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
+        StatelessXmlReporter reporter = new StatelessXmlReporter(
+                reportDir,
+                null,
+                false,
+                0,
+                new ConcurrentHashMap<String, Deque<WrappedReportEntry>>(),
+                XSD,
+                "3.0.2",
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                false);
+        reporter.testSetCompleted(testSetReportEntry, stats);
+
+        String xml = new String(java.nio.file.Files.readAllBytes(expectedReportFile.toPath()), UTF_8);
+        assertFalse(xml.contains("\uFFFE"));
+        assertFalse(xml.contains("\uFFFF"));
+        assertThat(xml).contains("&amp#65535;").contains("&amp#65534;");
+
+        Xpp3Dom testSuite;
+        try (FileInputStream fileInputStream = new FileInputStream(expectedReportFile);
+                InputStreamReader reader = new InputStreamReader(fileInputStream, UTF_8)) {
+            testSuite = Xpp3DomBuilder.build(reader);
+        }
+
+        Xpp3Dom[] testcases = testSuite.getChildren("testcase");
+        Xpp3Dom testcase = testcases[1];
+        assertThat(testcase.getAttribute("name")).contains("65535");
+        assertThat(testcase.getChild("error").getValue()).contains("65534", supplementaryCharacter);
+        assertThat(testcase.getChild("system-out").getValue())
+                .contains("&amp#65535;")
+                .contains("]]>");
+        assertThat(testcase.getChild("system-err").getValue())
+                .contains("&amp#65534;")
+                .contains(supplementaryCharacter);
+    }
+
+    @Test
+    public void testMalformedUtf8IsReplaced() throws Exception {
+        ByteArrayOutputStream xml = new ByteArrayOutputStream();
+        xml.write("<root><![CDATA[".getBytes(UTF_8));
+
+        StatelessXmlReporter.EncodingOutputStream out = new StatelessXmlReporter.EncodingOutputStream(xml);
+        out.write(new byte[] {'A', (byte) 0x80});
+        out.write(0xE2);
+        out.write('B');
+        out.write(new byte[] {(byte) 0xF0, (byte) 0x9F});
+        out.write(new byte[] {(byte) 0x98, (byte) 0x80});
+        out.write(0xC2);
+        out.finish();
+
+        xml.write("]]></root>".getBytes(UTF_8));
+
+        Xpp3Dom root;
+        try (InputStreamReader reader = new InputStreamReader(new ByteArrayInputStream(xml.toByteArray()), UTF_8)) {
+            root = Xpp3DomBuilder.build(reader);
+        }
+
+        assertThat(root.getValue()).isEqualTo("A\uFFFD\uFFFDB" + new String(Character.toChars(0x1F600)) + "\uFFFD");
     }
 
     @Test
