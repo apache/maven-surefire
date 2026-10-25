@@ -806,7 +806,24 @@ public class ForkStarter {
      */
     private boolean isForkJvmDifferentFromBuildJvm() {
         File testsJdkHome = forkConfiguration.getJdkForTests().getJdkHome();
-        return testsJdkHome != null && !testsJdkHome.equals(toJdkHomeFromJre());
+        return testsJdkHome != null && !isSameDirectory(testsJdkHome, toJdkHomeFromJre());
+    }
+
+    /**
+     * Tells whether both paths point at the same directory. Symbolic links and relative segments are resolved first,
+     * so that two spellings of the same JDK home - a symbolic link or an automounted path, for instance - are
+     * recognized as equal and no extra fork is started just to list the test classes.
+     */
+    private static boolean isSameDirectory(File testsJdkHome, File buildJdkHome) {
+        return buildJdkHome != null && canonicalOrAbsolute(testsJdkHome).equals(canonicalOrAbsolute(buildJdkHome));
+    }
+
+    private static File canonicalOrAbsolute(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return file.getAbsoluteFile();
+        }
     }
 
     /**
