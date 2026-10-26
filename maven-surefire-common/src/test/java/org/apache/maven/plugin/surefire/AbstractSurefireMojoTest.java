@@ -2004,6 +2004,57 @@ public class AbstractSurefireMojoTest {
         verify(logger, times(0)).warn(anyString());
     }
 
+    @Test
+    public void shouldWarnThatArgLineHasNoEffectWhenNotForking() throws Exception {
+        Logger logger = mock(Logger.class);
+        Mojo mojo = mojoReadyForParameterVerification(logger);
+        mojo.forkCount = "0";
+        mojo.setArgLine("-javaagent:jacocoagent.jar");
+
+        mojo.verifyParameters();
+
+        verify(logger).warn("argLine setting has no effect when not forking");
+    }
+
+    @Test
+    public void shouldNotWarnAboutArgLineWhenForking() throws Exception {
+        Logger logger = mock(Logger.class);
+        Mojo mojo = mojoReadyForParameterVerification(logger);
+        mojo.forkCount = "1";
+        mojo.setArgLine("-javaagent:jacocoagent.jar");
+
+        mojo.verifyParameters();
+
+        verify(logger, times(0)).warn("argLine setting has no effect when not forking");
+    }
+
+    private Mojo mojoReadyForParameterVerification(Logger logger) throws IOException {
+        Mojo verifiedMojo = new Mojo() {
+            @Override
+            public String getShutdown() {
+                return "exit";
+            }
+
+            @Override
+            public String getRunOrder() {
+                return "filesystem";
+            }
+        };
+        verifiedMojo.setLogger(logger);
+        verifiedMojo.setProperties(new Properties());
+        verifiedMojo.setProjectArtifactMap(new LinkedHashMap<>());
+        Artifact projectArtifact = verifiedMojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        verifiedMojo.setProject(project);
+        verifiedMojo.setSession(mock(MavenSession.class));
+        verifiedMojo.setTestClassesDirectory(
+                Files.createTempDirectory(tempFolder, "test-classes").toFile());
+        verifiedMojo.setWorkingDirectory(tempFolder.toFile());
+        verifiedMojo.setTempDir("surefire");
+        return verifiedMojo;
+    }
+
     private void setProjectDepedenciesToMojo(Artifact... deps) {
         for (Artifact dep : deps) {
             mojo.getProjectArtifactMap().put(dep.getGroupId() + ":" + dep.getArtifactId(), dep);

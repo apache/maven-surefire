@@ -1223,6 +1223,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
             warnIfUselessUseSystemClassLoaderParameter();
+            warnIfUselessArgLineParameter();
             warnIfDefunctGroupsCombinations();
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
@@ -2974,6 +2975,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private void warnIfUselessUseSystemClassLoaderParameter() {
         if (isUseSystemClassLoader() && isNotForking()) {
             getConsoleLogger().warning("useSystemClassLoader setting has no effect when not forking");
+        }
+    }
+
+    private void warnIfUselessArgLineParameter() {
+        if (isNotBlank(getArgLine()) && isNotForking()) {
+            getConsoleLogger().warning("argLine setting has no effect when not forking");
         }
     }
 
