@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -95,6 +98,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -689,7 +693,7 @@ public class ForkClientTest {
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new TestsetStartingEvent(reportEntry));
 
-        client.tryToTimeout(System.currentTimeMillis() + 1000L, 1);
+        client.tryToTimeout(System.currentTimeMillis() + 1000L, 1, Runnable::run);
 
         verify(notifiableTestStream).shutdown(Shutdown.KILL);
         verifyNoMoreInteractions(notifiableTestStream);
@@ -772,7 +776,7 @@ public class ForkClientTest {
 
         ForkClient client = new ForkClient(factory, notifiableTestStream, 0);
         client.handleEvent(new TestsetStartingEvent(reportEntry));
-        client.tryToTimeout(System.currentTimeMillis(), 1);
+        client.tryToTimeout(System.currentTimeMillis(), 1, Runnable::run);
 
         verifyNoInteractions(notifiableTestStream);
         verify(factory).createTestReportListener();
@@ -1629,13 +1633,88 @@ public class ForkClientTest {
 
         client.handleEvent(new TestsetStartingEvent(reportEntry));
 
-        client.tryToTimeout(System.currentTimeMillis() + 1000L, 1);
-        client.tryToTimeout(System.currentTimeMillis() + 2000L, 1);
+        client.tryToTimeout(System.currentTimeMillis() + 1000L, 1, Runnable::run);
+        client.tryToTimeout(System.currentTimeMillis() + 2000L, 1, Runnable::run);
 
         assertThat(listenerCalls).hasValue(1);
         verify(notifiableTestStream).shutdown(Shutdown.KILL);
         verifyNoMoreInteractions(notifiableTestStream);
         assertThat(order).containsExactly("listener", "shutdown");
         assertThat(client.hadTimeout()).isTrue();
+    }
+
+    @Test
+    public void slowTimeoutListenerDoesNotDelayOtherForks() throws Exception {
+        NotifiableTestStream slowStream = mock(NotifiableTestStream.class);
+        NotifiableTestStream otherStream = mock(NotifiableTestStream.class);
+        ForkClient slowFork = startedForkClient(slowStream, 1);
+        ForkClient otherFork = startedForkClient(otherStream, 2);
+        CountDownLatch dumping = new CountDownLatch(1);
+        CountDownLatch dumpDone = new CountDownLatch(1);
+        slowFork.setTimeoutDetectedListener(() -> {
+            dumping.countDown();
+            try {
+                dumpDone.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        ExecutorService timer = Executors.newSingleThreadExecutor();
+        ExecutorService executor = Executors.newCachedThreadPool();
+        try {
+            // one round of the timeout check, like ForkStarter's timer does
+            long now = System.currentTimeMillis() + 1000L;
+            timer.execute(() -> {
+                slowFork.tryToTimeout(now, 1, executor);
+                otherFork.tryToTimeout(now, 1, executor);
+            });
+
+            assertThat(dumping.await(5L, TimeUnit.SECONDS)).isTrue();
+            // the other fork is killed while the slow one is still dumping
+            verify(otherStream, timeout(5000L)).shutdown(Shutdown.KILL);
+            verify(slowStream, never()).shutdown(Shutdown.KILL);
+
+            dumpDone.countDown();
+            verify(slowStream, timeout(5000L)).shutdown(Shutdown.KILL);
+            assertThat(slowFork.hadTimeout()).isTrue();
+            assertThat(otherFork.hadTimeout()).isTrue();
+        } finally {
+            dumpDone.countDown();
+            timer.shutdownNow();
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    public void killIsSentEvenWhenExecutorRejects() {
+        NotifiableTestStream stream = mock(NotifiableTestStream.class);
+        ForkClient client = startedForkClient(stream, 1);
+        AtomicInteger listenerCalls = new AtomicInteger();
+        client.setTimeoutDetectedListener(listenerCalls::incrementAndGet);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.shutdown();
+
+        client.tryToTimeout(System.currentTimeMillis() + 1000L, 1, executor);
+
+        assertThat(listenerCalls).hasValue(1);
+        verify(stream).shutdown(Shutdown.KILL);
+        assertThat(client.hadTimeout()).isTrue();
+    }
+
+    private static ForkClient startedForkClient(NotifiableTestStream stream, int forkNumber) {
+        DefaultReporterFactory factory = mock(DefaultReporterFactory.class);
+        when(factory.getReportsDirectory()).thenReturn(new File("."));
+        when(factory.createTestReportListener()).thenReturn(new MockReporter());
+
+        TestSetReportEntry reportEntry = mock(TestSetReportEntry.class);
+        when(reportEntry.getRunMode()).thenReturn(NORMAL_RUN);
+        when(reportEntry.getTestRunId()).thenReturn(1L);
+        when(reportEntry.getElapsed()).thenReturn(ELAPSED_TIME);
+        when(reportEntry.getName()).thenReturn("my test");
+        when(reportEntry.getSourceName()).thenReturn("pkg.MyTest");
+
+        ForkClient client = new ForkClient(factory, stream, forkNumber);
+        client.handleEvent(new TestsetStartingEvent(reportEntry));
+        return client;
     }
 }
