@@ -628,10 +628,12 @@ public class ForkStarter {
             log.debug("Fork Channel [" + forkNumber + "] connected to the client.");
 
             if (timeoutExtensionDispatcher.hasExtensions() && forkedProcessTimeoutInSeconds > 0) {
-                Long pid = pidOf(exec.getProcess());
                 File javaExecutable = cli.getExecutable() == null ? null : new File(cli.getExecutable());
                 final ForkedProcessTimeoutContext context = new DefaultForkedProcessTimeoutContext(
-                        pid == null ? -1L : pid,
+                        () -> {
+                            Long resolved = pidOf(exec.getProcess());
+                            return resolved == null ? -1L : resolved;
+                        },
                         forkNumber,
                         javaExecutable,
                         startupReportConfiguration.getReportsDirectory(),
