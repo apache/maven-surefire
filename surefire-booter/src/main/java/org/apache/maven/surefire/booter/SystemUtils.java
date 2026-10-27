@@ -27,8 +27,11 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 
@@ -200,7 +203,11 @@ public final class SystemUtils {
 
     /**
      * Returns the OS PID of the given child {@link Process} using the Java 9+
-     * {@code Process.pid()} method via reflection.
+     * {@code Process.pid()} method via reflection. When the platform started
+     * {@code process} through a shell wrapper (for instance to change the
+     * working directory before exec'ing the JVM), {@code process} is the shell,
+     * not the JVM; in that case the single live child of {@code process} is
+     * returned instead, since that child is the forked JVM.
      *
      * @param process a {@link Process} returned by {@code ProcessBuilder} /
      *                {@code Runtime.exec}; may be {@code null}
@@ -218,7 +225,33 @@ public final class SystemUtils {
         }
         try {
             Object value = pidMethod.invoke(process);
-            return value instanceof Long ? (Long) value : null;
+            if (!(value instanceof Long)) {
+                return null;
+            }
+            Long childPid = singleLiveChildPid(process);
+            return childPid != null ? childPid : (Long) value;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param process a {@link Process} that may have been started through a shell wrapper
+     * @return the PID of the single live child of {@code process}, or {@code null} when it has no live child,
+     *         more than one (ambiguous), or {@code ProcessHandle} is unavailable (Java 8)
+     */
+    private static Long singleLiveChildPid(Process process) {
+        try {
+            Method toHandle = Process.class.getMethod("toHandle");
+            Class<?> processHandleClass = Class.forName("java.lang.ProcessHandle");
+            Method childrenMethod = processHandleClass.getMethod("children");
+            Method pidMethod = processHandleClass.getMethod("pid");
+            Object handle = toHandle.invoke(process);
+            List<?> children = ((Stream<?>) childrenMethod.invoke(handle)).collect(Collectors.toList());
+            if (children.size() != 1) {
+                return null;
+            }
+            return (Long) pidMethod.invoke(children.get(0));
         } catch (ReflectiveOperationException | RuntimeException e) {
             return null;
         }
