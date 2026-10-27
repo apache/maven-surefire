@@ -67,8 +67,8 @@ class JstackTimeoutExtensionTest {
     @Test
     void disabledByDefaultDoesNothing() {
         JstackTimeoutExtension ext = new JstackTimeoutExtension();
-        DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(currentPidBestEffort(), 1, null, tmp.toFile(), 60, logger, null);
+        DefaultForkedProcessTimeoutContext ctx = new DefaultForkedProcessTimeoutContext(
+                JstackTimeoutExtensionTest::currentPidBestEffort, 1, null, tmp.toFile(), 60, logger, null);
         ext.onTimeoutDetected(ctx);
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }
@@ -78,7 +78,7 @@ class JstackTimeoutExtensionTest {
         System.setProperty(JstackTimeoutExtension.ENABLED_PROPERTY, "true");
         JstackTimeoutExtension ext = new JstackTimeoutExtension();
         DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(-1L, 1, null, tmp.toFile(), 60, logger, null);
+                new DefaultForkedProcessTimeoutContext(() -> -1L, 1, null, tmp.toFile(), 60, logger, null);
         ext.onTimeoutDetected(ctx);
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }
@@ -87,7 +87,7 @@ class JstackTimeoutExtensionTest {
     void onForkExitedIsNoop() {
         new JstackTimeoutExtension()
                 .onForkExited(
-                        new DefaultForkedProcessTimeoutContext(123L, 1, null, tmp.toFile(), 60, logger, null),
+                        new DefaultForkedProcessTimeoutContext(() -> 123L, 1, null, tmp.toFile(), 60, logger, null),
                         new RunResult(0, 0, 0, 0));
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }
@@ -107,7 +107,7 @@ class JstackTimeoutExtensionTest {
         Map<String, String> ctxMap = new HashMap<>();
         ctxMap.put(JstackTimeoutExtension.ENABLED_KEY, "true");
         DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(-1L, 1, null, tmp.toFile(), 60, logger, ctxMap);
+                new DefaultForkedProcessTimeoutContext(() -> -1L, 1, null, tmp.toFile(), 60, logger, ctxMap);
         // PID is -1 → extension exits early after the enable check; this asserts no NPE / no early
         // "disabled" short-circuit (covered indirectly by the absence of a thrown exception).
         new JstackTimeoutExtension().onTimeoutDetected(ctx);
@@ -117,7 +117,7 @@ class JstackTimeoutExtensionTest {
     void contextKeyFalseDoesNotEnable() {
         Map<String, String> ctxMap = Collections.singletonMap(JstackTimeoutExtension.ENABLED_KEY, "false");
         DefaultForkedProcessTimeoutContext ctx = new DefaultForkedProcessTimeoutContext(
-                currentPidBestEffort(), 1, null, tmp.toFile(), 60, logger, ctxMap);
+                JstackTimeoutExtensionTest::currentPidBestEffort, 1, null, tmp.toFile(), 60, logger, ctxMap);
         new JstackTimeoutExtension().onTimeoutDetected(ctx);
         assertThat(tmp.toFile().listFiles()).isNullOrEmpty();
     }
@@ -137,7 +137,7 @@ class JstackTimeoutExtensionTest {
         Map<String, String> ctxMap =
                 Collections.singletonMap(JstackTimeoutExtension.OUTPUT_LOCATION_KEY, customDir.toString());
         DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(pid, 1, null, tmp.toFile(), 60, logger, ctxMap);
+                new DefaultForkedProcessTimeoutContext(() -> pid, 1, null, tmp.toFile(), 60, logger, ctxMap);
         new JstackTimeoutExtension().onTimeoutDetected(ctx);
         // file written under the custom location, reports dir stays empty
         assertThat(customDir.toFile().listFiles()).isNotNull().isNotEmpty();
@@ -147,7 +147,7 @@ class JstackTimeoutExtensionTest {
     void blankOutputLocationFallsBackToReportsDirectory() {
         Map<String, String> ctxMap = Collections.singletonMap(JstackTimeoutExtension.OUTPUT_LOCATION_KEY, "   ");
         DefaultForkedProcessTimeoutContext ctx =
-                new DefaultForkedProcessTimeoutContext(-1L, 1, null, tmp.toFile(), 60, logger, ctxMap);
+                new DefaultForkedProcessTimeoutContext(() -> -1L, 1, null, tmp.toFile(), 60, logger, ctxMap);
         // PID is -1 so we exit early, but the resolution path was exercised in tests above;
         // here we just make sure no NPE / IllegalArgumentException leaks out for blank values.
         System.setProperty(JstackTimeoutExtension.ENABLED_PROPERTY, "true");
