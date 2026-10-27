@@ -928,8 +928,7 @@ public class ForkStarter {
     }
 
     /**
-     * Runs the timeout extensions and the kill of each timed-out fork on its own thread,
-     * so a slow thread dump of one fork doesn't delay the kill of the others.
+     * One thread per timed-out fork, so a slow thread dump of one fork doesn't delay killing the others.
      */
     private static ExecutorService createTimeoutHandlerExecutor() {
         ThreadFactory threadFactory = newDaemonThreadFactory("fork-timeout-handler");

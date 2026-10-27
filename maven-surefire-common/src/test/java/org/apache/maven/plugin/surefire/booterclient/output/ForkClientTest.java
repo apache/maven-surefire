@@ -1662,7 +1662,7 @@ public class ForkClientTest {
         ExecutorService timer = Executors.newSingleThreadExecutor();
         ExecutorService executor = Executors.newCachedThreadPool();
         try {
-            // one round of the timeout check, like ForkStarter's timer does
+            // one round of the timeout check, like ForkStarter's timer
             long now = System.currentTimeMillis() + 1000L;
             timer.execute(() -> {
                 slowFork.tryToTimeout(now, 1, executor);

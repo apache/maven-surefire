@@ -127,11 +127,10 @@ public final class ForkClient implements EventHandler<Event> {
     }
 
     /**
-     * Registers a one-shot callback invoked when the forked process timeout has
-     * been reached, immediately before the KILL command is sent. It runs on the
-     * executor given to {@link #tryToTimeout}, so callbacks of different forks may
-     * run at the same time. The forked JVM is still alive when the callback runs,
-     * so it may collect live diagnostics (for example a {@code jstack} dump).
+     * Sets a callback that runs once, just before a timed-out fork is killed.
+     * The fork is still alive then, so the callback can grab a {@code jstack} dump.
+     * It runs on the executor given to {@link #tryToTimeout}, so callbacks of
+     * different forks can run at the same time.
      *
      * @param listener the callback to run, or {@code null} to clear; callback
      *                 must not throw checked exceptions
@@ -305,12 +304,12 @@ public final class ForkClient implements EventHandler<Event> {
      * Called in concurrent Thread.
      * Will shutdown if timeout was reached.
      * <p>
-     * The timeout listener and the kill run on {@code executor}, so a slow listener
-     * doesn't hold up the timeout of other forks.
+     * The listener and the kill run on {@code executor}, so a slow listener
+     * doesn't hold up other forks.
      *
      * @param currentTimeMillis    current time in milliseconds
      * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
-     * @param executor runs the timeout listener and then the kill
+     * @param executor where the listener and the kill run
      */
     public void tryToTimeout(long currentTimeMillis, int forkedProcessTimeoutInSeconds, Executor executor) {
         if (forkedProcessTimeoutInSeconds > 0) {
@@ -321,7 +320,7 @@ public final class ForkClient implements EventHandler<Event> {
                     try {
                         executor.execute(this::timeout);
                     } catch (RejectedExecutionException e) {
-                        // executor already shut down, still kill the fork
+                        // executor is shut down, so kill the fork right here
                         timeout();
                     }
                 }
