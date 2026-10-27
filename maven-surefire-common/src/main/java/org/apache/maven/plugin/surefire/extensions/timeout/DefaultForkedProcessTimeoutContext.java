@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.LongSupplier;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.surefire.extensions.ForkedProcessTimeoutContext;
@@ -31,7 +32,7 @@ import org.apache.maven.surefire.extensions.ForkedProcessTimeoutContext;
  */
 public final class DefaultForkedProcessTimeoutContext implements ForkedProcessTimeoutContext {
 
-    private final long pid;
+    private final LongSupplier pid;
     private final int forkNumber;
     private final File javaExecutable;
     private final File reportsDirectory;
@@ -39,8 +40,14 @@ public final class DefaultForkedProcessTimeoutContext implements ForkedProcessTi
     private final ConsoleLogger logger;
     private final Map<String, String> extensionContext;
 
+    /**
+     * @param pid resolved on every {@link #getPid()} call rather than once at construction time, so that a forked
+     *            process started through a shell wrapper (whose single child, the JVM, is not yet running when the
+     *            fork is created) still resolves to the forked JVM's PID by the time a timeout extension calls
+     *            this, seconds or minutes later
+     */
     public DefaultForkedProcessTimeoutContext(
-            long pid,
+            LongSupplier pid,
             int forkNumber,
             File javaExecutable,
             File reportsDirectory,
@@ -60,7 +67,7 @@ public final class DefaultForkedProcessTimeoutContext implements ForkedProcessTi
 
     @Override
     public long getPid() {
-        return pid;
+        return pid.getAsLong();
     }
 
     @Override
