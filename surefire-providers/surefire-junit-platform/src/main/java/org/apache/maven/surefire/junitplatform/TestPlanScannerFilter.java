@@ -147,11 +147,26 @@ final class TestPlanScannerFilter implements ScannerFilter {
     private static void collectClassNames(
             TestPlan testPlan, TestIdentifier identifier, Set<String> candidates, Set<String> collected) {
 
+        Set<TestIdentifier> children = testPlan.getChildren(identifier);
         Optional<String> className = className(identifier);
-        if (className.isPresent() && candidates.contains(className.get())) {
-            collected.add(className.get());
+        if (className.isPresent()) {
+            if (children.isEmpty() && identifier.isContainer() && !identifier.isTest()) {
+                // A childless container survives pruning only because it may register tests
+                // dynamically, e.g. a class annotated with @ParameterizedClass. A nested class whose
+                // own tests only materialize under such a container collapses into this same node
+                // during discovery and never gets an identifier of its own, so credit every candidate
+                // this node could be standing in for, not just its exact class name.
+                String nestedPrefix = className.get() + "$";
+                for (String candidate : candidates) {
+                    if (candidate.equals(className.get()) || candidate.startsWith(nestedPrefix)) {
+                        collected.add(candidate);
+                    }
+                }
+            } else if (candidates.contains(className.get())) {
+                collected.add(className.get());
+            }
         }
-        for (TestIdentifier child : testPlan.getChildren(identifier)) {
+        for (TestIdentifier child : children) {
             collectClassNames(testPlan, child, candidates, collected);
         }
     }
