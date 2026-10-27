@@ -18,10 +18,14 @@
  */
 package org.apache.maven.surefire.booter;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,6 +38,7 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -290,5 +295,89 @@ public class SystemUtilsTest {
     @SuppressWarnings("unused")
     public static ClassLoader getPlatformClassLoader() {
         return ClassLoader.getSystemClassLoader();
+    }
+
+    /**
+     * Covers {@link SystemUtils#pidOf(Process)}.
+     */
+    @Nested
+    class PidOfTest {
+
+        @Test
+        void returnsNullForNullProcess() {
+            assertThat(SystemUtils.pidOf(null)).isNull();
+        }
+
+        @Test
+        void returnsOwnPidWhenProcessHasNoChild() throws Exception {
+            assumeTrue(JAVA_RECENT.atLeast(JAVA_9), "Process#pid() needs Java 9+");
+            Process process = startSleepDirectly();
+            try {
+                assertThat(SystemUtils.pidOf(process)).isNotNull();
+            } finally {
+                process.destroyForcibly();
+            }
+        }
+
+        @Test
+        void resolvesTheChildWhenStartedThroughAShellWrapper() throws Exception {
+            assumeTrue(JAVA_RECENT.atLeast(JAVA_9), "Process#pid() needs Java 9+");
+            assumeTrue(!IS_OS_WINDOWS, "needs /bin/sh");
+            // "cd ... && java ..." fork launches observed in MSUREFIRE-3549 have this same shape: the shell
+            // Surefire starts stays alive as the parent of the actual forked JVM. "& wait" guarantees the shell
+            // stays alive as the parent for as long as the test needs, regardless of a given /bin/sh's tail-call
+            // optimization for a single simple command (which would otherwise exec-replace the shell itself).
+            Process shell = new ProcessBuilder("/bin/sh", "-c", "sleep 30 & wait").start();
+            try {
+                long shellOwnPid = rawPid(shell);
+                Long resolved = awaitChildOf(shellOwnPid);
+                assertThat(resolved)
+                        .as("pidOf should resolve to the sleep child, not the sh wrapper")
+                        .isNotNull()
+                        .isNotEqualTo(shellOwnPid);
+                assertThat(SystemUtils.pidOf(shell)).isEqualTo(resolved);
+            } finally {
+                shell.destroyForcibly();
+            }
+        }
+
+        private Process startSleepDirectly() throws IOException {
+            return IS_OS_WINDOWS
+                    ? new ProcessBuilder("ping", "-n", "30", "127.0.0.1").start()
+                    : new ProcessBuilder("sleep", "30").start();
+        }
+
+        /**
+         * @return the raw PID {@code Process#pid()} reports, bypassing {@link SystemUtils#pidOf(Process)}'s own
+         *         child resolution, so the test has a ground truth to compare against
+         */
+        private long rawPid(Process process) throws ReflectiveOperationException {
+            return (Long) Process.class.getMethod("pid").invoke(process);
+        }
+
+        /**
+         * Polls {@code ps --ppid parentPid} until it reports exactly one child, or the timeout elapses.
+         */
+        private Long awaitChildOf(long parentPid) throws IOException, InterruptedException {
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (System.nanoTime() < deadline) {
+                String children = childrenOf(parentPid);
+                if (!children.isEmpty()) {
+                    return Long.parseLong(children.trim().split("\\s+")[0]);
+                }
+                Thread.sleep(50L);
+            }
+            return null;
+        }
+
+        private String childrenOf(long parentPid) throws IOException, InterruptedException {
+            // pgrep -P is portable across the Linux (procps) and macOS (BSD) pgrep implementations;
+            // unlike "ps --ppid", which is GNU/procps-only and absent on macOS.
+            Process pgrep = new ProcessBuilder("pgrep", "-P", Long.toString(parentPid)).start();
+            pgrep.waitFor(5, TimeUnit.SECONDS);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(pgrep.getInputStream()))) {
+                return reader.lines().collect(Collectors.joining(" "));
+            }
+        }
     }
 }
