@@ -38,6 +38,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * @author Kristian Rosenvold
  */
 public class OutputValidator {
+
+    private static final String[] LOG_DECORATIONS = {"[INFO] [stdout] ", "[WARNING] [stderr] "};
+
     final Verifier verifier;
 
     private final File baseDir;
@@ -208,6 +211,7 @@ public class OutputValidator {
         List<String> strList = new ArrayList<>(Arrays.asList(strings));
         int i = 0;
         for (String line : loadLogLines()) {
+            line = removeMaven4LogDecoration(line);
             for (int j = 0; j < strList.size(); j++) {
                 if (line.startsWith(strList.get(j))) {
                     retArr[i] = strList.get(j);
@@ -226,6 +230,7 @@ public class OutputValidator {
     public boolean stringsAppearInSpecificOrderInLog(String[] strings) throws VerificationException {
         int i = 0;
         for (String line : loadLogLines()) {
+            line = removeMaven4LogDecoration(line);
             if (line.startsWith(strings[i])) {
                 if (i == strings.length - 1) {
                     return true;
@@ -234,5 +239,15 @@ public class OutputValidator {
             }
         }
         return false;
+    }
+
+    private static String removeMaven4LogDecoration(String line) {
+        final String currentLine = stripAnsi(line);
+        for (String decoration : LOG_DECORATIONS) {
+            if (currentLine.startsWith(decoration)) {
+                return currentLine.substring(decoration.length());
+            }
+        }
+        return currentLine;
     }
 }
