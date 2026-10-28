@@ -413,7 +413,8 @@ public class AbstractSurefireMojoJava7PlusTest {
         when(mojo.getPluginArtifactMap()).thenReturn(artifacts);
 
         ProviderInfo providerInfo = mock(ProviderInfo.class);
-        when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
+        when(providerInfo.getProviderName())
+                .thenReturn("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
         when(providerInfo.getProviderClasspath()).thenReturn(providerClasspath);
         ProviderInfo junitPlatformProviderInfo = mojo.newJUnitPlatformProviderInfo(testClasspath);
         when(providerInfo.getJpmsArguments(any()))
@@ -451,8 +452,8 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(conf.isProviderMainClass()).isFalse();
         assertThat(conf.isManifestOnlyJarRequestedAndUsable()).isFalse();
         assertThat(conf.getClassLoaderConfiguration()).isSameAs(classLoaderConfiguration);
-        assertThat(conf.getProviderClassName()).isEqualTo("org.asf.Provider");
-        assertThat(conf.getActualClassName()).isEqualTo("org.asf.Provider");
+        assertThat(conf.getProviderClassName()).isEqualTo(junitPlatformProviderInfo.getProviderName());
+        assertThat(conf.getActualClassName()).isEqualTo(junitPlatformProviderInfo.getProviderName());
         assertThat(conf.getClasspathConfiguration()).isNotNull();
         assertThat((Object) conf.getClasspathConfiguration().getTestClasspath()).isEqualTo(Classpath.emptyClasspath());
         assertThat((Object) conf.getClasspathConfiguration().getProviderClasspath())
@@ -484,6 +485,21 @@ public class AbstractSurefireMojoJava7PlusTest {
                         "junit.jar",
                         "hamcrest.jar",
                         "junit-platform-commons.jar");
+
+        when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
+        doReturn(emptyList()).when(providerInfo).getJpmsArguments(any(ProviderRequirements.class));
+        StartupConfiguration nonJUnitPlatformConf = invokeMethod(
+                mojo,
+                "newStartupConfigWithModularPath",
+                classLoaderConfiguration,
+                providerInfo,
+                new ResolvePathResultWrapper(moduleInfo, false),
+                scanResult,
+                "",
+                testClasspath);
+
+        assertThat(nonJUnitPlatformConf.getJpmsArguments()).isEmpty();
+        verify(locationManager, times(1)).resolvePaths(any());
     }
 
     @Test

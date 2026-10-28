@@ -169,6 +169,8 @@ import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.remov
 public abstract class AbstractSurefireMojo extends AbstractMojo implements SurefireExecutionParameters {
     private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap("version", "[1.9,)");
     private static final Map<String, String> JAVA_9_MATCHER = singletonMap("version", "[9,)");
+    private static final String JUNIT_PLATFORM_PROVIDER_NAME =
+            "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
     private static final Platform PLATFORM = new Platform();
 
     private final ClasspathCache classpathCache = new ClasspathCache();
@@ -2114,13 +2116,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     getLocationManager(), testClasspath, javaModuleDescriptor, javaHome, packages, getConsoleLogger());
             testModuleNames = layout.getModuleNames();
         } else {
-            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
-                    .setIncludeAllProviders(true)
-                    .setJdkHome(javaHome)
-                    .setIncludeStatic(true)
-                    .setModuleDescriptor(javaModuleDescriptor);
-            testModuleNames = ModulePathJpmsArguments.moduleNamesOnModulepath(
-                    getLocationManager().resolvePaths(req));
+            if (JUNIT_PLATFORM_PROVIDER_NAME.equals(providerName)) {
+                ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
+                        .setIncludeAllProviders(true)
+                        .setJdkHome(javaHome)
+                        .setIncludeStatic(true)
+                        .setModuleDescriptor(javaModuleDescriptor);
+                testModuleNames = ModulePathJpmsArguments.moduleNamesOnModulepath(
+                        getLocationManager().resolvePaths(req));
+            } else {
+                testModuleNames = Collections.emptySet();
+            }
             layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
         ProviderRequirements providerRequirements =
@@ -3214,7 +3220,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         @Nonnull
         public String getProviderName() {
-            return "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
+            return JUNIT_PLATFORM_PROVIDER_NAME;
         }
 
         protected String getProviderArtifactName() {
