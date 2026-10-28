@@ -40,6 +40,7 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 
 /**
@@ -185,7 +186,7 @@ final class ModulePathJpmsArguments {
 
     static Set<String> moduleNamesOnModulepath(ResolvePathsResult<String> result) {
         if (result == null || result.getModulepathElements() == null || result.getPathElements() == null) {
-            return java.util.Collections.emptySet();
+            return emptySet();
         }
 
         Set<String> names = new HashSet<>();
@@ -195,7 +196,7 @@ final class ModulePathJpmsArguments {
                 names.add(descriptor.name());
             }
         }
-        return names;
+        return unmodifiableSet(names);
     }
 
     /**

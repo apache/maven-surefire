@@ -58,6 +58,7 @@ import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
@@ -486,6 +487,22 @@ public class AbstractSurefireMojoJava7PlusTest {
                         "hamcrest.jar",
                         "junit-platform-commons.jar");
 
+        when(resolvedPaths.getPathElements()).thenReturn(emptyMap());
+        when(resolvedPaths.getModulepathElements()).thenReturn(emptyMap());
+        TestClassPath classpathWithoutCommons = new TestClassPath(
+                asList(modular, nonModular, junit, hamcrest), classesDir, testClassesDir, emptyList());
+        StartupConfiguration withoutCommons = invokeMethod(
+                mojo,
+                "newStartupConfigWithModularPath",
+                classLoaderConfiguration,
+                providerInfo,
+                new ResolvePathResultWrapper(moduleInfo, false),
+                scanResult,
+                "",
+                classpathWithoutCommons);
+
+        assertThat(withoutCommons.getJpmsArguments()).isEmpty();
+
         when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
         doReturn(emptyList()).when(providerInfo).getJpmsArguments(any(ProviderRequirements.class));
         StartupConfiguration nonJUnitPlatformConf = invokeMethod(
@@ -499,7 +516,7 @@ public class AbstractSurefireMojoJava7PlusTest {
                 testClasspath);
 
         assertThat(nonJUnitPlatformConf.getJpmsArguments()).isEmpty();
-        verify(locationManager, times(1)).resolvePaths(any());
+        verify(locationManager, times(2)).resolvePaths(any());
     }
 
     @Test

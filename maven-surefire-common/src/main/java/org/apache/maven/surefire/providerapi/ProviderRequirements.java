@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.providerapi;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,15 +40,24 @@ public final class ProviderRequirements {
         this(modularPath, mainModuleDescriptor, testModuleDescriptor, Collections.emptySet());
     }
 
+    /**
+     * Creates provider requirements with module names from the effective test module path.
+     *
+     * @param modularPath whether the test path is modular
+     * @param mainModuleDescriptor whether the main module has a descriptor
+     * @param testModuleDescriptor whether the tests have a descriptor
+     * @param testModuleNames names on the effective test module path; null is treated as an empty set
+     */
     public ProviderRequirements(
             boolean modularPath,
             boolean mainModuleDescriptor,
             boolean testModuleDescriptor,
-            @Nonnull Set<String> testModuleNames) {
+            @Nullable Set<String> testModuleNames) {
         this.modularPath = modularPath;
         this.mainModuleDescriptor = mainModuleDescriptor;
         this.testModuleDescriptor = testModuleDescriptor;
-        this.testModuleNames = Collections.unmodifiableSet(new HashSet<>(testModuleNames));
+        this.testModuleNames = Collections.unmodifiableSet(
+                testModuleNames == null ? Collections.emptySet() : new HashSet<>(testModuleNames));
     }
 
     public boolean isModularPath() {
