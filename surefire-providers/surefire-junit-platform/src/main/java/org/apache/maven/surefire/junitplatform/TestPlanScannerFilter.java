@@ -24,10 +24,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NavigableSet;
 import java.util.Optional;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.maven.surefire.api.util.ScannerFilter;
 import org.junit.platform.engine.DiscoverySelector;
@@ -98,7 +100,7 @@ final class TestPlanScannerFilter implements ScannerFilter {
     private static Set<String> discoverClassNamesWithTests(
             LauncherAdapter launcher, Filter<?>[] includeAndExcludeFilters, Collection<String> candidateClassNames) {
 
-        Set<String> candidates = new LinkedHashSet<>(candidateClassNames);
+        NavigableSet<String> candidates = new TreeSet<>(candidateClassNames);
         if (candidates.isEmpty()) {
             return new HashSet<>();
         }
@@ -145,7 +147,7 @@ final class TestPlanScannerFilter implements ScannerFilter {
     }
 
     private static void collectClassNames(
-            TestPlan testPlan, TestIdentifier identifier, Set<String> candidates, Set<String> collected) {
+            TestPlan testPlan, TestIdentifier identifier, NavigableSet<String> candidates, Set<String> collected) {
 
         Set<TestIdentifier> children = testPlan.getChildren(identifier);
         Optional<String> className = className(identifier);
@@ -155,12 +157,18 @@ final class TestPlanScannerFilter implements ScannerFilter {
                 // dynamically, e.g. a class annotated with @ParameterizedClass. A nested class whose
                 // own tests only materialize under such a container collapses into this same node
                 // during discovery and never gets an identifier of its own, so credit every candidate
-                // this node could be standing in for, not just its exact class name.
+                // this node could be standing in for, not just its exact class name. Candidates are
+                // sorted, so the nested ones form a contiguous range right after the outer class name,
+                // found in O(log n) instead of scanning every candidate.
+                if (candidates.contains(className.get())) {
+                    collected.add(className.get());
+                }
                 String nestedPrefix = className.get() + "$";
-                for (String candidate : candidates) {
-                    if (candidate.equals(className.get()) || candidate.startsWith(nestedPrefix)) {
-                        collected.add(candidate);
+                for (String candidate : candidates.tailSet(nestedPrefix, true)) {
+                    if (!candidate.startsWith(nestedPrefix)) {
+                        break;
                     }
+                    collected.add(candidate);
                 }
             } else if (candidates.contains(className.get())) {
                 collected.add(className.get());
