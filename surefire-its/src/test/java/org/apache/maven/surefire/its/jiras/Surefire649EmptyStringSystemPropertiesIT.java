@@ -40,6 +40,7 @@ public class Surefire649EmptyStringSystemPropertiesIT extends SurefireJUnit4Inte
         OutputValidator validator = launcher.executeTest().verifyErrorFree(1);
 
         for (String line : validator.loadLogLines()) {
+            line = removeLogDecoration(line);
             if ("emptyProperty=''".equals(line)) {
                 return;
             }
@@ -54,6 +55,7 @@ public class Surefire649EmptyStringSystemPropertiesIT extends SurefireJUnit4Inte
         OutputValidator validator = launcher.executeTest().verifyErrorFree(1);
 
         for (String line : validator.loadLogLines()) {
+            line = removeLogDecoration(line);
             if ("emptyProperty=''".equals(line)) {
                 return;
             }
@@ -67,5 +69,9 @@ public class Surefire649EmptyStringSystemPropertiesIT extends SurefireJUnit4Inte
 
     private SurefireLauncher unpack2() {
         return unpack("surefire-649-systemPropertyVariables");
+    }
+
+    private String removeLogDecoration(String line) {
+        return line.replace("[INFO] [stdout] ", "");
     }
 }
