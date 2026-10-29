@@ -72,5 +72,18 @@ public class ResolvedTestTest {
 
         classFileName = fromFullyQualifiedClass("my.package.MyTest.*");
         assertEquals("my/package/MyTest.*", classFileName);
+
+        classFileName = fromFullyQualifiedClass("dev.aspectj.*");
+        assertEquals("dev/aspectj/*", classFileName);
+    }
+
+    @Test
+    public void testPackageWildcardMatchesAllClassesInPackage() {
+        ResolvedTest test = new ResolvedTest(CLASS, "dev.aspectj.*", false);
+        assertTrue(test.matchAsInclusive("dev/aspectj/MyTest.class", null));
+        assertTrue(test.matchAsInclusive("dev/aspectj/OtherTest.class", null));
+        assertFalse(test.matchAsInclusive("dev/aspectj/sub/NestedTest.class", null));
+        assertFalse(test.matchAsInclusive("dev/aspectjx/MyTest.class", null));
+        assertFalse(test.matchAsInclusive("other/MyTest.class", null));
     }
 }
