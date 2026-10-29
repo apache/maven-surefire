@@ -55,6 +55,8 @@ public final class ResolvedTest {
 
     private static final String WILDCARD_FILENAME_POSTFIX = ".*";
 
+    private static final String WILDCARD_PACKAGE_POSTFIX = "/*";
+
     private final String classPattern;
 
     private final String methodPattern;
@@ -307,13 +309,37 @@ public final class ResolvedTest {
         } else if (!cls.contains("/")) {
             if (cls.endsWith(WILDCARD_FILENAME_POSTFIX)) {
                 String clsName = cls.substring(0, cls.length() - WILDCARD_FILENAME_POSTFIX.length());
-                return clsName.contains(".") ? clsName.replace('.', '/') + WILDCARD_FILENAME_POSTFIX : cls;
+                if (!clsName.contains(".")) {
+                    return cls;
+                }
+                String path = clsName.replace('.', '/');
+                return isPackageName(clsName) ? path + WILDCARD_PACKAGE_POSTFIX : path + WILDCARD_FILENAME_POSTFIX;
             } else {
                 return cls.replace('.', '/');
             }
         } else {
             return cls;
         }
+    }
+
+    /**
+     * Tells whether the dotted name in front of a trailing {@code .*} wildcard, e.g.
+     * {@code another.package} in {@code another.package.*}, denotes a package rather than a
+     * class. The dot notation does not distinguish the two: {@code my.pkg.MyTest.*} means
+     * "class MyTest and its nested classes" while {@code another.package.*} means "every class
+     * in this package", and only the last segment tells them apart. By Java naming convention a
+     * package name starts with a lowercase letter and a class name starts with an uppercase
+     * letter, so that convention is used to resolve the ambiguity, consistent with the
+     * {@code another.package.*} example from the plugin documentation. A user relying on a class
+     * name that violates the convention can avoid the ambiguity by using the slash form, e.g.
+     * {@code another/package/*}.
+     *
+     * @param dottedName dotted name with the trailing {@code .*} wildcard already stripped
+     * @return {@code true} if the last segment of {@code dottedName} looks like a package name
+     */
+    private static boolean isPackageName(String dottedName) {
+        String lastSegment = dottedName.substring(dottedName.lastIndexOf('.') + 1);
+        return !lastSegment.isEmpty() && Character.isLowerCase(lastSegment.charAt(0));
     }
 
     private final class ClassMatcher {
