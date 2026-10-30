@@ -72,7 +72,7 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * <code>**{@literal /}${test}.java</code>, so you can just type {@code -Dtest=MyTest} to run a single test called
      * "foo/MyTest.java". The test patterns prefixed with a <em>!</em> will be excluded.
      * <br>
-     * This parameter overrides the parameter {@code includes}, {@code excludes}.
+     * This parameter overrides {@code includes}, {@code excludes}, {@code includesFile} and {@code excludesFile}.
      * <br>
      * Since 2.7.3, you can execute a limited number of methods in the test by adding <i>#myMethod</i> or
      * <i>#my*ethod</i>. For example, {@code -Dtest=MyTest#myMethod}. This is supported for junit 4.x and TestNg.<br>
@@ -202,6 +202,9 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
      * </code></pre>
      * <br>
+     * Method filters like <i>pkg{@literal /}SomeTest#testMethod</i> are not allowed here, use {@code includesFile}
+     * or {@code test} instead.
+     * <br>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
      * being tested. This directory is declared by the parameter {@code testClassesDirectory} which defaults
@@ -227,6 +230,12 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
      * <pre><code>
      * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
+     * </code></pre>
+     * <br>
+     * Since 3.6.2, you can also exclude test methods, with the same syntax as the {@code test} parameter. The rest
+     * of the class still runs:
+     * <pre><code>
+     * {@literal <exclude>}pkg{@literal /}SomeTest#testMethod, **{@literal /}*Test#testSlow*{@literal </exclude>}
      * </code></pre>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
@@ -373,6 +382,8 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * <pre><code>
      * pkg.SomeTest#testMethod
      * </code></pre>
+     * <br>
+     * This file is ignored when the {@code test} parameter is set.
      *
      * @since 2.13
      */
@@ -392,6 +403,8 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
      * <pre><code>
      * pkg.SomeTest#testMethod
      * </code></pre>
+     * <br>
+     * This file is ignored when the {@code test} parameter is set.
      *
      * @since 2.13
      */

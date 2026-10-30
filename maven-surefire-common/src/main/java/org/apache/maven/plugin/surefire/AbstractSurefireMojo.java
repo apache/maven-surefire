@@ -2290,11 +2290,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             excludes = Collections.emptyList();
         } else {
             excludes = new ArrayList<>();
-            if (asScanList) {
-                if (getExcludes() != null) {
+            if (getExcludes() != null) {
+                if (asScanList) {
                     excludes.addAll(getExcludes());
+                } else {
+                    // excluded classes are already dropped by the scan, only method excludes matter here
+                    excludes.addAll(getMethodFilters(getExcludes()));
                 }
-                checkMethodFilterInIncludesExcludes(excludes);
             }
 
             if (getExcludesFile() != null) {
@@ -2336,7 +2338,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 if (getIncludes() != null) {
                     includes.addAll(getIncludes());
                 }
-                checkMethodFilterInIncludesExcludes(includes);
+                checkMethodFilterInIncludes(includes);
             }
 
             if (getIncludesFile() != null) {
@@ -2351,12 +2353,30 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return filterNulls(includes);
     }
 
-    private void checkMethodFilterInIncludesExcludes(Iterable<String> patterns) throws MojoFailureException {
+    private void checkMethodFilterInIncludes(Iterable<String> patterns) throws MojoFailureException {
         for (String pattern : patterns) {
             if (pattern != null && pattern.contains("#")) {
-                throw new MojoFailureException("Method filter prohibited in includes|excludes parameter: " + pattern);
+                throw new MojoFailureException("Method filter prohibited in includes parameter: " + pattern);
             }
         }
+    }
+
+    /**
+     * Keeps only the patterns naming a method, like {@code pkg/SomeTest#testMethod}.
+     */
+    @Nonnull
+    private static List<String> getMethodFilters(List<String> patterns) {
+        List<String> methodFilters = new ArrayList<>();
+        for (String pattern : patterns) {
+            if (pattern != null) {
+                for (String item : split(pattern, ",")) {
+                    if (item.contains("#")) {
+                        methodFilters.add(item.trim());
+                    }
+                }
+            }
+        }
+        return methodFilters;
     }
 
     private TestListResolver getIncludedAndExcludedTests() throws MojoFailureException {
