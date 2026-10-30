@@ -253,6 +253,17 @@ public class TestListResolverTest {
     }
 
     @Test
+    public void testDottedPackageWildcard() {
+        // -Dtest=dev.aspectj.* must behave like the documented another.package.* example and
+        // match every class directly in that package, the same as the slash form dev/aspectj/*.
+        TestListResolver resolver = new TestListResolver("dev.aspectj.*");
+        assertTrue(resolver.shouldRun("dev/aspectj/MyTest.class", null));
+        assertTrue(resolver.shouldRun("dev/aspectj/OtherTest.class", null));
+        assertFalse(resolver.shouldRun("dev/aspectjx/MyTest.class", null));
+        assertFalse(resolver.shouldRun("other/MyTest.class", null));
+    }
+
+    @Test
     public void testBrokenPatternThrowsException() {
         Collection<String> included = emptySet();
         Collection<String> excluded = asList("BasicTest, !**/TestTwo, **/TestThree.java");
