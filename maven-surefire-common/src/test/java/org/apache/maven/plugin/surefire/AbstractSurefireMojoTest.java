@@ -56,6 +56,7 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.RunOrder;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
@@ -2459,8 +2460,7 @@ public class AbstractSurefireMojoTest {
         plugin.setDependenciesToScan(new String[] {"g:a"});
 
         Exception e = assertThrows(Exception.class, plugin::scanDependencies);
-        assertThat(e.getMessage())
-                .isEqualTo("Method filter prohibited in includes|excludes parameter: AnotherTest#method ");
+        assertThat(e.getMessage()).isEqualTo("Method filter prohibited in includes parameter: AnotherTest#method ");
     }
 
     @Test
@@ -2541,6 +2541,61 @@ public class AbstractSurefireMojoTest {
 
         DefaultScanResult result = plugin.scanDependencies();
         assertThat(result.getClasses()).isEmpty();
+    }
+
+    @Test
+    public void shouldFilterTestMethodsOnExcludes() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setLogger(mock(Logger.class));
+
+        plugin.setExcludes(singletonList("AnotherTest#method"));
+
+        VersionRange version = VersionRange.createFromVersion("1.0");
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
+        File artifactFile = SureFireFileManager.createTempFile("surefire", "-classes");
+        String classDir = artifactFile.getCanonicalPath();
+        assertThat(artifactFile.delete()).isTrue();
+        File classes = new File(classDir);
+        assertThat(classes.mkdir()).isTrue();
+        testDeps.setFile(classes);
+        assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
+        plugin.setProjectTestArtifacts(singletonList(testDeps));
+        plugin.setDependenciesToScan(new String[] {"g:a"});
+
+        // the class is kept, only its method is skipped
+        DefaultScanResult result = plugin.scanDependencies();
+        assertThat(result.getClasses()).containsExactly("AnotherTest");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isFalse();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "otherMethod")).isTrue();
+    }
+
+    @Test
+    public void shouldPassOnlyMethodExcludesToMethodFilter() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(asList("**/SlowTest.java", "pkg/AnotherTest#method, **/UnstableTest.java", null));
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.getIncludedPatterns()).isEmpty();
+        assertThat(specificTests.getExcludedPatterns()).hasSize(1);
+        assertThat(specificTests.shouldRun("pkg/AnotherTest.class", "method")).isFalse();
+        assertThat(specificTests.shouldRun("pkg/SlowTest.class", "method")).isTrue();
+    }
+
+    @Test
+    public void shouldIgnoreMethodExcludesWhenTestIsSet() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(singletonList("AnotherTest#method"));
+        plugin.setTest("AnotherTest");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.getExcludedPatterns()).isEmpty();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isTrue();
     }
 
     @Test

@@ -397,7 +397,8 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
 
     @Test
     public void shouldNotRunExcludedClassesAndMethods() {
-        assumeTrue(getSettings().getConfiguration() == TEST);
+        // in includes/excludes mode the ! patterns go to <excludes>
+        assumeTrue(getSettings().getConfiguration() == TEST || getSettings().getConfiguration() == INCLUDES_EXCLUDES);
         prepare("!#*Fail*, !TestFour#testSuccessTwo")
                 .executeTest()
                 .verifyErrorFree(11)
@@ -414,6 +415,6 @@ public abstract class AbstractTestMultipleMethodPatterns extends SurefireJUnit4I
         prepare(pattern)
                 .failNever()
                 .executeTest()
-                .verifyTextInLog("Method filter prohibited in includes|excludes parameter: " + pattern);
+                .verifyTextInLog("Method filter prohibited in includes parameter: " + pattern);
     }
 }
