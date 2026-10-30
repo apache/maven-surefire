@@ -105,9 +105,14 @@ public class BaseProviderFactory implements ProviderParameters {
         return threadcount == null ? 1 : Math.max(Integer.parseInt(threadcount), 1);
     }
 
+    private int getForkCount() {
+        final String forkcount = providerProperties.get(ProviderParameterNames.FORKCOUNT_PROP);
+        return forkcount == null ? 1 : Math.max(Integer.parseInt(forkcount), 1);
+    }
+
     @Override
     public RunOrderCalculator getRunOrderCalculator() {
-        return new DefaultRunOrderCalculator(runOrderParameters, getThreadCount());
+        return new DefaultRunOrderCalculator(runOrderParameters, getThreadCount() * getForkCount());
     }
 
     public void setReporterFactory(ReporterFactory reporterFactory) {
