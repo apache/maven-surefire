@@ -95,6 +95,7 @@ import static java.lang.Thread.currentThread;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.addAll;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -154,6 +155,8 @@ public class ForkStarter {
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
     private final ScheduledExecutorService timeoutCheckScheduler;
+
+    private final ExecutorService timeoutHandlerExecutor;
 
     private final Queue<ForkClient> currentForkClients;
 
@@ -277,6 +280,7 @@ public class ForkStarter {
         defaultReporterFactories = new ConcurrentLinkedQueue<>();
         currentForkClients = new ConcurrentLinkedQueue<>();
         timeoutCheckScheduler = createTimeoutCheckScheduler();
+        timeoutHandlerExecutor = createTimeoutHandlerExecutor();
         timeoutExtensionDispatcher = new TimeoutExtensionDispatcher(log);
         triggerTimeoutCheck();
     }
@@ -292,6 +296,7 @@ public class ForkStarter {
             reportMerger.close();
             pingThreadScheduler.shutdownNow();
             timeoutCheckScheduler.shutdownNow();
+            timeoutHandlerExecutor.shutdownNow();
             timeoutExtensionDispatcher.close();
             for (String line : logsAtEnd) {
                 log.warning(line);
@@ -930,6 +935,14 @@ public class ForkStarter {
         return newScheduledThreadPool(1, threadFactory);
     }
 
+    /**
+     * One thread per timed-out fork, so a slow thread dump of one fork doesn't delay killing the others.
+     */
+    private static ExecutorService createTimeoutHandlerExecutor() {
+        ThreadFactory threadFactory = newDaemonThreadFactory("fork-timeout-handler");
+        return newCachedThreadPool(threadFactory);
+    }
+
     private ScheduledFuture<?> triggerPingTimerForShutdown(final TestLessInputStreamBuilder builder) {
         return pingThreadScheduler.scheduleWithFixedDelay(
                 new Runnable() {
@@ -965,7 +978,7 @@ public class ForkStarter {
                     public void run() {
                         long systemTime = currentTimeMillis();
                         for (ForkClient forkClient : currentForkClients) {
-                            forkClient.tryToTimeout(systemTime, forkedProcessTimeoutInSeconds);
+                            forkClient.tryToTimeout(systemTime, forkedProcessTimeoutInSeconds, timeoutHandlerExecutor);
                         }
                     }
                 },
