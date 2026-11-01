@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +39,8 @@ import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 
 /**
@@ -60,11 +63,13 @@ final class ModulePathJpmsArguments {
         private final Classpath classpath;
         private final Classpath modulepath;
         private final List<String[]> jpmsArguments;
+        private final Set<String> moduleNames;
 
-        Layout(Classpath classpath, Classpath modulepath, List<String[]> jpmsArguments) {
+        Layout(Classpath classpath, Classpath modulepath, List<String[]> jpmsArguments, Set<String> moduleNames) {
             this.classpath = classpath;
             this.modulepath = modulepath;
             this.jpmsArguments = jpmsArguments;
+            this.moduleNames = java.util.Collections.unmodifiableSet(new HashSet<>(moduleNames));
         }
 
         Classpath getClasspath() {
@@ -77,6 +82,10 @@ final class ModulePathJpmsArguments {
 
         List<String[]> getJpmsArguments() {
             return jpmsArguments;
+        }
+
+        Set<String> getModuleNames() {
+            return moduleNames;
         }
     }
 
@@ -116,7 +125,8 @@ final class ModulePathJpmsArguments {
         return new Layout(
                 new Classpath(result.getClasspathElements()),
                 new Classpath(result.getModulepathElements().keySet()),
-                of(result, mainModule.name(), testPackages));
+                of(result, mainModule.name(), testPackages),
+                moduleNamesOnModulepath(result));
     }
 
     /**
@@ -126,7 +136,7 @@ final class ModulePathJpmsArguments {
      * @return an empty class path and the whole test class path as module path
      */
     static Layout forTestModule(Classpath testClasspath) {
-        return new Layout(emptyClasspath(), testClasspath, emptyList());
+        return new Layout(emptyClasspath(), testClasspath, emptyList(), emptySet());
     }
 
     /**
@@ -172,6 +182,21 @@ final class ModulePathJpmsArguments {
             }
         }
         return args;
+    }
+
+    static Set<String> moduleNamesOnModulepath(ResolvePathsResult<String> result) {
+        if (result == null || result.getModulepathElements() == null || result.getPathElements() == null) {
+            return emptySet();
+        }
+
+        Set<String> names = new HashSet<>();
+        for (String path : result.getModulepathElements().keySet()) {
+            JavaModuleDescriptor descriptor = result.getPathElements().get(path);
+            if (descriptor != null && descriptor.name() != null) {
+                names.add(descriptor.name());
+            }
+        }
+        return unmodifiableSet(names);
     }
 
     /**
