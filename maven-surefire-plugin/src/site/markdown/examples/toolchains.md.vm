@@ -46,7 +46,10 @@ Configuring a different jvm for running tests using toolchains
 </configuration>
 ```
 
-The above example assumes that your \`toolchains.xml\` contains a valid entry with these values.
+The above example assumes that your \`toolchains.xml\` contains a valid entry with these values. If no configured toolchain
+matches, ${thisPlugin} also checks the JDK toolchain selected in Maven's build context. This allows the
+\`maven-toolchains-plugin\` \`select-jdk-toolchain\` goal to select a discovered JDK, provided it matches the
+\`jdkToolchain\` requirements.
 
 Minimum Java Version for Toolchains
 -----------------------------------
