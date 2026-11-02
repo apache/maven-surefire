@@ -309,9 +309,6 @@ public final class ResolvedTest {
         } else if (!cls.contains("/")) {
             if (cls.endsWith(WILDCARD_FILENAME_POSTFIX)) {
                 String clsName = cls.substring(0, cls.length() - WILDCARD_FILENAME_POSTFIX.length());
-                if (!clsName.contains(".")) {
-                    return cls;
-                }
                 String path = clsName.replace('.', '/');
                 return isPackageName(clsName) ? path + WILDCARD_PACKAGE_POSTFIX : path + WILDCARD_FILENAME_POSTFIX;
             } else {
@@ -323,16 +320,16 @@ public final class ResolvedTest {
     }
 
     /**
-     * Tells whether the dotted name in front of a trailing {@code .*} wildcard, e.g.
-     * {@code another.package} in {@code another.package.*}, denotes a package rather than a
-     * class. The dot notation does not distinguish the two: {@code my.pkg.MyTest.*} means
-     * "class MyTest and its nested classes" while {@code another.package.*} means "every class
-     * in this package", and only the last segment tells them apart. By Java naming convention a
-     * package name starts with a lowercase letter and a class name starts with an uppercase
-     * letter, so that convention is used to resolve the ambiguity, consistent with the
-     * {@code another.package.*} example from the plugin documentation. A user relying on a class
-     * name that violates the convention can avoid the ambiguity by using the slash form, e.g.
-     * {@code another/package/*}.
+     * Tells whether the name in front of a trailing {@code .*} wildcard, e.g. {@code another.package}
+     * in {@code another.package.*} or {@code dev} in {@code dev.*}, denotes a package rather than a
+     * class. The dot notation does not distinguish the two: {@code my.pkg.MyTest.*} means "class
+     * MyTest and its nested classes" while {@code another.package.*} means "every class in this
+     * package", and only the last segment tells them apart. By Java naming convention a package name
+     * starts with a lowercase letter and a class name starts with an uppercase letter, so that
+     * convention is used to resolve the ambiguity, consistent with the {@code another.package.*}
+     * example from the plugin documentation. This is only a best guess: {@link ClassMatcher} also
+     * matches the legacy class-file interpretation alongside the package one, so a class name that
+     * violates the convention still matches itself.
      *
      * @param dottedName dotted name with the trailing {@code .*} wildcard already stripped
      * @return {@code true} if the last segment of {@code dottedName} looks like a package name
@@ -372,7 +369,16 @@ public final class ResolvedTest {
                 classPattern = classPattern.replace('/', separatorChar);
             }
 
-            if (classPattern.endsWith(WILDCARD_FILENAME_POSTFIX) || classPattern.endsWith(CLASS_FILE_EXTENSION)) {
+            String packagePostfix = WILDCARD_PACKAGE_POSTFIX.replace('/', separatorChar);
+            if (classPattern.endsWith(packagePostfix)) {
+                // The source pattern was ambiguous between a package and a class name (see
+                // isPackageName); also match the legacy single-class-file interpretation, so a class
+                // whose name happens to start with a lowercase letter still matches itself.
+                String legacyClassPattern = classPattern.substring(0, classPattern.length() - packagePostfix.length())
+                        + WILDCARD_FILENAME_POSTFIX;
+                return of(classPattern, legacyClassPattern).matches(testClassFile, true);
+            } else if (classPattern.endsWith(WILDCARD_FILENAME_POSTFIX)
+                    || classPattern.endsWith(CLASS_FILE_EXTENSION)) {
                 return of(classPattern).matches(testClassFile, true);
             } else {
                 String[] classPatterns = {classPattern + CLASS_FILE_EXTENSION, classPattern};
