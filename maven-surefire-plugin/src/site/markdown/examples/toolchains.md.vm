@@ -39,14 +39,19 @@ Configuring a different jvm for running tests using toolchains
 <configuration>
     [...]
     <jdkToolchain>
-        <version>8</version>
+        <version>[1.8,1.9)</version>
         <vendor>zulu</vendor>
     </jdkToolchain>
     [...]
 </configuration>
 ```
 
-The above example assumes that your \`toolchains.xml\` contains a valid entry with these values.
+The above example assumes that your `toolchains.xml` contains a valid entry with these values.
+
+A single version must equal the one in `toolchains.xml`: `8` matches only an entry whose version is exactly `8`, not
+one that provides `1.8.0_504`, and `17` does not match `17.0.20`. JDKs discovered by the toolchains plugin report
+their full version, so use a range such as `[1.8,1.9)` or `[17,18)` to accept any update of a Java release. Other
+elements, like `vendor`, must equal the value in `toolchains.xml`.
 
 Minimum Java Version for Toolchains
 -----------------------------------
