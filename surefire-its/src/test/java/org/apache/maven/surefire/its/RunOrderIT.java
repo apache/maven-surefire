@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import org.apache.maven.surefire.its.fixture.OutputValidator;
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
@@ -113,6 +114,10 @@ public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     public void testRandomSeedPassedToJUnit5() {
+        // JUnitPlatformProvider derives the seed it hands to Jupiter from the Surefire seed (see
+        // JUnitPlatformProvider#deriveJupiterRandomSeed) instead of reusing it verbatim, so Jupiter's own
+        // class/method shuffle isn't a repeat of the shuffle Surefire already applied to the same classes.
+        String expectedJupiterSeed = String.valueOf(new Random(1234L).nextLong());
         for (int forkCount : new int[] {0, 1}) {
             unpack("runOrder-junitX", "-random-seed-fork-count-" + forkCount)
                     .setJUnitVersion("5.14.1")
@@ -120,7 +125,7 @@ public class RunOrderIT extends SurefireJUnit4IntegrationTestCase {
                     .reuseForks(reuseForks())
                     .runOrder("random")
                     .runOrderRandomSeed("1234")
-                    .sysProp("expected.junit.random.seed", "1234")
+                    .sysProp("expected.junit.random.seed", expectedJupiterSeed)
                     .executeTest()
                     .verifyErrorFree(3);
         }

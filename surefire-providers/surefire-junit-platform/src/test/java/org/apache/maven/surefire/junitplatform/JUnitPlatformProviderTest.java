@@ -92,6 +92,7 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.JUNIT4
 import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CLASS_ORDER_DEFAULT;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.CONFIGURATION_PARAMETERS;
+import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.JUNIT_RANDOM_SEED;
 import static org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.METHOD_ORDER_DEFAULT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -129,7 +130,7 @@ public class JUnitPlatformProviderTest {
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
         assertThat(provider.getConfigurationParameters())
-                .containsEntry("junit.jupiter.execution.order.random.seed", "1234");
+                .containsEntry(JUNIT_RANDOM_SEED, Long.toString(JUnitPlatformProvider.deriveJupiterRandomSeed(1234L)));
     }
 
     @Test
