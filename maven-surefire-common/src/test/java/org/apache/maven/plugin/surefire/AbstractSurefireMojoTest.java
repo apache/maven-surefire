@@ -56,6 +56,7 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.RunOrder;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
@@ -1917,6 +1918,93 @@ public class AbstractSurefireMojoTest {
                 .isEqualTo("Unexpected value 'fake' in the configuration parameter 'enableProcessChecker'.");
     }
 
+    @Test
+    public void shouldFailWhenSuiteXmlFilesAreSet() {
+        Mojo mojo = new Mojo() {
+            @Override
+            protected File[] getSuiteXmlFiles() {
+                return new File[] {new File("testng.xml")};
+            }
+
+            @Override
+            protected String getPluginName() {
+                return "surefire";
+            }
+        };
+
+        MojoFailureException m = assertThrows(MojoFailureException.class, mojo::verifyParameters);
+        assertThat(m.getMessage())
+                .startsWith("Parameter \"suiteXmlFiles\" is not supported since 3.6.0")
+                .endsWith("or keep using maven-surefire-plugin 3.5.x.");
+    }
+
+    @Test
+    public void shouldAcceptEmptySuiteXmlFiles() throws Exception {
+        Mojo mojo = new Mojo() {
+            @Override
+            protected File[] getSuiteXmlFiles() {
+                return new File[0];
+            }
+        };
+
+        mojo.ensureNoSuiteXmlFiles();
+    }
+
+    @Test
+    public void shouldAcceptTestNgOnlyParallelModesWithTestNg() throws Exception {
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+        mojo.setTestNGArtifactName("org.testng:testng");
+        setProjectDepedenciesToMojo(new DefaultArtifact(
+                "org.testng", "testng", createFromVersion("7.4.0"), "test", "jar", null, mock(ArtifactHandler.class)));
+
+        invokeMethod(mojo, "checkNonForkedThreads", "tests");
+        invokeMethod(mojo, "checkNonForkedThreads", "instances");
+    }
+
+    @Test
+    public void shouldRejectTestNgOnlyParallelModesWithoutTestNg() {
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+        mojo.setTestNGArtifactName("org.testng:testng");
+
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "checkNonForkedThreads", "tests"));
+        assertThat(e.getCause()).isInstanceOf(MojoFailureException.class).hasMessage("Illegal parallel='tests'");
+    }
+
+    @Test
+    public void shouldWarnAboutParametersIgnoredByJUnitPlatform() {
+        Logger logger = mock(Logger.class);
+        Mojo mojo = new Mojo();
+        mojo.setLogger(logger);
+        mojo.setUseUnlimitedThreads(true);
+        mojo.setThreadCountSuites(2);
+        mojo.setParallelOptimized(false);
+        mojo.setObjectFactory("org.example.MyObjectFactory");
+
+        mojo.warnIfIgnoredByJUnitPlatform();
+
+        verify(logger)
+                .warn("These parameters are ignored when tests run on the JUnit Platform and are deprecated: "
+                        + "useUnlimitedThreads, threadCountSuites, parallelOptimized, objectFactory.");
+    }
+
+    @Test
+    public void shouldNotWarnWhenIgnoredParametersKeepTheirDefaults() {
+        Logger logger = mock(Logger.class);
+        Mojo mojo = new Mojo();
+        mojo.setLogger(logger);
+        mojo.setParallelOptimized(true);
+
+        mojo.warnIfIgnoredByJUnitPlatform();
+
+        verify(logger, times(0)).warn(anyString());
+    }
+
     private void setProjectDepedenciesToMojo(Artifact... deps) {
         for (Artifact dep : deps) {
             mojo.getProjectArtifactMap().put(dep.getGroupId() + ":" + dep.getArtifactId(), dep);
@@ -2372,8 +2460,7 @@ public class AbstractSurefireMojoTest {
         plugin.setDependenciesToScan(new String[] {"g:a"});
 
         Exception e = assertThrows(Exception.class, plugin::scanDependencies);
-        assertThat(e.getMessage())
-                .isEqualTo("Method filter prohibited in includes|excludes parameter: AnotherTest#method ");
+        assertThat(e.getMessage()).isEqualTo("Method filter prohibited in includes parameter: AnotherTest#method ");
     }
 
     @Test
@@ -2454,6 +2541,61 @@ public class AbstractSurefireMojoTest {
 
         DefaultScanResult result = plugin.scanDependencies();
         assertThat(result.getClasses()).isEmpty();
+    }
+
+    @Test
+    public void shouldFilterTestMethodsOnExcludes() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setLogger(mock(Logger.class));
+
+        plugin.setExcludes(singletonList("AnotherTest#method"));
+
+        VersionRange version = VersionRange.createFromVersion("1.0");
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
+        File artifactFile = SureFireFileManager.createTempFile("surefire", "-classes");
+        String classDir = artifactFile.getCanonicalPath();
+        assertThat(artifactFile.delete()).isTrue();
+        File classes = new File(classDir);
+        assertThat(classes.mkdir()).isTrue();
+        testDeps.setFile(classes);
+        assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
+        plugin.setProjectTestArtifacts(singletonList(testDeps));
+        plugin.setDependenciesToScan(new String[] {"g:a"});
+
+        // the class is kept, only its method is skipped
+        DefaultScanResult result = plugin.scanDependencies();
+        assertThat(result.getClasses()).containsExactly("AnotherTest");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isFalse();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "otherMethod")).isTrue();
+    }
+
+    @Test
+    public void shouldPassOnlyMethodExcludesToMethodFilter() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(asList("**/SlowTest.java", "pkg/AnotherTest#method, **/UnstableTest.java", null));
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.getIncludedPatterns()).isEmpty();
+        assertThat(specificTests.getExcludedPatterns()).hasSize(1);
+        assertThat(specificTests.shouldRun("pkg/AnotherTest.class", "method")).isFalse();
+        assertThat(specificTests.shouldRun("pkg/SlowTest.class", "method")).isTrue();
+    }
+
+    @Test
+    public void shouldIgnoreMethodExcludesWhenTestIsSet() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(singletonList("AnotherTest#method"));
+        plugin.setTest("AnotherTest");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.getExcludedPatterns()).isEmpty();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isTrue();
     }
 
     @Test

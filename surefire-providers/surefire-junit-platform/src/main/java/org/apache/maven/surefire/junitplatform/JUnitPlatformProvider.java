@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -34,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -53,9 +56,13 @@ import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.ScanResult;
 import org.apache.maven.surefire.api.util.TestsToRun;
 import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.junit.platform.commons.JUnitException;
+import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.discovery.ClassNameFilter;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -104,6 +111,12 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private static final String JUNIT_RANDOM_SEED = "junit.jupiter.execution.order.random.seed";
 
+    static final String METHOD_ORDER_DEFAULT = "junit.jupiter.testmethod.order.default";
+
+    static final String CLASS_ORDER_DEFAULT = "junit.jupiter.testclass.order.default";
+
+    private static final String VINTAGE_ENGINE_ID = "junit-vintage";
+
     private final ProviderParameters parameters;
 
     private final LauncherSessionFactory launcherSessionFactory;
@@ -113,6 +126,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private Set<String> enclosingClassNames;
 
     private Map<String, String> configurationParameters = new HashMap<>();
+
+    private boolean excludeTestNgEngine;
+
+    // groups only TestNG can use, we warn about them when the tests start
+    private final List<String> testNgOnlyGroups = new ArrayList<>();
 
     private final CommandChainReader commandsReader;
 
@@ -124,11 +142,11 @@ public class JUnitPlatformProvider extends AbstractProvider {
         this.parameters = parameters;
         this.launcherSessionFactory = launcherSessionFactory;
         filters = newFilters();
-        setupRunOrder();
         parameters.getProviderProperties().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith("junit.vintage.execution.parallel"))
                 .forEach(entry -> getConfigurationParameters().put(entry.getKey(), entry.getValue()));
         getConfigurationParameters().putAll(newConfigurationParameters());
+        setupRunOrder();
 
         // don't start a thread in CommandReader while we are in in-plugin process
         commandsReader = parameters.isInsideFork() ? parameters.getCommandReader() : null;
@@ -167,29 +185,35 @@ public class JUnitPlatformProvider extends AbstractProvider {
         String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
-                getConfigurationParameters()
-                        .put("junit.jupiter.testmethod.order.default", "org.junit.jupiter.api.MethodOrderer$Random");
-                getConfigurationParameters()
-                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$Random");
+                setDefaultOrderers(
+                        "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
-                        .ifPresent(seed -> getConfigurationParameters().put(JUNIT_RANDOM_SEED, seed));
+                        .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
             } else if (runOrder.equals("alphabetical")) {
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testmethod.order.default",
-                                "org.junit.jupiter.api.MethodOrderer$MethodName");
-                getConfigurationParameters()
-                        .put("junit.jupiter.testclass.order.default", "org.junit.jupiter.api.ClassOrderer$ClassName");
+                setDefaultOrderers(
+                        "org.junit.jupiter.api.MethodOrderer$MethodName",
+                        "org.junit.jupiter.api.ClassOrderer$ClassName");
             } else if (runOrder.equals("reversealphabetical")) {
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testmethod.order.default",
-                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder");
-                getConfigurationParameters()
-                        .put(
-                                "junit.jupiter.testclass.order.default",
-                                "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
+                setDefaultOrderers(
+                        "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseMethodOrder",
+                        "org.apache.maven.surefire.junitplatform.ReverseOrdering$ReverseClassOrder");
             }
+        }
+    }
+
+    /**
+     * Sets the JUnit orderers for runOrder, unless one is already set (Quarkus sets its own, for example).
+     */
+    private void setDefaultOrderers(String methodOrderer, String classOrderer) {
+        // what JUnit finds by itself: system properties and junit-platform.properties
+        ConfigurationParameters configuredElsewhere = request().build().getConfigurationParameters();
+        setOrdererIfMissing(METHOD_ORDER_DEFAULT, methodOrderer, configuredElsewhere);
+        setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+    }
+
+    private void setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {
+        if (!configuredElsewhere.get(key).isPresent()) {
+            getConfigurationParameters().putIfAbsent(key, orderer);
         }
     }
 
@@ -205,6 +229,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
         ReporterFactory reporterFactory = parameters.getReporterFactory();
         final RunResult runResult;
         TestReportListener<TestOutputReportEntry> runListener = reporterFactory.createTestReportListener();
+        warnAboutTestNgOnlyGroups(runListener);
         CancellationTokenAdapter cancellationToken = CancellationTokenAdapter.tryCreate();
         Stoppable stoppable = prepareFailFastSupport(cancellationToken, runListener);
         RunListenerAdapter adapter = new RunListenerAdapter(runListener, stoppable);
@@ -215,9 +240,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
         try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession(cancellationToken)) {
             LauncherAdapter launcher = launcherSession.getLauncher();
             if (forkTestSet instanceof TestsToRun) {
+                // The TestNG engine is not skipped here on purpose: reading the classes eagerly would
+                // advance the iteration state which TestsToRun exposes through iterated().
                 invokeAllTests(launcher, (TestsToRun) forkTestSet, adapter);
             } else if (forkTestSet instanceof Class) {
-                invokeAllTests(launcher, fromClass((Class<?>) forkTestSet), adapter);
+                Class<?> testClass = (Class<?>) forkTestSet;
+                excludeTestNgEngineIfPossible(Collections.singletonList(testClass.getName()));
+                invokeAllTests(launcher, fromClass(testClass), adapter);
             } else if (forkTestSet == null) {
                 invokeAllTests(launcher, scanClasspath(launcher), adapter);
             } else {
@@ -229,6 +258,13 @@ public class JUnitPlatformProvider extends AbstractProvider {
         return runResult;
     }
 
+    void warnAboutTestNgOnlyGroups(ConsoleLogger logger) {
+        if (!testNgOnlyGroups.isEmpty()) {
+            logger.warning("These groups are not valid JUnit tag expressions, so they only filter TestNG tests: "
+                    + String.join(", ", testNgOnlyGroups));
+        }
+    }
+
     private static void setupJunitLogger() {
         Logger logger = Logger.getLogger("org.junit");
         if (logger.getLevel() == null) {
@@ -237,10 +273,24 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private TestsToRun scanClasspath(LauncherAdapter launcher) {
-        TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, filters);
         ScanResult scanResult = parameters.getScanResult();
+        List<String> candidateClassNames = scannedClassNames(scanResult);
+        excludeTestNgEngineIfPossible(candidateClassNames);
+        Set<String> testNgClassNames =
+                TestNgTestClassDetector.findTestNgTestClasses(parameters.getTestClassLoader(), candidateClassNames);
+        TestPlanScannerFilter filter =
+                new TestPlanScannerFilter(launcher, allFilters(), candidateClassNames, testNgClassNames);
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
+    }
+
+    private static List<String> scannedClassNames(ScanResult scanResult) {
+        int size = scanResult.size();
+        List<String> classNames = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            classNames.add(scanResult.getClassName(i));
+        }
+        return classNames;
     }
 
     private void invokeAllTests(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter)
@@ -408,7 +458,32 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private LauncherDiscoveryRequestBuilder newRequest() {
 
-        return request().filters(filters).configurationParameters(getConfigurationParameters());
+        return request().filters(allFilters()).configurationParameters(getConfigurationParameters());
+    }
+
+    /**
+     * @return the include/exclude filters, extended by an engine filter which keeps the TestNG engine out of
+     *     the request when it was proven that it cannot contribute any test
+     */
+    private Filter<?>[] allFilters() {
+        if (!excludeTestNgEngine) {
+            return filters;
+        }
+        Filter<?>[] allFilters = Arrays.copyOf(filters, filters.length + 1);
+        allFilters[filters.length] = EngineFilter.excludeEngines(TestNgTestClassDetector.TESTNG_ENGINE_ID);
+        return allFilters;
+    }
+
+    /**
+     * Excludes the TestNG engine when none of the given classes could be a TestNG test class. The engine must
+     * never be skipped for a class which was not inspected, so this is only ever called with the complete set
+     * of classes which is about to be handed over to the platform.
+     *
+     * @param classNames the names of every class which is about to be handed over to the platform
+     */
+    private void excludeTestNgEngineIfPossible(Collection<String> classNames) {
+        excludeTestNgEngine =
+                TestNgTestClassDetector.canExcludeTestNgEngine(parameters.getTestClassLoader(), classNames);
     }
 
     private Filter<?>[] newFilters() {
@@ -435,28 +510,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
             filters.add(includeEnclosingClasses(classNameFilter));
         }
 
-        boolean useTestNG = parameters.getProviderProperties().get("testng.version") != null;
+        filters.addAll(newGroupFilters());
 
-        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED)) && !useTestNG) {
-            getPropertiesList(GROUPS_PROP).map(TagFilter::includeTags).ifPresent(filters::add);
-            getPropertiesList(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags).ifPresent(filters::add);
-        } else if (!useTestNG) {
-            Optional<Class<?>> categoryClass = getCategoryClass();
-            if (categoryClass.isPresent()) {
-                getPropertiesList(GROUPS_PROP)
-                        .map(strings -> getIncludeCategoryFilter(strings, categoryClass))
-                        .ifPresent(filters::add);
-            }
-        }
-
-        if (!useTestNG) {
-            Optional<Class<?>> categoryClass = getCategoryClass();
-            if (categoryClass.isPresent()) {
-                getPropertiesList(EXCLUDEDGROUPS_PROP)
-                        .map(strings -> getExcludeCategoryFilter(strings, categoryClass))
-                        .ifPresent(filters::add);
-            }
-        }
         of(optionallyWildcardFilter(parameters.getTestRequest().getTestListResolver()))
                 .filter(f -> !f.isEmpty())
                 .filter(f -> !f.isWildcard())
@@ -472,6 +527,74 @@ public class JUnitPlatformProvider extends AbstractProvider {
                 .ifPresent(filters::add);
 
         return filters.toArray(new Filter<?>[0]);
+    }
+
+    /**
+     * Builds the filters for groups and excludedGroups. TestNG tests are left alone, TestNG gets the groups too
+     * and filters its own tests.
+     */
+    private List<PostDiscoveryFilter> newGroupFilters() {
+        Optional<PostDiscoveryFilter> includeTags =
+                getTagExpressions(GROUPS_PROP).map(TagFilter::includeTags);
+        Optional<PostDiscoveryFilter> excludeTags =
+                getTagExpressions(EXCLUDEDGROUPS_PROP).map(TagFilter::excludeTags);
+        Optional<Class<?>> categoryClass = getCategoryClass();
+        List<PostDiscoveryFilter> groupFilters = new ArrayList<>();
+        if (!Boolean.parseBoolean(parameters.getProviderProperties().get(JUNIT_VINTAGE_DETECTED))) {
+            includeTags.ifPresent(groupFilters::add);
+            excludeTags.ifPresent(groupFilters::add);
+            if (categoryClass.isPresent()) {
+                getPropertiesList(EXCLUDEDGROUPS_PROP)
+                        .map(strings -> byEngine(
+                                getExcludeCategoryFilter(strings, categoryClass),
+                                descriptor -> FilterResult.included("Not a JUnit 4 test")))
+                        .ifPresent(groupFilters::add);
+            }
+        } else if (categoryClass.isPresent()) {
+            // JUnit 4 tests use @Category, all other tests use tags (#3468, #3503)
+            PostDiscoveryFilter noTagExpression = descriptor -> FilterResult.included("No tag expression to match");
+            getPropertiesList(GROUPS_PROP)
+                    .map(strings -> byEngine(
+                            getIncludeCategoryFilter(strings, categoryClass), includeTags.orElse(noTagExpression)))
+                    .ifPresent(groupFilters::add);
+            getPropertiesList(EXCLUDEDGROUPS_PROP)
+                    .map(strings -> byEngine(
+                            getExcludeCategoryFilter(strings, categoryClass), excludeTags.orElse(noTagExpression)))
+                    .ifPresent(groupFilters::add);
+        }
+        return groupFilters.stream()
+                .map(JUnitPlatformProvider::leaveTestNgTestsAlone)
+                .collect(toList());
+    }
+
+    /**
+     * Returns the groups JUnit can parse as tag expressions. With TestNG, a group can also be a regular expression
+     * JUnit can't parse, like {@code (?!slow).*}. We leave those to TestNG instead of failing the run.
+     */
+    private Optional<List<String>> getTagExpressions(String key) {
+        Optional<List<String>> groups = getPropertiesList(key);
+        if (!groups.isPresent() || parameters.getProviderProperties().get("testng.version") == null) {
+            return groups;
+        }
+        List<String> tagExpressions = new ArrayList<>();
+        for (String group : groups.get()) {
+            if (isTagExpression(group)) {
+                tagExpressions.add(group);
+            } else {
+                testNgOnlyGroups.add(group);
+            }
+        }
+        return tagExpressions.isEmpty() ? empty() : of(tagExpressions);
+    }
+
+    private static boolean isTagExpression(String group) {
+        try {
+            TagFilter.includeTags(group);
+            return true;
+        } catch (JUnitException e) {
+            // not PreconditionViolationException, JUnit 5.4 and older don't have it
+            return false;
+        }
     }
 
     /**
@@ -526,79 +649,70 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     PostDiscoveryFilter getIncludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
-
-        return testDescriptor -> {
-            Optional<MethodSource> methodSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof MethodSource)
-                    .map(testSource -> (MethodSource) testSource);
-            boolean hasCategoryClass = false, hasCategoryMethod = false;
-            if (methodSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            Optional<ClassSource> classSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof ClassSource)
-                    .map(testSource -> (ClassSource) testSource);
-            if (classSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotationValue(
-                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            return hasCategoryClass || hasCategoryMethod
-                    ? FilterResult.included("Category found")
-                    : FilterResult.excluded("Does not have category annotation");
-        };
+        return testDescriptor -> hasCategory(testDescriptor, categoryClass, categories)
+                ? FilterResult.included("Category found")
+                : FilterResult.excluded("Does not have category annotation");
     }
 
     PostDiscoveryFilter getExcludeCategoryFilter(List<String> categories, Optional<Class<?>> categoryClass) {
-
-        return testDescriptor -> {
-            Optional<MethodSource> methodSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof MethodSource)
-                    .map(testSource -> (MethodSource) testSource);
-            boolean hasCategoryClass = false, hasCategoryMethod = false;
-            if (methodSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryMethod = hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaMethod(), categoryClass.orElse(null), categories)
-                            || hasCategoryAnnotationValue(
-                                    methodSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            Optional<ClassSource> classSource = testDescriptor
-                    .getSource()
-                    .filter(testSource -> testSource instanceof ClassSource)
-                    .map(testSource -> (ClassSource) testSource);
-            if (classSource.isPresent()) {
-                if (categoryClass.isPresent()) {
-                    hasCategoryClass = hasCategoryAnnotationValue(
-                            classSource.get().getJavaClass(), categoryClass.orElse(null), categories);
-                }
-            }
-
-            return hasCategoryClass || hasCategoryMethod
-                    ? FilterResult.excluded("Does have exclude category annotation")
-                    : FilterResult.included("Does not have category excluded found");
-        };
+        return testDescriptor -> hasCategory(testDescriptor, categoryClass, categories)
+                ? FilterResult.excluded("Does have exclude category annotation")
+                : FilterResult.included("Does not have category excluded found");
     }
 
-    private boolean hasCategoryAnnotationValue(Class<?> clazz, Class<?> categoryClass, List<String> categories) {
-        return hasCategoryAnnotationValue(clazz.getAnnotations(), categoryClass, categories);
+    /**
+     * Uses the first filter for JUnit 4 tests and the second one for everything else.
+     */
+    private static PostDiscoveryFilter byEngine(PostDiscoveryFilter vintageFilter, PostDiscoveryFilter otherFilter) {
+        return testDescriptor -> isFromEngine(testDescriptor, VINTAGE_ENGINE_ID)
+                ? vintageFilter.apply(testDescriptor)
+                : otherFilter.apply(testDescriptor);
     }
 
-    private boolean hasCategoryAnnotationValue(Method method, Class<?> categoryClass, List<String> categories) {
-        return hasCategoryAnnotationValue(method.getAnnotations(), categoryClass, categories);
+    /**
+     * TestNG tests always pass here, TestNG checks their groups itself.
+     */
+    private static PostDiscoveryFilter leaveTestNgTestsAlone(PostDiscoveryFilter filter) {
+        return testDescriptor -> isFromEngine(testDescriptor, TestNgTestClassDetector.TESTNG_ENGINE_ID)
+                ? FilterResult.included("TestNG matches the groups itself")
+                : filter.apply(testDescriptor);
+    }
+
+    private static boolean isFromEngine(TestDescriptor testDescriptor, String engineId) {
+        return testDescriptor
+                .getUniqueId()
+                .getEngineId()
+                .filter(engineId::equals)
+                .isPresent();
+    }
+
+    private boolean hasCategory(
+            TestDescriptor testDescriptor, Optional<Class<?>> categoryClass, List<String> categories) {
+        if (!categoryClass.isPresent()) {
+            return false;
+        }
+        TestSource source = testDescriptor.getSource().orElse(null);
+        if (source instanceof MethodSource) {
+            MethodSource methodSource = (MethodSource) source;
+            return hasCategoryAnnotationValue(methodSource::getJavaMethod, categoryClass.get(), categories)
+                    || hasCategoryAnnotationValue(methodSource::getJavaClass, categoryClass.get(), categories);
+        }
+        if (source instanceof ClassSource) {
+            return hasCategoryAnnotationValue(((ClassSource) source)::getJavaClass, categoryClass.get(), categories);
+        }
+        return false;
+    }
+
+    private boolean hasCategoryAnnotationValue(
+            Supplier<? extends AnnotatedElement> element, Class<?> categoryClass, List<String> categories) {
+        AnnotatedElement annotatedElement;
+        try {
+            annotatedElement = element.get();
+        } catch (RuntimeException e) {
+            // not always real code, a Spock feature name is not a Java method
+            return false;
+        }
+        return hasCategoryAnnotationValue(annotatedElement.getAnnotations(), categoryClass, categories);
     }
 
     private boolean hasCategoryAnnotationValue(

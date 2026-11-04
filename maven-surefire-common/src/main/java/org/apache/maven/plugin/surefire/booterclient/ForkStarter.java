@@ -45,8 +45,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.maven.plugin.surefire.CommonReflector;
+import org.apache.maven.plugin.surefire.JdkAttributes;
 import org.apache.maven.plugin.surefire.StartupReportConfiguration;
 import org.apache.maven.plugin.surefire.SurefireProperties;
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.AbstractCommandReader;
@@ -93,6 +95,7 @@ import static java.lang.Thread.currentThread;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.addAll;
 import static java.util.UUID.randomUUID;
+import static java.util.concurrent.Executors.newCachedThreadPool;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -113,7 +116,7 @@ import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.ne
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
-import static org.apache.maven.surefire.booter.SystemUtils.pidOf;
+import static org.apache.maven.surefire.booter.SystemUtils.forkedJvmPidOf;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
@@ -152,6 +155,8 @@ public class ForkStarter {
     private final ScheduledExecutorService pingThreadScheduler = createPingScheduler();
 
     private final ScheduledExecutorService timeoutCheckScheduler;
+
+    private final ExecutorService timeoutHandlerExecutor;
 
     private final Queue<ForkClient> currentForkClients;
 
@@ -275,6 +280,7 @@ public class ForkStarter {
         defaultReporterFactories = new ConcurrentLinkedQueue<>();
         currentForkClients = new ConcurrentLinkedQueue<>();
         timeoutCheckScheduler = createTimeoutCheckScheduler();
+        timeoutHandlerExecutor = createTimeoutHandlerExecutor();
         timeoutExtensionDispatcher = new TimeoutExtensionDispatcher(log);
         triggerTimeoutCheck();
     }
@@ -290,6 +296,7 @@ public class ForkStarter {
             reportMerger.close();
             pingThreadScheduler.shutdownNow();
             timeoutCheckScheduler.shutdownNow();
+            timeoutHandlerExecutor.shutdownNow();
             timeoutExtensionDispatcher.close();
             for (String line : logsAtEnd) {
                 log.warning(line);
@@ -613,7 +620,7 @@ public class ForkStarter {
         currentForkClients.add(forkClient);
         CountdownCloseable countdownCloseable =
                 new CountdownCloseable(eventConsumer, forkChannel.getCountdownCloseablePermits());
-        final ForkedProcessTimeoutContext[] timeoutContextHolder = new ForkedProcessTimeoutContext[1];
+        final AtomicReference<ForkedProcessTimeoutContext> timeoutContext = new AtomicReference<>();
         try (CommandlineExecutor exec = new CommandlineExecutor(cli, countdownCloseable)) {
             forkChannel.tryConnectToClient();
             CommandlineStreams streams = exec.execute();
@@ -628,18 +635,23 @@ public class ForkStarter {
             log.debug("Fork Channel [" + forkNumber + "] connected to the client.");
 
             if (timeoutExtensionDispatcher.hasExtensions() && forkedProcessTimeoutInSeconds > 0) {
-                Long pid = pidOf(exec.getProcess());
-                File javaExecutable = cli.getExecutable() == null ? null : new File(cli.getExecutable());
-                final ForkedProcessTimeoutContext context = new DefaultForkedProcessTimeoutContext(
-                        pid == null ? -1L : pid,
-                        forkNumber,
-                        javaExecutable,
-                        startupReportConfiguration.getReportsDirectory(),
-                        forkedProcessTimeoutInSeconds,
-                        log,
-                        forkedProcessTimeoutExtensionContext);
-                timeoutContextHolder[0] = context;
-                forkClient.setTimeoutDetectedListener(() -> timeoutExtensionDispatcher.fireTimeoutDetected(context));
+                Process process = exec.getProcess();
+                JdkAttributes jdk = forkConfiguration.getJdkForTests();
+                File javaExecutable = jdk == null ? null : jdk.getJvmExecutable();
+                forkClient.setTimeoutDetectedListener(() -> {
+                    // Find the PID now, the JVM may be a child of the shell Surefire started
+                    Long pid = forkedJvmPidOf(process, javaExecutable == null ? null : javaExecutable.getName());
+                    ForkedProcessTimeoutContext context = new DefaultForkedProcessTimeoutContext(
+                            pid == null ? -1L : pid,
+                            forkNumber,
+                            javaExecutable,
+                            startupReportConfiguration.getReportsDirectory(),
+                            forkedProcessTimeoutInSeconds,
+                            log,
+                            forkedProcessTimeoutExtensionContext);
+                    timeoutContext.set(context);
+                    timeoutExtensionDispatcher.fireTimeoutDetected(context);
+                });
             }
 
             result = exec.awaitExit();
@@ -675,8 +687,9 @@ public class ForkStarter {
             }
             forkClient.close(runResult.isTimeout());
 
-            if (runResult.isTimeout() && timeoutContextHolder[0] != null) {
-                timeoutExtensionDispatcher.fireForkExited(timeoutContextHolder[0], runResult);
+            ForkedProcessTimeoutContext context = timeoutContext.get();
+            if (runResult.isTimeout() && context != null) {
+                timeoutExtensionDispatcher.fireForkExited(context, runResult);
             }
 
             if (!runResult.isTimeout()) {
@@ -922,6 +935,14 @@ public class ForkStarter {
         return newScheduledThreadPool(1, threadFactory);
     }
 
+    /**
+     * One thread per timed-out fork, so a slow thread dump of one fork doesn't delay killing the others.
+     */
+    private static ExecutorService createTimeoutHandlerExecutor() {
+        ThreadFactory threadFactory = newDaemonThreadFactory("fork-timeout-handler");
+        return newCachedThreadPool(threadFactory);
+    }
+
     private ScheduledFuture<?> triggerPingTimerForShutdown(final TestLessInputStreamBuilder builder) {
         return pingThreadScheduler.scheduleWithFixedDelay(
                 new Runnable() {
@@ -957,7 +978,7 @@ public class ForkStarter {
                     public void run() {
                         long systemTime = currentTimeMillis();
                         for (ForkClient forkClient : currentForkClients) {
-                            forkClient.tryToTimeout(systemTime, forkedProcessTimeoutInSeconds);
+                            forkClient.tryToTimeout(systemTime, forkedProcessTimeoutInSeconds, timeoutHandlerExecutor);
                         }
                     }
                 },

@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.maven.plugin.surefire.booterclient.lazytestprovider.NotifiableTestStream;
@@ -125,10 +127,10 @@ public final class ForkClient implements EventHandler<Event> {
     }
 
     /**
-     * Registers a one-shot callback invoked synchronously when the forked
-     * process timeout has been reached, immediately before the KILL command is
-     * sent. The forked JVM is still alive when the callback runs, so it may
-     * collect live diagnostics (for example a {@code jstack} dump).
+     * Sets a callback that runs once, just before a timed-out fork is killed.
+     * The fork is still alive then, so the callback can grab a {@code jstack} dump.
+     * It runs on the executor given to {@link #tryToTimeout}, so callbacks of
+     * different forks can run at the same time.
      *
      * @param listener the callback to run, or {@code null} to clear; callback
      *                 must not throw checked exceptions
@@ -301,28 +303,41 @@ public final class ForkClient implements EventHandler<Event> {
     /**
      * Called in concurrent Thread.
      * Will shutdown if timeout was reached.
+     * <p>
+     * The listener and the kill run on {@code executor}, so a slow listener
+     * doesn't hold up other forks.
      *
      * @param currentTimeMillis    current time in milliseconds
      * @param forkedProcessTimeoutInSeconds timeout in seconds given by MOJO
+     * @param executor where the listener and the kill run
      */
-    public void tryToTimeout(long currentTimeMillis, int forkedProcessTimeoutInSeconds) {
+    public void tryToTimeout(long currentTimeMillis, int forkedProcessTimeoutInSeconds, Executor executor) {
         if (forkedProcessTimeoutInSeconds > 0) {
             final long forkedProcessTimeoutInMillis = 1000L * forkedProcessTimeoutInSeconds;
             final long startedAt = testSetStartedAt.get();
             if (startedAt > START_TIME_ZERO && currentTimeMillis - startedAt >= forkedProcessTimeoutInMillis) {
                 if (testSetStartedAt.compareAndSet(startedAt, START_TIME_NEGATIVE_TIMEOUT)) {
-                    Runnable listener = timeoutDetectedListener;
-                    if (listener != null) {
-                        try {
-                            listener.run();
-                        } catch (RuntimeException ignored) {
-                            // listener failures must never prevent the kill
-                        }
+                    try {
+                        executor.execute(this::timeout);
+                    } catch (RejectedExecutionException e) {
+                        // executor is shut down, so kill the fork right here
+                        timeout();
                     }
-                    notifiableTestStream.shutdown(KILL);
                 }
             }
         }
+    }
+
+    private void timeout() {
+        Runnable listener = timeoutDetectedListener;
+        if (listener != null) {
+            try {
+                listener.run();
+            } catch (RuntimeException ignored) {
+                // listener failures must never prevent the kill
+            }
+        }
+        notifiableTestStream.shutdown(KILL);
     }
 
     public DefaultReporterFactory getDefaultReporterFactory() {

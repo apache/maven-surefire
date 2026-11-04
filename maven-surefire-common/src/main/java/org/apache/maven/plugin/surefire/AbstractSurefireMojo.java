@@ -122,8 +122,6 @@ import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +145,6 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_OR
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
@@ -673,7 +670,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * are per cpu core.
      *
      * @since 2.5
+     * @deprecated not used on the JUnit Platform since 3.6.0, {@code threadCount} is no longer multiplied by the
+     * number of CPU cores
      */
+    @Deprecated
     @Parameter(property = "perCoreThreadCount", defaultValue = "true")
     private boolean perCoreThreadCount;
 
@@ -683,14 +683,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * {@code perCoreThreadCount} and {@code threadCount}. Defaults to "false".
      *
      * @since 2.5
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code threadCount}
      */
+    @Deprecated
     @Parameter(property = "useUnlimitedThreads", defaultValue = "false")
     private boolean useUnlimitedThreads;
 
     /**
      * (TestNG provider) When you use the parameter {@code parallel}, TestNG will try to run all your test methods
      * in separate threads, except for methods that depend on each other, which will be run in the same thread in order
-     * to respect their order of execution.  Supports two values: {@code classes} or {@code methods}.
+     * to respect their order of execution. Supports {@code methods}, {@code classes}, {@code tests} and
+     * {@code instances}.
      * <br>
      * (JUnit 4.7 provider) Supports values {@code classes}, {@code methods}, {@code both} to run
      * in separate threads been controlled by {@code threadCount}.
@@ -716,7 +719,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * True by default.
      *
      * @since 2.17
+     * @deprecated not used on the JUnit Platform since 3.6.0
      */
+    @Deprecated
     @Parameter(property = "parallelOptimized", defaultValue = "true")
     private boolean parallelOptimized;
 
@@ -735,7 +740,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * The default value <b>0</b> behaves same as unspecified one.
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, it has no suite level parallelism
      */
+    @Deprecated
     @Parameter(property = "threadCountSuites", defaultValue = "0")
     private int threadCountSuites;
 
@@ -852,7 +859,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * (TestNG only) Define the factory class used to create all test instances.
      *
      * @since 2.5
+     * @deprecated not used on the JUnit Platform since 3.6.0, the TestNG engine has no such option
      */
+    @Deprecated
     @Parameter(property = "objectFactory")
     private String objectFactory;
 
@@ -1201,6 +1210,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     boolean verifyParameters() throws MojoFailureException, MojoExecutionException {
         setProperties(new SurefireProperties(getProperties()));
+
+        ensureNoSuiteXmlFiles();
 
         String jvmToUse = getJvm();
         if (toolchain != null) {
@@ -1630,7 +1641,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * Converts old JUnit configuration parameters over to new properties based configuration
      * method. (if any are defined the old way)
      */
-    void convertJunitCoreParameters() throws MojoFailureException {
+    void convertJunitCoreParameters() throws MojoFailureException, MojoExecutionException {
         checkThreadCountEntity(getThreadCountSuites(), "suites");
         checkThreadCountEntity(getThreadCountClasses(), "classes");
         checkThreadCountEntity(getThreadCountMethods(), "methods");
@@ -1726,7 +1737,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         logDebugOrCliShowErrors(message);
     }
 
-    private void checkNonForkedThreads(String parallel) throws MojoFailureException {
+    private void checkNonForkedThreads(String parallel) throws MojoFailureException, MojoExecutionException {
         if ("suites".equals(parallel)) {
             if (!(getUseUnlimitedThreads() || getThreadCount() > 0 ^ getThreadCountSuites() > 0)) {
                 throw new MojoFailureException(
@@ -1829,9 +1840,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         + "and threadCount > threadCountSuites + threadCountClasses) "
                         + "for parallel='all'");
             }
-        } else {
+        } else if (!isTestNgOnlyParallelMode(parallel)) {
             throw new MojoFailureException("Illegal parallel='" + parallel + "'");
         }
+    }
+
+    /**
+     * {@code tests} and {@code instances} only exist in TestNG, so we only accept them when TestNG is on the
+     * classpath.
+     */
+    private boolean isTestNgOnlyParallelMode(String parallel) throws MojoExecutionException {
+        return ("tests".equals(parallel) || "instances".equals(parallel)) && getTestNgArtifact() != null;
     }
 
     private boolean onlyThreadCount() {
@@ -2091,33 +2110,21 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerClasspath = classpathCache.setCachedClasspath(providerName, providerArtifacts);
         }
 
-        final ProviderRequirements providerRequirements;
-        final Classpath testModulepath;
+        // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
+        final ModulePathJpmsArguments.Layout layout;
         if (isMainDescriptor) {
-            providerRequirements = new ProviderRequirements(true, true, false);
-            ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
-                    .setIncludeAllProviders(true)
-                    .setJdkHome(javaHome)
-                    .setIncludeStatic(true)
-                    .setModuleDescriptor(javaModuleDescriptor);
-
-            ResolvePathsResult<String> result = getLocationManager().resolvePaths(req);
-            for (Entry<String, Exception> entry : result.getPathExceptions().entrySet()) {
-                // Probably JDK version < 9. Other known causes: passing a non-jar or a corrupted jar.
-                getConsoleLogger().warning("Exception for '" + entry.getKey() + "'.", entry.getValue());
-            }
-
-            testClasspath = new Classpath(result.getClasspathElements());
-            testModulepath = new Classpath(result.getModulepathElements().keySet());
-
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
             }
+
+            layout = ModulePathJpmsArguments.forMainModule(
+                    getLocationManager(), testClasspath, javaModuleDescriptor, javaHome, packages, getConsoleLogger());
         } else {
-            providerRequirements = new ProviderRequirements(true, false, true);
-            testModulepath = testClasspath;
-            testClasspath = emptyClasspath();
+            layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
+        testClasspath = layout.getClasspath();
+        Classpath testModulepath = layout.getModulepath();
+        ProviderRequirements providerRequirements = new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor);
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -2158,7 +2165,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         getConsoleLogger().debug(inProcClasspath.getCompactLogMessage("in-process(compact) classpath:"));
 
         ProcessCheckerType processCheckerType = ProcessCheckerType.toEnum(getEnableProcessChecker());
-        List<String[]> jpmsArgs = providerInfo.getJpmsArguments(providerRequirements);
+        List<String[]> jpmsArgs = new ArrayList<>(providerInfo.getJpmsArguments(providerRequirements));
+        jpmsArgs.addAll(layout.getJpmsArguments());
         return new StartupConfiguration(
                 providerName, classpathConfiguration, classLoaderConfiguration, processCheckerType, jpmsArgs);
     }
@@ -2291,11 +2299,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             excludes = Collections.emptyList();
         } else {
             excludes = new ArrayList<>();
-            if (asScanList) {
-                if (getExcludes() != null) {
+            if (getExcludes() != null) {
+                if (asScanList) {
                     excludes.addAll(getExcludes());
+                } else {
+                    // excluded classes are already dropped by the scan, only method excludes matter here
+                    excludes.addAll(getMethodFilters(getExcludes()));
                 }
-                checkMethodFilterInIncludesExcludes(excludes);
             }
 
             if (getExcludesFile() != null) {
@@ -2337,7 +2347,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 if (getIncludes() != null) {
                     includes.addAll(getIncludes());
                 }
-                checkMethodFilterInIncludesExcludes(includes);
+                checkMethodFilterInIncludes(includes);
             }
 
             if (getIncludesFile() != null) {
@@ -2352,12 +2362,30 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return filterNulls(includes);
     }
 
-    private void checkMethodFilterInIncludesExcludes(Iterable<String> patterns) throws MojoFailureException {
+    private void checkMethodFilterInIncludes(Iterable<String> patterns) throws MojoFailureException {
         for (String pattern : patterns) {
             if (pattern != null && pattern.contains("#")) {
-                throw new MojoFailureException("Method filter prohibited in includes|excludes parameter: " + pattern);
+                throw new MojoFailureException("Method filter prohibited in includes parameter: " + pattern);
             }
         }
+    }
+
+    /**
+     * Keeps only the patterns naming a method, like {@code pkg/SomeTest#testMethod}.
+     */
+    @Nonnull
+    private static List<String> getMethodFilters(List<String> patterns) {
+        List<String> methodFilters = new ArrayList<>();
+        for (String pattern : patterns) {
+            if (pattern != null) {
+                for (String item : split(pattern, ",")) {
+                    if (item.contains("#")) {
+                        methodFilters.add(item.trim());
+                    }
+                }
+            }
+        }
+        return methodFilters;
     }
 
     private TestListResolver getIncludedAndExcludedTests() throws MojoFailureException {
@@ -3026,6 +3054,56 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     protected void warnIfIllegalFailOnFlakeCount() throws MojoFailureException {}
 
+    /**
+     * TestNG suite XML files from the configuration.
+     * We only read them to fail the build, they're not supported anymore.
+     */
+    protected File[] getSuiteXmlFiles() {
+        return null;
+    }
+
+    void ensureNoSuiteXmlFiles() throws MojoFailureException {
+        File[] suiteXmlFiles = getSuiteXmlFiles();
+        if (suiteXmlFiles != null && suiteXmlFiles.length != 0) {
+            throw new MojoFailureException("Parameter \"suiteXmlFiles\" is not supported since 3.6.0: "
+                    + "TestNG tests now run on the JUnit Platform, which can't read TestNG suite XML files. "
+                    + "Remove it and select tests with \"groups\", \"excludedGroups\", \"includes\" or \"excludes\" "
+                    + "(or a JUnit Platform @Suite class), or keep using maven-" + getPluginName()
+                    + "-plugin 3.5.x.");
+        }
+    }
+
+    /**
+     * Warns when a parameter the JUnit Platform doesn't use is set.
+     * Legacy providers still use them, so this only runs on the JUnit Platform path.
+     */
+    void warnIfIgnoredByJUnitPlatform() {
+        List<String> ignored = new ArrayList<>();
+        if (getUseUnlimitedThreads()) {
+            ignored.add("useUnlimitedThreads");
+        }
+        if (getThreadCountSuites() > 0) {
+            ignored.add("threadCountSuites");
+        }
+        if (!isParallelOptimized()) {
+            ignored.add("parallelOptimized");
+        }
+        if (getParallelTestsTimeoutInSeconds() > 0) {
+            ignored.add("parallelTestsTimeoutInSeconds");
+        }
+        if (getParallelTestsTimeoutForcedInSeconds() > 0) {
+            ignored.add("parallelTestsTimeoutForcedInSeconds");
+        }
+        if (getObjectFactory() != null) {
+            ignored.add("objectFactory");
+        }
+        if (!ignored.isEmpty()) {
+            getConsoleLogger()
+                    .warning("These parameters are ignored when tests run on the JUnit Platform and are deprecated: "
+                            + String.join(", ", ignored) + ".");
+        }
+    }
+
     private void printDefaultSeedIfNecessary() {
         if (getRunOrder().equals(RunOrder.RANDOM.name())) {
             if (getRunOrderRandomSeed() == null) {
@@ -3174,6 +3252,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 convertJunitEngineParameters();
                 convertGroupParameters();
                 convertJunitCoreParameters();
+                warnIfIgnoredByJUnitPlatform();
             } catch (MojoFailureException e) {
                 throw new MojoExecutionException(e.getMessage(), e);
             }
@@ -3186,8 +3265,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            boolean hasTestDescriptor = forkRequirements.isModularPath() && forkRequirements.hasTestModuleDescriptor();
-            return hasTestDescriptor ? getJpmsArgs() : Collections.emptyList();
+            return ModulePathJpmsArguments.junitPlatformArguments(forkRequirements);
         }
 
         @Override
@@ -3287,20 +3365,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             alignProviderVersions(providerArtifacts, engineVersion, testDeps.get(api));
 
             return new LinkedHashSet<>(providerArtifacts.values());
-        }
-
-        private List<String[]> getJpmsArgs() {
-            List<String[]> args = new ArrayList<>();
-
-            args.add(new String[] {
-                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
-            });
-
-            args.add(new String[] {
-                "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
-            });
-
-            return args;
         }
 
         private void addEngineByApi(

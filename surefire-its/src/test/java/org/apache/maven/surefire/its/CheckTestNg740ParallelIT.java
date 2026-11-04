@@ -34,4 +34,23 @@ public class CheckTestNg740ParallelIT extends SurefireJUnit4IntegrationTestCase 
     public void withTestNG740AndParallelSetWithoutThreadCount() {
         unpack("testng-740-parallel-without-threadcount").executeTest().assertTestSuiteResults(2, 0, 0, 0);
     }
+
+    // "tests" and "instances" only exist in TestNG
+    @Test
+    public void withTestNGParallelTests() {
+        unpack("testng-parallel-modes", "-tests")
+                .parallel("tests")
+                .threadCount(2)
+                .executeTest()
+                .assertTestSuiteResults(4, 0, 0, 0);
+    }
+
+    @Test
+    public void withTestNGParallelInstances() {
+        unpack("testng-parallel-modes", "-instances")
+                .parallel("instances")
+                .threadCount(2)
+                .executeTest()
+                .assertTestSuiteResults(4, 0, 0, 0);
+    }
 }
