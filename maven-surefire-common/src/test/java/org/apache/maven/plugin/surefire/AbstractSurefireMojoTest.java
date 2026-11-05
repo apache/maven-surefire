@@ -1951,6 +1951,58 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void shouldNotRequireTestFrameworkWhenNoGroupsSelected() throws Exception {
+        givenProjectArtifact();
+
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
+    }
+
+    @Test
+    public void shouldFailWhenGroupsSelectedAndNoTestFrameworkOnClasspath() {
+        givenProjectArtifact();
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "warnIfDefunctGroupsCombinations"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageStartingWith("groups/excludedGroups are specified but no test framework");
+    }
+
+    @Test
+    public void shouldFailWhenGroupsSelectedAndJunitIsTooOld() {
+        givenProjectArtifact();
+        givenJunitOnTestClasspath("4.5");
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "warnIfDefunctGroupsCombinations"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("(4.5) is too old to support groups");
+    }
+
+    @Test
+    public void shouldAcceptGroupsWithJunit47OrNewer() throws Exception {
+        givenProjectArtifact();
+        givenJunitOnTestClasspath("4.13.2");
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
+    }
+
+    private void givenProjectArtifact() {
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+    }
+
+    private void givenJunitOnTestClasspath(String version) {
+        mojo.setJunitArtifactName("junit:junit");
+        setProjectDepedenciesToMojo(new DefaultArtifact(
+                "junit", "junit", createFromVersion(version), "test", "jar", null, mock(ArtifactHandler.class)));
+    }
+
+    @Test
     public void shouldAcceptTestNgOnlyParallelModesWithTestNg() throws Exception {
         Artifact projectArtifact = mojo.getMojoArtifact();
         MavenProject project = mock(MavenProject.class);
