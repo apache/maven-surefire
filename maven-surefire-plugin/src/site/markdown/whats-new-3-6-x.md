@@ -205,6 +205,8 @@ Ensure your TestNG version is **6.14.3 or later**. Surefire will automatically u
 
 TestNG configuration (groups, listeners, reporters, parallel, etc.) continues to work through Surefire's plugin
 configuration and is mapped to the JUnit Platform infrastructure.
+Listeners are also called during the TestNG engine's dry runs, see
+[Listeners and the TestNG dry run](examples/testng.html#Listeners_and_the_TestNG_dry_run).
 
 TestNG suite XML files (`suiteXmlFiles`) are no longer supported, and since 3.6.1 the build fails if they're set.
 Pick your tests with `groups`, `includes`/`excludes` or a JUnit Platform `@Suite` class instead.
