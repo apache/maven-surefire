@@ -25,21 +25,16 @@ import java.util.Set;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.surefire.SurefireDependencyResolver;
 import org.apache.maven.plugin.surefire.TestClassPath;
 
+import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.MINIMUM_JUNIT4_VERSION_SPEC;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
 
 /**
  * @author Kristian Rosenvold
  */
 public interface ProviderInfo {
-
-    enum Engine {
-        JUNIT3,
-        JUNIT4,
-        TESTNG,
-        JUNIT_PLATFORM
-    }
 
     @Nonnull
     String getProviderName();
@@ -54,8 +49,13 @@ public interface ProviderInfo {
     @Nonnull
     List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements);
 
+    /**
+     * Is this a JUnit 4 we can actually run? Older than
+     * {@link SurefireDependencyResolver#MINIMUM_JUNIT4_VERSION_SPEC} is not supported, so this is false
+     * for those and for a missing artifact.
+     */
     default boolean isAnyJunit4(Artifact artifact) {
-        return isWithinVersionSpec(artifact, "[4.12,)");
+        return isWithinVersionSpec(artifact, MINIMUM_JUNIT4_VERSION_SPEC);
     }
 
     default TestClassPath decorateTestClassPath(TestClassPath testClasspath) throws MojoExecutionException {
