@@ -16,16 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package issue3462;
+package org.apache.maven.surefire.its.jiras;
 
+import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-class JupiterTest {
+/**
+ * A test in a nested {@code @ParameterizedClass} only exists once the outer class runs. Selecting it
+ * with {@code -Dtest} must still run it, two outer values times two inner values.
+ *
+ * @see <a href="https://github.com/apache/maven-surefire/issues/3548">GitHub issue #3548</a>
+ */
+public class Surefire3548NestedParameterizedClassIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
-    void sanityCheck() {
-        assertTrue(true);
+    void selectedTestInNestedParameterizedClassRuns() {
+        unpack("surefire-3548-nested-parameterized-class")
+                .setTestToRun("CalculatorParameterizedClassTests$Inner#regularTest")
+                .executeTest()
+                .verifyErrorFree(4);
     }
 }

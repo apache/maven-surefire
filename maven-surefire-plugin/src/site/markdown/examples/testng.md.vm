@@ -202,6 +202,32 @@ For more information on TestNG, see the [TestNG web site](https://testng.org).
 
 You can implement TestNG listener interface `org.testng.ITestListener` in a separate test artifact `your-testng-listener-artifact` with scope=test, or in project test source code `src/test/java`. You can filter test artifacts by the parameter `dependenciesToScan` to load its classes in current ClassLoader of the test provider. The TestNG reporter class should implement `org.testng.IReporter`.
 
+Listeners and the TestNG dry run
+--------------------------------
+
+Since 3.6.0, TestNG tests run on the JUnit Platform. To find the tests, the TestNG engine runs TestNG in
+dry-run mode, and a dry run calls your listeners just like a real run. Surefire asks the engine about each
+test class while it scans them, then once more right before the tests run, so `ISuiteListener.onStart()`
+and `onFinish()` are called more than once. The engine also dry-runs classes that are not TestNG tests,
+so this happens as soon as TestNG is on the test classpath, even in a module with only JUnit tests.
+
+During a dry run the system property `testng.mode.dryrun` is `true`. A listener that does real work, like
+starting a server, should skip it then:
+
+```java
+public class MySuiteListener implements ISuiteListener {
+    @Override
+    public void onStart(ISuite suite) {
+        if (Boolean.getBoolean("testng.mode.dryrun")) {
+            return;
+        }
+        // the real setup goes here
+    }
+}
+```
+
+See [testng-engine#440](https://github.com/junit-team/testng-engine/issues/440) for the background.
+
 The level of verbosity
 ----------------------
 
