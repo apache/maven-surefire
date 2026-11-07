@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.providerapi.ProviderRequirements;
@@ -34,7 +35,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -147,6 +150,34 @@ public class ModulePathJpmsArgumentsTest {
     }
 
     @Test
+    public void shouldKeepModuleNamesImmutable() {
+        HashSet<String> moduleNames = new HashSet<>(singleton("org.junit.platform.commons"));
+        ModulePathJpmsArguments.Layout layout = new ModulePathJpmsArguments.Layout(
+                Classpath.emptyClasspath(), Classpath.emptyClasspath(), emptyList(), moduleNames);
+
+        moduleNames.add("org.example.changed");
+
+        assertThat(layout.getModuleNames()).containsOnly("org.junit.platform.commons");
+        assertThatThrownBy(() -> layout.getModuleNames().add("org.example.changed"))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    public void shouldReturnImmutableModuleNamesOnModulepath() {
+        ResolvePathsResult<String> result = resolved(
+                singletonMap(
+                        "junit-platform-commons.jar",
+                        newModule("org.junit.platform.commons").build()),
+                "junit-platform-commons.jar");
+
+        Set<String> moduleNames = ModulePathJpmsArguments.moduleNamesOnModulepath(result);
+
+        assertThat(moduleNames).containsOnly("org.junit.platform.commons");
+        assertThatThrownBy(() -> moduleNames.add("org.example.changed"))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
     public void shouldOpenJUnitPlatformCommonsForTestModule() {
         ProviderRequirements testModule = new ProviderRequirements(true, false, true);
 
@@ -164,9 +195,11 @@ public class ModulePathJpmsArgumentsTest {
     public void shouldNotOpenJUnitPlatformCommonsOtherwise() {
         ProviderRequirements mainModule = new ProviderRequirements(true, true, false);
         ProviderRequirements classpath = new ProviderRequirements(false, false, false);
+        ProviderRequirements unknownModules = new ProviderRequirements(true, false, true, null);
 
         assertThat(ModulePathJpmsArguments.junitPlatformArguments(mainModule)).isEmpty();
         assertThat(ModulePathJpmsArguments.junitPlatformArguments(classpath)).isEmpty();
+        assertThat(unknownModules.getTestModuleNames()).isEmpty();
     }
 
     private static JavaModuleDescriptor.Builder newModule(String name) {

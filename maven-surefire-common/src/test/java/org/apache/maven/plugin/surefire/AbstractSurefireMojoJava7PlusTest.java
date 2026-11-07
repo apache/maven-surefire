@@ -58,6 +58,7 @@ import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
@@ -118,7 +119,6 @@ public class AbstractSurefireMojoJava7PlusTest {
 
         File classesDir = mockFile("classes");
         File testClassesDir = mockFile("test-classes");
-
         TestClassPath testClasspath =
                 new TestClassPath(asList(modular, nonModular, junit, hamcrest), classesDir, testClassesDir, null);
 
@@ -229,7 +229,6 @@ public class AbstractSurefireMojoJava7PlusTest {
         when(providerInfo.getProviderClasspath()).thenReturn(providerClasspath);
         // providers may hand back an immutable list
         when(providerInfo.getJpmsArguments(any(ProviderRequirements.class))).thenReturn(emptyList());
-
         try (MockedStatic<ResolvePathsRequest> reqMock = mockStatic(ResolvePathsRequest.class)) {
             reqMock.when(() -> ResolvePathsRequest.ofStrings(
                             eq(testClasspath.toClasspath().getClassPath())))
@@ -320,9 +319,13 @@ public class AbstractSurefireMojoJava7PlusTest {
 
         File classesDir = mockFile("classes");
         File testClassesDir = mockFile("test-classes");
+        String junitPlatformCommonsPath = "junit-platform-commons.jar";
 
-        TestClassPath testClasspath =
-                new TestClassPath(asList(modular, nonModular, junit, hamcrest), classesDir, testClassesDir, null);
+        TestClassPath testClasspath = new TestClassPath(
+                asList(modular, nonModular, junit, hamcrest),
+                classesDir,
+                testClassesDir,
+                singleton(junitPlatformCommonsPath));
 
         doReturn(1).when(mojo).getEffectiveForkCount();
         doReturn(true).when(mojo).effectiveIsEnableAssertions();
@@ -344,6 +347,16 @@ public class AbstractSurefireMojoJava7PlusTest {
         when(moduleInfo.getModuleDescriptor()).thenReturn(descriptor);
 
         when(descriptor.name()).thenReturn("abc");
+
+        JavaModuleDescriptor junitPlatformCommonsModule = mock(JavaModuleDescriptor.class);
+        when(junitPlatformCommonsModule.name()).thenReturn("org.junit.platform.commons");
+        @SuppressWarnings("unchecked")
+        ResolvePathsResult<String> resolvedPaths = mock(ResolvePathsResult.class);
+        when(resolvedPaths.getPathElements())
+                .thenReturn(singletonMap(junitPlatformCommonsPath, junitPlatformCommonsModule));
+        when(resolvedPaths.getModulepathElements())
+                .thenReturn(singletonMap(junitPlatformCommonsPath, ModuleNameSource.FILENAME));
+        when(locationManager.<String>resolvePaths(any())).thenReturn(resolvedPaths);
 
         Logger logger = mock(Logger.class);
         when(logger.isDebugEnabled()).thenReturn(true);
@@ -401,8 +414,12 @@ public class AbstractSurefireMojoJava7PlusTest {
         when(mojo.getPluginArtifactMap()).thenReturn(artifacts);
 
         ProviderInfo providerInfo = mock(ProviderInfo.class);
-        when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
+        when(providerInfo.getProviderName())
+                .thenReturn("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
         when(providerInfo.getProviderClasspath()).thenReturn(providerClasspath);
+        ProviderInfo junitPlatformProviderInfo = mojo.newJUnitPlatformProviderInfo(testClasspath);
+        when(providerInfo.getJpmsArguments(any()))
+                .thenAnswer(invocation -> junitPlatformProviderInfo.getJpmsArguments(invocation.getArgument(0)));
 
         StartupConfiguration conf = invokeMethod(
                 mojo,
@@ -423,10 +440,10 @@ public class AbstractSurefireMojoJava7PlusTest {
                 .containsExactly(
                         "main module descriptor name: abc",
                         "test classpath:",
-                        "test modulepath:  test-classes  classes  modular.jar  non-modular.jar  junit.jar  hamcrest.jar",
+                        "test modulepath:  test-classes  classes  modular.jar  non-modular.jar  junit.jar  hamcrest.jar  junit-platform-commons.jar",
                         "provider classpath:  surefire-provider.jar",
                         "test(compact) classpath:",
-                        "test(compact) modulepath:  test-classes  classes  modular.jar  non-modular.jar  junit.jar  hamcrest.jar",
+                        "test(compact) modulepath:  test-classes  classes  modular.jar  non-modular.jar  junit.jar  hamcrest.jar  junit-platform-commons.jar",
                         "provider(compact) classpath:  surefire-provider.jar",
                         "in-process classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-booter.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-extensions-spi.jar  surefire-logger-api.jar  surefire-shared-utils.jar",
                         "in-process(compact) classpath:  surefire-provider.jar  maven-surefire-common.jar  surefire-booter.jar  surefire-extensions-api.jar  surefire-api.jar  surefire-extensions-spi.jar  surefire-logger-api.jar  surefire-shared-utils.jar");
@@ -436,21 +453,70 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(conf.isProviderMainClass()).isFalse();
         assertThat(conf.isManifestOnlyJarRequestedAndUsable()).isFalse();
         assertThat(conf.getClassLoaderConfiguration()).isSameAs(classLoaderConfiguration);
-        assertThat(conf.getProviderClassName()).isEqualTo("org.asf.Provider");
-        assertThat(conf.getActualClassName()).isEqualTo("org.asf.Provider");
+        assertThat(conf.getProviderClassName()).isEqualTo(junitPlatformProviderInfo.getProviderName());
+        assertThat(conf.getActualClassName()).isEqualTo(junitPlatformProviderInfo.getProviderName());
         assertThat(conf.getClasspathConfiguration()).isNotNull();
         assertThat((Object) conf.getClasspathConfiguration().getTestClasspath()).isEqualTo(Classpath.emptyClasspath());
         assertThat((Object) conf.getClasspathConfiguration().getProviderClasspath())
                 .isEqualTo(new Classpath(singleton("surefire-provider.jar")));
         assertThat(conf.getClasspathConfiguration()).isInstanceOf(ModularClasspathConfiguration.class);
+        assertThat(conf.getJpmsArguments())
+                .hasSize(2)
+                .contains(
+                        new String[] {
+                            "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.util=ALL-UNNAMED"
+                        },
+                        atIndex(0))
+                .contains(
+                        new String[] {
+                            "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
+                        },
+                        atIndex(1));
         ModularClasspathConfiguration mcc = (ModularClasspathConfiguration) conf.getClasspathConfiguration();
         assertThat(mcc.getModularClasspath().getModuleNameFromDescriptor()).isEqualTo("abc");
         assertThat(mcc.getModularClasspath().getPackages()).isEmpty();
         assertThat(mcc.getModularClasspath().getPatchFile()).isNull();
         assertThat(mcc.getModularClasspath().getModulePath())
-                .hasSize(6)
+                .hasSize(7)
                 .containsSequence(
-                        "test-classes", "classes", "modular.jar", "non-modular.jar", "junit.jar", "hamcrest.jar");
+                        "test-classes",
+                        "classes",
+                        "modular.jar",
+                        "non-modular.jar",
+                        "junit.jar",
+                        "hamcrest.jar",
+                        "junit-platform-commons.jar");
+
+        when(resolvedPaths.getPathElements()).thenReturn(emptyMap());
+        when(resolvedPaths.getModulepathElements()).thenReturn(emptyMap());
+        TestClassPath classpathWithoutCommons = new TestClassPath(
+                asList(modular, nonModular, junit, hamcrest), classesDir, testClassesDir, emptyList());
+        StartupConfiguration withoutCommons = invokeMethod(
+                mojo,
+                "newStartupConfigWithModularPath",
+                classLoaderConfiguration,
+                providerInfo,
+                new ResolvePathResultWrapper(moduleInfo, false),
+                scanResult,
+                "",
+                classpathWithoutCommons);
+
+        assertThat(withoutCommons.getJpmsArguments()).isEmpty();
+
+        when(providerInfo.getProviderName()).thenReturn("org.asf.Provider");
+        doReturn(emptyList()).when(providerInfo).getJpmsArguments(any(ProviderRequirements.class));
+        StartupConfiguration nonJUnitPlatformConf = invokeMethod(
+                mojo,
+                "newStartupConfigWithModularPath",
+                classLoaderConfiguration,
+                providerInfo,
+                new ResolvePathResultWrapper(moduleInfo, false),
+                scanResult,
+                "",
+                testClasspath);
+
+        assertThat(nonJUnitPlatformConf.getJpmsArguments()).isEmpty();
+        verify(locationManager, times(2)).resolvePaths(any());
     }
 
     @Test
@@ -467,8 +533,17 @@ public class AbstractSurefireMojoJava7PlusTest {
         assertThat(providerInfo.getProviderName())
                 .isEqualTo("org.apache.maven.surefire.junitplatform.JUnitPlatformProvider");
         List<String[]> args = providerInfo.getJpmsArguments(providerRequirements);
-        assertThat(args)
-                .isNotEmpty()
+        assertThat(args).isEmpty();
+
+        Artifact junitPlatformCommons = new DefaultArtifact(
+                "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "jar", "", handler);
+        providerInfo =
+                mojo.newJUnitPlatformProviderInfo(new TestClassPath(singleton(junitPlatformCommons), null, null, null));
+        assertThat(providerInfo.getJpmsArguments(providerRequirements)).isEmpty();
+
+        ProviderRequirements commonsOnModulePath =
+                new ProviderRequirements(true, false, true, singleton("org.junit.platform.commons"));
+        assertThat(providerInfo.getJpmsArguments(commonsOnModulePath))
                 .hasSize(2)
                 .contains(
                         new String[] {
@@ -567,8 +642,12 @@ public class AbstractSurefireMojoJava7PlusTest {
         }
 
         ProviderInfo newJUnitPlatformProviderInfo() {
+            return newJUnitPlatformProviderInfo(new TestClassPath(java.util.Collections.emptyList(), null, null, null));
+        }
+
+        ProviderInfo newJUnitPlatformProviderInfo(TestClassPath testClasspath) {
             return new JUnitPlatformProviderInfo(
-                    null, null, null, null, null, null, null, null, null, null, null, null);
+                    null, null, testClasspath, null, null, null, null, null, null, null, null, null);
         }
 
         @Override
