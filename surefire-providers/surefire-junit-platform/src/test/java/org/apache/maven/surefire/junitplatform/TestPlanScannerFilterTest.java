@@ -27,6 +27,9 @@ import org.junit.Test;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.EngineFilter;
 import org.junit.platform.launcher.Launcher;
@@ -86,6 +89,14 @@ public class TestPlanScannerFilterTest {
     @org.junit.jupiter.api.Test
     public void classWithNestedTestFactoryIsAccepted() {
         assertTrue(newFilter(ClassWithNestedTestFactory.class).accept(ClassWithNestedTestFactory.class));
+    }
+
+    @org.junit.jupiter.api.Test
+    public void nestedParameterizedClassIsAcceptedWhenItIsTheOnlyCandidate() {
+        // @ParameterizedClass containers register their nested classes dynamically: discovering
+        // Nested$Inner alone resolves only the outer Nested container, with no descendant bearing
+        // Inner's own name. See https://github.com/apache/maven-surefire/issues/3548.
+        assertTrue(newFilter(ParameterizedOuter.Inner.class).accept(ParameterizedOuter.Inner.class));
     }
 
     @org.junit.jupiter.api.Test
@@ -307,6 +318,29 @@ public class TestPlanScannerFilterTest {
             List<DynamicTest> tests() {
                 return emptyList();
             }
+        }
+    }
+
+    @ParameterizedClass
+    @ValueSource(ints = {1, 2})
+    static class ParameterizedOuter {
+
+        @Parameter
+        int i;
+
+        @Nested
+        @ParameterizedClass
+        @ValueSource(ints = {1, 2})
+        class Inner {
+
+            final int j;
+
+            Inner(int j) {
+                this.j = j;
+            }
+
+            @org.junit.jupiter.api.Test
+            void test() {}
         }
     }
 }
