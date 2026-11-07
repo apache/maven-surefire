@@ -113,7 +113,7 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnit4ProviderJunit45AsDependencyArtifact() {
-        Artifact junit = aArtifact("3.8.1");
+        Artifact junit = aArtifact("4.5");
         ProviderInfo providerInfo = mojo
         .new JUnitPlatformProviderInfo(
                 null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
@@ -122,11 +122,29 @@ public class AbstractSurefireMojoProvidersInfoTest {
 
     @Test
     public void jUnit4ProviderJunit47AsDependencyArtifact() {
-        Artifact junit = aArtifact("3.8.1");
+        Artifact junit = aArtifact("4.7");
         ProviderInfo providerInfo = mojo
         .new JUnitPlatformProviderInfo(
                 null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
         assertThat(providerInfo.isApplicable()).isFalse();
+    }
+
+    @Test
+    public void jUnit4ProviderJunit411AsDependencyArtifact() {
+        Artifact junit = aArtifact("4.11");
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
+        assertThat(providerInfo.isApplicable()).isFalse();
+    }
+
+    @Test
+    public void jUnit4ProviderJunit412AsDependencyArtifact() {
+        Artifact junit = aArtifact("4.12");
+        ProviderInfo providerInfo = mojo
+        .new JUnitPlatformProviderInfo(
+                null, null, aTestClassPath(), junit, null, null, null, null, null, null, null, null);
+        assertThat(providerInfo.isApplicable()).isTrue();
     }
 
     @Test

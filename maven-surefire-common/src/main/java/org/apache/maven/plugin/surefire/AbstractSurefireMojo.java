@@ -583,11 +583,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean childDelegation;
 
     /**
-     * (TestNG/JUnit47 provider with JUnit4.8+ only and JUnit5+ provider since 2.22.0) Groups/categories/tags for this
-     * test. Only classes/methods/etc decorated with one of the groups/categories/tags specified here will be included
-     * in test run, if specified.<br>
-     * For JUnit4 tests, this parameter forces the use of the 4.7 provider. For JUnit5 tests, this parameter forces
-     * the use of the JUnit platform provider.<br>
+     * Groups/categories/tags for this test. Only classes/methods/etc decorated with one of the
+     * groups/categories/tags specified here will be included in test run, if specified.<br>
+     * Needs TestNG, JUnit 4.12+ or a JUnit Platform engine on the test classpath.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
      * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
@@ -598,11 +596,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String groups;
 
     /**
-     * (TestNG/JUnit47 provider with JUnit4.8+ only and JUnit5+ provider since 2.22.0) Excluded groups/categories/tags.
-     * Any methods/classes/etc with one of the groups/categories/tags specified in this list will specifically not be
-     * run.<br>
-     * For JUnit4, this parameter forces the use of the 4.7 provider. For JUnit5, this parameter forces the use of the
-     * JUnit platform provider.<br>
+     * Excluded groups/categories/tags. Any methods/classes/etc with one of the groups/categories/tags
+     * specified in this list will specifically not be run.<br>
+     * Needs TestNG, JUnit 4.12+ or a JUnit Platform engine on the test classpath.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
      * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
@@ -629,8 +625,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String testNGArtifactName;
 
     /**
-     * (TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the {@code parallel} parameter.
+     * (TestNG and JUnit 4 via the Vintage engine) The attribute thread-count allows you to specify how
+     * many threads should be allocated for this execution. Only makes sense to use in conjunction
+     * with the {@code parallel} parameter.
      *
      * @since 2.2
      */
@@ -665,8 +662,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean reuseForks;
 
     /**
-     * (JUnit 4.7 provider) Indicates that threadCount, threadCountSuites, threadCountClasses, threadCountMethods
-     * are per cpu core.
+     * (JUnit 4 via the Vintage engine) Indicates that threadCount, threadCountSuites,
+     * threadCountClasses, threadCountMethods are per cpu core.
      *
      * @since 2.5
      * @deprecated not used on the JUnit Platform since 3.6.0, {@code threadCount} is no longer multiplied by the
@@ -677,9 +674,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean perCoreThreadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The {@code parallel} parameter and
-     * the actual number of classes/methods will decide. Setting this to "true" effectively disables
-     * {@code perCoreThreadCount} and {@code threadCount}. Defaults to "false".
+     * (JUnit 4 via the Vintage engine) Indicates that the thread pool will be unlimited. The
+     * {@code parallel} parameter and the actual number of classes/methods will decide. Setting this
+     * to "true" effectively disables {@code perCoreThreadCount} and {@code threadCount}.
+     * Defaults to "false".
      *
      * @since 2.5
      * @deprecated not used on the JUnit Platform since 3.6.0, use {@code threadCount}
@@ -694,11 +692,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * to respect their order of execution. Supports {@code methods}, {@code classes}, {@code tests} and
      * {@code instances}.
      * <br>
-     * (JUnit 4.7 provider) Supports values {@code classes}, {@code methods}, {@code both} to run
+     * (JUnit 4 via the Vintage engine) Supports values {@code classes}, {@code methods}, {@code both} to run
      * in separate threads been controlled by {@code threadCount}.
      * <br>
      * <br>
-     * Since version 2.16 (JUnit 4.7 provider), the value {@code both} is <strong>DEPRECATED</strong>.
+     * Since version 2.16, the value {@code both} is <strong>DEPRECATED</strong>.
      * Use {@code classesAndMethods} instead.
      * <br>
      * <br>
@@ -712,7 +710,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String parallel;
 
     /**
-     * (JUnit 4.7 / provider only) The thread counts do not exceed the number of parallel suite, class runners and
+     * (JUnit 4 via the Vintage engine) The thread counts do not exceed the number of parallel suite, class runners and
      * average number of methods per class if set to <strong>true</strong>.
      * <br>
      * True by default.
@@ -725,7 +723,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean parallelOptimized;
 
     /**
-     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test suites, i.e.:
+     * (JUnit 4 via the Vintage engine) This attribute allows you to specify the concurrency in test suites, i.e.:
      * <ul>
      *  <li>number of concurrent suites if {@code threadCount} is 0 or unspecified</li>
      *  <li>limited suites concurrency if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
@@ -746,7 +744,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private int threadCountSuites;
 
     /**
-     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test classes, i.e.:
+     * (JUnit 4 via the Vintage engine) This attribute allows you to specify the concurrency in test classes, i.e.:
      * <ul>
      *  <li>number of concurrent classes if {@code threadCount} is 0 or unspecified</li>
      *  <li>limited classes concurrency if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
@@ -769,7 +767,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private int threadCountClasses;
 
     /**
-     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test methods, i.e.:
+     * (JUnit 4 via the Vintage engine) This attribute allows you to specify the concurrency in test methods, i.e.:
      * <ul>
      * <li>number of concurrent methods if {@code threadCount} is 0 or unspecified</li>
      * <li>limited concurrency of methods if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
@@ -1301,9 +1299,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger,
                         getTestNgArtifact()));
-        if (providerInfos.isEmpty()
-                && getJunitArtifact() != null
-                && !isWithinVersionSpec(getJunitArtifact(), "[4.12,)")) {
+        // No provider matched and the project does have JUnit, so its version is below the minimum we
+        // support: that is the only way JUnit can fail to select the JUnit Platform provider.
+        if (providerInfos.isEmpty() && getJunitArtifact() != null) {
             throw new MojoExecutionException(String.format(
                     "The used JUnit Version %s is not supported anymore. Please update to version 4.12+",
                     getJunitArtifact().getVersion()));
@@ -1857,14 +1855,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         if (count < 0) {
             throw new MojoFailureException("parallel maven execution does not allow negative thread-count" + entity);
         }
-    }
-
-    private boolean isJunit47Compatible(Artifact artifact) {
-        return isWithinVersionSpec(artifact, "[4.7,)");
-    }
-
-    private boolean isAnyJunit4(Artifact artifact) {
-        return isWithinVersionSpec(artifact, "[4.0,)");
     }
 
     protected boolean isForking() {
@@ -3008,24 +2998,18 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
-        if (!isAnyGroupsSelected() || getTestNgArtifact() != null) {
+        if (!isAnyGroupsSelected()) {
             return;
         }
 
-        Artifact junitArtifact = getJunitArtifact();
-        if (isJunit47Compatible(junitArtifact) || getJUnit5Artifact() != null) {
-            return;
-        }
-
-        if (junitArtifact == null) {
+        // Don't check the JUnit version here. A JUnit older than 4.12 is rejected right after by
+        // createProviders(), which names the version it found, so only complain when the module has
+        // no test framework at all to group by.
+        if (getTestNgArtifact() == null && getJUnit5Artifact() == null && getJunitArtifact() == null) {
             throw new MojoFailureException("groups/excludedGroups are specified but no test framework "
-                    + "supporting groups was found on the test classpath. Add TestNG, JUnit 4.7+ or a "
+                    + "supporting groups was found on the test classpath. Add TestNG, JUnit 4.12+ or a "
                     + "JUnit Platform engine to the test dependencies of this module.");
         }
-
-        throw new MojoFailureException("groups/excludedGroups are specified but the JUnit version on the "
-                + "test classpath (" + junitArtifact.getVersion() + ") is too old to support groups. "
-                + "Check your dependency:tree to see if your project is picking up an old junit version.");
     }
 
     private void warnIfRerunClashes() throws MojoFailureException {
@@ -3187,7 +3171,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         private final PluginDescriptor pluginDescriptor;
         private final Map<String, Artifact> pluginArtifactMap;
         private final ConsoleLogger consoleLogger;
-        private ProviderInfo.Engine engine = ProviderInfo.Engine.JUNIT_PLATFORM;
 
         @SuppressWarnings("checkstyle:parameternumber")
         JUnitPlatformProviderInfo(
@@ -3214,16 +3197,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             this.junitArtifact = junitArtifact;
             this.booterArtifact = booterArtifact;
             this.testNgArtifact = testNgArtifact;
-            // JUnit 4.12+ is required by JUnit 5.3+
-            // JUnit 4.13+ is required by JUnit 5.8+
-            // JUnit 4.13.2 is required by JUnit 5.9+
-            // JUnit 4.13.3 is required by JUnit 5.10+
-            // JUnit 4.13.4 is required by JUnit 5.12+
-            // https://junit.org/junit5/docs/current/user-guide/#dependency-metadata
-
-            if (isAnyJunit4(junitArtifact)) {
-                this.engine = Engine.JUNIT4;
-            }
             this.surefireDependencyResolver = surefireDependencyResolver;
         }
 
@@ -3349,10 +3322,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     consoleLogger.info(
                             "TestNG is present. Adding per default " + testNgEngineCoordinates + ":" + version);
                 }
-            }
-
-            if (!hasDependencyPlatformEngine(providerArtifacts)) {
-                addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
             }
 
             if (!hasDependencyPlatformEngine(providerArtifacts)) {

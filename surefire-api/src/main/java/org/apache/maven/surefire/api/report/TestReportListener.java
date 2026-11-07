@@ -34,9 +34,6 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
  * <br>
  * The serialization of data in {@link TestReportListener} ensures that the ReportEntries are transferred
  * from the fork to the plugin.
- * <br>
- * Note: The adapters in the module <i>surefire-junit47</i> are temporal and will be removed after we have fixed
- * the SUREFIRE-1860 and XML reporter in SUREFIRE-1643. The adapters are a workaround of a real fix in both Jira issues.
  *
  * @param <T> usually {@link TestOutputReportEntry} or {@link OutputReportEntry}
  */

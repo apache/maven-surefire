@@ -1969,21 +1969,19 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
-    public void shouldFailWhenGroupsSelectedAndJunitIsTooOld() {
+    public void shouldLeaveAnUnsupportedJunitVersionToProviderResolution() throws Exception {
         givenProjectArtifact();
-        givenJunitOnTestClasspath("4.5");
+        givenJunitOnTestClasspath("4.11");
         setInternalState(mojo, "excludedGroups", "SlowTest");
 
-        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "warnIfDefunctGroupsCombinations"));
-        assertThat(e.getCause())
-                .isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("(4.5) is too old to support groups");
+        // createProviders() rejects this JUnit and names its version, so this check stays quiet
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
     }
 
     @Test
-    public void shouldAcceptGroupsWithJunit47OrNewer() throws Exception {
+    public void shouldAcceptGroupsWithSupportedJunit4() throws Exception {
         givenProjectArtifact();
-        givenJunitOnTestClasspath("4.13.2");
+        givenJunitOnTestClasspath("4.12");
         setInternalState(mojo, "excludedGroups", "SlowTest");
 
         invokeMethod(mojo, "warnIfDefunctGroupsCombinations");

@@ -242,7 +242,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <br>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * {@literal <include>} entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>
      * {@literal <include>}%regex[.*[Cat|Dog].*], Basic????, !Unstable*{@literal </include>}
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
@@ -273,7 +273,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <br>
      * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
      * {@literal <exclude>} entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>
      * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
      * </code></pre>
