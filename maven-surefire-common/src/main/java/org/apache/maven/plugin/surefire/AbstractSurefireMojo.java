@@ -1087,6 +1087,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     if (getConsoleLogger().isDebugEnabled()) {
                         getConsoleLogger().debug("Tests to run: " + scan.getClasses());
                     }
+                    // Only check this once we know there are tests. A module with nothing to run
+                    // should not need a test framework just to satisfy inherited groups.
+                    warnIfDefunctGroupsCombinations();
                 }
                 logReportsDirectory();
                 executeAfterPreconditionsChecked(scan, platform);
@@ -1223,7 +1226,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
             warnIfUselessUseSystemClassLoaderParameter();
-            warnIfDefunctGroupsCombinations();
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
             warnIfIllegalTempDir();
@@ -3006,19 +3008,24 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
-        Artifact junitArtifact = getJunitArtifact();
-        if (isAnyGroupsSelected()) {
-            if (getTestNgArtifact() == null) {
-                boolean junit47Compatible = isJunit47Compatible(junitArtifact);
-                boolean junit5PlatformCompatible = getJUnit5Artifact() != null;
-                if (!junit47Compatible && !junit5PlatformCompatible) {
-                    throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on "
-                            + "classpath is too old to support groups. "
-                            + "Check your dependency:tree to see if your project "
-                            + "is picking up an old junit version");
-                }
-            }
+        if (!isAnyGroupsSelected() || getTestNgArtifact() != null) {
+            return;
         }
+
+        Artifact junitArtifact = getJunitArtifact();
+        if (isJunit47Compatible(junitArtifact) || getJUnit5Artifact() != null) {
+            return;
+        }
+
+        if (junitArtifact == null) {
+            throw new MojoFailureException("groups/excludedGroups are specified but no test framework "
+                    + "supporting groups was found on the test classpath. Add TestNG, JUnit 4.7+ or a "
+                    + "JUnit Platform engine to the test dependencies of this module.");
+        }
+
+        throw new MojoFailureException("groups/excludedGroups are specified but the JUnit version on the "
+                + "test classpath (" + junitArtifact.getVersion() + ") is too old to support groups. "
+                + "Check your dependency:tree to see if your project is picking up an old junit version.");
     }
 
     private void warnIfRerunClashes() throws MojoFailureException {
