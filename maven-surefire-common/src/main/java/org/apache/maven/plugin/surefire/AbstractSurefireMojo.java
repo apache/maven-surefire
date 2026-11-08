@@ -145,6 +145,8 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_OR
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
@@ -158,8 +160,6 @@ import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotEmpty;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.split;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
 /**
  * Abstract base class for running tests using Surefire.

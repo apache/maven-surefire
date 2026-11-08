@@ -22,11 +22,11 @@ import java.io.Closeable;
 import java.nio.file.Paths;
 
 import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.extensions.util.Commandline;
 import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
 import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.extensions.util.LineConsumerThread;
-import org.apache.maven.surefire.shared.utils.cli.Commandline;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,7 +78,7 @@ class CommandlineExecutorTest {
     @Test
     void shouldExecuteNativeCommand() throws Exception {
         Closeable closer = mock(Closeable.class);
-        Commandline cli = new Commandline(IS_OS_WINDOWS ? "dir" : "ls -la");
+        Commandline cli = new Commandline(IS_OS_WINDOWS ? "cmd.exe /c dir" : "ls -la");
         cli.setWorkingDirectory(
                 Paths.get(baseDir, "target", "CommandlineExecutorTest").toFile());
         CountdownCloseable countdownCloseable = new CountdownCloseable(closer, 1);
