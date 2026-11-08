@@ -35,6 +35,8 @@ public class Commandline {
     private static final boolean WINDOWS =
             System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).startsWith("windows");
 
+    private static final char[] CMD_SPECIAL_CHARS = {' ', '\t', '&', '<', '>', '(', ')', '@', '^', '|'};
+
     private String executable;
     private final List<String> arguments = new ArrayList<>();
     private final Map<String, String> addedEnvironment = new LinkedHashMap<>();
@@ -146,7 +148,8 @@ public class Commandline {
     }
 
     /**
-     * The command line as text, each item quoted: single quotes on Unix, double quotes on Windows.
+     * The command line as text, for logging: on Unix every item in single quotes, on Windows an item in double quotes
+     * only when cmd.exe would need them (whitespace or one of {@code &<>()@^|}), as the shell wrappers used to print it.
      */
     @Override
     public String toString() {
@@ -155,17 +158,24 @@ public class Commandline {
             if (sb.length() > 0) {
                 sb.append(' ');
             }
-            if (WINDOWS) {
-                sb.append('"')
-                        .append(item == null ? "" : item.replace("\"", "\\\""))
-                        .append('"');
-            } else {
-                sb.append('\'')
-                        .append(item == null ? "" : item.replace("'", "'\"'\"'"))
-                        .append('\'');
-            }
+            sb.append(quoteForLog(item == null ? "" : item));
         }
         return sb.toString();
+    }
+
+    private static String quoteForLog(String item) {
+        if (!WINDOWS) {
+            return "'" + item.replace("'", "'\"'\"'") + "'";
+        }
+        if (item.isEmpty() || (item.length() > 1 && item.startsWith("\"") && item.endsWith("\""))) {
+            return item;
+        }
+        for (char c : CMD_SPECIAL_CHARS) {
+            if (item.indexOf(c) >= 0) {
+                return "\"" + item + "\"";
+            }
+        }
+        return item;
     }
 
     /**
