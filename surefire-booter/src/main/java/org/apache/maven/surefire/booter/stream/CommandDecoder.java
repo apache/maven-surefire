@@ -48,7 +48,7 @@ import static org.apache.maven.surefire.api.booter.MasterProcessCommand.COMMAND_
 import static org.apache.maven.surefire.api.stream.SegmentType.DATA_STRING;
 import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.addShutDownHook;
 
 public class CommandDecoder extends AbstractStreamDecoder<Command, MasterProcessCommand, SegmentType> {
     private static final int DEBUG_SINK_BUFFER_SIZE = 64 * 1024;

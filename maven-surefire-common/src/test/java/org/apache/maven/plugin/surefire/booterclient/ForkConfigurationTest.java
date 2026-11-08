@@ -140,8 +140,7 @@ public class ForkConfigurationTest {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration(true, true);
         StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline cli = config.createCommandLine(startup, 1, getTempDirectory());
 
         assertThat(cli.getEnvironmentVariables())
                 .contains("key1=val1", "key2=val2", "key3=val3")
@@ -195,16 +194,14 @@ public class ForkConfigurationTest {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration(true, true);
         StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline cliFork1 =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline cliFork1 = config.createCommandLine(startup, 1, getTempDirectory());
 
         assertThat(cliFork1.getEnvironmentVariables())
                 .contains("FORK_ID=1")
                 .doesNotContain("PATH=")
                 .doesNotHaveDuplicates();
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline cliFork2 =
-                config.createCommandLine(startup, 2, getTempDirectory());
+        Commandline cliFork2 = config.createCommandLine(startup, 2, getTempDirectory());
 
         assertThat(cliFork2.getEnvironmentVariables())
                 .contains("FORK_ID=2")
@@ -245,8 +242,7 @@ public class ForkConfigurationTest {
         ClassLoaderConfiguration clc = new ClassLoaderConfiguration(true, true);
         StartupConfiguration startup = new StartupConfiguration("cls", cpConfig, clc, ALL, providerJpmsArgs);
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline cli = config.createCommandLine(startup, 1, getTempDirectory());
         String cliAsString = cli.toString();
 
         assertThat(cliAsString).contains("arg1");
@@ -321,8 +317,7 @@ public class ForkConfigurationTest {
 
         assertThat(startup.isShadefire()).isFalse();
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline cli = config.createCommandLine(startup, 1, getTempDirectory());
 
         assertThat(cli.toString()).contains("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005");
     }
@@ -341,8 +336,7 @@ public class ForkConfigurationTest {
         StartupConfiguration startup =
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline cli = config.createCommandLine(startup, 1, getTempDirectory());
 
         String line = join(" ", cli.getCommandline());
         assertTrue(line.contains("-jar"));
@@ -361,8 +355,7 @@ public class ForkConfigurationTest {
         StartupConfiguration startup =
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
 
-        org.apache.maven.surefire.shared.utils.cli.Commandline commandLine =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline commandLine = config.createCommandLine(startup, 1, getTempDirectory());
         assertThat(commandLine.toString()).contains(IS_OS_WINDOWS ? "abc def" : "'abc' 'def'");
     }
 
@@ -377,12 +370,11 @@ public class ForkConfigurationTest {
         StartupConfiguration startup =
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
         ForkConfiguration config = getForkConfiguration(cwd.getCanonicalFile());
-        org.apache.maven.surefire.shared.utils.cli.Commandline commandLine =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline commandLine = config.createCommandLine(startup, 1, getTempDirectory());
 
         File forkDirectory = new File(basedir, "fork_1");
 
-        String shellWorkDir = commandLine.getShell().getWorkingDirectory().getCanonicalPath();
+        String shellWorkDir = commandLine.getWorkingDirectory().getCanonicalPath();
         assertEquals(shellWorkDir, forkDirectory.getCanonicalPath());
     }
 
@@ -500,8 +492,7 @@ public class ForkConfigurationTest {
                 new StartupConfiguration("", cpConfig, clc, ALL, Collections.<String[]>emptyList());
 
         ForkConfiguration config = getForkConfiguration(workingDir.getCanonicalFile());
-        org.apache.maven.surefire.shared.utils.cli.Commandline cli =
-                config.createCommandLine(startup, 1, getTempDirectory());
+        Commandline cli = config.createCommandLine(startup, 1, getTempDirectory());
 
         // The command line must use -jar (manifest-only JAR mode)
         String line = join(" ", cli.getCommandline());

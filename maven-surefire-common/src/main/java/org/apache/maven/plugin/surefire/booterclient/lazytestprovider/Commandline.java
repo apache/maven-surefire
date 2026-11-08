@@ -18,21 +18,16 @@
  */
 package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
- * A {@link org.apache.maven.surefire.shared.utils.cli.Commandline} implementation.
- *
- * @author Andreas Gudian
+ * The forked JVM's command line: the environment of this JVM without the excluded variables, plus the added ones.
  */
-public class Commandline extends org.apache.maven.surefire.shared.utils.cli.Commandline {
+public class Commandline extends org.apache.maven.surefire.extensions.util.Commandline {
     private final Collection<String> excludedEnvironmentVariables;
-    private final Set<String> addedEnvironmentVariables;
 
     /**
      * For testing purposes only.
@@ -43,29 +38,13 @@ public class Commandline extends org.apache.maven.surefire.shared.utils.cli.Comm
 
     public Commandline(String[] excludedEnvironmentVariables) {
         this.excludedEnvironmentVariables = new ConcurrentLinkedDeque<>();
-        this.addedEnvironmentVariables = new HashSet<>();
         Collections.addAll(this.excludedEnvironmentVariables, excludedEnvironmentVariables);
     }
 
     @Override
-    public void addEnvironment(String name, String value) {
-        super.addEnvironment(name, value);
-        addedEnvironmentVariables.add(name);
-    }
-
-    @Override
-    public String[] getEnvironmentVariables() {
-        String[] envs = super.getEnvironmentVariables();
-        Set<String> result = new HashSet<>(Arrays.asList(envs));
-        result.addAll(addedEnvironmentVariables);
-        return excludedEnvironmentVariables.isEmpty()
-                ? result.toArray(new String[0])
-                : result.stream()
-                        .filter(env -> {
-                            String varName =
-                                    env != null && env.contains("=") ? env.substring(0, env.indexOf('=')) : env;
-                            return !excludedEnvironmentVariables.contains(varName);
-                        })
-                        .toArray(String[]::new);
+    protected Map<String, String> environment() {
+        Map<String, String> env = super.environment();
+        env.keySet().removeAll(excludedEnvironmentVariables);
+        return env;
     }
 }

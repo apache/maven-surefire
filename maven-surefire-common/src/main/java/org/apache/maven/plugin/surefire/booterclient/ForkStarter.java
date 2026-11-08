@@ -114,12 +114,12 @@ import static org.apache.maven.surefire.api.suite.RunResult.timeout;
 import static org.apache.maven.surefire.api.util.internal.ConcurrencyUtils.runIfZeroCountDown;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
 import static org.apache.maven.surefire.booter.SystemPropertyManager.writePropertiesFile;
 import static org.apache.maven.surefire.booter.SystemUtils.forkedJvmPidOf;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJre;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
 /**
  * Starts the fork or runs in-process.
@@ -670,7 +670,7 @@ public class ForkStarter {
                 err.disable();
             }
         } catch (Exception e) {
-            // CommandLineException from pipes and IOException from sockets
+            // IOException from the process start, the pipes or the sockets
             runResult = failure(reporter.getGlobalRunStatistics().getRunResult(), e);
             String cliErr = e.getLocalizedMessage();
             Throwable cause = e.getCause();

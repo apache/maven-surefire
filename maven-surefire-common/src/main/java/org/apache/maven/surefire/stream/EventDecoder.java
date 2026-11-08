@@ -72,7 +72,7 @@ import static org.apache.maven.surefire.api.stream.SegmentType.END_OF_FRAME;
 import static org.apache.maven.surefire.api.stream.SegmentType.RUN_MODE;
 import static org.apache.maven.surefire.api.stream.SegmentType.STRING_ENCODING;
 import static org.apache.maven.surefire.api.stream.SegmentType.TEST_RUN_ID;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.addShutDownHook;
 
 public class EventDecoder extends AbstractStreamDecoder<Event, ForkedProcessEventType, SegmentType> {
     private static final int DEBUG_SINK_BUFFER_SIZE = 64 * 1024;
