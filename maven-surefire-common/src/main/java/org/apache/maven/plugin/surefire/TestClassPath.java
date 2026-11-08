@@ -28,7 +28,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.surefire.booter.Classpath;
 
 import static java.util.Collections.addAll;
-import static org.apache.maven.surefire.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.split;
 
 /**
  * this class is part of internal implementation and should not be used.

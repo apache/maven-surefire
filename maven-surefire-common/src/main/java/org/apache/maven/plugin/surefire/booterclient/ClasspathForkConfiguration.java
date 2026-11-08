@@ -32,7 +32,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
-import static org.apache.maven.surefire.shared.utils.StringUtils.join;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.join;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

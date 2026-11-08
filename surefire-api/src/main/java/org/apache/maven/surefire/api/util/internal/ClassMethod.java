@@ -20,7 +20,7 @@ package org.apache.maven.surefire.api.util.internal;
 
 import java.util.Objects;
 
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 /**
  * Data transfer object of class and method literals.

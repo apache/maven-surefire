@@ -20,12 +20,12 @@ package org.apache.maven.surefire.api.testset;
 
 import java.util.regex.Pattern;
 
-import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 import org.apache.maven.surefire.shared.utils.io.MatchPatterns;
 
 import static java.io.File.separatorChar;
 import static java.util.regex.Pattern.compile;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 import static org.apache.maven.surefire.shared.utils.io.MatchPatterns.from;
 import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
 import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
