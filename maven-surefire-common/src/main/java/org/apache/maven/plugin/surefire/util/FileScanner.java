@@ -23,7 +23,7 @@ import java.util.Collection;
 
 import org.apache.maven.surefire.api.testset.TestFilter;
 
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 final class FileScanner {
     private final File basedir;

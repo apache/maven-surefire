@@ -46,7 +46,7 @@ import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
-import static org.apache.maven.surefire.shared.utils.StringUtils.replace;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.replace;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

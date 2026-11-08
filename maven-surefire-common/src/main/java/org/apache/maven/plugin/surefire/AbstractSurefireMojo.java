@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
 import java.util.ArrayList;
@@ -111,8 +112,8 @@ import org.apache.maven.surefire.providerapi.ConfigurableProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderDetector;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderRequirements;
-import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.apache.maven.surefire.shared.utils.io.FileUtils;
+import org.apache.maven.surefire.shared.io.FileUtils;
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -150,13 +151,13 @@ import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.capitalize;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotEmpty;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.split;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
-import static org.apache.maven.surefire.shared.utils.StringUtils.split;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
 import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
@@ -1521,7 +1522,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     protected void logReportsDirectory() {
-        logDebugOrCliShowErrors(capitalizeFirstLetter(getPluginName()) + " report directory: " + getReportsDirectory());
+        logDebugOrCliShowErrors(capitalize(getPluginName()) + " report directory: " + getReportsDirectory());
     }
 
     private boolean existsModuleDescriptor(ResolvePathResultWrapper resolvedJavaModularityResult) {
@@ -2245,6 +2246,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     @Nonnull
+    private static List<String> loadList(File file) throws IOException {
+        return Files.readAllLines(file.toPath(), Charset.defaultCharset()).stream()
+                .map(String::trim)
+                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                .collect(Collectors.toList());
+    }
+
     private List<String> readListFromFile(@Nonnull final File file) {
         getConsoleLogger().debug("Reading list from: " + file);
 
@@ -2253,7 +2261,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         try {
-            List<String> list = FileUtils.loadFile(file);
+            List<String> list = loadList(file);
 
             if (getConsoleLogger().isDebugEnabled()) {
                 getConsoleLogger().debug("List contents:");
@@ -3045,7 +3053,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfIllegalTempDir() throws MojoFailureException {
-        if (isEmpty(getTempDir())) {
+        if (isBlank(getTempDir())) {
             throw new MojoFailureException("Parameter 'tempDir' should not be blank string.");
         }
     }
@@ -3313,7 +3321,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             // need to check there is at least one test engine in the classpath
             String junit = (String) getProperties().get("junit");
-            boolean runJunit = Boolean.parseBoolean(StringUtils.isEmpty(junit) ? "true" : junit);
+            boolean runJunit = Boolean.parseBoolean(StringUtils.isBlank(junit) ? "true" : junit);
             if (StringUtils.isNotEmpty(junit) && !runJunit) {
                 consoleLogger.debug("System property 'junit' is explicity set to '" + junit + "'");
             } else {

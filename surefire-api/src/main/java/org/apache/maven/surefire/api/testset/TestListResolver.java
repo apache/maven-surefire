@@ -28,9 +28,9 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.METHOD;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.split;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.split;
 import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
 import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
 

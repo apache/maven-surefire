@@ -41,7 +41,7 @@ import org.apache.maven.surefire.extensions.StatelessReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoConsoleReportEventListener;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 import org.apache.maven.surefire.report.RunStatistics;
-import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 import org.apache.maven.surefire.shared.utils.logging.MessageBuilder;
 
 import static org.apache.maven.plugin.surefire.log.api.Level.resolveLevel;
