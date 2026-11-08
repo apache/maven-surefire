@@ -20,16 +20,16 @@ package org.apache.maven.surefire.api.testset;
 
 import java.util.regex.Pattern;
 
+import org.apache.maven.surefire.api.util.internal.MatchPatterns;
 import org.apache.maven.surefire.shared.lang3.StringUtils;
-import org.apache.maven.surefire.shared.utils.io.MatchPatterns;
 
 import static java.io.File.separatorChar;
 import static java.util.regex.Pattern.compile;
+import static org.apache.maven.surefire.api.util.internal.MatchPatterns.from;
+import static org.apache.maven.surefire.api.util.internal.SelectorUtils.PATTERN_HANDLER_SUFFIX;
+import static org.apache.maven.surefire.api.util.internal.SelectorUtils.REGEX_HANDLER_PREFIX;
+import static org.apache.maven.surefire.api.util.internal.SelectorUtils.matchPath;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
-import static org.apache.maven.surefire.shared.utils.io.MatchPatterns.from;
-import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
-import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
-import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.matchPath;
 
 /**
  * Single pattern test filter resolved from multi pattern filter -Dtest=MyTest#test,AnotherTest#otherTest.

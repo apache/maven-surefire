@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.api.util.internal.SelectorUtils;
 
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 
