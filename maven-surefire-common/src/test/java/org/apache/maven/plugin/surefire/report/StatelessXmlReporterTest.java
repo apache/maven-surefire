@@ -39,8 +39,8 @@ import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktra
 import org.apache.maven.surefire.api.report.ReportEntry;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.StackTraceWriter;
-import org.apache.maven.surefire.shared.utils.xml.Xpp3Dom;
-import org.apache.maven.surefire.shared.utils.xml.Xpp3DomBuilder;
+import org.apache.maven.surefire.shared.xml.Xpp3Dom;
+import org.apache.maven.surefire.shared.xml.Xpp3DomBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -190,7 +190,7 @@ public class StatelessXmlReporterTest {
     }
 
     @Test
-    public void testAllFieldsSerialized() throws IOException {
+    public void testAllFieldsSerialized() throws Exception {
         ReportEntry reportEntry =
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, 12);
         WrappedReportEntry testSetReportEntry =
@@ -277,7 +277,7 @@ public class StatelessXmlReporterTest {
     }
 
     @Test
-    public void testOutputRerunFlakyFailure() throws IOException {
+    public void testOutputRerunFlakyFailure() throws Exception {
         WrappedReportEntry testSetReportEntry = new WrappedReportEntry(
                 new SimpleReportEntry(NORMAL_RUN, 0L, getClass().getName(), null, TEST_ONE, null, 12),
                 ReportEntryType.SUCCESS,
@@ -412,7 +412,7 @@ public class StatelessXmlReporterTest {
     }
 
     @Test
-    public void testOutputRerunFlakyAssumption() throws IOException {
+    public void testOutputRerunFlakyAssumption() throws Exception {
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
 
         StackTraceWriter stackTraceWriterOne = new DeserializedStacktraceWriter("A fud msg", "trimmed", "fail at foo");
@@ -509,7 +509,7 @@ public class StatelessXmlReporterTest {
     }
 
     @Test
-    public void testIdenticalNamesWithDistinctIdsRemainSeparate() throws IOException {
+    public void testIdenticalNamesWithDistinctIdsRemainSeparate() throws Exception {
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
         StackTraceWriter failure = new DeserializedStacktraceWriter("failure", "trimmed", "failed");
 
@@ -587,7 +587,7 @@ public class StatelessXmlReporterTest {
     }
 
     @Test
-    public void testSkippedExecutionInFlakeDoesNotCreateEmptyElement() throws IOException {
+    public void testSkippedExecutionInFlakeDoesNotCreateEmptyElement() throws Exception {
         expectedReportFile = new File(reportDir, "TEST-" + getClass().getName() + ".xml");
         StackTraceWriter failure = new DeserializedStacktraceWriter("failure", "trimmed", "failed");
 
@@ -804,7 +804,7 @@ public class StatelessXmlReporterTest {
     }
 
     @Test
-    public void testClassnameUsesActualClassNameWhenPhrasedClassNameDisabled() throws IOException {
+    public void testClassnameUsesActualClassNameWhenPhrasedClassNameDisabled() throws Exception {
         String actualClassName = "MyTest";
         String displayName = "NewName";
 

@@ -39,8 +39,8 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.shared.utils.xml.PrettyPrintXMLWriter;
-import org.apache.maven.surefire.shared.utils.xml.XMLWriter;
+import org.apache.maven.surefire.shared.xml.PrettyPrintXMLWriter;
+import org.apache.maven.surefire.shared.xml.XMLWriter;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
