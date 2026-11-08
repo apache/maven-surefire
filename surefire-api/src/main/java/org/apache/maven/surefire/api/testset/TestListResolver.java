@@ -28,11 +28,11 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.CLASS;
 import static org.apache.maven.surefire.api.testset.ResolvedTest.Type.METHOD;
+import static org.apache.maven.surefire.api.util.internal.SelectorUtils.PATTERN_HANDLER_SUFFIX;
+import static org.apache.maven.surefire.api.util.internal.SelectorUtils.REGEX_HANDLER_PREFIX;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.split;
-import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.PATTERN_HANDLER_SUFFIX;
-import static org.apache.maven.surefire.shared.utils.io.SelectorUtils.REGEX_HANDLER_PREFIX;
 
 // TODO In Surefire 3.0 see SUREFIRE-1309 and use normal fully qualified class name regex instead.
 /**

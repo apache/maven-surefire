@@ -95,8 +95,8 @@ public class DefaultDirectoryScanner implements DirectoryScanner {
     String[] collectTests() {
         String[] tests = EMPTY_STRING_ARRAY;
         if (basedir.exists()) {
-            org.apache.maven.surefire.shared.utils.io.DirectoryScanner scanner =
-                    new org.apache.maven.surefire.shared.utils.io.DirectoryScanner();
+            org.apache.maven.surefire.api.util.internal.DirectoryScanner scanner =
+                    new org.apache.maven.surefire.api.util.internal.DirectoryScanner();
 
             scanner.setBasedir(basedir);
 
