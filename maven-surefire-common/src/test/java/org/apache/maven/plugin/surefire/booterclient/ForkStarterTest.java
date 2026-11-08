@@ -68,6 +68,7 @@ import static java.util.Arrays.asList;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assumptions.abort;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -304,6 +305,41 @@ public class ForkStarterTest {
         List<String> testClassNames = (List<String>) method.invoke(null, discoveryFile);
 
         assertThat(testClassNames).containsExactly("com.example.FooTest", "com.example.BarTest");
+    }
+
+    @Test
+    public void isSameDirectoryShouldIgnoreRelativeSegments() throws Exception {
+        File jdkHome = new File(tmp, "jdk");
+        assertThat(jdkHome.isDirectory() || jdkHome.mkdirs()).isTrue();
+
+        assertThat(invokeIsSameDirectory(new File(tmp, "jdk/../jdk"), jdkHome)).isTrue();
+    }
+
+    @Test
+    public void isSameDirectoryShouldResolveSymbolicLinks() throws Exception {
+        File jdkHome = new File(tmp, "jdk-real");
+        assertThat(jdkHome.isDirectory() || jdkHome.mkdirs()).isTrue();
+        Path link = new File(tmp, "jdk-link").toPath();
+        deleteQuietly(link.toFile());
+        try {
+            Files.createSymbolicLink(link, jdkHome.toPath());
+        } catch (IOException | UnsupportedOperationException e) {
+            abort("Symbolic links are not available on this platform: " + e);
+        }
+
+        assertThat(invokeIsSameDirectory(link.toFile(), jdkHome)).isTrue();
+    }
+
+    @Test
+    public void isSameDirectoryShouldTellDifferentDirectoriesApart() throws Exception {
+        assertThat(invokeIsSameDirectory(new File(tmp, "jdk-a"), new File(tmp, "jdk-b")))
+                .isFalse();
+    }
+
+    private static boolean invokeIsSameDirectory(File testsJdkHome, File buildJdkHome) throws Exception {
+        Method method = ForkStarter.class.getDeclaredMethod("isSameDirectory", File.class, File.class);
+        method.setAccessible(true);
+        return (Boolean) method.invoke(null, testsJdkHome, buildJdkHome);
     }
 
     @SuppressWarnings("unchecked")
