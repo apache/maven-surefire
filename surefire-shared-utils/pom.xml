@@ -92,6 +92,14 @@
               </artifactSet>
               <filters>
                 <filter>
+                  <!-- Surefire uses only the logging package; the rest has Surefire's own or commons replacements -->
+                  <artifact>org.apache.maven.shared:maven-shared-utils</artifact>
+                  <includes>
+                    <include>org/apache/maven/shared/utils/logging/**</include>
+                    <include>META-INF/**</include>
+                  </includes>
+                </filter>
+                <filter>
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>**/module-info.class</exclude>
