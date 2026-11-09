@@ -72,6 +72,17 @@ public class SurefireDependencyResolver {
 
     static final String PROVIDER_GROUP_ID = "org.apache.maven.surefire";
 
+    /**
+     * The oldest JUnit 4 we can run. Anything older is rejected: JUnit 3 and 4 tests run through the
+     * JUnit Platform vintage engine, which needs 4.12 or newer.
+     * <p>
+     * Newer JUnit 5 lines ask for more again, so a project may still need a later JUnit 4 than this:
+     * 4.12+ for JUnit 5.3+, 4.13+ for 5.8+, 4.13.2 for 5.9+, 4.13.3 for 5.10+, 4.13.4 for 5.12+. See
+     * <a href="https://junit.org/junit5/docs/current/user-guide/#dependency-metadata">the JUnit 5
+     * dependency metadata</a>.
+     */
+    public static final String MINIMUM_JUNIT4_VERSION_SPEC = "[4.12,)";
+
     private static final String[] PROVIDER_CLASSPATH_ORDER = {
         "surefire-junit-platform", "surefire-api", "surefire-logger-api", "surefire-shared-utils", "common-java5"
     };
