@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
-import org.apache.maven.surefire.api.util.internal.FileScanner;
 
 /**
  * Scans directories looking for tests.
