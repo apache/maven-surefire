@@ -100,7 +100,7 @@
     <commonsLang3Version>3.21.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
     <commonsIoVersion>2.22.0</commonsIoVersion>
-    <plexus-java-version>1.6.0</plexus-java-version>
+    <plexus-java-version>1.7.0</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.5.0</mavenSharedUtilsVersion>
     <jacocoVersion>0.8.16</jacocoVersion>
