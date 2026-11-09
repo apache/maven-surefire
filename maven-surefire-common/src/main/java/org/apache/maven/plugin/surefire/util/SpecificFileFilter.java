@@ -48,8 +48,7 @@ public class SpecificFileFilter {
         // If the tests enumeration is empty, allow anything.
         if (names != null && !names.isEmpty()) {
             for (String pattern : names) {
-                // This is the same utility used under the covers in the plexus DirectoryScanner, and
-                // therefore in the surefire DefaultDirectoryScanner implementation.
+                // This is the same utility used under the covers in the plexus DirectoryScanner.
                 if (SelectorUtils.matchPath(pattern, resourceName, true)) {
                     return true;
                 }

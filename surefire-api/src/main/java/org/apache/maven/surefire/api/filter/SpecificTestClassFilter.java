@@ -57,8 +57,7 @@ public class SpecificTestClassFilter implements ScannerFilter {
                     pattern = pattern.replace('/', FS);
                 }
 
-                // This is the same utility used under the covers in the plexus DirectoryScanner, and
-                // therefore in the surefire DefaultDirectoryScanner implementation.
+                // This is the same utility used under the covers in the plexus DirectoryScanner.
                 if (SelectorUtils.matchPath(pattern, className, true)) {
                     found = true;
                     break;
