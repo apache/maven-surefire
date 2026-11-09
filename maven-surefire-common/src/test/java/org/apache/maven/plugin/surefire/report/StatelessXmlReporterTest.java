@@ -54,7 +54,7 @@ import static org.apache.maven.surefire.api.report.RunMode.NORMAL_RUN;
 import static org.apache.maven.surefire.api.report.RunMode.RERUN_TEST_AFTER_FAILURE;
 import static org.apache.maven.surefire.api.util.internal.ObjectUtils.systemProps;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -250,8 +250,8 @@ public class StatelessXmlReporterTest {
         Xpp3Dom properties = testSuite.getChild("properties");
         assertEquals(System.getProperties().size(), properties.getChildCount());
         Xpp3Dom child = properties.getChild(1);
-        assertFalse(isEmpty(child.getAttribute("value")));
-        assertFalse(isEmpty(child.getAttribute("name")));
+        assertFalse(isBlank(child.getAttribute("value")));
+        assertFalse(isBlank(child.getAttribute("name")));
 
         Xpp3Dom[] testcase = testSuite.getChildren("testcase");
         Xpp3Dom tca = testcase[0];
@@ -366,8 +366,8 @@ public class StatelessXmlReporterTest {
         Xpp3Dom properties = testSuite.getChild("properties");
         assertEquals(System.getProperties().size(), properties.getChildCount());
         Xpp3Dom child = properties.getChild(1);
-        assertFalse(isEmpty(child.getAttribute("value")));
-        assertFalse(isEmpty(child.getAttribute("name")));
+        assertFalse(isBlank(child.getAttribute("value")));
+        assertFalse(isBlank(child.getAttribute("name")));
 
         Xpp3Dom[] testcase = testSuite.getChildren("testcase");
         Xpp3Dom testCaseOne = testcase[0];
