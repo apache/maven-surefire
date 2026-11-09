@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.plugin.surefire.util;
+package org.apache.maven.surefire.api.util.internal;
 
 import java.io.File;
 import java.util.Collection;
@@ -25,12 +25,12 @@ import org.apache.maven.surefire.api.testset.TestFilter;
 
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
-final class FileScanner {
+public final class FileScanner {
     private final File basedir;
 
     private final String ext;
 
-    FileScanner(File basedir, String ext) {
+    public FileScanner(File basedir, String ext) {
         this.basedir = basedir;
         ext = ext.trim();
         if (isBlank(ext)) {
@@ -39,7 +39,7 @@ final class FileScanner {
         this.ext = ext.startsWith(".") ? ext : "." + ext;
     }
 
-    void scanTo(Collection<String> scannedJavaClassNames, TestFilter<String, String> filter) {
+    public void scanTo(Collection<String> scannedJavaClassNames, TestFilter<String, String> filter) {
         scan(scannedJavaClassNames, filter, basedir);
     }
 

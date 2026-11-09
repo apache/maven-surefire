@@ -30,11 +30,9 @@ import org.apache.maven.surefire.api.testset.TestSetFailedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import static org.apache.maven.surefire.api.util.DefaultDirectoryScanner.scan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Test of the directory scanner.
@@ -62,14 +60,13 @@ public class DefaultDirectoryScannerTest {
 
     private File tree() throws IOException {
         for (String f : new String[] {
-            "file1.txt",
-            "file2.txt",
-            "folder1/file3.txt",
-            "folder1/file4.dat",
+            "TopTest.class",
+            "notes.txt",
             "folder1/sub/File5Test.class",
             "folder2/File6Test.class",
             "folder2/Helper.class",
-            ".hidden/file7.txt"
+            "folder2/Helper$1.class",
+            "folder2/data.properties"
         }) {
             Path p = tmp.resolve(f);
             Files.createDirectories(p.getParent());
@@ -78,78 +75,58 @@ public class DefaultDirectoryScannerTest {
         return tmp.toFile();
     }
 
+    private String[] collect(List<String> includes, List<String> excludes) throws IOException {
+        return new DefaultDirectoryScanner(tree(), includes, excludes, null).collectTests();
+    }
+
     private static String p(String slashPath) {
         return slashPath.replace('/', File.separatorChar);
     }
 
     @Test
-    void scanIncludesEverythingByDefault() throws IOException {
-        File base = tree();
-        assertThat(scan(base, null, null))
-                .hasSize(8)
-                .contains(p("folder1/sub/File5Test.class"), p(".hidden/file7.txt"));
-        assertThat(scan(base, new String[0], null)).hasSize(8);
+    void collectTestsWithJavaPatterns() throws IOException {
+        assertThat(collect(Arrays.asList("**/*Test.java"), null))
+                .containsExactlyInAnyOrder("TopTest", "folder1.sub.File5Test", "folder2.File6Test");
     }
 
     @Test
-    void scanAntPatternsAcrossDirectories() throws IOException {
-        File base = tree();
-        assertThat(scan(base, new String[] {"**/*Test.class"}, null))
-                .containsExactlyInAnyOrder(p("folder1/sub/File5Test.class"), p("folder2/File6Test.class"));
-        assertThat(scan(base, new String[] {"*.txt"}, null)).containsExactlyInAnyOrder("file1.txt", "file2.txt");
-        assertThat(scan(base, new String[] {"folder1/*"}, null))
-                .containsExactlyInAnyOrder(p("folder1/file3.txt"), p("folder1/file4.dat"));
-        assertThat(scan(base, new String[] {"folder?/*.class"}, null))
-                .containsExactlyInAnyOrder(p("folder2/File6Test.class"), p("folder2/Helper.class"));
+    void collectTestsWithClassPatterns() throws IOException {
+        assertThat(collect(Arrays.asList("**/*Test.class"), null))
+                .containsExactlyInAnyOrder("TopTest", "folder1.sub.File5Test", "folder2.File6Test");
     }
 
     @Test
-    void scanExcludesWin() throws IOException {
-        File base = tree();
-        assertThat(scan(base, new String[] {"**/*.class"}, new String[] {"**/Helper.class"}))
-                .containsExactlyInAnyOrder(p("folder1/sub/File5Test.class"), p("folder2/File6Test.class"));
-        assertThat(scan(base, null, new String[] {"folder1/**", ".hidden/**"}))
-                .containsExactlyInAnyOrder(
-                        "file1.txt", "file2.txt", p("folder2/File6Test.class"), p("folder2/Helper.class"));
+    void collectTestsWithExcludes() throws IOException {
+        assertThat(collect(Arrays.asList("**/*.java"), Arrays.asList("**/*$*", "**/Helper.java")))
+                .containsExactlyInAnyOrder("TopTest", "folder1.sub.File5Test", "folder2.File6Test");
     }
 
     @Test
-    void scanTrailingSeparatorMeansEverythingBelow() throws IOException {
-        File base = tree();
-        assertThat(scan(base, new String[] {"folder1/"}, null))
-                .containsExactlyInAnyOrder(
-                        p("folder1/file3.txt"), p("folder1/file4.dat"), p("folder1/sub/File5Test.class"));
-        assertThat(scan(base, new String[] {"folder1\\sub\\"}, null)).containsExactly(p("folder1/sub/File5Test.class"));
+    void collectTestsWithCommaSeparatedIncludes() throws IOException {
+        assertThat(collect(Arrays.asList("**/File5*.java, **/Helper.java"), null))
+                .containsExactlyInAnyOrder("folder1.sub.File5Test", "folder2.Helper");
     }
 
     @Test
-    void scanRegexPatterns() throws IOException {
-        // both slashes become the separator, inside a regex too, so the pattern avoids backslashes
-        assertThat(scan(tree(), new String[] {"%regex[.*File[0-9]Test[.]class]"}, null))
-                .containsExactlyInAnyOrder(p("folder1/sub/File5Test.class"), p("folder2/File6Test.class"));
+    void collectTestsWithDirectoryPatterns() throws IOException {
+        assertThat(collect(Arrays.asList("folder2/*Test.java"), null)).containsExactly("folder2.File6Test");
+        assertThat(collect(Arrays.asList("folder1/**/*.java"), null)).containsExactly("folder1.sub.File5Test");
     }
 
     @Test
-    void scanIsCaseSensitive() throws IOException {
-        File base = tree();
-        assertThat(scan(base, new String[] {"**/*test.class"}, null)).isEmpty();
-        assertThat(scan(base, new String[] {"FILE1.txt"}, null)).isEmpty();
+    void collectTestsWithRegex() throws IOException {
+        assertThat(collect(Arrays.asList("%regex[.*File[0-9]Test.*]"), null))
+                .containsExactlyInAnyOrder("folder1.sub.File5Test", "folder2.File6Test");
     }
 
     @Test
-    void scanRejectsNullPatternsAndBadBasedir() throws IOException {
-        File base = tree();
-        assertThrows(NullPointerException.class, () -> scan(base, new String[] {"a", null}, null));
-        assertThrows(NullPointerException.class, () -> scan(base, null, new String[] {null}));
-        assertThrows(IllegalStateException.class, () -> scan(new File(base, "missing"), null, null));
-        assertThrows(IllegalStateException.class, () -> scan(new File(base, "file1.txt"), null, null));
+    void collectTestsIsCaseSensitive() throws IOException {
+        assertThat(collect(Arrays.asList("**/*test.java"), null)).isEmpty();
     }
 
     @Test
-    void collectTestsTurnsClassFilesIntoClassNames() throws IOException {
-        File base = tree();
-        DefaultDirectoryScanner scanner = new DefaultDirectoryScanner(
-                base, Arrays.asList("**/*Test.java,**/Helper.class"), Arrays.asList("**/File6*"), null);
-        assertThat(scanner.collectTests()).containsExactlyInAnyOrder("folder1.sub.File5Test", "folder2.Helper");
+    void collectTestsOfMissingDirectoryIsEmpty() {
+        assertThat(new DefaultDirectoryScanner(new File(tmp.toFile(), "missing"), null, null, null).collectTests())
+                .isEmpty();
     }
 }

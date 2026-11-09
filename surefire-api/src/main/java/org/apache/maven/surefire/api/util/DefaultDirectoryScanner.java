@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.filter.SpecificTestClassFilter;
-import org.apache.maven.surefire.api.util.internal.MatchPatterns;
-import org.apache.maven.surefire.api.util.internal.SelectorUtils;
+import org.apache.maven.surefire.api.testset.TestListResolver;
+import org.apache.maven.surefire.api.util.internal.FileScanner;
 
 /**
  * Scans directories looking for tests.
@@ -37,8 +37,6 @@ import org.apache.maven.surefire.api.util.internal.SelectorUtils;
  */
 @Deprecated
 public class DefaultDirectoryScanner implements DirectoryScanner {
-
-    private static final String FS = System.getProperty("file.separator");
 
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
@@ -95,85 +93,17 @@ public class DefaultDirectoryScanner implements DirectoryScanner {
     }
 
     String[] collectTests() {
-        String[] tests = EMPTY_STRING_ARRAY;
-        if (basedir.exists()) {
-            tests = scan(
-                    basedir,
-                    includes == null ? null : processIncludesExcludes(includes),
-                    excludes == null ? null : processIncludesExcludes(excludes));
-            for (int i = 0; i < tests.length; i++) {
-                String test = tests[i];
-                test = test.substring(0, test.indexOf("."));
-                tests[i] = test.replace(FS.charAt(0), '.');
-            }
-        }
-        return tests;
-    }
-
-    /**
-     * Lists the files below {@code basedir} that match an include pattern and no exclude pattern, relative to it and
-     * with {@link File#separator}, in directory listing order. Patterns are Ant patterns ({@code *}, {@code ?},
-     * {@code **}) or {@code %regex[...]}, see {@link SelectorUtils#matchPath}; {@code /} and {@code \\} both separate,
-     * a pattern ending in a separator takes everything below, no includes mean everything. Matching is
-     * case-sensitive and symbolic links are followed.
-     *
-     * @throws IllegalStateException if {@code basedir} is not an existing directory
-     * @throws NullPointerException if a pattern is {@code null}
-     */
-    static String[] scan(File basedir, String[] includes, String[] excludes) {
         if (!basedir.exists()) {
-            throw new IllegalStateException("basedir " + basedir + " does not exist");
+            return EMPTY_STRING_ARRAY;
         }
-        if (!basedir.isDirectory()) {
-            throw new IllegalStateException("basedir " + basedir + " is not a directory");
-        }
-        String[] inc = normalize(includes, "includes");
-        MatchPatterns included = MatchPatterns.from(inc == null || inc.length == 0 ? new String[] {"**"} : inc);
-        String[] exc = normalize(excludes, "excludes");
-        MatchPatterns excluded = MatchPatterns.from(exc == null ? EMPTY_STRING_ARRAY : exc);
-        List<String> files = new ArrayList<>();
-        scandir(basedir, "", included, excluded, files);
-        return files.toArray(EMPTY_STRING_ARRAY);
-    }
-
-    private static String[] normalize(String[] patterns, String listName) {
-        if (patterns == null) {
-            return null;
-        }
-        String[] result = new String[patterns.length];
-        for (int i = 0; i < patterns.length; i++) {
-            if (patterns[i] == null) {
-                throw new NullPointerException(
-                        "If a non-null " + listName + " list is given, all elements must be" + " non-null");
-            }
-            String pattern = patterns[i].trim().replace('/', File.separatorChar).replace('\\', File.separatorChar);
-            if (pattern.endsWith(File.separator)) {
-                pattern += "**";
-            }
-            result[i] = pattern;
-        }
-        return result;
-    }
-
-    private static void scandir(
-            File dir, String vpath, MatchPatterns included, MatchPatterns excluded, List<String> files) {
-        String[] names = dir.list();
-        if (names == null) {
-            // the directory could not be read: nothing to scan there
-            return;
-        }
-        for (String name : names) {
-            String path = vpath + name;
-            File file = new File(dir, name);
-            if (file.isDirectory()) {
-                if (included.matches(path, true) && !excluded.matches(path, true)
-                        || included.matchesPatternStart(path, true)) {
-                    scandir(file, path + File.separator, included, excluded, files);
-                }
-            } else if (file.isFile() && included.matches(path, true) && !excluded.matches(path, true)) {
-                files.add(path);
-            }
-        }
+        List<String> tests = new ArrayList<>();
+        new FileScanner(basedir, "class")
+                .scanTo(
+                        tests,
+                        new TestListResolver(
+                                includes == null ? Collections.<String>emptyList() : includes,
+                                excludes == null ? Collections.<String>emptyList() : excludes));
+        return tests.toArray(EMPTY_STRING_ARRAY);
     }
 
     private static String[] processIncludesExcludes(List<String> list) {
