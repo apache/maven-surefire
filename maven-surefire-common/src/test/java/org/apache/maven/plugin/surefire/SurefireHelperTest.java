@@ -70,6 +70,35 @@ public class SurefireHelperTest {
     }
 
     @Test
+    public void shouldReplaceDollarForkNumberPlaceholder() {
+        assertThat(SurefireHelper.replaceThreadNumberPlaceholders("${surefire.forkNumber}", 3))
+                .isEqualTo("3");
+    }
+
+    @Test
+    public void shouldReplaceAtForkNumberPlaceholder() {
+        // SUREFIRE-1068: a systemPropertyVariables entry whose value is nothing but "${surefire.forkNumber}" is
+        // resolved by Maven's own property interpolation before this method ever sees it, leaving it blank
+        // instead of a placeholder to replace. "@{...}" is Maven's delayed-resolution syntax, so it survives
+        // interpolation intact and must be recognized here too.
+        assertThat(SurefireHelper.replaceThreadNumberPlaceholders("@{surefire.forkNumber}", 3))
+                .isEqualTo("3");
+    }
+
+    @Test
+    public void shouldReplaceAtThreadNumberPlaceholder() {
+        assertThat(SurefireHelper.replaceThreadNumberPlaceholders("@{surefire.threadNumber}", 3))
+                .isEqualTo("3");
+    }
+
+    @Test
+    public void shouldReplaceMixedDollarAndAtPlaceholders() {
+        assertThat(SurefireHelper.replaceThreadNumberPlaceholders(
+                        "-Dfork=${surefire.forkNumber} -Dalt=@{surefire.forkNumber}", 7))
+                .isEqualTo("-Dfork=7 -Dalt=7");
+    }
+
+    @Test
     public void shouldBeThreeDumpFiles() {
         String[] dumps = SurefireHelper.getDumpFilesToPrint();
         assertThat(dumps).hasSize(4);
