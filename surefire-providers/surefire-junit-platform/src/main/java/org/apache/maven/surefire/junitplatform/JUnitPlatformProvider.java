@@ -185,8 +185,12 @@ public class JUnitPlatformProvider extends AbstractProvider {
         String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
-                setDefaultOrderers(
-                        "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
+                // DefaultRunOrderCalculator already shuffled the discovered test classes with this seed
+                // before they reached this provider, so only Jupiter's method orderer is configured here --
+                // configuring Jupiter's own class orderer too would shuffle the same classes a second time,
+                // which restricts the final class order to permutation squares instead of a uniformly random
+                // order (with two classes, they would never swap). See #3544.
+                setDefaultOrderers("org.junit.jupiter.api.MethodOrderer$Random", null);
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
                         .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
             } else if (runOrder.equals("alphabetical")) {
@@ -203,12 +207,16 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     /**
      * Sets the JUnit orderers for runOrder, unless one is already set (Quarkus sets its own, for example).
+     * A {@code null} classOrderer leaves Jupiter's class order alone, for when Surefire has already ordered
+     * the classes itself.
      */
     private void setDefaultOrderers(String methodOrderer, String classOrderer) {
         // what JUnit finds by itself: system properties and junit-platform.properties
         ConfigurationParameters configuredElsewhere = request().build().getConfigurationParameters();
         setOrdererIfMissing(METHOD_ORDER_DEFAULT, methodOrderer, configuredElsewhere);
-        setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+        if (classOrderer != null) {
+            setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+        }
     }
 
     private void setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {

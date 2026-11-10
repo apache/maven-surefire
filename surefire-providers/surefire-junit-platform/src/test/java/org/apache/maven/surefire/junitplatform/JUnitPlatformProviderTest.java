@@ -128,8 +128,11 @@ public class JUnitPlatformProviderTest {
 
         JUnitPlatformProvider provider = new JUnitPlatformProvider(providerParameters);
 
+        // DefaultRunOrderCalculator already shuffled the classes, so Jupiter's class orderer must stay unset (#3544)
         assertThat(provider.getConfigurationParameters())
-                .containsEntry("junit.jupiter.execution.order.random.seed", "1234");
+                .containsEntry("junit.jupiter.execution.order.random.seed", "1234")
+                .containsEntry(METHOD_ORDER_DEFAULT, "org.junit.jupiter.api.MethodOrderer$Random")
+                .doesNotContainKey(CLASS_ORDER_DEFAULT);
     }
 
     @Test
