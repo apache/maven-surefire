@@ -37,7 +37,6 @@ import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
-import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
@@ -178,7 +177,8 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
             resolveClasspath(cli, findStartClass(config), config, getWorkingDirectory(forkNumber), dumpLogDirectory);
 
             return cli;
-        } catch (CommandLineException e) {
+        } catch (IllegalArgumentException e) {
+            // unbalanced quotes in argLine or the debug line
             throw new SurefireBooterForkException(e.getLocalizedMessage(), e);
         }
     }

@@ -168,5 +168,7 @@ It works the same way with `maven-failsafe-plugin`.
 
 - All registered extensions run, including the `jstack` one when it's enabled.
 - Each callback runs once per timed-out fork.
+- If several forks time out together, their extensions run at the same time, so make your extension safe to call
+  from several threads. For one fork, extensions still run one by one, before it's killed.
 - Each callback gets 30 seconds, then it's cancelled.
 - If an extension throws, Surefire logs a warning. The test results don't change.

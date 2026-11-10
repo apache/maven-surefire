@@ -18,7 +18,7 @@
  */
 package org.apache.maven.surefire.booter;
 
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 public enum ProcessCheckerType {
     PING("ping"),

@@ -107,7 +107,7 @@ public class JstackTimeoutExtension implements ForkedProcessTimeoutExtension {
         return fromCtx != null && Boolean.parseBoolean(fromCtx.trim());
     }
 
-    private static File resolveOutputDirectory(ForkedProcessTimeoutContext context, ConsoleLogger logger) {
+    static File resolveOutputDirectory(ForkedProcessTimeoutContext context, ConsoleLogger logger) {
         String configured = context.getExtensionContext().get(OUTPUT_LOCATION_KEY);
         File target;
         if (configured != null && !configured.trim().isEmpty()) {
@@ -115,7 +115,8 @@ public class JstackTimeoutExtension implements ForkedProcessTimeoutExtension {
         } else {
             target = context.getReportsDirectory();
         }
-        if (!target.isDirectory() && !target.mkdirs()) {
+        // Another fork may have just created it, so mkdirs() can return false
+        if (!target.mkdirs() && !target.isDirectory()) {
             logger.warning("JstackTimeoutExtension: cannot create output directory " + target.getAbsolutePath());
             return null;
         }

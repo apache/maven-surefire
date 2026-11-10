@@ -100,7 +100,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <code>**{@literal /}${it.test}.java</code>, so you can just type {@code -Dit.test=MyIT} to run
      * a single test file called "foo/MyIT.java". The test patterns prefixed with a <em>!</em> will be excluded.
      * <br>
-     * This parameter overrides the parameter {@code includes} and {@code excludes}.
+     * This parameter overrides {@code includes}, {@code excludes}, {@code includesFile} and {@code excludesFile}.
      * <br>
      * Since 2.7.3 You can execute a limited number of methods in the test with adding <i>#myMethod</i> or
      * <i>#my*ethod</i>. E.g. type {@code -Dit.test=MyIT#myMethod} <b>supported for junit 4.x and TestNg.</b>
@@ -242,11 +242,14 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <br>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * {@literal <include>} entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>
      * {@literal <include>}%regex[.*[Cat|Dog].*], Basic????, !Unstable*{@literal </include>}
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
      * </code></pre>
+     * <br>
+     * Method filters like <i>pkg{@literal /}SomeIT#testMethod</i> are not allowed here, use {@code includesFile}
+     * or {@code test} instead.
      * <br>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
@@ -270,9 +273,15 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <br>
      * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
      * {@literal <exclude>} entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>
      * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
+     * </code></pre>
+     * <br>
+     * Since 3.6.2, you can also exclude test methods, with the same syntax as the {@code test} parameter. The rest
+     * of the class still runs:
+     * <pre><code>
+     * {@literal <exclude>}pkg{@literal /}SomeIT#testMethod, **{@literal /}*IT#testSlow*{@literal </exclude>}
      * </code></pre>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
@@ -410,6 +419,8 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <pre><code>
      * pkg.SomeIT#testMethod
      * </code></pre>
+     * <br>
+     * This file is ignored when the {@code test} parameter is set.
      *
      * @since 2.13
      */
@@ -430,6 +441,8 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <pre><code>
      * pkg.SomeIT#testMethod
      * </code></pre>
+     * <br>
+     * This file is ignored when the {@code test} parameter is set.
      *
      * @since 2.13
      */

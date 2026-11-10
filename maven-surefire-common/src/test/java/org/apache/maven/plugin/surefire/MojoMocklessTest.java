@@ -22,6 +22,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -39,10 +40,10 @@ import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.RunOrder;
-import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 
 import static java.util.Arrays.asList;
@@ -55,6 +56,8 @@ import static org.mockito.Mockito.mock;
  *
  */
 public class MojoMocklessTest {
+    @TempDir
+    Path tempFolder;
 
     @SuppressWarnings("unchecked")
     private static <T> T invokeMethod(Object target, String methodName, Object... args) throws Exception {
@@ -101,7 +104,8 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfigurationUsesProvidedRunStatisticsFile() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        File runStatisticsFile = SureFireFileManager.createTempFile(".surefire-", "checksum");
+        File runStatisticsFile =
+                Files.createTempFile(tempFolder, ".surefire-", "checksum").toFile();
         RunOrderParameters runOrderParameters = new RunOrderParameters(RunOrder.DEFAULT, runStatisticsFile);
         StartupReportConfiguration config = invokeMethod(
                 surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
@@ -112,8 +116,9 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfiguration() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        RunOrderParameters runOrderParameters =
-                new RunOrderParameters(RunOrder.DEFAULT, SureFireFileManager.createTempFile(".surefire-", "checksum"));
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                RunOrder.DEFAULT,
+                Files.createTempFile(tempFolder, ".surefire-", "checksum").toFile());
         StartupReportConfiguration config = invokeMethod(
                 surefirePlugin, "getStartupReportConfiguration", false, mock(ProviderInfo.class), runOrderParameters);
 
@@ -127,8 +132,9 @@ public class MojoMocklessTest {
     @Test
     public void testGetStartupReportConfiguration2() throws Exception {
         AbstractSurefireMojo surefirePlugin = new Mojo(null, null);
-        RunOrderParameters runOrderParameters =
-                new RunOrderParameters(RunOrder.DEFAULT, SureFireFileManager.createTempFile(".surefire-", "checksum"));
+        RunOrderParameters runOrderParameters = new RunOrderParameters(
+                RunOrder.DEFAULT,
+                Files.createTempFile(tempFolder, ".surefire-", "checksum").toFile());
         SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter();
         SurefireConsoleOutputReporter consoleReporter = new SurefireConsoleOutputReporter();
         SurefireStatelessTestsetInfoReporter testsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
@@ -217,7 +223,7 @@ public class MojoMocklessTest {
         VersionRange version = VersionRange.createFromVersion("1.0");
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "war", null, handler);
-        File artifactFile = SureFireFileManager.createTempFile("surefire", ".war");
+        File artifactFile = Files.createTempFile(tempFolder, "surefire", ".war").toFile();
         testDeps.setFile(artifactFile);
         List<Artifact> projectTestArtifacts = singletonList(testDeps);
         String[] dependenciesToScan = {"g:a"};
@@ -232,7 +238,7 @@ public class MojoMocklessTest {
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
 
-        File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
+        File artifactFile = Files.createTempFile(tempFolder, "surefire", ".jar").toFile();
         testDeps.setFile(artifactFile);
         try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
@@ -261,7 +267,7 @@ public class MojoMocklessTest {
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "jar", null, handler);
 
-        File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
+        File artifactFile = Files.createTempFile(tempFolder, "surefire", ".jar").toFile();
         testDeps.setFile(artifactFile);
         try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));
@@ -286,11 +292,7 @@ public class MojoMocklessTest {
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
 
-        File artifactFile = SureFireFileManager.createTempFile("surefire", "-classes");
-        String classDir = artifactFile.getCanonicalPath();
-        assertThat(artifactFile.delete()).isTrue();
-        File classes = new File(classDir);
-        assertThat(classes.mkdir()).isTrue();
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
 
         testDeps.setFile(classes);
 
@@ -315,18 +317,15 @@ public class MojoMocklessTest {
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDep1 = new DefaultArtifact("g", "x", version, "compile", "jar", null, handler);
 
-        File artifactFile1 = SureFireFileManager.createTempFile("surefire", "-classes");
-        String classDir = artifactFile1.getCanonicalPath();
-        assertThat(artifactFile1.delete()).isTrue();
-        File classes = new File(classDir);
-        assertThat(classes.mkdir()).isTrue();
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
 
         testDep1.setFile(classes);
 
         assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
 
         Artifact testDep2 = new DefaultArtifact("g", "a", version, "test", "jar", null, handler);
-        File artifactFile2 = SureFireFileManager.createTempFile("surefire", ".jar");
+        File artifactFile2 =
+                Files.createTempFile(tempFolder, "surefire", ".jar").toFile();
         testDep2.setFile(artifactFile2);
         try (ZipOutputStream os = new ZipOutputStream(Files.newOutputStream(artifactFile2.toPath()))) {
             os.putNextEntry(new ZipEntry("pkg/"));

@@ -28,7 +28,7 @@
 
   <groupId>org.apache.maven.surefire</groupId>
   <artifactId>surefire</artifactId>
-  <version>3.6.1-SNAPSHOT</version>
+  <version>3.6.2-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Apache Maven Surefire</name>
@@ -100,10 +100,10 @@
     <commonsLang3Version>3.21.0</commonsLang3Version>
     <commonsCompress>1.28.0</commonsCompress>
     <commonsIoVersion>2.22.0</commonsIoVersion>
-    <plexus-java-version>1.6.0</plexus-java-version>
+    <plexus-java-version>1.7.0</plexus-java-version>
     <!-- Do not upgrade, leads to test failures, MSHARED-1014 -->
     <mavenSharedUtilsVersion>3.5.0</mavenSharedUtilsVersion>
-    <jacocoVersion>0.8.15</jacocoVersion>
+    <jacocoVersion>0.8.16</jacocoVersion>
     <testngVersion>5.11</testngVersion>
     <maven.surefire.scm.devConnection>scm:git:https://github.com/apache/maven-surefire.git</maven.surefire.scm.devConnection>
     <maven.site.path>surefire-archives/surefire-LATEST</maven.site.path>
@@ -111,7 +111,7 @@
     <maven.compiler.testTarget>${javaVersion}</maven.compiler.testTarget>
     <jvm9ArgsTests />
     <jvm.args.tests>${jvm9ArgsTests} -Xms32m -Xmx144m -XX:SoftRefLRUPolicyMSPerMB=50 -Djava.awt.headless=true -Djdk.net.URLClassPath.disableClassPathURLCheck=true</jvm.args.tests>
-    <project.build.outputTimestamp>2026-08-31T10:34:35Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-10-22T11:17:12Z</project.build.outputTimestamp>
     <slf4jVersion>1.7.36</slf4jVersion>
     <junit.version>5.14.4</junit.version>
   </properties>
@@ -327,7 +327,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.28</version>
+          <version>1.29</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

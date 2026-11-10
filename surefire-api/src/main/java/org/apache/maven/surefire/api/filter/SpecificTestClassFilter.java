@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.surefire.api.util.ScannerFilter;
-import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.api.util.internal.SelectorUtils;
 
 /**
  * Filter for test class files.
@@ -57,8 +57,7 @@ public class SpecificTestClassFilter implements ScannerFilter {
                     pattern = pattern.replace('/', FS);
                 }
 
-                // This is the same utility used under the covers in the plexus DirectoryScanner, and
-                // therefore in the surefire DefaultDirectoryScanner implementation.
+                // This is the same utility used under the covers in the plexus DirectoryScanner.
                 if (SelectorUtils.matchPath(pattern, className, true)) {
                     found = true;
                     break;

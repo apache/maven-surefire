@@ -111,6 +111,25 @@ under the License.
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>method</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/DontRunTest#testRun</exclude>
+              </excludes>
+              <includes>
+                <include>**/NotIncludedByDefault.java</include>
+                <include>**/*Test.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
       <profile>
         <id>withXmlFile</id>
         <build>

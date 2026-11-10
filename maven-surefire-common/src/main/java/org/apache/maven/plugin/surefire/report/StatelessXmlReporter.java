@@ -39,16 +39,16 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import org.apache.maven.plugin.surefire.booterclient.output.InPluginProcessDumpSingleton;
 import org.apache.maven.surefire.api.report.SafeThrowable;
 import org.apache.maven.surefire.extensions.StatelessReportEventListener;
-import org.apache.maven.surefire.shared.utils.xml.PrettyPrintXMLWriter;
-import org.apache.maven.surefire.shared.utils.xml.XMLWriter;
+import org.apache.maven.surefire.shared.xml.PrettyPrintXMLWriter;
+import org.apache.maven.surefire.shared.xml.XMLWriter;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 
 // CHECKSTYLE_OFF: LineLength
 /**

@@ -18,7 +18,6 @@
  */
 package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
-import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
@@ -43,10 +42,13 @@ public class CommandlineTest {
     }
 
     @Test
-    public void shouldExecute() throws CommandLineException {
+    public void shouldExecute() throws Exception {
         Commandline cli = new Commandline();
-        cli.getShell().setWorkingDirectory(System.getProperty("user.dir"));
-        cli.getShell().setExecutable(IS_OS_WINDOWS ? "dir" : "ls");
+        cli.setWorkingDirectory(System.getProperty("user.dir"));
+        cli.setExecutable(IS_OS_WINDOWS ? "cmd.exe" : "ls");
+        if (IS_OS_WINDOWS) {
+            cli.addArguments("/c", "dir");
+        }
         cli.execute();
     }
 }

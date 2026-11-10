@@ -56,9 +56,9 @@ import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
+import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
 import org.apache.maven.surefire.api.util.RunOrder;
-import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.apache.maven.surefire.booter.ClassLoaderConfiguration;
 import org.apache.maven.surefire.booter.Classpath;
 import org.apache.maven.surefire.booter.ModularClasspathConfiguration;
@@ -815,24 +815,33 @@ public class AbstractSurefireMojoTest {
         when(mojo.createSurefireBootDirectoryInBuild()).thenCallRealMethod();
         when(mojo.getSurefireTempDir()).thenCallRealMethod();
 
-        File bootDir = mojo.createSurefireBootDirectoryInTemp();
-        assertThat(bootDir).isNotNull();
-        assertThat(bootDir).isDirectory();
+        File bootDir = null;
+        try {
+            bootDir = mojo.createSurefireBootDirectoryInTemp();
+            assertThat(bootDir).isNotNull();
+            assertThat(bootDir).isDirectory();
 
-        assertThat(new File(systemTmpDir, bootDir.getName())).isDirectory();
-        assertThat(bootDir.getName()).startsWith(tmpDir);
+            assertThat(new File(systemTmpDir, bootDir.getName())).isDirectory();
+            assertThat(bootDir.getName()).startsWith(tmpDir);
 
-        File buildTmp = mojo.createSurefireBootDirectoryInBuild();
-        assertThat(buildTmp).isNotNull();
-        assertThat(buildTmp).isDirectory();
-        assertThat(buildTmp.getParentFile().getCanonicalFile().getParent()).isEqualTo(usrDir);
-        assertThat(buildTmp.getName()).isEqualTo(tmpDir);
+            File buildTmp = mojo.createSurefireBootDirectoryInBuild();
+            assertThat(buildTmp).isNotNull();
+            assertThat(buildTmp).isDirectory();
+            assertThat(buildTmp.getParentFile().getCanonicalFile().getParent()).isEqualTo(usrDir);
+            assertThat(buildTmp.getName()).isEqualTo(tmpDir);
 
-        File tmp = mojo.getSurefireTempDir();
-        assertThat(tmp).isNotNull();
-        assertThat(tmp).isDirectory();
-        assertThat(IS_OS_WINDOWS ? new File(systemTmpDir, bootDir.getName()) : new File(targetDir, tmpDir))
-                .isDirectory();
+            File tmp = mojo.getSurefireTempDir();
+            assertThat(tmp).isNotNull();
+            assertThat(tmp).isDirectory();
+            assertThat(IS_OS_WINDOWS ? new File(systemTmpDir, bootDir.getName()) : new File(targetDir, tmpDir))
+                    .isDirectory();
+        } finally {
+            if (bootDir != null) {
+                FileUtils.deleteDirectory(bootDir);
+            }
+            FileUtils.deleteDirectory(new File(systemTmpDir, tmpDir));
+            FileUtils.deleteDirectory(new File(targetDir, tmpDir));
+        }
     }
 
     @Test
@@ -1950,6 +1959,56 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void shouldNotRequireTestFrameworkWhenNoGroupsSelected() throws Exception {
+        givenProjectArtifact();
+
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
+    }
+
+    @Test
+    public void shouldFailWhenGroupsSelectedAndNoTestFrameworkOnClasspath() {
+        givenProjectArtifact();
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "warnIfDefunctGroupsCombinations"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageStartingWith("groups/excludedGroups are specified but no test framework");
+    }
+
+    @Test
+    public void shouldLeaveAnUnsupportedJunitVersionToProviderResolution() throws Exception {
+        givenProjectArtifact();
+        givenJunitOnTestClasspath("4.11");
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        // createProviders() rejects this JUnit and names its version, so this check stays quiet
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
+    }
+
+    @Test
+    public void shouldAcceptGroupsWithSupportedJunit4() throws Exception {
+        givenProjectArtifact();
+        givenJunitOnTestClasspath("4.12");
+        setInternalState(mojo, "excludedGroups", "SlowTest");
+
+        invokeMethod(mojo, "warnIfDefunctGroupsCombinations");
+    }
+
+    private void givenProjectArtifact() {
+        Artifact projectArtifact = mojo.getMojoArtifact();
+        MavenProject project = mock(MavenProject.class);
+        when(project.getArtifact()).thenReturn(projectArtifact);
+        mojo.setProject(project);
+    }
+
+    private void givenJunitOnTestClasspath(String version) {
+        mojo.setJunitArtifactName("junit:junit");
+        setProjectDepedenciesToMojo(new DefaultArtifact(
+                "junit", "junit", createFromVersion(version), "test", "jar", null, mock(ArtifactHandler.class)));
+    }
+
+    @Test
     public void shouldAcceptTestNgOnlyParallelModesWithTestNg() throws Exception {
         Artifact projectArtifact = mojo.getMojoArtifact();
         MavenProject project = mock(MavenProject.class);
@@ -2492,7 +2551,8 @@ public class AbstractSurefireMojoTest {
     public void shouldNotPerformMethodFilteringOnIncludes() throws Exception {
         Mojo plugin = new Mojo();
 
-        File includesExcludes = SureFireFileManager.createTempFile("surefire", "includes");
+        File includesExcludes =
+                Files.createTempFile(tempFolder, "surefire", "includes").toFile();
         FileUtils.write(includesExcludes, "AnotherTest#method", UTF_8);
         plugin.setIncludesFile(includesExcludes);
 
@@ -2503,15 +2563,13 @@ public class AbstractSurefireMojoTest {
         VersionRange version = VersionRange.createFromVersion("1.0");
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "jar", null, handler);
-        File artifactFile = SureFireFileManager.createTempFile("surefire", ".jar");
-        artifactFile.deleteOnExit();
+        File artifactFile = Files.createTempFile(tempFolder, "surefire", ".jar").toFile();
         testDeps.setFile(artifactFile);
         plugin.setProjectTestArtifacts(singletonList(testDeps));
         plugin.setDependenciesToScan(new String[] {"g:a"});
 
         Exception e = assertThrows(Exception.class, plugin::scanDependencies);
-        assertThat(e.getMessage())
-                .isEqualTo("Method filter prohibited in includes|excludes parameter: AnotherTest#method ");
+        assertThat(e.getMessage()).isEqualTo("Method filter prohibited in includes parameter: AnotherTest#method ");
     }
 
     @Test
@@ -2520,18 +2578,14 @@ public class AbstractSurefireMojoTest {
 
         plugin.setLogger(mock(Logger.class));
 
-        File includes = SureFireFileManager.createTempFile("surefire", "includes");
+        File includes = Files.createTempFile(tempFolder, "surefire", "includes").toFile();
         FileUtils.write(includes, "AnotherTest#method", UTF_8);
         plugin.setIncludesFile(includes);
 
         VersionRange version = VersionRange.createFromVersion("1.0");
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
-        File artifactFile = SureFireFileManager.createTempFile("surefire", "classes");
-        String classDir = artifactFile.getCanonicalPath();
-        assertThat(artifactFile.delete()).isTrue();
-        File classes = new File(classDir);
-        assertThat(classes.mkdir()).isTrue();
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
         testDeps.setFile(classes);
         assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
         plugin.setProjectTestArtifacts(singletonList(testDeps));
@@ -2548,18 +2602,15 @@ public class AbstractSurefireMojoTest {
 
         plugin.setLogger(mock(Logger.class));
 
-        File excludes = SureFireFileManager.createTempFile("surefire", "-excludes");
+        File excludes =
+                Files.createTempFile(tempFolder, "surefire", "-excludes").toFile();
         FileUtils.write(excludes, "AnotherTest", UTF_8);
         plugin.setExcludesFile(excludes);
 
         VersionRange version = VersionRange.createFromVersion("1.0");
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
-        File artifactFile = SureFireFileManager.createTempFile("surefire", "-classes");
-        String classDir = artifactFile.getCanonicalPath();
-        assertThat(artifactFile.delete()).isTrue();
-        File classes = new File(classDir);
-        assertThat(classes.mkdir()).isTrue();
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
         testDeps.setFile(classes);
         assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
         plugin.setProjectTestArtifacts(singletonList(testDeps));
@@ -2580,11 +2631,7 @@ public class AbstractSurefireMojoTest {
         VersionRange version = VersionRange.createFromVersion("1.0");
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "jar", null, handler);
-        File artifactFile = SureFireFileManager.createTempFile("surefire", "-classes");
-        String classDir = artifactFile.getCanonicalPath();
-        assertThat(artifactFile.delete()).isTrue();
-        File classes = new File(classDir);
-        assertThat(classes.mkdir()).isTrue();
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
         testDeps.setFile(classes);
         assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
         plugin.setProjectTestArtifacts(singletonList(testDeps));
@@ -2595,12 +2642,64 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void shouldFilterTestMethodsOnExcludes() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setLogger(mock(Logger.class));
+
+        plugin.setExcludes(singletonList("AnotherTest#method"));
+
+        VersionRange version = VersionRange.createFromVersion("1.0");
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
+        testDeps.setFile(classes);
+        assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
+        plugin.setProjectTestArtifacts(singletonList(testDeps));
+        plugin.setDependenciesToScan(new String[] {"g:a"});
+
+        // the class is kept, only its method is skipped
+        DefaultScanResult result = plugin.scanDependencies();
+        assertThat(result.getClasses()).containsExactly("AnotherTest");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isFalse();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "otherMethod")).isTrue();
+    }
+
+    @Test
+    public void shouldPassOnlyMethodExcludesToMethodFilter() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(asList("**/SlowTest.java", "pkg/AnotherTest#method, **/UnstableTest.java", null));
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.getIncludedPatterns()).isEmpty();
+        assertThat(specificTests.getExcludedPatterns()).hasSize(1);
+        assertThat(specificTests.shouldRun("pkg/AnotherTest.class", "method")).isFalse();
+        assertThat(specificTests.shouldRun("pkg/SlowTest.class", "method")).isTrue();
+    }
+
+    @Test
+    public void shouldIgnoreMethodExcludesWhenTestIsSet() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(singletonList("AnotherTest#method"));
+        plugin.setTest("AnotherTest");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.getExcludedPatterns()).isEmpty();
+        assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isTrue();
+    }
+
+    @Test
     public void shouldUseOnlySpecificTests() throws Exception {
         Mojo plugin = new Mojo();
 
         plugin.setLogger(mock(Logger.class));
 
-        File includes = SureFireFileManager.createTempFile("surefire", "-includes");
+        File includes =
+                Files.createTempFile(tempFolder, "surefire", "-includes").toFile();
         FileUtils.write(includes, "AnotherTest", UTF_8);
         plugin.setIncludesFile(includes);
         plugin.setTest("DifferentTest");
@@ -2608,11 +2707,7 @@ public class AbstractSurefireMojoTest {
         VersionRange version = VersionRange.createFromVersion("1.0");
         ArtifactHandler handler = new DefaultArtifactHandler();
         Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "test-jar", null, handler);
-        File artifactFile = SureFireFileManager.createTempFile("surefire", "-classes");
-        String classDir = artifactFile.getCanonicalPath();
-        assertThat(artifactFile.delete()).isTrue();
-        File classes = new File(classDir);
-        assertThat(classes.mkdir()).isTrue();
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
         testDeps.setFile(classes);
         assertThat(new File(classes, "AnotherTest.class").createNewFile()).isTrue();
         plugin.setProjectTestArtifacts(singletonList(testDeps));

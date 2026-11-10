@@ -38,7 +38,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.maven.shared.utils.StringUtils.isBlank;
 
 public final class TestSuiteXmlParser extends DefaultHandler {
     private final ConsoleLogger consoleLogger;
@@ -271,6 +270,10 @@ public final class TestSuiteXmlParser extends DefaultHandler {
 
     public boolean isValid() {
         return valid;
+    }
+
+    static boolean isBlank(String s) {
+        return s == null || s.chars().allMatch(Character::isWhitespace);
     }
 
     static boolean isNotBlank(int from, int len, char... s) {

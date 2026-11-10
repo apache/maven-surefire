@@ -29,16 +29,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
-import org.apache.maven.shared.utils.io.DirectoryScanner;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.xml.sax.SAXException;
 
-import static org.apache.maven.shared.utils.StringUtils.split;
-
 public final class SurefireReportParser {
-    private static final String INCLUDES = "*.xml";
+    private static final String[] INCLUDES = {"*.xml"};
 
-    private static final String EXCLUDES =
-            "*.txt, testng-failed.xml, testng-failures.xml, testng-results.xml, failsafe-summary*.xml";
+    private static final String[] EXCLUDES = {
+        "*.txt", "testng-failed.xml", "testng-failures.xml", "testng-results.xml", "failsafe-summary*.xml"
+    };
 
     private final List<ReportTestSuite> testSuites = new ArrayList<>();
 
@@ -171,14 +170,14 @@ public final class SurefireReportParser {
                 && getIncludedFiles(directory, INCLUDES, EXCLUDES).length != 0;
     }
 
-    private static String[] getIncludedFiles(File directory, String includes, String excludes) {
+    private static String[] getIncludedFiles(File directory, String[] includes, String[] excludes) {
         DirectoryScanner scanner = new DirectoryScanner();
 
         scanner.setBasedir(directory);
 
-        scanner.setIncludes(split(includes, ","));
+        scanner.setIncludes(includes);
 
-        scanner.setExcludes(split(excludes, ","));
+        scanner.setExcludes(excludes);
 
         scanner.scan();
 

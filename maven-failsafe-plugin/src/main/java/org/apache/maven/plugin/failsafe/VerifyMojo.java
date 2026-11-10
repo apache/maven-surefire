@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
-import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.capitalize;
 
 /**
  * Verify integration tests ran using Failsafe.
@@ -177,8 +177,7 @@ public class VerifyMojo extends AbstractMojo implements SurefireReportParameters
     public void execute() throws MojoExecutionException, MojoFailureException {
         cli = commandLineOptions();
         if (verifyParameters()) {
-            logDebugOrCliShowErrors(
-                    capitalizeFirstLetter(getPluginName()) + " report directory: " + getReportsDirectory());
+            logDebugOrCliShowErrors(capitalize(getPluginName()) + " report directory: " + getReportsDirectory());
 
             try {
                 RunResult summary = isSummaryFile(summaryFile) ? readSummary(summaryFile) : noTestsRun();

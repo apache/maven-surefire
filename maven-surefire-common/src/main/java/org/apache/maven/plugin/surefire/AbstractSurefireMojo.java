@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.text.ChoiceFormat;
 import java.util.ArrayList;
@@ -111,8 +112,8 @@ import org.apache.maven.surefire.providerapi.ConfigurableProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderDetector;
 import org.apache.maven.surefire.providerapi.ProviderInfo;
 import org.apache.maven.surefire.providerapi.ProviderRequirements;
-import org.apache.maven.surefire.shared.utils.StringUtils;
-import org.apache.maven.surefire.shared.utils.io.FileUtils;
+import org.apache.maven.surefire.shared.io.FileUtils;
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 import org.apache.maven.toolchain.DefaultToolchain;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
@@ -144,21 +145,21 @@ import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_OR
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.RUN_ORDER_RANDOM_SEED_PROP;
 import static org.apache.maven.surefire.api.suite.RunResult.failure;
 import static org.apache.maven.surefire.api.suite.RunResult.noTestsRun;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.removeShutdownHook;
 import static org.apache.maven.surefire.booter.SystemUtils.endsWithJavaPath;
 import static org.apache.maven.surefire.booter.SystemUtils.isBuiltInJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.isJava9AtLeast;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkHomeFromJvmExec;
 import static org.apache.maven.surefire.booter.SystemUtils.toJdkVersionFromReleaseFile;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.capitalize;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotEmpty;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.split;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.substringBeforeLast;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-import static org.apache.maven.surefire.shared.utils.StringUtils.capitalizeFirstLetter;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isEmpty;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
-import static org.apache.maven.surefire.shared.utils.StringUtils.split;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
 
 /**
  * Abstract base class for running tests using Surefire.
@@ -583,11 +584,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean childDelegation;
 
     /**
-     * (TestNG/JUnit47 provider with JUnit4.8+ only and JUnit5+ provider since 2.22.0) Groups/categories/tags for this
-     * test. Only classes/methods/etc decorated with one of the groups/categories/tags specified here will be included
-     * in test run, if specified.<br>
-     * For JUnit4 tests, this parameter forces the use of the 4.7 provider. For JUnit5 tests, this parameter forces
-     * the use of the JUnit platform provider.<br>
+     * Groups/categories/tags for this test. Only classes/methods/etc decorated with one of the
+     * groups/categories/tags specified here will be included in test run, if specified.<br>
+     * Needs TestNG, JUnit 4.12+ or a JUnit Platform engine on the test classpath.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
      * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
@@ -598,11 +597,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String groups;
 
     /**
-     * (TestNG/JUnit47 provider with JUnit4.8+ only and JUnit5+ provider since 2.22.0) Excluded groups/categories/tags.
-     * Any methods/classes/etc with one of the groups/categories/tags specified in this list will specifically not be
-     * run.<br>
-     * For JUnit4, this parameter forces the use of the 4.7 provider. For JUnit5, this parameter forces the use of the
-     * JUnit platform provider.<br>
+     * Excluded groups/categories/tags. Any methods/classes/etc with one of the groups/categories/tags
+     * specified in this list will specifically not be run.<br>
+     * Needs TestNG, JUnit 4.12+ or a JUnit Platform engine on the test classpath.<br>
      * Since version 2.18.1 and JUnit 4.12, the {@code @Category} annotation type is automatically inherited from
      * superclasses, see {@code @java.lang.annotation.Inherited}. Make sure that test class inheritance still makes
      * sense together with {@code @Category} annotation of the JUnit 4.12 or higher appeared in superclass.
@@ -629,8 +626,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String testNGArtifactName;
 
     /**
-     * (TestNG/JUnit 4.7 provider) The attribute thread-count allows you to specify how many threads should be
-     * allocated for this execution. Only makes sense to use in conjunction with the {@code parallel} parameter.
+     * (TestNG and JUnit 4 via the Vintage engine) The attribute thread-count allows you to specify how
+     * many threads should be allocated for this execution. Only makes sense to use in conjunction
+     * with the {@code parallel} parameter.
      *
      * @since 2.2
      */
@@ -665,8 +663,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean reuseForks;
 
     /**
-     * (JUnit 4.7 provider) Indicates that threadCount, threadCountSuites, threadCountClasses, threadCountMethods
-     * are per cpu core.
+     * (JUnit 4 via the Vintage engine) Indicates that threadCount, threadCountSuites,
+     * threadCountClasses, threadCountMethods are per cpu core.
      *
      * @since 2.5
      * @deprecated not used on the JUnit Platform since 3.6.0, {@code threadCount} is no longer multiplied by the
@@ -677,9 +675,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean perCoreThreadCount;
 
     /**
-     * (JUnit 4.7 provider) Indicates that the thread pool will be unlimited. The {@code parallel} parameter and
-     * the actual number of classes/methods will decide. Setting this to "true" effectively disables
-     * {@code perCoreThreadCount} and {@code threadCount}. Defaults to "false".
+     * (JUnit 4 via the Vintage engine) Indicates that the thread pool will be unlimited. The
+     * {@code parallel} parameter and the actual number of classes/methods will decide. Setting this
+     * to "true" effectively disables {@code perCoreThreadCount} and {@code threadCount}.
+     * Defaults to "false".
      *
      * @since 2.5
      * @deprecated not used on the JUnit Platform since 3.6.0, use {@code threadCount}
@@ -694,11 +693,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * to respect their order of execution. Supports {@code methods}, {@code classes}, {@code tests} and
      * {@code instances}.
      * <br>
-     * (JUnit 4.7 provider) Supports values {@code classes}, {@code methods}, {@code both} to run
+     * (JUnit 4 via the Vintage engine) Supports values {@code classes}, {@code methods}, {@code both} to run
      * in separate threads been controlled by {@code threadCount}.
      * <br>
      * <br>
-     * Since version 2.16 (JUnit 4.7 provider), the value {@code both} is <strong>DEPRECATED</strong>.
+     * Since version 2.16, the value {@code both} is <strong>DEPRECATED</strong>.
      * Use {@code classesAndMethods} instead.
      * <br>
      * <br>
@@ -712,7 +711,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String parallel;
 
     /**
-     * (JUnit 4.7 / provider only) The thread counts do not exceed the number of parallel suite, class runners and
+     * (JUnit 4 via the Vintage engine) The thread counts do not exceed the number of parallel suite, class runners and
      * average number of methods per class if set to <strong>true</strong>.
      * <br>
      * True by default.
@@ -725,7 +724,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private boolean parallelOptimized;
 
     /**
-     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test suites, i.e.:
+     * (JUnit 4 via the Vintage engine) This attribute allows you to specify the concurrency in test suites, i.e.:
      * <ul>
      *  <li>number of concurrent suites if {@code threadCount} is 0 or unspecified</li>
      *  <li>limited suites concurrency if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
@@ -746,7 +745,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private int threadCountSuites;
 
     /**
-     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test classes, i.e.:
+     * (JUnit 4 via the Vintage engine) This attribute allows you to specify the concurrency in test classes, i.e.:
      * <ul>
      *  <li>number of concurrent classes if {@code threadCount} is 0 or unspecified</li>
      *  <li>limited classes concurrency if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
@@ -769,7 +768,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private int threadCountClasses;
 
     /**
-     * (JUnit 4.7 provider) This attribute allows you to specify the concurrency in test methods, i.e.:
+     * (JUnit 4 via the Vintage engine) This attribute allows you to specify the concurrency in test methods, i.e.:
      * <ul>
      * <li>number of concurrent methods if {@code threadCount} is 0 or unspecified</li>
      * <li>limited concurrency of methods if {@code useUnlimitedThreads} is set to <strong>true</strong></li>
@@ -1087,6 +1086,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     if (getConsoleLogger().isDebugEnabled()) {
                         getConsoleLogger().debug("Tests to run: " + scan.getClasses());
                     }
+                    // Only check this once we know there are tests. A module with nothing to run
+                    // should not need a test framework just to satisfy inherited groups.
+                    warnIfDefunctGroupsCombinations();
                 }
                 logReportsDirectory();
                 executeAfterPreconditionsChecked(scan, platform);
@@ -1224,7 +1226,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ensureParallelRunningCompatibility();
             warnIfUselessUseSystemClassLoaderParameter();
             warnIfUselessArgLineParameter();
-            warnIfDefunctGroupsCombinations();
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
             warnIfIllegalTempDir();
@@ -1300,9 +1301,9 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                         pluginArtifactMap,
                         consoleLogger,
                         getTestNgArtifact()));
-        if (providerInfos.isEmpty()
-                && getJunitArtifact() != null
-                && !isWithinVersionSpec(getJunitArtifact(), "[4.12,)")) {
+        // No provider matched and the project does have JUnit, so its version is below the minimum we
+        // support: that is the only way JUnit can fail to select the JUnit Platform provider.
+        if (providerInfos.isEmpty() && getJunitArtifact() != null) {
             throw new MojoExecutionException(String.format(
                     "The used JUnit Version %s is not supported anymore. Please update to version 4.12+",
                     getJunitArtifact().getVersion()));
@@ -1520,7 +1521,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     protected void logReportsDirectory() {
-        logDebugOrCliShowErrors(capitalizeFirstLetter(getPluginName()) + " report directory: " + getReportsDirectory());
+        logDebugOrCliShowErrors(capitalize(getPluginName()) + " report directory: " + getReportsDirectory());
     }
 
     private boolean existsModuleDescriptor(ResolvePathResultWrapper resolvedJavaModularityResult) {
@@ -1856,14 +1857,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         if (count < 0) {
             throw new MojoFailureException("parallel maven execution does not allow negative thread-count" + entity);
         }
-    }
-
-    private boolean isJunit47Compatible(Artifact artifact) {
-        return isWithinVersionSpec(artifact, "[4.7,)");
-    }
-
-    private boolean isAnyJunit4(Artifact artifact) {
-        return isWithinVersionSpec(artifact, "[4.0,)");
     }
 
     protected boolean isForking() {
@@ -2244,6 +2237,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     @Nonnull
+    private static List<String> loadList(File file) throws IOException {
+        return Files.readAllLines(file.toPath(), Charset.defaultCharset()).stream()
+                .map(String::trim)
+                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                .collect(Collectors.toList());
+    }
+
     private List<String> readListFromFile(@Nonnull final File file) {
         getConsoleLogger().debug("Reading list from: " + file);
 
@@ -2252,7 +2252,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
 
         try {
-            List<String> list = FileUtils.loadFile(file);
+            List<String> list = loadList(file);
 
             if (getConsoleLogger().isDebugEnabled()) {
                 getConsoleLogger().debug("List contents:");
@@ -2291,11 +2291,13 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             excludes = Collections.emptyList();
         } else {
             excludes = new ArrayList<>();
-            if (asScanList) {
-                if (getExcludes() != null) {
+            if (getExcludes() != null) {
+                if (asScanList) {
                     excludes.addAll(getExcludes());
+                } else {
+                    // excluded classes are already dropped by the scan, only method excludes matter here
+                    excludes.addAll(getMethodFilters(getExcludes()));
                 }
-                checkMethodFilterInIncludesExcludes(excludes);
             }
 
             if (getExcludesFile() != null) {
@@ -2337,7 +2339,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 if (getIncludes() != null) {
                     includes.addAll(getIncludes());
                 }
-                checkMethodFilterInIncludesExcludes(includes);
+                checkMethodFilterInIncludes(includes);
             }
 
             if (getIncludesFile() != null) {
@@ -2352,12 +2354,30 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         return filterNulls(includes);
     }
 
-    private void checkMethodFilterInIncludesExcludes(Iterable<String> patterns) throws MojoFailureException {
+    private void checkMethodFilterInIncludes(Iterable<String> patterns) throws MojoFailureException {
         for (String pattern : patterns) {
             if (pattern != null && pattern.contains("#")) {
-                throw new MojoFailureException("Method filter prohibited in includes|excludes parameter: " + pattern);
+                throw new MojoFailureException("Method filter prohibited in includes parameter: " + pattern);
             }
         }
+    }
+
+    /**
+     * Keeps only the patterns naming a method, like {@code pkg/SomeTest#testMethod}.
+     */
+    @Nonnull
+    private static List<String> getMethodFilters(List<String> patterns) {
+        List<String> methodFilters = new ArrayList<>();
+        for (String pattern : patterns) {
+            if (pattern != null) {
+                for (String item : split(pattern, ",")) {
+                    if (item.contains("#")) {
+                        methodFilters.add(item.trim());
+                    }
+                }
+            }
+        }
+        return methodFilters;
     }
 
     private TestListResolver getIncludedAndExcludedTests() throws MojoFailureException {
@@ -2993,18 +3013,17 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfDefunctGroupsCombinations() throws MojoFailureException, MojoExecutionException {
-        Artifact junitArtifact = getJunitArtifact();
-        if (isAnyGroupsSelected()) {
-            if (getTestNgArtifact() == null) {
-                boolean junit47Compatible = isJunit47Compatible(junitArtifact);
-                boolean junit5PlatformCompatible = getJUnit5Artifact() != null;
-                if (!junit47Compatible && !junit5PlatformCompatible) {
-                    throw new MojoFailureException("groups/excludedGroups are specified but JUnit version on "
-                            + "classpath is too old to support groups. "
-                            + "Check your dependency:tree to see if your project "
-                            + "is picking up an old junit version");
-                }
-            }
+        if (!isAnyGroupsSelected()) {
+            return;
+        }
+
+        // Don't check the JUnit version here. A JUnit older than 4.12 is rejected right after by
+        // createProviders(), which names the version it found, so only complain when the module has
+        // no test framework at all to group by.
+        if (getTestNgArtifact() == null && getJUnit5Artifact() == null && getJunitArtifact() == null) {
+            throw new MojoFailureException("groups/excludedGroups are specified but no test framework "
+                    + "supporting groups was found on the test classpath. Add TestNG, JUnit 4.12+ or a "
+                    + "JUnit Platform engine to the test dependencies of this module.");
         }
     }
 
@@ -3025,7 +3044,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private void warnIfIllegalTempDir() throws MojoFailureException {
-        if (isEmpty(getTempDir())) {
+        if (isBlank(getTempDir())) {
             throw new MojoFailureException("Parameter 'tempDir' should not be blank string.");
         }
     }
@@ -3167,7 +3186,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         private final PluginDescriptor pluginDescriptor;
         private final Map<String, Artifact> pluginArtifactMap;
         private final ConsoleLogger consoleLogger;
-        private ProviderInfo.Engine engine = ProviderInfo.Engine.JUNIT_PLATFORM;
 
         @SuppressWarnings("checkstyle:parameternumber")
         JUnitPlatformProviderInfo(
@@ -3194,16 +3212,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             this.junitArtifact = junitArtifact;
             this.booterArtifact = booterArtifact;
             this.testNgArtifact = testNgArtifact;
-            // JUnit 4.12+ is required by JUnit 5.3+
-            // JUnit 4.13+ is required by JUnit 5.8+
-            // JUnit 4.13.2 is required by JUnit 5.9+
-            // JUnit 4.13.3 is required by JUnit 5.10+
-            // JUnit 4.13.4 is required by JUnit 5.12+
-            // https://junit.org/junit5/docs/current/user-guide/#dependency-metadata
-
-            if (isAnyJunit4(junitArtifact)) {
-                this.engine = Engine.JUNIT4;
-            }
             this.surefireDependencyResolver = surefireDependencyResolver;
         }
 
@@ -3293,7 +3301,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
             // need to check there is at least one test engine in the classpath
             String junit = (String) getProperties().get("junit");
-            boolean runJunit = Boolean.parseBoolean(StringUtils.isEmpty(junit) ? "true" : junit);
+            boolean runJunit = Boolean.parseBoolean(StringUtils.isBlank(junit) ? "true" : junit);
             if (StringUtils.isNotEmpty(junit) && !runJunit) {
                 consoleLogger.debug("System property 'junit' is explicity set to '" + junit + "'");
             } else {
@@ -3329,10 +3337,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     consoleLogger.info(
                             "TestNG is present. Adding per default " + testNgEngineCoordinates + ":" + version);
                 }
-            }
-
-            if (!hasDependencyPlatformEngine(providerArtifacts)) {
-                addEngineByApi(engineGroupId, engineArtifactId, engineVersion, providerArtifacts);
             }
 
             if (!hasDependencyPlatformEngine(providerArtifacts)) {

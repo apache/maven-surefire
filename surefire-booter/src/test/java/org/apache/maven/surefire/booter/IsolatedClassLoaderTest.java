@@ -22,7 +22,7 @@ import java.io.File;
 import java.net.URL;
 
 import org.apache.maven.surefire.api.provider.AbstractProvider;
-import org.apache.maven.surefire.shared.utils.io.FileUtils;
+import org.apache.maven.surefire.shared.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,7 @@ public class IsolatedClassLoaderTest {
     public void prepareClassLoader() throws Exception {
         classLoader = new IsolatedClassLoader(null, false, "role");
 
-        String[] files = FileUtils.fileRead(new File("target/test-classpath/cp.txt"), "UTF-8")
+        String[] files = FileUtils.readFileToString(new File("target/test-classpath/cp.txt"), "UTF-8")
                 .split(pathSeparator);
 
         for (String file : files) {

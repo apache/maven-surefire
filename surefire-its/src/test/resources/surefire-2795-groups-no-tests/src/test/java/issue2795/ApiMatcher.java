@@ -16,19 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.surefire.api.util;
+package issue2795;
 
 /**
- * @author Kristian Rosenvold
+ * A shared test helper. No tests in here, and no test framework needed.
  */
-@Deprecated
-public interface DirectoryScanner {
-    /**
-     * Locates tests based on scanning directories.
-     *
-     * @param classLoader   the classloader to use when loading classes
-     * @param scannerFilter the filter to include/exclude test classes
-     * @return the found classes that match the filter
-     */
-    TestsToRun locateTestClasses(ClassLoader classLoader, ScannerFilter scannerFilter);
+public final class ApiMatcher {
+    public static boolean matches(String actual, String expected) {
+        return actual != null && actual.equals(expected);
+    }
 }
