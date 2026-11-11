@@ -136,6 +136,7 @@ import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailur
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.NONE;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
+import static org.apache.maven.plugin.surefire.booterclient.DefaultForkConfiguration.interpolateArgLineWithPropertyExpressions;
 import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;
@@ -531,7 +532,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private String jvm;
 
     /**
-     * Arbitrary JVM options to set on the command line. Only effective for forked executions.
+     * Arbitrary JVM options to set on the command line. Only effective for forked executions: the build fails if
+     * it is not blank while {@code forkCount} is 0 and there are tests to run.
      * <br>
      * <br>
      * Using an alternate syntax for placeholders in {@code argLine}, namely <code>@{...}</code> allows late replacement
@@ -1086,9 +1088,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                     if (getConsoleLogger().isDebugEnabled()) {
                         getConsoleLogger().debug("Tests to run: " + scan.getClasses());
                     }
-                    // Only check this once we know there are tests. A module with nothing to run
-                    // should not need a test framework just to satisfy inherited groups.
+                    // Only check these once we know there are tests. A module with nothing to run
+                    // should not need a test framework just to satisfy inherited groups, nor fail
+                    // because of an inherited argLine.
                     warnIfDefunctGroupsCombinations();
+                    ensureNoArgLineWhenNotForking();
                 }
                 logReportsDirectory();
                 executeAfterPreconditionsChecked(scan, platform);
@@ -1225,7 +1229,6 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             ensureWorkingDirectoryExists();
             ensureParallelRunningCompatibility();
             warnIfUselessUseSystemClassLoaderParameter();
-            warnIfUselessArgLineParameter();
             warnIfRerunClashes();
             warnIfWrongShutdownValue();
             warnIfIllegalTempDir();
@@ -2998,10 +3001,16 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
     }
 
-    private void warnIfUselessArgLineParameter() {
-        if (isNotBlank(getArgLine()) && isNotForking()) {
-            getConsoleLogger().warning("argLine setting has no effect when not forking");
+    private void ensureNoArgLineWhenNotForking() throws MojoFailureException {
+        if (isNotForking() && isNotBlank(getArgLine()) && isNotBlank(interpolatedArgLine())) {
+            throw new MojoFailureException("argLine cannot be applied because forkCount is 0 and the tests run "
+                    + "inside the Maven JVM. Remove argLine or set forkCount to 1 or more.");
         }
+    }
+
+    private String interpolatedArgLine() {
+        return interpolateArgLineWithPropertyExpressions(
+                getArgLine(), getProject().getModel().getProperties());
     }
 
     private boolean isNotForking() {

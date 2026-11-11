@@ -226,24 +226,28 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
      * to evaluation when the pom is parsed as is done with <pre>${property-name}</pre> expressions).
      *
      * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
+     *
+     * @param argLine the configured argLine, may be {@code null}
+     * @param modelProperties the properties of the project model
+     * @return the trimmed argLine with its placeholders replaced, or an empty string if there is no argLine
      */
     @Nonnull
-    private String interpolateArgLineWithPropertyExpressions() {
-        if (getArgLine() == null) {
+    public static String interpolateArgLineWithPropertyExpressions(
+            @Nullable String argLine, @Nonnull Properties modelProperties) {
+        if (argLine == null) {
             return "";
         }
 
-        String resolvedArgLine = getArgLine().trim();
+        String resolvedArgLine = argLine.trim();
 
         if (resolvedArgLine.isEmpty()) {
             return "";
         }
 
-        for (final String key : getModelProperties().stringPropertyNames()) {
+        for (final String key : modelProperties.stringPropertyNames()) {
             String field = "@{" + key + "}";
-            if (getArgLine().contains(field)) {
-                resolvedArgLine =
-                        resolvedArgLine.replace(field, getModelProperties().getProperty(key, ""));
+            if (argLine.contains(field)) {
+                resolvedArgLine = resolvedArgLine.replace(field, modelProperties.getProperty(key, ""));
             }
         }
 
@@ -345,7 +349,8 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
 
     @Nonnull
     private String newJvmArgLine(int forks) {
-        String interpolatedArgs = stripWhitespace(interpolateArgLineWithPropertyExpressions());
+        String interpolatedArgs =
+                stripWhitespace(interpolateArgLineWithPropertyExpressions(getArgLine(), getModelProperties()));
         String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholders(interpolatedArgs, forks);
         return extendJvmArgLine(argsWithReplacedForkNumbers);
     }

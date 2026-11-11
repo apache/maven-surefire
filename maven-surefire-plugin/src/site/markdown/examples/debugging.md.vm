@@ -64,6 +64,16 @@ mvn -DforkCount=0 verify
 #{end}
 ```
 
+The JVM options in `argLine` cannot be applied without forking, so the build fails if `argLine` is not empty and there are tests to run. If it comes from a property, as with the JaCoCo agent, you can clear it on the command line:
+
+```text
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+mvn -DforkCount=0 -DargLine= test
+#{else}
+mvn -DforkCount=0 -DargLine= verify
+#{end}
+```
+
 Then all you need to do is debug Maven itself. Maven ships with a `mvnDebug` shell script that you can use to launch Maven with convenient debugging options:
 
 ```text

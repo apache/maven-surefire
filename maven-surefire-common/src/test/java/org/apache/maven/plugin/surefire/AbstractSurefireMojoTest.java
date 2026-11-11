@@ -48,6 +48,7 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -2064,54 +2065,73 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
-    public void shouldWarnThatArgLineHasNoEffectWhenNotForking() throws Exception {
-        Logger logger = mock(Logger.class);
-        Mojo mojo = mojoReadyForParameterVerification(logger);
+    public void shouldFailWhenArgLineIsSetAndNotForking() {
+        givenProjectWithModelProperties(new Properties());
         mojo.forkCount = "0";
         mojo.setArgLine("-javaagent:jacocoagent.jar");
 
-        mojo.verifyParameters();
-
-        verify(logger).warn("argLine setting has no effect when not forking");
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessage("argLine cannot be applied because forkCount is 0 and the tests run "
+                        + "inside the Maven JVM. Remove argLine or set forkCount to 1 or more.");
     }
 
     @Test
-    public void shouldNotWarnAboutArgLineWhenForking() throws Exception {
-        Logger logger = mock(Logger.class);
-        Mojo mojo = mojoReadyForParameterVerification(logger);
+    public void shouldFailWhenArgLinePlaceholderResolvesToJvmOptionsAndNotForking() {
+        Properties modelProperties = new Properties();
+        modelProperties.setProperty("jacocoArgLine", "-javaagent:jacocoagent.jar");
+        givenProjectWithModelProperties(modelProperties);
+        mojo.forkCount = "0";
+        mojo.setArgLine("@{jacocoArgLine}");
+
+        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageStartingWith("argLine cannot be applied because forkCount is 0");
+    }
+
+    @Test
+    public void shouldAcceptArgLineWhenForking() throws Exception {
+        givenProjectWithModelProperties(new Properties());
         mojo.forkCount = "1";
         mojo.setArgLine("-javaagent:jacocoagent.jar");
 
-        mojo.verifyParameters();
-
-        verify(logger, times(0)).warn("argLine setting has no effect when not forking");
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
     }
 
-    private Mojo mojoReadyForParameterVerification(Logger logger) throws IOException {
-        Mojo verifiedMojo = new Mojo() {
-            @Override
-            public String getShutdown() {
-                return "exit";
-            }
+    @Test
+    public void shouldAcceptMissingArgLineWhenNotForking() throws Exception {
+        mojo.forkCount = "0";
 
-            @Override
-            public String getRunOrder() {
-                return "filesystem";
-            }
-        };
-        verifiedMojo.setLogger(logger);
-        verifiedMojo.setProperties(new Properties());
-        verifiedMojo.setProjectArtifactMap(new LinkedHashMap<>());
-        Artifact projectArtifact = verifiedMojo.getMojoArtifact();
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    @Test
+    public void shouldAcceptBlankArgLineWhenNotForking() throws Exception {
+        mojo.forkCount = "0";
+        mojo.setArgLine(" \n ");
+
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    @Test
+    public void shouldAcceptArgLineResolvingToNothingWhenNotForking() throws Exception {
+        Properties modelProperties = new Properties();
+        modelProperties.setProperty("jacocoArgLine", "");
+        givenProjectWithModelProperties(modelProperties);
+        mojo.forkCount = "0";
+        mojo.setArgLine("@{jacocoArgLine}");
+
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    private void givenProjectWithModelProperties(Properties modelProperties) {
+        Model model = new Model();
+        model.setProperties(modelProperties);
         MavenProject project = mock(MavenProject.class);
-        when(project.getArtifact()).thenReturn(projectArtifact);
-        verifiedMojo.setProject(project);
-        verifiedMojo.setSession(mock(MavenSession.class));
-        verifiedMojo.setTestClassesDirectory(
-                Files.createTempDirectory(tempFolder, "test-classes").toFile());
-        verifiedMojo.setWorkingDirectory(tempFolder.toFile());
-        verifiedMojo.setTempDir("surefire");
-        return verifiedMojo;
+        when(project.getModel()).thenReturn(model);
+        mojo.setProject(project);
     }
 
     private void setProjectDepedenciesToMojo(Artifact... deps) {
