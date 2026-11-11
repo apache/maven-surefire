@@ -19,6 +19,7 @@
 package org.apache.maven.surefire.its;
 
 import org.apache.maven.surefire.its.fixture.SurefireJUnit4IntegrationTestCase;
+import org.apache.maven.surefire.its.fixture.VerificationException;
 import org.junit.jupiter.api.Test;
 
 public class PojoWithoutProviderIT extends SurefireJUnit4IntegrationTestCase {
@@ -27,5 +28,14 @@ public class PojoWithoutProviderIT extends SurefireJUnit4IntegrationTestCase {
         unpack("pojo-without-provider")
                 .executeTest()
                 .verifyTextInLog("Test classes were found, but no test provider is available.");
+    }
+
+    @Test
+    public void noWarningWhenNoTestClassesAreFound() throws VerificationException {
+        unpack("pojo-without-provider")
+                .setTestToRun("DoesNotExist")
+                .failIfNoSpecifiedTests(false)
+                .executeTest()
+                .verifyTextNotInLog("Test classes were found, but no test provider is available.");
     }
 }
