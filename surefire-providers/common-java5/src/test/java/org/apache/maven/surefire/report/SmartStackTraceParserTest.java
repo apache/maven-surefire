@@ -18,6 +18,7 @@
  */
 package org.apache.maven.surefire.report;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -33,6 +34,7 @@ import static org.apache.maven.surefire.report.SmartStackTraceParser.stackTraceW
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -288,6 +290,30 @@ public class SmartStackTraceParserTest {
                             + "\tat org.apache.maven.surefire.report.StackTraceFocusedOnClass$B.b(StackTraceFocusedOnClass.java:47)\n",
                     trace);
         }
+    }
+
+    @Test
+    public void testSuppressedExceptionIsIncluded() {
+        Exception suppressed = new IllegalStateException("from close");
+        RuntimeException main = new RuntimeException("from body");
+        main.addSuppressed(suppressed);
+
+        String trace = stackTraceWithFocusOnClassAsString(main, getClass().getName());
+
+        assertTrue(trace.contains("Suppressed: java.lang.IllegalStateException: from close"), trace);
+    }
+
+    @Test
+    public void testSuppressedExceptionOnCauseIsIncluded() {
+        Exception suppressedOnCause = new IllegalStateException("from close");
+        Exception cause = new IOException("root cause");
+        cause.addSuppressed(suppressedOnCause);
+        RuntimeException main = new RuntimeException("from body", cause);
+
+        String trace = stackTraceWithFocusOnClassAsString(main, getClass().getName());
+
+        assertTrue(trace.contains("Caused by: java.io.IOException: root cause"), trace);
+        assertTrue(trace.contains("Suppressed: java.lang.IllegalStateException: from close"), trace);
     }
 
     @Test

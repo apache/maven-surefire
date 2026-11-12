@@ -179,7 +179,7 @@ public class SmartStackTraceParser {
         StackTraceFilter filter = new ClassNameStackTraceFilter(className);
         Throwable topmost = findTopmostWithClass(t, filter);
         List<StackTraceElement> stackTraceElements = focusInsideClass(topmost.getStackTrace(), filter);
-        String s = causeToString(topmost.getCause(), filter);
+        String s = suppressedToString(t, filter) + causeToString(topmost.getCause(), filter);
         return toString(t, stackTraceElements, filter) + s;
     }
 
@@ -207,7 +207,20 @@ public class SmartStackTraceParser {
         while (cause != null) {
             resp.append("Caused by: ");
             resp.append(toString(cause, asList(cause.getStackTrace()), filter));
+            resp.append(suppressedToString(cause, filter));
             cause = cause.getCause();
+        }
+        return resp.toString();
+    }
+
+    // SUREFIRE-1772
+    private static String suppressedToString(Throwable t, StackTraceFilter filter) {
+        StringBuilder resp = new StringBuilder();
+        for (Throwable suppressed : t.getSuppressed()) {
+            resp.append("Suppressed: ");
+            resp.append(toString(suppressed, asList(suppressed.getStackTrace()), filter));
+            resp.append(suppressedToString(suppressed, filter));
+            resp.append(causeToString(suppressed.getCause(), filter));
         }
         return resp.toString();
     }
