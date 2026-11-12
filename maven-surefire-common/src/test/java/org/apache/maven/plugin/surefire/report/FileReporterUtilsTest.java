@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire.report;
 
 import org.junit.jupiter.api.Test;
 
+import static org.apache.maven.plugin.surefire.report.FileReporterUtils.makeFileName;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.truncateFileName;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,6 +34,18 @@ public class FileReporterUtilsTest {
     @Test
     public void shortFileNameIsLeftUnchanged() {
         assertEquals("org.example.MyTest.txt", truncateFileName("org.example.MyTest.txt"));
+    }
+
+    @Test
+    public void makeFileNameStripsIllegalCharsAndTruncates() {
+        // ':' is an illegal filename character on both Windows and non-Windows
+        String longName = "p1:illegal." + repeat("subpackage", 20) + "TestWithAVeryLongName.txt";
+
+        String fileName = makeFileName(longName);
+
+        assertTrue(fileName.length() < longName.length(), "name should have been shortened");
+        assertTrue(fileName.endsWith(".txt"), "extension should be preserved");
+        assertTrue(fileName.indexOf(':') == -1, "illegal chars should be stripped");
     }
 
     @Test

@@ -20,6 +20,7 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import org.apache.maven.plugin.surefire.report.FileReporter;
@@ -80,16 +81,18 @@ public class FileReporterTest {
         reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, longTestName, null, longTestName, null);
         WrappedReportEntry wrappedReportEntry =
                 new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null);
-        reporter = new FileReporter(reportDir, null, Charset.defaultCharset(), false, false, false);
+        reporter = new FileReporter(reportDir, null, StandardCharsets.UTF_8, false, false, false);
         reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
 
-        File[] createdReports = reportDir.listFiles((dir, name) -> name.endsWith(".txt") && name.contains("_"));
+        String expectedName = "org.example.subpackage1.subpackage1.subpackage1.subpackage1.subpackage1."
+                + "subpackage1.subpackage1.subpackage1.subpackage1.subpackage1.subpackage1.subpackage1."
+                + "TestWithAnExceptionallyLongAndD_f5409b78.txt";
+        File expectedReportFile = new File(reportDir, expectedName);
         assertTrue(
-                createdReports != null && createdReports.length == 1,
-                "exactly one truncated report file should have been created in " + reportDir.getAbsolutePath());
-        assertTrue(createdReports[0].getName().length() < longTestName.length() + ".txt".length());
+                expectedReportFile.exists(),
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
         //noinspection ResultOfMethodCallIgnored
-        createdReports[0].delete();
+        expectedReportFile.delete();
     }
 
     @Test
