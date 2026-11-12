@@ -21,6 +21,8 @@ package org.apache.maven.surefire.api.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -148,6 +150,17 @@ public final class TempFileManager {
             throw new UncheckedIOException(new IOException("Unable to create temporary file " + tempFile));
         }
 
+        // run with this class' own permissions: under a SecurityManager, every frame on the call
+        // stack needs file permissions on the temp directory, including whatever unrelated,
+        // possibly restricted code (e.g. a test or an OSGi bundle) merely called System.out.println()
+        // and ended up here via ConsoleOutputCapture
+        String finalPrefix = prefix;
+        String finalSuffix = suffix;
+        return AccessController.doPrivileged(
+                (PrivilegedAction<File>) () -> createTempFileOrRetry(tempFile, finalPrefix, finalSuffix));
+    }
+
+    private File createTempFileOrRetry(File tempFile, String prefix, String suffix) {
         if (tempFile.exists() || tempFiles.contains(tempFile)) {
             // temporary file already exists? Try another name
             return createTempFile(prefix, suffix);
