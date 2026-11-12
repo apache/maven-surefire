@@ -65,6 +65,33 @@ public class FileReporterTest {
         return new TestSetStats(true, true);
     }
 
+    /**
+     * SUREFIRE-2233: a report file name derived from a long, deeply nested test class name must
+     * still be creatable, even on filesystems with a low per-component length limit.
+     */
+    @Test
+    public void testVeryLongFileNameIsTruncated() {
+        File reportDir = new File("target");
+        StringBuilder packageBuilder = new StringBuilder("org.example.");
+        for (int i = 0; i < 12; i++) {
+            packageBuilder.append("subpackage1.");
+        }
+        String longTestName = packageBuilder + "TestWithAnExceptionallyLongAndDeeplyNestedFullyQualifiedClassName";
+        reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, longTestName, null, longTestName, null);
+        WrappedReportEntry wrappedReportEntry =
+                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null);
+        reporter = new FileReporter(reportDir, null, Charset.defaultCharset(), false, false, false);
+        reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
+
+        File[] createdReports = reportDir.listFiles((dir, name) -> name.endsWith(".txt") && name.contains("_"));
+        assertTrue(
+                createdReports != null && createdReports.length == 1,
+                "exactly one truncated report file should have been created in " + reportDir.getAbsolutePath());
+        assertTrue(createdReports[0].getName().length() < longTestName.length() + ".txt".length());
+        //noinspection ResultOfMethodCallIgnored
+        createdReports[0].delete();
+    }
+
     @Test
     public void testFileNameWithSuffix() {
         File reportDir = new File("target");

@@ -45,6 +45,7 @@ import org.apache.maven.surefire.shared.xml.XMLWriter;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.plugin.surefire.report.DefaultReporterFactory.TestResultType;
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
+import static org.apache.maven.plugin.surefire.report.FileReporterUtils.truncateFileName;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SKIPPED;
 import static org.apache.maven.plugin.surefire.report.ReportEntryType.SUCCESS;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
@@ -469,7 +470,7 @@ public class StatelessXmlReporter implements StatelessReportEventListener<Wrappe
     private File getReportFile(WrappedReportEntry report) {
         String reportName = "TEST-" + (phrasedFileName ? report.getReportSourceName() : report.getSourceName());
         String customizedReportName = isBlank(reportNameSuffix) ? reportName : reportName + "-" + reportNameSuffix;
-        return new File(reportsDirectory, stripIllegalFilenameChars(customizedReportName + ".xml"));
+        return new File(reportsDirectory, truncateFileName(stripIllegalFilenameChars(customizedReportName + ".xml")));
     }
 
     private void startTestElement(XMLWriter ppw, WrappedReportEntry report) throws IOException {
