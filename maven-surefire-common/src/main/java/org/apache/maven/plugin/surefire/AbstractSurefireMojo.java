@@ -135,8 +135,8 @@ import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailur
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.COULD_NOT_RUN_SPECIFIED_TESTS;
 import static org.apache.maven.plugin.surefire.AbstractSurefireMojo.PluginFailureReason.NONE;
 import static org.apache.maven.plugin.surefire.SurefireDependencyResolver.isWithinVersionSpec;
+import static org.apache.maven.plugin.surefire.SurefireHelper.interpolateArgLineWithPropertyExpressions;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
-import static org.apache.maven.plugin.surefire.booterclient.DefaultForkConfiguration.interpolateArgLineWithPropertyExpressions;
 import static org.apache.maven.plugin.surefire.util.DependencyScanner.filter;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.EXCLUDE_JUNIT5_ENGINES_PROP;
 import static org.apache.maven.surefire.api.booter.ProviderParameterNames.INCLUDE_JUNIT5_ENGINES_PROP;

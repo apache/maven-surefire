@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -2070,7 +2071,8 @@ public class AbstractSurefireMojoTest {
         mojo.forkCount = "0";
         mojo.setArgLine("-javaagent:jacocoagent.jar");
 
-        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
+        InvocationTargetException e = assertThrows(
+                InvocationTargetException.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
         assertThat(e.getCause())
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessage("argLine cannot be applied because forkCount is 0 and the tests run "
@@ -2085,7 +2087,8 @@ public class AbstractSurefireMojoTest {
         mojo.forkCount = "0";
         mojo.setArgLine("@{jacocoArgLine}");
 
-        Exception e = assertThrows(Exception.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
+        InvocationTargetException e = assertThrows(
+                InvocationTargetException.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
         assertThat(e.getCause())
                 .isInstanceOf(MojoFailureException.class)
                 .hasMessageStartingWith("argLine cannot be applied because forkCount is 0");

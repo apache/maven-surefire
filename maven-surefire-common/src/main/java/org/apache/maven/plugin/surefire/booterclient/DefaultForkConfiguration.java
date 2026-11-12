@@ -38,6 +38,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
+import static org.apache.maven.plugin.surefire.SurefireHelper.interpolateArgLineWithPropertyExpressions;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
 import static org.apache.maven.plugin.surefire.util.Relocator.relocate;
@@ -218,40 +219,6 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
                     "WorkingDirectory " + cwd.getAbsolutePath() + " exists and is not a directory");
         }
         return cwd;
-    }
-
-    /**
-     * Replaces expressions <pre>@{property-name}</pre> with the corresponding properties
-     * from the model. This allows late evaluation of property values when the plugin is executed (as compared
-     * to evaluation when the pom is parsed as is done with <pre>${property-name}</pre> expressions).
-     *
-     * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
-     *
-     * @param argLine the configured argLine, may be {@code null}
-     * @param modelProperties the properties of the project model
-     * @return the trimmed argLine with its placeholders replaced, or an empty string if there is no argLine
-     */
-    @Nonnull
-    public static String interpolateArgLineWithPropertyExpressions(
-            @Nullable String argLine, @Nonnull Properties modelProperties) {
-        if (argLine == null) {
-            return "";
-        }
-
-        String resolvedArgLine = argLine.trim();
-
-        if (resolvedArgLine.isEmpty()) {
-            return "";
-        }
-
-        for (final String key : modelProperties.stringPropertyNames()) {
-            String field = "@{" + key + "}";
-            if (argLine.contains(field)) {
-                resolvedArgLine = resolvedArgLine.replace(field, modelProperties.getProperty(key, ""));
-            }
-        }
-
-        return resolvedArgLine;
     }
 
     @Nonnull
