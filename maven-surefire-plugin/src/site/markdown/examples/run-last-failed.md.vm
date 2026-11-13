@@ -1,0 +1,75 @@
+---
+title: Run only the tests that failed last time
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+#set($goal = "test")
+#{else}
+#set($goal = "verify")
+#{end}
+
+# Run Only the Tests That Failed Last Time
+
+Since 3.6.2, `runLastFailed` lets you run again only the tests that went wrong in the previous build.
+It helps with long test suites: a few tests failed, you fixed the code (or restarted that flaky external service),
+and you don't want to run everything again just to check them.
+
+```bash
+mvn ${goal}
+# a few tests fail, you fix them
+mvn -D${thisPlugin.toLowerCase()}.runLastFailed ${goal}
+```
+
+The previous build is read from the XML reports in `reportsDirectory`, so **don't run `clean` in between**.
+
+## What runs
+
+- Test methods that ended with a failure or an error. Tests that passed, were skipped or were flaky
+  (they failed but passed on a rerun) don't run again.
+- Whole test classes that didn't finish because the previous build stopped early: a crashed or killed forked JVM,
+  a `forkedProcessTimeoutInSeconds` timeout, or Maven itself being stopped. Tests that never had a chance to run
+  get their turn.
+
+If the previous build had no failures, no tests run and the plugin says so. If there are no reports yet,
+for instance right after `clean`, all tests run as usual.
+
+The `test` parameter, `includes` and `excludes` still apply. With `-Dtest=MyTest`, only the tests of `MyTest`
+that failed last time run.
+
+## Not the same as rerunFailingTestsCount
+
+[`rerunFailingTestsCount`](./rerun-failing-tests.html) retries a failing test straight away, within the same build,
+to deal with flaky tests. `runLastFailed` works across builds: it remembers what went wrong last time.
+You can use both together.
+
+## Good to know
+
+- After such a build, the report of each class that ran again only lists the tests that ran again.
+  The reports of the other classes are left untouched.
+- All the invocations of a parameterized test run again, not only the ones that failed.
+- A test class that failed outside a test method (e.g. in a `@BeforeAll` method) runs again in full.
+  So does a class whose failed test names can't be mapped back to a Java method, e.g. with
+  `usePhrasedTestCaseMethodName` in the `statelessTestsetReporter` configuration.
+- With `usePhrasedTestCaseClassName`, the reports don't hold the class names any more, so all tests run.
+- To know whether the previous build finished, the plugin keeps a small hidden file next to `reportsDirectory`
+  while the tests run, e.g. `target/.${thisPlugin.toLowerCase()}-reports-run-in-progress`.
+- A `reportsDirectory` containing `${esc.d}{surefire.forkNumber}` isn't supported, all tests run.
