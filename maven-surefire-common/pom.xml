@@ -53,6 +53,19 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <!-- runLastFailed reads the XML reports of the last run -->
+      <groupId>org.apache.maven.surefire</groupId>
+      <artifactId>surefire-report-parser</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <!-- only needed by SurefireReportParser, which we don't use -->
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.surefire</groupId>
       <artifactId>surefire-booter</artifactId>
       <version>${project.version}</version>

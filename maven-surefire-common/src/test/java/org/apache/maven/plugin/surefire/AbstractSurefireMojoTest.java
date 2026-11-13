@@ -2158,6 +2158,11 @@ public class AbstractSurefireMojoTest {
         }
 
         @Override
+        protected boolean isRunLastFailed() {
+            return false;
+        }
+
+        @Override
         public boolean isSkipTests() {
             return false;
         }
@@ -2650,6 +2655,26 @@ public class AbstractSurefireMojoTest {
         TestListResolver specificTests = plugin.getSpecificTests();
         assertThat(specificTests.getExcludedPatterns()).isEmpty();
         assertThat(specificTests.shouldRun("AnotherTest.class", "method")).isTrue();
+    }
+
+    @Test
+    public void shouldUseLastFailedTestsInsteadOfTheTestParameter() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setExcludes(singletonList("**/SlowTest.java"));
+        plugin.setTest("FooTest");
+
+        setInternalState(plugin, "lastFailedTests", "pkg.FooTest#b,!pkg.FooTest#c");
+
+        TestListResolver specificTests = plugin.getSpecificTests();
+        assertThat(specificTests.shouldRun("pkg/FooTest.class", "b")).isTrue();
+        assertThat(specificTests.shouldRun("pkg/FooTest.class", "a")).isFalse();
+        assertThat(specificTests.shouldRun("pkg/FooTest.class", "c")).isFalse();
+        assertThat(specificTests.shouldRun("pkg/OtherTest.class", null)).isFalse();
+        // a failed test may have been removed since, that's not a failure
+        assertThat(invokeMethod(plugin, "getEffectiveFailIfNoTests").toString()).isEqualTo("NONE");
+        // the test parameter doesn't change, so neither does the config checksum
+        assertThat(plugin.getTest()).isEqualTo("FooTest");
     }
 
     @Test

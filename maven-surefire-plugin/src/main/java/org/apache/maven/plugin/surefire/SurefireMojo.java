@@ -291,6 +291,21 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     private int rerunFailingTestsCount;
 
     /**
+     * Runs only the tests that failed in the last run, e.g. {@code mvn test -Dsurefire.runLastFailed}.
+     * <br>
+     * It reads the XML reports of the last run, so don't run {@code clean} in between. It runs the tests that
+     * failed or had an error, and the test classes that didn't finish because the last run stopped early
+     * (fork crash, timeout, Maven killed). If nothing failed, no tests run. If there are no reports, all tests run.
+     * <br>
+     * Unlike {@code rerunFailingTestsCount}, which retries failing tests right away in the same run, this works
+     * across runs. The {@code test} parameter, includes and excludes still apply.
+     *
+     * @since 3.6.2
+     */
+    @Parameter(property = "surefire.runLastFailed", defaultValue = "false")
+    private boolean runLastFailed;
+
+    /**
      * Set this to a value greater than 0 to fail the whole test set if the cumulative number of flakes reaches
      * this threshold. Set to 0 to allow an unlimited number of flakes.
      *
@@ -555,6 +570,15 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
     @Override
     protected int getRerunFailingTestsCount() {
         return rerunFailingTestsCount;
+    }
+
+    @Override
+    protected boolean isRunLastFailed() {
+        return runLastFailed;
+    }
+
+    public void setRunLastFailed(boolean runLastFailed) {
+        this.runLastFailed = runLastFailed;
     }
 
     @Override

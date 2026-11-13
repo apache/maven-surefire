@@ -75,6 +75,10 @@ import org.apache.maven.plugin.surefire.extensions.LegacyForkNodeFactory;
 import org.apache.maven.plugin.surefire.extensions.SurefireConsoleOutputReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessReporter;
 import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoReporter;
+import org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter;
+import org.apache.maven.plugin.surefire.lastfailed.LastFailedTests;
+import org.apache.maven.plugin.surefire.lastfailed.LastFailedTestsResolver;
+import org.apache.maven.plugin.surefire.lastfailed.RunInProgressMarker;
 import org.apache.maven.plugin.surefire.log.PluginConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.util.DependencyScanner;
@@ -988,6 +992,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     protected abstract int getRerunFailingTestsCount();
 
+    /**
+     * @return {@code true} to run only what failed or didn't finish last time
+     */
+    protected abstract boolean isRunLastFailed();
+
     @Override
     public abstract List<String> getIncludes();
 
@@ -1049,6 +1058,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
     private TestListResolver includedExcludedTests;
 
+    /**
+     * Tests picked by {@code runLastFailed}, written like the {@code test} parameter.
+     * Used instead of {@link #getTest()} when set.
+     */
+    private String lastFailedTests;
+
     private List<CommandLineOption> cli;
 
     @Override
@@ -1067,6 +1082,19 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         try {
             if (verifyParameters() && !hasExecutedBefore()) {
                 DefaultScanResult scan = scanForTestClasses();
+                if (isRunLastFailed() && !scan.isEmpty()) {
+                    LastFailedTests lastFailed = resolveLastFailedTests(scan);
+                    if (lastFailed.getSelection() == LastFailedTests.Selection.NOTHING) {
+                        getConsoleLogger()
+                                .info("No failed or unfinished tests found in " + getReportsDirectory()
+                                        + ", nothing to run.");
+                        return;
+                    }
+                    if (lastFailed.getSelection() == LastFailedTests.Selection.SOME) {
+                        useLastFailedTests(lastFailed);
+                        scan = scanForTestClasses();
+                    }
+                }
                 if (scan.isEmpty()) {
                     switch (getEffectiveFailIfNoTests()) {
                         case COULD_NOT_RUN_DEFAULT_TESTS:
@@ -1096,6 +1124,103 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         } finally {
             platform.clearShutdownState();
             removeShutdownHook(shutdownThread);
+        }
+    }
+
+    /**
+     * Finds what failed or didn't finish in the last run.
+     */
+    private LastFailedTests resolveLastFailedTests(DefaultScanResult scan) throws MojoFailureException {
+        File reportsDirectory = getReportsDirectory();
+        if (hasForkPlaceholder(reportsDirectory)) {
+            getConsoleLogger()
+                    .warning("runLastFailed doesn't support a reportsDirectory with a fork or thread number ("
+                            + reportsDirectory + "), running all tests.");
+            return LastFailedTests.runAll();
+        }
+        if (isXmlReportDisabled()) {
+            getConsoleLogger()
+                    .warning("runLastFailed needs the XML reports, but they are disabled, running all tests.");
+            return LastFailedTests.runAll();
+        }
+
+        boolean phrasedClassNames = false;
+        boolean phrasedMethodNames = false;
+        if (statelessTestsetReporter instanceof JUnit5Xml30StatelessReporter) {
+            JUnit5Xml30StatelessReporter reporter = (JUnit5Xml30StatelessReporter) statelessTestsetReporter;
+            phrasedClassNames = reporter.getUsePhrasedTestCaseClassName();
+            phrasedMethodNames = reporter.getUsePhrasedTestCaseMethodName();
+        }
+
+        return new LastFailedTestsResolver(
+                        reportsDirectory,
+                        RunInProgressMarker.of(reportsDirectory),
+                        getReportNameSuffix(),
+                        phrasedClassNames,
+                        phrasedMethodNames,
+                        getConsoleLogger())
+                .resolve(scan.getClasses(), getSpecificTests());
+    }
+
+    /**
+     * Runs only the tests picked by {@code runLastFailed}.
+     */
+    private void useLastFailedTests(LastFailedTests lastFailed) {
+        List<String> parts = new ArrayList<>();
+        if (lastFailed.getFailedMethods() > 0) {
+            parts.add(lastFailed.getFailedMethods() + " failed test(s)");
+        }
+        if (lastFailed.getFailedClasses() > 0) {
+            parts.add(lastFailed.getFailedClasses() + " class(es) that failed outside a test");
+        }
+        if (lastFailed.getUnfinishedClasses() > 0) {
+            parts.add(lastFailed.getUnfinishedClasses() + " class(es) that didn't finish");
+        }
+        getConsoleLogger().info("Running only what went wrong last time: " + String.join(", ", parts) + ".");
+        getConsoleLogger().debug("runLastFailed tests: " + lastFailed.getTests());
+
+        lastFailedTests = lastFailed.getTests();
+        // drop the cached filters, they get rebuilt from lastFailedTests
+        specificTests = null;
+        includedExcludedTests = null;
+    }
+
+    private boolean isXmlReportDisabled() {
+        if (disableXmlReport != null) {
+            return disableXmlReport;
+        }
+        return statelessTestsetReporter != null && statelessTestsetReporter.isDisable();
+    }
+
+    private static boolean hasForkPlaceholder(File directory) {
+        return directory != null && directory.getPath().contains("${surefire.");
+    }
+
+    /**
+     * Writes a marker while tests run, so {@code runLastFailed} can later tell if this run finished.
+     * We write it on every run, not only with {@code runLastFailed}.
+     */
+    private RunInProgressMarker writeRunInProgressMarker(DefaultScanResult scanResult) {
+        File reportsDirectory = getReportsDirectory();
+        if (reportsDirectory == null || hasForkPlaceholder(reportsDirectory)) {
+            return null;
+        }
+        RunInProgressMarker marker = RunInProgressMarker.of(reportsDirectory);
+        try {
+            marker.write(scanResult.getClasses());
+        } catch (IOException e) {
+            getConsoleLogger().debug("Could not write " + marker.getFile() + ": " + e.getMessage());
+        }
+        return marker;
+    }
+
+    private void deleteRunInProgressMarker(RunInProgressMarker marker) {
+        if (marker != null) {
+            try {
+                marker.delete();
+            } catch (IOException e) {
+                getConsoleLogger().debug("Could not delete " + marker.getFile() + ": " + e.getMessage());
+            }
         }
     }
 
@@ -1253,6 +1378,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         RunResult current = noTestsRun();
 
+        RunInProgressMarker runInProgressMarker = writeRunInProgressMarker(scanResult);
         Exception firstForkException = null;
         for (ProviderInfo provider : providers) {
             try {
@@ -1266,6 +1392,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         if (firstForkException != null) {
             current = failure(current, firstForkException);
+        }
+
+        // keep the marker after a crash or timeout, so runLastFailed knows this run stopped early
+        if (firstForkException == null && !current.isTimeout()) {
+            deleteRunInProgressMarker(runInProgressMarker);
         }
 
         handleSummary(current, firstForkException);
@@ -1874,7 +2005,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private PluginFailureReason getEffectiveFailIfNoTests() {
-        if (isSpecificTestSpecified()) {
+        if (lastFailedTests != null) {
+            // a test that failed last time may have been removed since, don't fail for that
+            return NONE;
+        } else if (isSpecificTestSpecified()) {
             return getFailIfNoSpecifiedTests() ? COULD_NOT_RUN_SPECIFIED_TESTS : NONE;
         } else {
             return getFailIfNoTests() ? COULD_NOT_RUN_DEFAULT_TESTS : NONE;
@@ -2232,7 +2366,14 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     private boolean isSpecificTestSpecified() {
-        return isNotBlank(getTest());
+        return isNotBlank(getEffectiveTest());
+    }
+
+    /**
+     * @return the tests picked by {@code runLastFailed} if any, otherwise the {@code test} parameter
+     */
+    private String getEffectiveTest() {
+        return lastFailedTests != null ? lastFailedTests : getTest();
     }
 
     @Nonnull
@@ -2332,7 +2473,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     private List<String> getIncludeList(boolean asScanList) throws MojoFailureException {
         final List<String> includes = new ArrayList<>();
         if (isSpecificTestSpecified()) {
-            addAll(includes, split(getTest(), ","));
+            addAll(includes, split(getEffectiveTest(), ","));
         } else {
             if (asScanList) {
                 if (getIncludes() != null) {

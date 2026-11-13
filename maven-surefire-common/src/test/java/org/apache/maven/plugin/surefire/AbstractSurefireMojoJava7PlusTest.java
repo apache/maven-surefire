@@ -582,6 +582,11 @@ public class AbstractSurefireMojoJava7PlusTest {
         }
 
         @Override
+        protected boolean isRunLastFailed() {
+            return false;
+        }
+
+        @Override
         public boolean isSkipTests() {
             return false;
         }
