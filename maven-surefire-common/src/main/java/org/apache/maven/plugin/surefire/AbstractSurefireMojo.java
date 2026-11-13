@@ -3548,8 +3548,23 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    public void setSystemPropertyVariables(Map<String, String> systemPropertyVariables) {
-        this.systemPropertyVariables = systemPropertyVariables;
+    public void setSystemPropertyVariables(Map<String, ?> systemPropertyVariables) {
+        this.systemPropertyVariables =
+                systemPropertyVariables == null ? null : stringifyValues(systemPropertyVariables);
+    }
+
+    /**
+     * Interpolation of a {@code systemPropertyVariables} entry such as {@code ${settings.offline}} can resolve
+     * to a non-String object (e.g. {@code Boolean}), so the configurator must accept {@code Map<String, ?>}
+     * rather than {@code Map<String, String>} and this method stringifies every value explicitly.
+     */
+    private static Map<String, String> stringifyValues(Map<String, ?> values) {
+        Map<String, String> result = new HashMap<>();
+        for (Entry<String, ?> entry : values.entrySet()) {
+            Object value = entry.getValue();
+            result.put(entry.getKey(), value == null ? null : String.valueOf(value));
+        }
+        return result;
     }
 
     /**

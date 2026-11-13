@@ -24,8 +24,6 @@ import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -117,6 +115,8 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private static final String VINTAGE_ENGINE_ID = "junit-vintage";
 
+    private static final String TESTNG_ENGINE_ID = "testng";
+
     private final ProviderParameters parameters;
 
     private final LauncherSessionFactory launcherSessionFactory;
@@ -126,8 +126,6 @@ public class JUnitPlatformProvider extends AbstractProvider {
     private Set<String> enclosingClassNames;
 
     private Map<String, String> configurationParameters = new HashMap<>();
-
-    private boolean excludeTestNgEngine;
 
     // groups only TestNG can use, we warn about them when the tests start
     private final List<String> testNgOnlyGroups = new ArrayList<>();
@@ -185,8 +183,12 @@ public class JUnitPlatformProvider extends AbstractProvider {
         String runOrder = parameters.getProviderProperties().get(RUN_ORDER_PROP);
         if (runOrder != null) {
             if (runOrder.equals("random")) {
-                setDefaultOrderers(
-                        "org.junit.jupiter.api.MethodOrderer$Random", "org.junit.jupiter.api.ClassOrderer$Random");
+                // DefaultRunOrderCalculator already shuffled the discovered test classes with this seed
+                // before they reached this provider, so only Jupiter's method orderer is configured here --
+                // configuring Jupiter's own class orderer too would shuffle the same classes a second time,
+                // which restricts the final class order to permutation squares instead of a uniformly random
+                // order (with two classes, they would never swap). See #3544.
+                setDefaultOrderers("org.junit.jupiter.api.MethodOrderer$Random", null);
                 Optional.ofNullable(parameters.getProviderProperties().get(RUN_ORDER_RANDOM_SEED_PROP))
                         .ifPresent(seed -> getConfigurationParameters().putIfAbsent(JUNIT_RANDOM_SEED, seed));
             } else if (runOrder.equals("alphabetical")) {
@@ -203,12 +205,16 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     /**
      * Sets the JUnit orderers for runOrder, unless one is already set (Quarkus sets its own, for example).
+     * A {@code null} classOrderer leaves Jupiter's class order alone, for when Surefire has already ordered
+     * the classes itself.
      */
     private void setDefaultOrderers(String methodOrderer, String classOrderer) {
         // what JUnit finds by itself: system properties and junit-platform.properties
         ConfigurationParameters configuredElsewhere = request().build().getConfigurationParameters();
         setOrdererIfMissing(METHOD_ORDER_DEFAULT, methodOrderer, configuredElsewhere);
-        setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+        if (classOrderer != null) {
+            setOrdererIfMissing(CLASS_ORDER_DEFAULT, classOrderer, configuredElsewhere);
+        }
     }
 
     private void setOrdererIfMissing(String key, String orderer, ConfigurationParameters configuredElsewhere) {
@@ -240,13 +246,9 @@ public class JUnitPlatformProvider extends AbstractProvider {
         try (LauncherSessionAdapter launcherSession = launcherSessionFactory.openSession(cancellationToken)) {
             LauncherAdapter launcher = launcherSession.getLauncher();
             if (forkTestSet instanceof TestsToRun) {
-                // The TestNG engine is not skipped here on purpose: reading the classes eagerly would
-                // advance the iteration state which TestsToRun exposes through iterated().
                 invokeAllTests(launcher, (TestsToRun) forkTestSet, adapter);
             } else if (forkTestSet instanceof Class) {
-                Class<?> testClass = (Class<?>) forkTestSet;
-                excludeTestNgEngineIfPossible(Collections.singletonList(testClass.getName()));
-                invokeAllTests(launcher, fromClass(testClass), adapter);
+                invokeAllTests(launcher, fromClass((Class<?>) forkTestSet), adapter);
             } else if (forkTestSet == null) {
                 invokeAllTests(launcher, scanClasspath(launcher), adapter);
             } else {
@@ -273,24 +275,10 @@ public class JUnitPlatformProvider extends AbstractProvider {
     }
 
     private TestsToRun scanClasspath(LauncherAdapter launcher) {
+        TestPlanScannerFilter filter = new TestPlanScannerFilter(launcher, filters);
         ScanResult scanResult = parameters.getScanResult();
-        List<String> candidateClassNames = scannedClassNames(scanResult);
-        excludeTestNgEngineIfPossible(candidateClassNames);
-        Set<String> testNgClassNames =
-                TestNgTestClassDetector.findTestNgTestClasses(parameters.getTestClassLoader(), candidateClassNames);
-        TestPlanScannerFilter filter =
-                new TestPlanScannerFilter(launcher, allFilters(), candidateClassNames, testNgClassNames);
         TestsToRun scannedClasses = scanResult.applyFilter(filter, parameters.getTestClassLoader());
         return parameters.getRunOrderCalculator().orderTestClasses(scannedClasses);
-    }
-
-    private static List<String> scannedClassNames(ScanResult scanResult) {
-        int size = scanResult.size();
-        List<String> classNames = new ArrayList<>(size);
-        for (int i = 0; i < size; i++) {
-            classNames.add(scanResult.getClassName(i));
-        }
-        return classNames;
     }
 
     private void invokeAllTests(LauncherAdapter launcher, TestsToRun testsToRun, RunListenerAdapter adapter)
@@ -458,32 +446,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
 
     private LauncherDiscoveryRequestBuilder newRequest() {
 
-        return request().filters(allFilters()).configurationParameters(getConfigurationParameters());
-    }
-
-    /**
-     * @return the include/exclude filters, extended by an engine filter which keeps the TestNG engine out of
-     *     the request when it was proven that it cannot contribute any test
-     */
-    private Filter<?>[] allFilters() {
-        if (!excludeTestNgEngine) {
-            return filters;
-        }
-        Filter<?>[] allFilters = Arrays.copyOf(filters, filters.length + 1);
-        allFilters[filters.length] = EngineFilter.excludeEngines(TestNgTestClassDetector.TESTNG_ENGINE_ID);
-        return allFilters;
-    }
-
-    /**
-     * Excludes the TestNG engine when none of the given classes could be a TestNG test class. The engine must
-     * never be skipped for a class which was not inspected, so this is only ever called with the complete set
-     * of classes which is about to be handed over to the platform.
-     *
-     * @param classNames the names of every class which is about to be handed over to the platform
-     */
-    private void excludeTestNgEngineIfPossible(Collection<String> classNames) {
-        excludeTestNgEngine =
-                TestNgTestClassDetector.canExcludeTestNgEngine(parameters.getTestClassLoader(), classNames);
+        return request().filters(filters).configurationParameters(getConfigurationParameters());
     }
 
     private Filter<?>[] newFilters() {
@@ -673,7 +636,7 @@ public class JUnitPlatformProvider extends AbstractProvider {
      * TestNG tests always pass here, TestNG checks their groups itself.
      */
     private static PostDiscoveryFilter leaveTestNgTestsAlone(PostDiscoveryFilter filter) {
-        return testDescriptor -> isFromEngine(testDescriptor, TestNgTestClassDetector.TESTNG_ENGINE_ID)
+        return testDescriptor -> isFromEngine(testDescriptor, TESTNG_ENGINE_ID)
                 ? FilterResult.included("TestNG matches the groups itself")
                 : filter.apply(testDescriptor);
     }

@@ -95,6 +95,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.apache.maven.artifact.ArtifactUtils.artifactMapByVersionlessId;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersion;
 import static org.apache.maven.artifact.versioning.VersionRange.createFromVersionSpec;
@@ -102,6 +103,7 @@ import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.codehaus.plexus.languages.java.jpms.ModuleNameSource.MODULEDESCRIPTOR;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -2063,6 +2065,15 @@ public class AbstractSurefireMojoTest {
         mojo.warnIfIgnoredByJUnitPlatform();
 
         verify(logger, times(0)).warn(anyString());
+    }
+
+    @Test
+    public void shouldStringifyNonStringSystemPropertyVariableValues() {
+        Mojo mojo = new Mojo();
+
+        mojo.setSystemPropertyVariables(singletonMap("isOffline", true));
+
+        assertThat(mojo.getSystemPropertyVariables()).containsExactly(entry("isOffline", "true"));
     }
 
     @Test

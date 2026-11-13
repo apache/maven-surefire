@@ -16,16 +16,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package issue3462;
+package issue3548;
 
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.Parameter;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.testng.Assert.assertTrue;
+@ParameterizedClass
+@ValueSource(ints = {1, 2})
+class CalculatorParameterizedClassTests {
 
-public class TestNGTest extends BaseTest {
+    @Parameter
+    int i;
 
-    @Test
-    public void sanityCheck() {
-        assertTrue(true);
+    @ParameterizedTest
+    @ValueSource(ints = {1, 2})
+    void parameterizedTest(int j) {}
+
+    @Nested
+    @ParameterizedClass
+    @ValueSource(ints = {1, 2})
+    class Inner {
+
+        final int j;
+
+        Inner(int j) {
+            this.j = j;
+        }
+
+        @Test
+        void regularTest() {}
     }
 }
