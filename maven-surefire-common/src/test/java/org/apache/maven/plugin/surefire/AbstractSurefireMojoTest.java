@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +49,7 @@ import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.versioning.VersionRange;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
@@ -2072,6 +2074,78 @@ public class AbstractSurefireMojoTest {
         mojo.setSystemPropertyVariables(singletonMap("isOffline", true));
 
         assertThat(mojo.getSystemPropertyVariables()).containsExactly(entry("isOffline", "true"));
+    }
+
+    @Test
+    public void shouldFailWhenArgLineIsSetAndNotForking() {
+        givenProjectWithModelProperties(new Properties());
+        mojo.forkCount = "0";
+        mojo.setArgLine("-javaagent:jacocoagent.jar");
+
+        InvocationTargetException e = assertThrows(
+                InvocationTargetException.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessage("argLine cannot be applied because forkCount is 0 and the tests run "
+                        + "inside the Maven JVM. Remove argLine or set forkCount to 1 or more.");
+    }
+
+    @Test
+    public void shouldFailWhenArgLinePlaceholderResolvesToJvmOptionsAndNotForking() {
+        Properties modelProperties = new Properties();
+        modelProperties.setProperty("jacocoArgLine", "-javaagent:jacocoagent.jar");
+        givenProjectWithModelProperties(modelProperties);
+        mojo.forkCount = "0";
+        mojo.setArgLine("@{jacocoArgLine}");
+
+        InvocationTargetException e = assertThrows(
+                InvocationTargetException.class, () -> invokeMethod(mojo, "ensureNoArgLineWhenNotForking"));
+        assertThat(e.getCause())
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageStartingWith("argLine cannot be applied because forkCount is 0");
+    }
+
+    @Test
+    public void shouldAcceptArgLineWhenForking() throws Exception {
+        givenProjectWithModelProperties(new Properties());
+        mojo.forkCount = "1";
+        mojo.setArgLine("-javaagent:jacocoagent.jar");
+
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    @Test
+    public void shouldAcceptMissingArgLineWhenNotForking() throws Exception {
+        mojo.forkCount = "0";
+
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    @Test
+    public void shouldAcceptBlankArgLineWhenNotForking() throws Exception {
+        mojo.forkCount = "0";
+        mojo.setArgLine(" \n ");
+
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    @Test
+    public void shouldAcceptArgLineResolvingToNothingWhenNotForking() throws Exception {
+        Properties modelProperties = new Properties();
+        modelProperties.setProperty("jacocoArgLine", "");
+        givenProjectWithModelProperties(modelProperties);
+        mojo.forkCount = "0";
+        mojo.setArgLine("@{jacocoArgLine}");
+
+        invokeMethod(mojo, "ensureNoArgLineWhenNotForking");
+    }
+
+    private void givenProjectWithModelProperties(Properties modelProperties) {
+        Model model = new Model();
+        model.setProperties(modelProperties);
+        MavenProject project = mock(MavenProject.class);
+        when(project.getModel()).thenReturn(model);
+        mojo.setProject(project);
     }
 
     private void setProjectDepedenciesToMojo(Artifact... deps) {

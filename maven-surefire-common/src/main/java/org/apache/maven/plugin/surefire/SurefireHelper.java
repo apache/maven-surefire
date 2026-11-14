@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
@@ -111,6 +113,40 @@ public final class SurefireHelper {
         String threadNumberAsString = String.valueOf(threadNumber);
         return argLine.replace(THREAD_NUMBER_PLACEHOLDER, threadNumberAsString)
                 .replace(FORK_NUMBER_PLACEHOLDER, threadNumberAsString);
+    }
+
+    /**
+     * Replaces expressions <pre>@{property-name}</pre> with the corresponding properties
+     * from the model. This allows late evaluation of property values when the plugin is executed (as compared
+     * to evaluation when the pom is parsed as is done with <pre>${property-name}</pre> expressions).
+     *
+     * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
+     *
+     * @param argLine the configured argLine, may be {@code null}
+     * @param modelProperties the properties of the project model
+     * @return the trimmed argLine with its placeholders replaced, or an empty string if there is no argLine
+     */
+    @Nonnull
+    public static String interpolateArgLineWithPropertyExpressions(
+            @Nullable String argLine, @Nonnull Properties modelProperties) {
+        if (argLine == null) {
+            return "";
+        }
+
+        String resolvedArgLine = argLine.trim();
+
+        if (resolvedArgLine.isEmpty()) {
+            return "";
+        }
+
+        for (final String key : modelProperties.stringPropertyNames()) {
+            String field = "@{" + key + "}";
+            if (argLine.contains(field)) {
+                resolvedArgLine = resolvedArgLine.replace(field, modelProperties.getProperty(key, ""));
+            }
+        }
+
+        return resolvedArgLine;
     }
 
     public static File replaceForkThreadsInPath(File path, int replacement) {

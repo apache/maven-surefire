@@ -38,6 +38,7 @@ import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 
+import static org.apache.maven.plugin.surefire.SurefireHelper.interpolateArgLineWithPropertyExpressions;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceForkThreadsInPath;
 import static org.apache.maven.plugin.surefire.SurefireHelper.replaceThreadNumberPlaceholders;
 import static org.apache.maven.plugin.surefire.util.Relocator.relocate;
@@ -220,36 +221,6 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
         return cwd;
     }
 
-    /**
-     * Replaces expressions <pre>@{property-name}</pre> with the corresponding properties
-     * from the model. This allows late evaluation of property values when the plugin is executed (as compared
-     * to evaluation when the pom is parsed as is done with <pre>${property-name}</pre> expressions).
-     *
-     * This allows other plugins to modify or set properties with the changes getting picked up by surefire.
-     */
-    @Nonnull
-    private String interpolateArgLineWithPropertyExpressions() {
-        if (getArgLine() == null) {
-            return "";
-        }
-
-        String resolvedArgLine = getArgLine().trim();
-
-        if (resolvedArgLine.isEmpty()) {
-            return "";
-        }
-
-        for (final String key : getModelProperties().stringPropertyNames()) {
-            String field = "@{" + key + "}";
-            if (getArgLine().contains(field)) {
-                resolvedArgLine =
-                        resolvedArgLine.replace(field, getModelProperties().getProperty(key, ""));
-            }
-        }
-
-        return resolvedArgLine;
-    }
-
     @Nonnull
     private static String stripWhitespace(@Nonnull String argLine) {
         return argLine.replaceAll("\\s", " ");
@@ -345,7 +316,8 @@ public abstract class DefaultForkConfiguration extends ForkConfiguration {
 
     @Nonnull
     private String newJvmArgLine(int forks) {
-        String interpolatedArgs = stripWhitespace(interpolateArgLineWithPropertyExpressions());
+        String interpolatedArgs =
+                stripWhitespace(interpolateArgLineWithPropertyExpressions(getArgLine(), getModelProperties()));
         String argsWithReplacedForkNumbers = replaceThreadNumberPlaceholders(interpolatedArgs, forks);
         return extendJvmArgLine(argsWithReplacedForkNumbers);
     }

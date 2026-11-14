@@ -40,7 +40,13 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4Integration
 
     @Test
     public void failIfNoTestsForkNever() {
-        unpack().forkNever().failIfNoTests(true).maven().withFailure().executeTest();
+        unpack().forkNever()
+                .argLine("")
+                .failIfNoTests(true)
+                .maven()
+                .withFailure()
+                .executeTest()
+                .verifyTextInLog("No tests were executed!");
     }
 
     @Test
@@ -62,6 +68,7 @@ public class CheckTestFailIfNoTestsForkCountIT extends SurefireJUnit4Integration
     @Test
     public void dontFailIfNoTestsForkNever() {
         Assertions.assertThat(unpack().forkNever()
+                        .argLine("")
                         .failIfNoTests(false)
                         .executeTest()
                         .verifyErrorFreeLog()
