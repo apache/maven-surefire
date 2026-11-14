@@ -1373,6 +1373,11 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
 
         TestClassPath testClasspath = generateTestClasspath();
         List<ProviderInfo> providers = createProviders(testClasspath);
+        if (providers.isEmpty()) {
+            getConsoleLogger()
+                    .warning("Test classes were found, but no test provider is available. "
+                            + "POJO tests are no longer supported; add JUnit or TestNG as a test dependency.");
+        }
         ResolvePathResultWrapper wrapper =
                 findModuleDescriptor(platform.getJdkExecAttributesForTests().getJdkHome());
 
