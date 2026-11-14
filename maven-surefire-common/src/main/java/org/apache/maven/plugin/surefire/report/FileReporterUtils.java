@@ -18,8 +18,6 @@
  */
 package org.apache.maven.plugin.surefire.report;
 
-import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
-
 /**
  * Utils class for file-based reporters.
  *
@@ -32,7 +30,7 @@ public final class FileReporterUtils {
 
     public static String stripIllegalFilenameChars(String original) {
         StringBuilder result = new StringBuilder(original);
-        String illegalChars = getOSSpecificIllegalChars();
+        String illegalChars = getIllegalChars();
         for (int i = 0, len = result.length(); i < len; i++) {
             char charFromOriginal = result.charAt(i);
             boolean isIllegalChar = illegalChars.indexOf(charFromOriginal) != -1;
@@ -43,11 +41,11 @@ public final class FileReporterUtils {
         return result.toString();
     }
 
-    private static String getOSSpecificIllegalChars() {
+    private static String getIllegalChars() {
         // forbidden and quoted characters
         // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
         // https://cygwin.com/cygwin-ug-net/using-specialnames.html
         // https://www.cyberciti.biz/faq/linuxunix-rules-for-naming-file-and-directory-names/
-        return IS_OS_WINDOWS ? "[],\\/:*?\"<>|\0" : "()&\\/:*?\"<>|\0";
+        return "[],()&\\/:*?\"<>|\0";
     }
 }
