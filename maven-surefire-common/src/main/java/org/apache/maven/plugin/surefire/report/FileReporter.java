@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 
-import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
+import static org.apache.maven.plugin.surefire.report.FileReporterUtils.makeFileName;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 
 /**
@@ -61,7 +61,7 @@ public class FileReporter extends StatelessTestsetInfoFileReportEventListener<Wr
             File reportsDirectory, String reportEntryName, String reportNameSuffix, String fileExtension) {
         String fileName =
                 reportEntryName + (isNotBlank(reportNameSuffix) ? "-" + reportNameSuffix : "") + fileExtension;
-        return new File(reportsDirectory, stripIllegalFilenameChars(fileName));
+        return new File(reportsDirectory, makeFileName(fileName));
     }
 
     @Override

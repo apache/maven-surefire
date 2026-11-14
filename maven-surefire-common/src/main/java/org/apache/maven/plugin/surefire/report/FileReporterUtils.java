@@ -26,11 +26,29 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
  * @author Andreas Gudian
  */
 public final class FileReporterUtils {
+    // well under the 255-byte limit most filesystems enforce per path component,
+    // leaving room for encodings that use more than one byte per character.
+    // Does not cover unusually restrictive encrypted-filename overlays such as
+    // eCryptfs (143 bytes with filename encryption enabled) - handling every
+    // such filesystem is out of scope here.
+    private static final int MAX_FILE_NAME_LENGTH = 200;
+
     private FileReporterUtils() {
         throw new IllegalStateException("non instantiable constructor");
     }
 
-    public static String stripIllegalFilenameChars(String original) {
+    /**
+     * Builds a safe report file name: illegal characters replaced, and truncated with a
+     * unique suffix if it would otherwise exceed common filesystem limits.
+     *
+     * @param fileName the file name, including its extension
+     * @return a file name safe to pass to {@link java.io.File#File(java.io.File, String)}
+     */
+    public static String makeFileName(String fileName) {
+        return truncateFileName(stripIllegalFilenameChars(fileName));
+    }
+
+    static String stripIllegalFilenameChars(String original) {
         StringBuilder result = new StringBuilder(original);
         String illegalChars = getOSSpecificIllegalChars();
         for (int i = 0, len = result.length(); i < len; i++) {
@@ -41,6 +59,27 @@ public final class FileReporterUtils {
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Shortens a report file name that would otherwise exceed common filesystem limits
+     * (e.g. a deeply nested, long test class name), keeping it unique by appending a hash
+     * of the untruncated name.
+     *
+     * @param fileName the file name, including its extension
+     * @return {@code fileName} unchanged if it already fits, otherwise a truncated name of
+     *         the same extension
+     */
+    static String truncateFileName(String fileName) {
+        if (fileName.length() <= MAX_FILE_NAME_LENGTH) {
+            return fileName;
+        }
+        int dot = fileName.lastIndexOf('.');
+        String extension = dot == -1 ? "" : fileName.substring(dot);
+        String hash = "_" + Integer.toHexString(fileName.hashCode());
+        int keep = MAX_FILE_NAME_LENGTH - extension.length() - hash.length();
+        String base = dot == -1 ? fileName : fileName.substring(0, dot);
+        return base.substring(0, keep) + hash + extension;
     }
 
     private static String getOSSpecificIllegalChars() {
