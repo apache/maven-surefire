@@ -27,8 +27,10 @@ import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
  */
 public final class FileReporterUtils {
     // well under the 255-byte limit most filesystems enforce per path component,
-    // leaving room for encodings that use more than one byte per character and
-    // for filesystems with a lower limit still (e.g. eCryptfs)
+    // leaving room for encodings that use more than one byte per character.
+    // Does not cover unusually restrictive encrypted-filename overlays such as
+    // eCryptfs (143 bytes with filename encryption enabled) - handling every
+    // such filesystem is out of scope here.
     private static final int MAX_FILE_NAME_LENGTH = 200;
 
     private FileReporterUtils() {
