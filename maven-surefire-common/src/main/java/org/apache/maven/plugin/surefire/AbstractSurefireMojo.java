@@ -121,7 +121,6 @@ import org.codehaus.plexus.languages.java.jpms.JavaModuleDescriptor;
 import org.codehaus.plexus.languages.java.jpms.LocationManager;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathRequest;
 import org.codehaus.plexus.languages.java.jpms.ResolvePathResult;
-import org.codehaus.plexus.languages.java.jpms.ResolvePathsRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,8 +168,6 @@ import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.remov
 public abstract class AbstractSurefireMojo extends AbstractMojo implements SurefireExecutionParameters {
     private static final Map<String, String> JAVA_9_MATCHER_OLD_NOTATION = singletonMap("version", "[1.9,)");
     private static final Map<String, String> JAVA_9_MATCHER = singletonMap("version", "[9,)");
-    private static final String JUNIT_PLATFORM_PROVIDER_NAME =
-            "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
     private static final Platform PLATFORM = new Platform();
 
     private final ClasspathCache classpathCache = new ClasspathCache();
@@ -2104,35 +2101,22 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
             providerClasspath = classpathCache.setCachedClasspath(providerName, providerArtifacts);
         }
 
-        final Set<String> testModuleNames;
+        // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
         final ModulePathJpmsArguments.Layout layout;
         if (isMainDescriptor) {
-            // the Maven 3 guesses about what goes on the module path, see ModulePathJpmsArguments
             for (String className : scanResult.getClasses()) {
                 packages.add(substringBeforeLast(className, "."));
             }
 
             layout = ModulePathJpmsArguments.forMainModule(
                     getLocationManager(), testClasspath, javaModuleDescriptor, javaHome, packages, getConsoleLogger());
-            testModuleNames = layout.getModuleNames();
         } else {
-            if (JUNIT_PLATFORM_PROVIDER_NAME.equals(providerName)) {
-                ResolvePathsRequest<String> req = ResolvePathsRequest.ofStrings(testClasspath.getClassPath())
-                        .setIncludeAllProviders(true)
-                        .setJdkHome(javaHome)
-                        .setIncludeStatic(true)
-                        .setModuleDescriptor(javaModuleDescriptor);
-                testModuleNames = ModulePathJpmsArguments.moduleNamesOnModulepath(
-                        getLocationManager().resolvePaths(req));
-            } else {
-                testModuleNames = Collections.emptySet();
-            }
             layout = ModulePathJpmsArguments.forTestModule(testClasspath);
         }
-        ProviderRequirements providerRequirements =
-                new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor, testModuleNames);
         testClasspath = layout.getClasspath();
         Classpath testModulepath = layout.getModulepath();
+        ProviderRequirements providerRequirements =
+                new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor, javaHome);
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -3220,7 +3204,7 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Override
         @Nonnull
         public String getProviderName() {
-            return JUNIT_PLATFORM_PROVIDER_NAME;
+            return "org.apache.maven.surefire.junitplatform.JUnitPlatformProvider";
         }
 
         protected String getProviderArtifactName() {
@@ -3253,9 +3237,42 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return forkRequirements.getTestModuleNames().contains("org.junit.platform.commons")
+            boolean commonsDependency =
+                    testClasspath.getTestDependencies().containsKey("org.junit.platform:junit-platform-commons");
+            return commonsDependency || hasCommonsOnAdditionalClasspath(forkRequirements.getJavaHome())
                     ? ModulePathJpmsArguments.junitPlatformArguments(forkRequirements)
-                    : Collections.emptyList();
+                    : emptyList();
+        }
+
+        private boolean hasCommonsOnAdditionalClasspath(String javaHome) {
+            Iterable<String> additionalElements = testClasspath.getAdditionalClasspathElements();
+            if (additionalElements == null) {
+                return false;
+            }
+            for (String additionalElement : additionalElements) {
+                if (additionalElement == null) {
+                    continue;
+                }
+                for (String path : StringUtils.split(additionalElement, ",")) {
+                    if (path == null || path.trim().isEmpty()) {
+                        continue;
+                    }
+                    try {
+                        ResolvePathRequest<String> request = ResolvePathRequest.ofString(path.trim());
+                        if (javaHome != null) {
+                            request.setJdkHome(javaHome);
+                        }
+                        ResolvePathResult result = getLocationManager().resolvePath(request);
+                        JavaModuleDescriptor descriptor = result == null ? null : result.getModuleDescriptor();
+                        if (descriptor != null && "org.junit.platform.commons".equals(descriptor.name())) {
+                            return true;
+                        }
+                    } catch (IOException e) {
+                        logger.debug("Could not inspect additional classpath element '{}'.", path, e);
+                    }
+                }
+            }
+            return false;
         }
 
         @Override
