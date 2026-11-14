@@ -650,7 +650,12 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * <code>${surefire.forkNumber}</code>, which is replaced with a fixed number for each of the parallel forks,
      * ranging from <b>1</b> to the effective value of {@code forkCount} times the maximum number of parallel
      * Surefire executions in maven parallel builds, i.e. the effective value of the <b>-T</b> command line
-     * argument of maven core.
+     * argument of maven core.<br>
+     * <br>
+     * In {@code systemPropertyVariables}, when the entire value of a property is this one placeholder, use the
+     * delayed-resolution form <code>@{surefire.forkNumber}</code> instead: Maven resolves a value that is nothing
+     * but a single <code>${...}</code> expression as a real Maven property before Surefire gets to replace it,
+     * and silently blanks it since no such property exists.
      *
      * @since 2.14
      */

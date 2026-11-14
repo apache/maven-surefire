@@ -100,6 +100,25 @@ public final class SurefireHelper {
     private static final String FORK_NUMBER_PLACEHOLDER = "${surefire.forkNumber}";
 
     /**
+     * The {@code @{...}} form of {@link #THREAD_NUMBER_PLACEHOLDER}, for use in {@code systemPropertyVariables}.
+     * A {@code systemPropertyVariables} entry whose value is nothing but a single {@code ${...}} expression is
+     * resolved by Maven's own property interpolation, as a real Maven property, before this class ever sees it;
+     * since no such property exists, Maven silently blanks it instead of leaving the placeholder text intact.
+     * {@code @{...}} is Maven's own delayed-resolution syntax (see MSHARED-845 and SUREFIRE-1047), so it survives
+     * interpolation unresolved and is replaced here instead.
+     *
+     * @since 3.6.2
+     */
+    private static final String AT_THREAD_NUMBER_PLACEHOLDER = "@{surefire.threadNumber}";
+
+    /**
+     * The {@code @{...}} form of {@link #FORK_NUMBER_PLACEHOLDER}; see {@link #AT_THREAD_NUMBER_PLACEHOLDER}.
+     *
+     * @since 3.6.2
+     */
+    private static final String AT_FORK_NUMBER_PLACEHOLDER = "@{surefire.forkNumber}";
+
+    /**
      * Do not instantiate.
      */
     private SurefireHelper() {
@@ -110,7 +129,9 @@ public final class SurefireHelper {
     public static String replaceThreadNumberPlaceholders(@Nonnull String argLine, int threadNumber) {
         String threadNumberAsString = String.valueOf(threadNumber);
         return argLine.replace(THREAD_NUMBER_PLACEHOLDER, threadNumberAsString)
-                .replace(FORK_NUMBER_PLACEHOLDER, threadNumberAsString);
+                .replace(FORK_NUMBER_PLACEHOLDER, threadNumberAsString)
+                .replace(AT_THREAD_NUMBER_PLACEHOLDER, threadNumberAsString)
+                .replace(AT_FORK_NUMBER_PLACEHOLDER, threadNumberAsString);
     }
 
     public static File replaceForkThreadsInPath(File path, int replacement) {
