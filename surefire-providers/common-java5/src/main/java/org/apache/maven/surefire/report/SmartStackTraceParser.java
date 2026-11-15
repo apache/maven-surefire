@@ -26,8 +26,8 @@ import org.apache.maven.surefire.api.report.SafeThrowable;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.reverse;
-import static org.apache.maven.surefire.shared.utils.StringUtils.chompLast;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotEmpty;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotEmpty;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.removeEnd;
 
 /**
  * @author Kristian Rosenvold
@@ -126,10 +126,10 @@ public class SmartStackTraceParser {
     private static String toMinimalThrowableMiniMessage(Class<?> excType) {
         String name = excType.getSimpleName();
         if (name.endsWith("Exception")) {
-            return chompLast(name, "Exception");
+            return removeEnd(name, "Exception");
         }
         if (name.endsWith("Error")) {
-            return chompLast(name, "Error");
+            return removeEnd(name, "Error");
         }
         return name;
     }

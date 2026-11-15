@@ -52,13 +52,13 @@ for the full list of resolved issues.
 ### 3.6.0-M1
 
 The big one: every test framework now runs through a single, unified
-[JUnit Platform provider](maven-surefire-plugin/whats-new-3-6-0.html). JUnit 5 runs natively,
+[JUnit Platform provider](maven-surefire-plugin/whats-new-3-6-x.html). JUnit 5 runs natively,
 and JUnit 4 and TestNG run through it too — giving you more consistent behaviour and far less
 to configure. JUnit 5 tests can also run in parallel, and the JUnit 5 XML reports are tidier.
 
 If you're upgrading, note that 3.6.0-M1 raises the minimum versions (JUnit 4.12+, TestNG
 6.14.3+) and drops the old per-framework providers. The
-[What's New in 3.6.0](maven-surefire-plugin/whats-new-3-6-0.html) guide walks you through it,
+[What's New in 3.6.x](maven-surefire-plugin/whats-new-3-6-x.html) guide walks you through it,
 and the [3.6.0-M1 release notes](https://github.com/apache/maven-surefire/releases/tag/surefire-3.6.0-M1)
 list everything.
 

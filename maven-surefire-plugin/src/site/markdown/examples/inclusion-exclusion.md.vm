@@ -159,6 +159,25 @@ As of ${thisPlugin} Plugin 2.19.1, the syntax with fully qualified class names o
 
 The character (?) replaces single character and (*) represents zero or more characters. Multiple formats can be additionally combined. This syntax can be used in parameters: `test`, `includes`, `excludes`, `includesFile`, `excludesFile`.
 
+Excluding test methods
+----------------------
+
+As of ${thisPlugin} Plugin 3.6.2, you can also exclude test methods, with the same syntax as the `test` parameter (see [Running a Single Test](single-test.html)):
+
+```xml
+  [...]
+#{if}(${project.artifactId}=="maven-surefire-plugin")
+          <exclude>pkg/SomeTest#testMethod, **/*Test#testSlow*</exclude>
+#{else}
+          <exclude>pkg/SomeIT#testMethod, **/*IT#testSlow*</exclude>
+#{end}
+  [...]
+```
+
+Only the matching methods are skipped, the rest of the class still runs. `includesFile` and `excludesFile` have accepted methods since 3.0.0-M6, but `includes` does not and fails the build if you try.
+
+When `test` is set, `includes`, `excludes`, `includesFile` and `excludesFile` are all ignored.
+
 Tests from dependencies
 -----------------------
 

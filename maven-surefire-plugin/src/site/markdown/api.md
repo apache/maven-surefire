@@ -68,7 +68,7 @@ Prior to this version, the provider would do
     final TestsToRun scanResult = directoryScanner.locateTestClasses( testClassLoader, testChecker );
 ```
 
-In this version `ProviderParameters#getDirectoryScanner` has been deprecated, and it \*will\* be removed for the next major version. Instead, use
+In this version `ProviderParameters#getDirectoryScanner` was deprecated, and it has since been removed. Instead, use
 
 ```text
     scanResult = booterParameters.getScanResult();

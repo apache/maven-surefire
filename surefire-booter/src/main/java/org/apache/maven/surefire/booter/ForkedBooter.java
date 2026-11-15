@@ -53,9 +53,9 @@ import org.apache.maven.surefire.api.provider.ProviderParameters;
 import org.apache.maven.surefire.api.provider.SurefireProvider;
 import org.apache.maven.surefire.api.report.StackTraceProvider;
 import org.apache.maven.surefire.api.testset.TestSetFailedException;
+import org.apache.maven.surefire.api.util.internal.ShutdownHookUtils;
 import org.apache.maven.surefire.booter.spi.LegacyMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
-import org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils;
 import org.apache.maven.surefire.spi.MasterProcessChannelProcessorFactory;
 
 import static java.lang.Thread.currentThread;

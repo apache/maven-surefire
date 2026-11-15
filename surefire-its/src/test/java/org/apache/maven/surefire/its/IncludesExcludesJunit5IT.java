@@ -51,6 +51,14 @@ public class IncludesExcludesJunit5IT extends SurefireJUnit4IntegrationTestCase 
         testWithProfile("path");
     }
 
+    /**
+     * Excludes the failing method of DontRunTest instead of the whole class.
+     */
+    @Test
+    public void testMethodExcludes() {
+        testWithProfile("method");
+    }
+
     private void testWithProfile(String profile) {
         final OutputValidator outputValidator =
                 unpack().activateProfile(profile).executeTest().verifyErrorFree(2);

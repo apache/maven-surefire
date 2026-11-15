@@ -28,7 +28,7 @@
   <body>
     <menu name="Overview">
       <item name="Introduction" href="index.html"/>
-      <item name="What's New in 3.6.0" href="whats-new-3-6-0.html"/>
+      <item name="What's New in 3.6.x" href="whats-new-3-6-x.html"/>
       <item name="Plugin Documentation" href="plugin-info.html"/>
       <item name="Usage" href="usage.html"/>
       <item name="API" href="api.html"/>
@@ -54,6 +54,7 @@
       <item name="Inclusions and Exclusions of Tests" href="examples/inclusion-exclusion.html"/>
       <item name="Running a Single Test" href="examples/single-test.html"/>
       <item name="Re-run Failing Tests" href="examples/rerun-failing-tests.html"/>
+      <item name="Run Only Last Failed Tests" href="examples/run-last-failed.html"/>
       <item name="Class Loading and Forking" href="examples/class-loading.html"/>
       <item name="Debugging Tests" href="examples/debugging.html"/>
       <item name="Using System Properties" href="examples/system-properties.html"/>
@@ -65,7 +66,6 @@
       <item name="Using Console Logs" href="examples/logging.html"/>
       <item name="Shutdown of Forked JVM" href="examples/shutdown.html"/>
       <item name="Forked Process Timeout Extension" href="examples/timeout-extension.html"/>
-      <item name="Forked Process Timeout Extension — Guide" href="timeout-extension-guide.html"/>
       <item name="Run tests with Java 9" href="java9.html"/>
       <item name="Run tests in a different JVM using toolchains" href="examples/toolchains.html"/>
     </menu>

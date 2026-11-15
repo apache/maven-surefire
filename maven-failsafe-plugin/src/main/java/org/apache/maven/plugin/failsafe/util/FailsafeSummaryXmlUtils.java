@@ -42,7 +42,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static javax.xml.xpath.XPathConstants.NODE;
 import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.escapeXml10;
 import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.unescapeXml;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>

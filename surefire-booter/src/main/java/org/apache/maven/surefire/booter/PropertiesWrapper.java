@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.maven.surefire.shared.utils.StringUtils;
+import org.apache.maven.surefire.shared.lang3.StringUtils;
 
 /**
  * @author Kristian Rosenvold

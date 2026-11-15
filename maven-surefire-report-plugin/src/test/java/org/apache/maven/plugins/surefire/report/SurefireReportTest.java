@@ -75,7 +75,7 @@ class SurefireReportTest {
         assertTrue(report.exists());
         String htmlContent = String.join("\n", Files.readAllLines(report.toPath()));
 
-        int idx = htmlContent.indexOf("images/icon_success_sml.gif");
+        int idx = htmlContent.indexOf("<td>success</td>");
         assertTrue(idx >= 0, "Wrong content in file: " + report);
 
         assertThat(
@@ -86,10 +86,7 @@ class SurefireReportTest {
                 htmlContent,
                 containsString("<a id=\"TC_com.shape.CircleTest.testRadius\" "
                         + "href=\"./xref-test/com/shape/CircleTest.html\">testRadius</a>"));
-        assertThat(
-                htmlContent,
-                containsString("<a href=\"#com.shape.CircleTest.testRadius\">"
-                        + "<img src=\"images/icon_warning_sml.gif\" /></a>"));
+        assertThat(htmlContent, containsString("<a href=\"#com.shape.CircleTest.testRadius\">" + "failure</a>"));
         assertThat(htmlContent, containsString("toggleDisplay('com.shape.CircleTest.testRadius')"));
         assertThat(htmlContent, containsString("./xref-test/com/shape/CircleTest.html#L34"));
     }
@@ -105,7 +102,7 @@ class SurefireReportTest {
         assertTrue(report.exists());
         String htmlContent = String.join(System.lineSeparator(), Files.readAllLines(report.toPath()));
 
-        int idx = htmlContent.indexOf("images/icon_success_sml.gif");
+        int idx = htmlContent.indexOf("<td>success</td>");
         assertTrue(idx < 0);
     }
 
@@ -198,7 +195,7 @@ class SurefireReportTest {
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td>"
                         + "<a href=\"#surefire.MyTest\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
+                        + "error"
                         + "</a>"
                         + "</td>\n"
                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
@@ -282,7 +279,7 @@ class SurefireReportTest {
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td>"
                         + "<a href=\"#surefire.MyTest\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
+                        + "error"
                         + "</a>"
                         + "</td>\n"
                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
@@ -343,7 +340,7 @@ class SurefireReportTest {
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td>"
                         + "<a href=\"#surefire.MyTest\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
+                        + "error"
                         + "</a>"
                         + "</td>\n"
                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
@@ -429,7 +426,7 @@ class SurefireReportTest {
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td>"
                         + "<a href=\"#surefire.MyTest$A\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
+                        + "error"
                         + "</a>"
                         + "</td>\n"
                         + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"
@@ -490,7 +487,7 @@ class SurefireReportTest {
                 containsString(toSystemNewLine("<tr class=\"b\">\n"
                         + "<td>"
                         + "<a href=\"#surefire.MyTest$A\">"
-                        + "<img src=\"images/icon_error_sml.gif\" />"
+                        + "error"
                         + "</a>"
                         + "</td>\n"
                         + "<td><a href=\"#surefire.MyTest$A\">MyTest$A</a></td>\n"

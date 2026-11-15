@@ -43,7 +43,8 @@ public class SystemPropertiesTestIT extends SurefireJUnit4IntegrationTestCase {
         unpack().forkNever()
                 .addGoal("-DsetOnMavenCommandLine=baz")
                 .addGoal("-DsetOnArgLineWorkAround=baz")
-                // DGF fake the argLine, since we're not forking
+                // not forking, so the argLine cannot apply: clear it and set its property on the Maven JVM
+                .argLine("")
                 .addGoal("-DsetOnArgLine=bar")
                 .executeTest()
                 .verifyErrorFree(8);

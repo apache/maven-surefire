@@ -594,12 +594,14 @@ public class SurefireReportRenderer extends AbstractMavenReportRenderer {
     }
 
     private void sinkIcon(String type) {
-        if (type.startsWith("junit.framework") || "skipped".equals(type)) {
-            sink.figureGraphics("images/icon_warning_sml.gif");
+        if (type.startsWith("junit.framework")) {
+            sink.text(getI18nString("surefire", "label.status.failure"));
+        } else if ("skipped".equals(type)) {
+            sink.text(getI18nString("surefire", "label.status.skipped"));
         } else if (type.startsWith("success")) {
-            sink.figureGraphics("images/icon_success_sml.gif");
+            sink.text(getI18nString("surefire", "label.status.success"));
         } else {
-            sink.figureGraphics("images/icon_error_sml.gif");
+            sink.text(getI18nString("surefire", "label.status.error"));
         }
     }
 

@@ -36,6 +36,9 @@ mvn -D${thisPlugin.toLowerCase()}.rerunFailingTestsCount=2 test
 
 If `rerunFailingTestsCount` is set to a value smaller than or equal to 0, then it will be ignored.
 
+The reruns happen straight away, within the same build. To run again, in a later build, only the tests that failed
+in the previous one, see [`runLastFailed`](./run-last-failed.html).
+
 Output flaky re-run information on the screen
 ---------------------------------------------
 

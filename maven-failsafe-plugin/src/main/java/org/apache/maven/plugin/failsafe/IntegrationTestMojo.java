@@ -80,7 +80,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * or {@code -Dmaven.test.skip} to skip both unit and integration tests. The {@code <skipTests>} element
      * is still honored when set explicitly in the plugin {@code <configuration>}.
      *
-     * @since 3.6.0
+     * @since 2.4
      * @deprecated use {@code skipITs} instead
      */
     @Deprecated
@@ -100,7 +100,7 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <code>**{@literal /}${it.test}.java</code>, so you can just type {@code -Dit.test=MyIT} to run
      * a single test file called "foo/MyIT.java". The test patterns prefixed with a <em>!</em> will be excluded.
      * <br>
-     * This parameter overrides the parameter {@code includes} and {@code excludes}.
+     * This parameter overrides {@code includes}, {@code excludes}, {@code includesFile} and {@code excludesFile}.
      * <br>
      * Since 2.7.3 You can execute a limited number of methods in the test with adding <i>#myMethod</i> or
      * <i>#my*ethod</i>. E.g. type {@code -Dit.test=MyIT#myMethod} <b>supported for junit 4.x and TestNg.</b>
@@ -205,7 +205,9 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code forkedProcessTimeoutInSeconds}
      */
+    @Deprecated
     @Parameter(property = "failsafe.parallel.timeout")
     private double parallelTestsTimeoutInSeconds;
 
@@ -219,7 +221,9 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * Makes sense with specified {@code parallel} different from "none".
      *
      * @since 2.16
+     * @deprecated not used on the JUnit Platform since 3.6.0, use {@code forkedProcessTimeoutInSeconds}
      */
+    @Deprecated
     @Parameter(property = "failsafe.parallel.forcedTimeout")
     private double parallelTestsTimeoutForcedInSeconds;
 
@@ -238,11 +242,14 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <br>
      * Each include item may also contain a comma-separated sublist of items, which will be treated as multiple
      * {@literal <include>} entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>
      * {@literal <include>}%regex[.*[Cat|Dog].*], Basic????, !Unstable*{@literal </include>}
      * {@literal <include>}%regex[.*[Cat|Dog].*], !%regex[pkg.*Slow.*.class], pkg{@literal /}**{@literal /}*Fast*.java{@literal </include>}
      * </code></pre>
+     * <br>
+     * Method filters like <i>pkg{@literal /}SomeIT#testMethod</i> are not allowed here, use {@code includesFile}
+     * or {@code test} instead.
      * <br>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
@@ -266,9 +273,15 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <br>
      * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
      * {@literal <exclude>} entries.<br>
-     * Since 2.19 a complex syntax is supported in one parameter (JUnit 4, JUnit 4.7+, TestNG):
+     * Since 2.19 a complex syntax is supported in one parameter:
      * <pre><code>
      * {@literal <exclude>}%regex[pkg.*Slow.*.class], Unstable*{@literal </exclude>}
+     * </code></pre>
+     * <br>
+     * Since 3.6.2, you can also exclude test methods, with the same syntax as the {@code test} parameter. The rest
+     * of the class still runs:
+     * <pre><code>
+     * {@literal <exclude>}pkg{@literal /}SomeIT#testMethod, **{@literal /}*IT#testSlow*{@literal </exclude>}
      * </code></pre>
      * <br>
      * <b>Notice that</b> these values are relative to the directory containing generated test classes of the project
@@ -324,14 +337,27 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     private int rerunFailingTestsCount;
 
     /**
-     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations. Note that
-     * {@code suiteXmlFiles} is incompatible with several other parameters of this plugin, like
-     * {@code includes} and {@code excludes}.<br>
-     * This parameter is ignored if the {@code test} parameter is specified (allowing you to run a single test
-     * instead of an entire suite).
+     * Runs only the tests that failed in the last run, e.g. {@code mvn verify -Dfailsafe.runLastFailed}.
+     * <br>
+     * It reads the XML reports of the last run, so don't run {@code clean} in between. It runs the tests that
+     * failed or had an error, and the test classes that didn't finish because the last run stopped early
+     * (fork crash, timeout, Maven killed). If nothing failed, no tests run. If there are no reports, all tests run.
+     * <br>
+     * Unlike {@code rerunFailingTestsCount}, which retries failing tests right away in the same run, this works
+     * across runs. The {@code test} parameter, includes and excludes still apply.
+     *
+     * @since 3.6.2
+     */
+    @Parameter(property = "failsafe.runLastFailed", defaultValue = "false")
+    private boolean runLastFailed;
+
+    /**
+     * (TestNG) List of &lt;suiteXmlFile&gt; elements specifying TestNG suite xml file locations.
+     * The build fails if this is set.
      *
      * @since 2.2
-     * @deprecated not supported after 3.6.0, please use groups or Junit suite support
+     * @deprecated not supported since 3.6.0, use {@code groups}, {@code includes} or a JUnit Platform
+     * {@code @Suite} class
      */
     @Parameter(property = "failsafe.suiteXmlFiles")
     @Deprecated
@@ -352,6 +378,17 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * should not be checked into version control. The "XXXXX" is the SHA1 checksum of the entire surefire
      * configuration, so different configurations will have different statistics files, meaning if you change any
      * configuration settings you will re-run once before new statistics data can be established.
+     * <br>
+     * <br>
+     * Since 3.6.0, {@code alphabetical}, {@code reversealphabetical} and {@code random} also sort the test methods
+     * inside each class for JUnit 5/6 tests. A class with {@code @TestMethodOrder} keeps its own order. To keep the
+     * JUnit default method order, add an empty {@code junit.jupiter.testmethod.order.default=} to
+     * {@code configurationParameters} in {@code properties}. Since 3.6.1, Surefire keeps a JUnit class or method
+     * orderer that is already set in {@code configurationParameters}, as a system property or in
+     * {@code junit-platform.properties} (Quarkus ships one there).
+     * <br>
+     * <br>
+     * {@code hourly} was removed in 3.6.0. Use {@code random} instead.
      *
      * @since 2.7
      */
@@ -397,6 +434,8 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <pre><code>
      * pkg.SomeIT#testMethod
      * </code></pre>
+     * <br>
+     * This file is ignored when the {@code test} parameter is set.
      *
      * @since 2.13
      */
@@ -417,6 +456,8 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
      * <pre><code>
      * pkg.SomeIT#testMethod
      * </code></pre>
+     * <br>
+     * This file is ignored when the {@code test} parameter is set.
      *
      * @since 2.13
      */
@@ -570,6 +611,15 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     }
 
     @Override
+    protected boolean isRunLastFailed() {
+        return runLastFailed;
+    }
+
+    public void setRunLastFailed(boolean runLastFailed) {
+        this.runLastFailed = runLastFailed;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     protected void handleSummary(RunResult summary, Exception firstForkException)
             throws MojoExecutionException, MojoFailureException {
@@ -603,6 +653,11 @@ public class IntegrationTestMojo extends AbstractSurefireMojo {
     @SuppressWarnings("deprecation")
     protected boolean isSkipExecution() {
         return isSkip() || isSkipTests() || isSkipITs() || isSkipExec();
+    }
+
+    @Override
+    protected File[] getSuiteXmlFiles() {
+        return suiteXmlFiles;
     }
 
     @Override

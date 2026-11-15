@@ -31,7 +31,7 @@ import org.apache.maven.plugin.surefire.report.ConsoleOutputFileReporter;
 import org.apache.maven.surefire.api.report.SimpleReportEntry;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.api.report.TestSetReportEntry;
-import org.apache.maven.surefire.shared.utils.io.FileUtils;
+import org.apache.maven.surefire.shared.io.FileUtils;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
@@ -69,7 +69,8 @@ public class ConsoleOutputFileReporterTest {
                 expectedReportFile.exists(),
                 "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
 
-        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some ");
+        assertThat(FileUtils.readFileToString(expectedReportFile, US_ASCII.name()))
+                .contains("some ");
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
@@ -101,7 +102,8 @@ public class ConsoleOutputFileReporterTest {
                 expectedReportFile.exists(),
                 "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
 
-        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some ");
+        assertThat(FileUtils.readFileToString(expectedReportFile, US_ASCII.name()))
+                .contains("some ");
 
         assertThat(expectedReportFile).hasSize(9 + 2 * System.lineSeparator().length());
 
@@ -128,7 +130,8 @@ public class ConsoleOutputFileReporterTest {
                 expectedReportFile.exists(),
                 "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
 
-        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some ");
+        assertThat(FileUtils.readFileToString(expectedReportFile, US_ASCII.name()))
+                .contains("some ");
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();
@@ -152,7 +155,8 @@ public class ConsoleOutputFileReporterTest {
         File nullReportFile = new File(reportDir, "null-output.txt");
 
         assertThat(expectedReportFile).exists();
-        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some text");
+        assertThat(FileUtils.readFileToString(expectedReportFile, US_ASCII.name()))
+                .contains("some text");
         assertThat(nullReportFile).doesNotExist();
 
         //noinspection ResultOfMethodCallIgnored
@@ -187,14 +191,16 @@ public class ConsoleOutputFileReporterTest {
                 expectedReportFile.exists(),
                 "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
 
-        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).contains("some text");
+        assertThat(FileUtils.readFileToString(expectedReportFile, US_ASCII.name()))
+                .contains("some text");
 
         StringBuilder expectedText = new StringBuilder();
         for (int i = 0; i < 10; i++) {
             expectedText.append("some text\n");
         }
 
-        assertThat(FileUtils.fileRead(expectedReportFile, US_ASCII.name())).isEqualTo(expectedText.toString());
+        assertThat(FileUtils.readFileToString(expectedReportFile, US_ASCII.name()))
+                .isEqualTo(expectedText.toString());
 
         //noinspection ResultOfMethodCallIgnored
         expectedReportFile.delete();

@@ -103,7 +103,7 @@ class Surefire597Test {
                         + "<th>Success Rate</th>\n"
                         + "<th>Time</th></tr>\n"
                         + "<tr class=\"b\">\n"
-                        + "<td><a href=\"#surefire.MyTest\"><img src=\"images/icon_error_sml.gif\" /></a></td>\n"
+                        + "<td><a href=\"#surefire.MyTest\">error</a></td>\n"
                         + "<td><a href=\"#surefire.MyTest\">MyTest</a></td>\n"
                         + "<td>1</td>\n"
                         + "<td>1</td>\n"
@@ -115,7 +115,7 @@ class Surefire597Test {
                 xml,
                 containsString(toSystemNewLine("<table class=\"bodyTable\">\n"
                         + "<tr class=\"a\">\n"
-                        + "<td><img src=\"images/icon_error_sml.gif\" /></td>\n"
+                        + "<td>error</td>\n"
                         + "<td><a id=\"surefire.MyTest.test\"></a>test</td></tr>\n"
                         + "<tr class=\"b\">\n"
                         + "<td>-</td>\n"

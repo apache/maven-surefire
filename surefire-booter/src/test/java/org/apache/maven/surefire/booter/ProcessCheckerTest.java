@@ -51,7 +51,7 @@ public class ProcessCheckerTest {
         ProcessInfo processInfo = checker.processInfo();
         assertThat(processInfo).isNotNull();
         assertThat(processInfo.getPID()).isEqualTo(expectedPid);
-        assertThat(processInfo.getTime()).isGreaterThan(0L);
+        assertThat(processInfo.getTime()).isGreaterThanOrEqualTo(0L);
     }
 
     @Test

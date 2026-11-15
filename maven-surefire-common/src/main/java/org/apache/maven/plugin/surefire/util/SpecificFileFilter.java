@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.surefire.shared.utils.io.SelectorUtils;
+import org.apache.maven.surefire.api.util.internal.SelectorUtils;
 
 import static org.apache.maven.plugin.surefire.util.ScannerUtil.convertSlashToSystemFileSeparator;
 
@@ -48,8 +48,7 @@ public class SpecificFileFilter {
         // If the tests enumeration is empty, allow anything.
         if (names != null && !names.isEmpty()) {
             for (String pattern : names) {
-                // This is the same utility used under the covers in the plexus DirectoryScanner, and
-                // therefore in the surefire DefaultDirectoryScanner implementation.
+                // This is the same utility used under the covers in the plexus DirectoryScanner.
                 if (SelectorUtils.matchPath(pattern, resourceName, true)) {
                     return true;
                 }

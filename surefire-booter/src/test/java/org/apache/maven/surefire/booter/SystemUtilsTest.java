@@ -18,22 +18,28 @@
  */
 package org.apache.maven.surefire.booter;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 import static java.io.File.separator;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_9;
 import static org.apache.maven.surefire.shared.lang3.JavaVersion.JAVA_RECENT;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_FREE_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_LINUX;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_NET_BSD;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_OPEN_BSD;
+import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -231,6 +237,104 @@ public class SystemUtilsTest {
                     ManagementFactory.getRuntimeMXBean().getName().split("@")[0].trim();
 
             assertThat(actualPid + "").isEqualTo(expectedPid);
+        }
+
+        @Test
+        public void shouldFindJvmStartedByShell() throws Exception {
+            assumeTrue(JAVA_RECENT.atLeast(JAVA_9) && !IS_OS_WINDOWS);
+
+            // "; true" stops the shell from turning into java, so java runs as its child
+            Process shell = new ProcessBuilder(
+                            "/bin/sh",
+                            "-c",
+                            "'" + java() + "' -cp '" + classPath() + "' '" + Sleeper.class.getName() + "'; true")
+                    .start();
+            try {
+                awaitReady(shell);
+                Long shellPid = SystemUtils.pidOf(shell);
+
+                assertThat(SystemUtils.forkedJvmPidOf(shell, "java"))
+                        .isNotNull()
+                        .isNotEqualTo(shellPid);
+                assertThat(SystemUtils.forkedJvmPidOf(shell, "not-a-jvm")).isEqualTo(shellPid);
+            } finally {
+                stop(shell);
+            }
+        }
+
+        @Test
+        public void shouldKeepPidOfJvmEvenWithJvmChild() throws Exception {
+            assumeTrue(JAVA_RECENT.atLeast(JAVA_9));
+
+            Process jvm = new ProcessBuilder(java(), "-cp", classPath(), Sleeper.class.getName(), "with-child").start();
+            try {
+                awaitReady(jvm);
+
+                assertThat(SystemUtils.forkedJvmPidOf(jvm, "java")).isEqualTo(SystemUtils.pidOf(jvm));
+            } finally {
+                stop(jvm);
+            }
+        }
+
+        @Test
+        public void shouldFallBackWhenJvmNameUnknown() throws Exception {
+            assertThat(SystemUtils.forkedJvmPidOf(null, "java")).isNull();
+            assumeTrue(JAVA_RECENT.atLeast(JAVA_9));
+
+            Process jvm = new ProcessBuilder(java(), "-cp", classPath(), Sleeper.class.getName()).start();
+            try {
+                awaitReady(jvm);
+
+                assertThat(SystemUtils.forkedJvmPidOf(jvm, null)).isEqualTo(SystemUtils.pidOf(jvm));
+            } finally {
+                stop(jvm);
+            }
+        }
+    }
+
+    /**
+     * Tiny JVM for the {@code forkedJvmPidOf} tests: prints "ready" and waits until its stdin closes.
+     * With an argument, it first starts another one as its child. Uses only JDK classes, it runs in its own JVM.
+     */
+    public static final class Sleeper {
+        public static void main(String[] args) throws Exception {
+            if (args.length > 0) {
+                String java = System.getProperty("java.home") + separator + "bin" + separator + "java";
+                Process child = new ProcessBuilder(
+                                java, "-cp", System.getProperty("java.class.path"), Sleeper.class.getName())
+                        .start();
+                new BufferedReader(new InputStreamReader(child.getInputStream(), UTF_8)).readLine();
+            }
+            System.out.println("ready");
+            System.out.flush();
+            while (System.in.read() != -1) {
+                // run until stdin closes
+            }
+        }
+    }
+
+    private static String java() {
+        return System.getProperty("java.home") + separator + "bin" + separator + "java";
+    }
+
+    private static String classPath() throws URISyntaxException {
+        return new File(Sleeper.class
+                        .getProtectionDomain()
+                        .getCodeSource()
+                        .getLocation()
+                        .toURI())
+                .getPath();
+    }
+
+    private static void awaitReady(Process process) throws IOException {
+        BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream(), UTF_8));
+        assertThat(out.readLine()).isEqualTo("ready");
+    }
+
+    private static void stop(Process process) throws Exception {
+        process.getOutputStream().close();
+        if (!process.waitFor(10, SECONDS)) {
+            process.destroyForcibly();
         }
     }
 

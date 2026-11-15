@@ -21,6 +21,7 @@ package org.apache.maven.plugin.surefire;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -36,6 +37,7 @@ import org.slf4j.Logger;
 import static java.util.Collections.addAll;
 import static java.util.Collections.singleton;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
+import static org.apache.maven.plugin.surefire.SurefireHelper.interpolateArgLineWithPropertyExpressions;
 import static org.apache.maven.plugin.surefire.SurefireHelper.reportExecution;
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,6 +69,29 @@ public class SurefireHelperTest {
         File pathWithPlaceholder = new File(subDir, "subdir");
         File changed = SurefireHelper.replaceForkThreadsInPath(pathWithPlaceholder, 5);
         assertThat(changed.getPath()).isEqualTo(new File(new File(root, "reports-5"), "subdir").getPath());
+    }
+
+    @Test
+    public void shouldInterpolateArgLinePlaceholderFromModelProperties() {
+        Properties modelProperties = new Properties();
+        modelProperties.setProperty("jacocoArgLine", "-javaagent:jacocoagent.jar");
+
+        assertThat(interpolateArgLineWithPropertyExpressions(" @{jacocoArgLine} -Xmx64m ", modelProperties))
+                .isEqualTo("-javaagent:jacocoagent.jar -Xmx64m");
+    }
+
+    @Test
+    public void shouldKeepArgLinePlaceholderWithoutModelProperty() {
+        assertThat(interpolateArgLineWithPropertyExpressions("@{unknown}", new Properties()))
+                .isEqualTo("@{unknown}");
+    }
+
+    @Test
+    public void shouldInterpolateMissingOrBlankArgLineToEmptyString() {
+        assertThat(interpolateArgLineWithPropertyExpressions(null, new Properties()))
+                .isEmpty();
+        assertThat(interpolateArgLineWithPropertyExpressions(" \n ", new Properties()))
+                .isEmpty();
     }
 
     @Test

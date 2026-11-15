@@ -27,7 +27,6 @@ import org.apache.maven.surefire.api.report.ReporterFactory;
 import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.api.testset.TestArtifactInfo;
 import org.apache.maven.surefire.api.testset.TestRequest;
-import org.apache.maven.surefire.api.util.DirectoryScanner;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 
@@ -42,16 +41,6 @@ import org.apache.maven.surefire.api.util.ScanResult;
  * @author Kristian Rosenvold
  */
 public interface ProviderParameters {
-    /**
-     * Provides a directory scanner that enforces the includes/excludes parameters that were passed to surefire.
-     * See #getDirectoryScannerParameters for details.
-     *
-     * @return the directory scanner
-     * @deprecated use scanresult instead, as of version 2.12.2. Will be removed in next major version.
-     */
-    @Deprecated
-    DirectoryScanner getDirectoryScanner();
-
     /**
      * Provides the result of the directory scan performed in the plugin.
      *

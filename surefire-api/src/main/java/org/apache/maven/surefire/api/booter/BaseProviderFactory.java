@@ -31,10 +31,8 @@ import org.apache.maven.surefire.api.testset.DirectoryScannerParameters;
 import org.apache.maven.surefire.api.testset.RunOrderParameters;
 import org.apache.maven.surefire.api.testset.TestArtifactInfo;
 import org.apache.maven.surefire.api.testset.TestRequest;
-import org.apache.maven.surefire.api.util.DefaultDirectoryScanner;
 import org.apache.maven.surefire.api.util.DefaultRunOrderCalculator;
 import org.apache.maven.surefire.api.util.DefaultScanResult;
-import org.apache.maven.surefire.api.util.DirectoryScanner;
 import org.apache.maven.surefire.api.util.RunOrderCalculator;
 import org.apache.maven.surefire.api.util.ScanResult;
 
@@ -81,18 +79,6 @@ public class BaseProviderFactory implements ProviderParameters {
 
     public void setCommandReader(CommandChainReader commandReader) {
         this.commandReader = commandReader;
-    }
-
-    @Override
-    @Deprecated
-    public DirectoryScanner getDirectoryScanner() {
-        return directoryScannerParameters == null
-                ? null
-                : new DefaultDirectoryScanner(
-                        directoryScannerParameters.getTestClassesDirectory(),
-                        directoryScannerParameters.getIncludes(),
-                        directoryScannerParameters.getExcludes(),
-                        directoryScannerParameters.getSpecificTests());
     }
 
     @Override

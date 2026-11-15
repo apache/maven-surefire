@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.maven.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.plugins.surefire.report.TestSuiteXmlParser.isBlank;
 
 public final class ReportTestCase {
     private String fullClassName;
@@ -130,7 +130,7 @@ public final class ReportTestCase {
     }
 
     public ReportTestCase setFailure(String message, String type) {
-        hasFailure = isNotBlank(type);
+        hasFailure = !isBlank(type);
         hasError = false;
         hasSkipped = false;
         return setFailureMessage(message).setFailureType(type);
@@ -138,7 +138,7 @@ public final class ReportTestCase {
 
     public ReportTestCase setError(String message, String type) {
         hasFailure = false;
-        hasError = isNotBlank(type);
+        hasError = !isBlank(type);
         hasSkipped = false;
         return setFailureMessage(message).setFailureType(type);
     }
@@ -146,7 +146,7 @@ public final class ReportTestCase {
     public ReportTestCase setSkipped(String message) {
         hasFailure = false;
         hasError = false;
-        hasSkipped = isNotBlank(message);
+        hasSkipped = !isBlank(message);
         return setFailureMessage(message).setFailureType("skipped");
     }
 

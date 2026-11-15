@@ -21,7 +21,7 @@ package org.apache.maven.surefire.api.booter;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 /**
  * Encapsulates data and command sent from master to forked process.

@@ -54,8 +54,8 @@ import static org.apache.maven.surefire.api.booter.MasterProcessCommand.NOOP;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SHUTDOWN;
 import static org.apache.maven.surefire.api.booter.MasterProcessCommand.SKIP_SINCE_NEXT_TEST;
 import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThread;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 
 /**
  * Reader of commands coming from plugin(master) process.

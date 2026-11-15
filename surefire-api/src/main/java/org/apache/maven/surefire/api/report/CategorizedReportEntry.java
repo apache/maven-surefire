@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 /**
  * @author Kristian Rosenvold

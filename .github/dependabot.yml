@@ -34,7 +34,29 @@ updates:
     - dependency-name: "junit:junit"
     # to remove when depending on core 4.x
     - dependency-name: "org.apache.maven.resolver:*"
-      versions: [ ">=2.0"]
+      versions: [ ">= 2.0.0"]
+    # mavenVersion is pinned to 3.9.16 (the Resolver 1 line, Maven 3.9.16 ships
+    # Resolver 1.9.27). Dependabot must not bump the Maven 3.x core artifacts to
+    # 3.10.0+, which ships Resolver 2, because the plugin declares a 3.9.0
+    # prerequisite and maven-surefire-common packages maven-resolver-util at
+    # compile scope. Together with the org.apache.maven.resolver:* >= 2.0.0
+    # exclusion above, this prevents Dependabot from proposing Maven >=3.10 and
+    # Resolver >=2.0 in the same update. See
+    # https://github.com/apache/maven-surefire/issues/3586
+    - dependency-name: "org.apache.maven:maven-core"
+      versions: [ ">= 3.10.0"]
+    - dependency-name: "org.apache.maven:maven-plugin-api"
+      versions: [ ">= 3.10.0"]
+    - dependency-name: "org.apache.maven:maven-model"
+      versions: [ ">= 3.10.0"]
+    - dependency-name: "org.apache.maven:maven-artifact"
+      versions: [ ">= 3.10.0"]
+    - dependency-name: "org.apache.maven:maven-settings"
+      versions: [ ">= 3.10.0"]
+    - dependency-name: "org.apache.maven:maven-embedder"
+      versions: [ ">= 3.10.0"]
+    - dependency-name: "org.apache.maven:maven-resolver-provider"
+      versions: [ ">= 3.10.0"]
     - dependency-name: "org.mockito:*"
       versions: [ ">=5.0"]
     # JUnit 6 requires Java 17; the build still runs on JDK 8

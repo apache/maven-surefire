@@ -19,12 +19,10 @@
 package org.apache.maven.surefire.extensions.util;
 
 import java.io.Closeable;
+import java.io.IOException;
 
-import org.apache.maven.surefire.shared.utils.cli.CommandLineException;
-import org.apache.maven.surefire.shared.utils.cli.Commandline;
-
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.addShutDownHook;
-import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.removeShutdownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.addShutDownHook;
+import static org.apache.maven.surefire.api.util.internal.ShutdownHookUtils.removeShutdownHook;
 
 /**
  * Programming model with this class:
@@ -51,7 +49,7 @@ import static org.apache.maven.surefire.shared.utils.cli.ShutdownHookUtils.remov
  * {
  *     lineConsumerThread.disable();
  * }
- * catch ( CommandLineException e )
+ * catch ( IOException e )
  * {
  *     // handle the exceptions
  * }
@@ -72,7 +70,7 @@ public class CommandlineExecutor implements Closeable {
         this.endOfStreamsCountdown = endOfStreamsCountdown;
     }
 
-    public CommandlineStreams execute() throws CommandLineException {
+    public CommandlineStreams execute() throws IOException {
         process = cli.execute();
         shutdownHook = new ProcessHook(process);
         addShutDownHook(shutdownHook);

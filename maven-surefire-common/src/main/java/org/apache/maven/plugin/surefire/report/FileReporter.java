@@ -31,7 +31,7 @@ import org.apache.maven.surefire.api.report.ReporterException;
 import org.apache.maven.surefire.extensions.StatelessTestsetInfoFileReportEventListener;
 
 import static org.apache.maven.plugin.surefire.report.FileReporterUtils.stripIllegalFilenameChars;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isNotBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 
 /**
  * Base class for file reporters.

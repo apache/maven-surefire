@@ -32,7 +32,7 @@ import org.apache.maven.surefire.api.report.TestSetReportEntry;
 
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
-import static org.apache.maven.surefire.shared.utils.StringUtils.isBlank;
+import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 
 /**
  * @author Kristian Rosenvold

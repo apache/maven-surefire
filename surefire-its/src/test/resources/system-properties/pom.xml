@@ -73,7 +73,6 @@
             <overriddenPropertyFomFile>value2</overriddenPropertyFomFile>
           </systemPropertyVariables>
           <systemPropertiesFile>${project.basedir}/src/test/config/propsfile.properties</systemPropertiesFile>
-          <argLine>-DsetOnArgLine=bar</argLine>
         </configuration>
       </plugin>
     </plugins>
@@ -90,6 +89,8 @@
   </dependencies>
   
   <properties>
+    <!-- a property rather than plugin configuration, so that a non-forked run can clear it -->
+    <argLine>-DsetOnArgLine=bar</argLine>
     <setOnArgLineWorkAround>fool</setOnArgLineWorkAround>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>

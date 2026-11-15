@@ -439,16 +439,17 @@ The `maven-surefire-report-plugin` reads the XML files (via `surefire-report-par
 
 ## Group / Category Filtering
 
-Since 3.6.0, test filtering by groups, categories, or tags is handled via the JUnit Platform's native **tag expression** syntax.
+Since 3.6.0, test filtering by groups, categories, or tags is handled by the JUnit Platform provider, and each kind of test is matched in its own way.
 
 ### How it works
 
 1. Users configure `<groups>` and `<excludedGroups>` in the plugin configuration
-2. For **JUnit 4**: `@Category` annotations are mapped to JUnit Platform tags via the Vintage Engine
-3. For **TestNG**: groups are mapped to JUnit Platform tags via the TestNG Engine
-4. For **JUnit 5/6**: `@Tag` annotations are used natively
+2. For **JUnit 4**: tests are matched against their `@Category` annotations, by fully qualified or simple class name
+3. For **TestNG**: the groups are handed to the TestNG Engine as `testng.groups` and `testng.excludedGroups`, and TestNG matches them itself, regular expressions included
+4. For **JUnit 5/6** and all other engines: `@Tag` annotations are matched with the JUnit Platform's native **tag expression** syntax
 
-Tag filter expressions are passed directly to the JUnit Platform Launcher.
+This does not change when TestNG is on the test classpath: the tests of the other engines are still filtered.
+A group which TestNG accepts but JUnit cannot parse as a tag expression, like `(?!slow).*`, only filters TestNG tests, and Surefire logs a warning about it.
 
 ---
 

@@ -144,6 +144,22 @@ class JstackTimeoutExtensionTest {
     }
 
     @Test
+    void outputDirectoryMadeByAnotherForkIsUsed() {
+        // Pretend another fork created the directory first
+        File dir = new File(tmp.toFile(), "jstacks") {
+            @Override
+            public boolean mkdirs() {
+                super.mkdirs();
+                return false;
+            }
+        };
+        DefaultForkedProcessTimeoutContext ctx =
+                new DefaultForkedProcessTimeoutContext(123L, 1, null, dir, 60, logger, null);
+
+        assertThat(JstackTimeoutExtension.resolveOutputDirectory(ctx, logger)).isSameAs(dir);
+    }
+
+    @Test
     void blankOutputLocationFallsBackToReportsDirectory() {
         Map<String, String> ctxMap = Collections.singletonMap(JstackTimeoutExtension.OUTPUT_LOCATION_KEY, "   ");
         DefaultForkedProcessTimeoutContext ctx =

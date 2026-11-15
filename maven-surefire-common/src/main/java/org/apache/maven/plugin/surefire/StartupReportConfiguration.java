@@ -228,7 +228,7 @@ public final class StartupReportConfiguration {
 
         // If forking TestNG the suites have same name 'TestSuite' and tend to override report statistics in stateful
         // reporter, see Surefire1535TestNGParallelSuitesIT. The testClassMethodRunHistory should be isolated.
-        // In the in-plugin execution of parallel JUnit4.7 with rerun the map must be shared because reports and
+        // In the in-plugin execution of parallel JUnit 4 with rerun the map must be shared because reports and
         // listeners are in ThreadLocal, see Surefire1122ParallelAndFlakyTestsIT.
         Map<String, Deque<WrappedReportEntry>> testClassMethodRunHistory =
                 isForking ? new ConcurrentHashMap<>() : this.testClassMethodRunHistory;

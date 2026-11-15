@@ -27,13 +27,19 @@ import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 
 import static java.lang.Thread.currentThread;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodChain;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray;
 import static org.apache.maven.surefire.api.util.ReflectionUtils.tryLoadClass;
@@ -222,6 +228,61 @@ public final class SystemUtils {
         } catch (ReflectiveOperationException | RuntimeException e) {
             return null;
         }
+    }
+
+    /**
+     * Returns the PID of the forked JVM.
+     * <p>
+     * Surefire starts the fork through a shell ({@code /bin/sh} or {@code cmd.exe}). Some shells turn into
+     * {@code java}, others keep running with {@code java} as their child. In that case this returns the child's PID
+     * instead of the shell's.
+     *
+     * @param process the process Surefire started, may be {@code null}
+     * @param jvmName name of the java executable, like {@code java} or {@code java.exe}, may be {@code null}
+     * @return the JVM's PID, the process's own PID if no java child is found, or {@code null} if unknown (Java 8)
+     * @since 3.6.2
+     */
+    public static Long forkedJvmPidOf(Process process, String jvmName) {
+        Long pid = pidOf(process);
+        Method toHandle = ReflectionUtils.tryGetMethod(Process.class, "toHandle");
+        if (pid == null || jvmName == null || toHandle == null) {
+            return pid;
+        }
+        try {
+            Class<?> processHandle = toHandle.getReturnType();
+            Method children = ReflectionUtils.getMethod(processHandle, "children");
+            Method childPid = ReflectionUtils.getMethod(processHandle, "pid");
+            Method info = ReflectionUtils.getMethod(processHandle, "info");
+            Method command = ReflectionUtils.getMethod(info.getReturnType(), "command");
+            Function<Object, String> commandOf = handle -> {
+                Optional<String> cmd = invokeMethodWithArray(invokeMethodWithArray(handle, info), command);
+                return cmd.orElse(null);
+            };
+
+            Object handle = invokeMethodWithArray(process, toHandle);
+            String processCommand = commandOf.apply(handle);
+            if (processCommand == null || isSameExecutable(processCommand, jvmName)) {
+                // already the JVM, or we can't tell
+                return pid;
+            }
+            Stream<?> childHandles = invokeMethodWithArray(handle, children);
+            List<Long> jvmPids = childHandles
+                    .filter(child -> isSameExecutable(commandOf.apply(child), jvmName))
+                    .map(child -> ReflectionUtils.<Long>invokeMethodWithArray(child, childPid))
+                    .collect(toList());
+            return jvmPids.size() == 1 ? jvmPids.get(0) : pid;
+        } catch (RuntimeException e) {
+            return pid;
+        }
+    }
+
+    private static boolean isSameExecutable(String command, String name) {
+        return command != null && executableName(new File(command).getName()).equals(executableName(name));
+    }
+
+    private static String executableName(String fileName) {
+        String name = fileName.toLowerCase(Locale.ROOT);
+        return name.endsWith(".exe") ? name.substring(0, name.length() - 4) : name;
     }
 
     static Long pidOnJMX() {

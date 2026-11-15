@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.maven.surefire.its.fixture.IsRegex.regex;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
@@ -43,6 +42,9 @@ import static org.hamcrest.core.StringContains.containsString;
  * @since 2.18
  */
 public class Surefire1082ParallelJUnit4ParameterizedIT extends SurefireJUnit4IntegrationTestCase {
+
+    private static final String LOG_DECORATION = "[INFO] [stdout] ";
+
     private static Set<String> printOnlyTestLinesFromOutFile(OutputValidator validator) {
         TestFile report = validator.getSurefireReportsFile("jiras.surefire1082.Jira1082Test-output.txt");
         report.assertFileExists();
@@ -52,6 +54,7 @@ public class Surefire1082ParallelJUnit4ParameterizedIT extends SurefireJUnit4Int
     private static Set<String> printOnlyTestLines(Collection<String> logs) {
         Set<String> log = new TreeSet<>();
         for (String line : logs) {
+            line = removeLogDecoration(line);
             if (line.startsWith("class jiras.surefire1082.")) {
                 log.add(line);
             }
@@ -60,13 +63,14 @@ public class Surefire1082ParallelJUnit4ParameterizedIT extends SurefireJUnit4Int
     }
 
     private static void assertParallelRun(Set<String> log) {
+
         assertThat(log.size(), is(4));
 
         Set<String> expectedLogs1 = new TreeSet<>();
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 0 ForkJoinPool.*");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 0 ForkJoinPool.*");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
-        expectedLogs1.add("class jiras.surefire1082.Jira1082Test b 1 ForkJoinPool.*");
+        expectedLogs1.add(".*class jiras.surefire1082.Jira1082Test a 0 ForkJoinPool.*");
+        expectedLogs1.add(".*class jiras.surefire1082.Jira1082Test b 0 ForkJoinPool.*");
+        expectedLogs1.add(".*class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
+        expectedLogs1.add(".*class jiras.surefire1082.Jira1082Test b 1 ForkJoinPool.*");
 
         Set<String> expectedLogs2 = new TreeSet<>();
         expectedLogs2.add("class jiras.surefire1082.Jira1082Test a 1 ForkJoinPool.*");
@@ -91,7 +95,7 @@ public class Surefire1082ParallelJUnit4ParameterizedIT extends SurefireJUnit4Int
 
         validator.assertThatLogLine(containsString("Running jiras.surefire1082.Jira1082Test"), is(1));
 
-        Set<String> log = new TreeSet<>(validator.loadLogLines(startsWith("class jiras.surefire1082.")));
+        Set<String> log = new TreeSet<>(validator.loadLogLines(containsString("class jiras.surefire1082.")));
         assertParallelRun(log);
     }
 
@@ -116,5 +120,9 @@ public class Surefire1082ParallelJUnit4ParameterizedIT extends SurefireJUnit4Int
 
     private SurefireLauncher unpack() {
         return unpack("surefire-1082-parallel-junit-parameterized");
+    }
+
+    private static String removeLogDecoration(String line) {
+        return line.replace(LOG_DECORATION, "");
     }
 }

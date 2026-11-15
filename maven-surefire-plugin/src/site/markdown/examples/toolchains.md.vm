@@ -39,14 +39,23 @@ Configuring a different jvm for running tests using toolchains
 <configuration>
     [...]
     <jdkToolchain>
-        <version>8</version>
+        <version>[17,18)</version>
         <vendor>zulu</vendor>
     </jdkToolchain>
     [...]
 </configuration>
 ```
 
-The above example assumes that your \`toolchains.xml\` contains a valid entry with these values.
+The above example assumes that your `toolchains.xml` contains a valid entry with these values.
+
+How a JDK is labeled in `toolchains.xml` depends on what wrote the entry. On GitHub Actions, `actions/setup-java`
+writes its `java-version` input as given, such as `17` or `8`, and the distribution as the vendor, such as `zulu`.
+The `generate-jdk-toolchains-xml` goal of the Maven Toolchains Plugin writes the JDK's full version, such as `17.0.20`
+or `1.8.0_504`, and its `java.vendor` property as the vendor.
+
+A single version must equal the one in `toolchains.xml`: `17` does not match `17.0.20`. A range such as `[17,18)`
+matches both `17` and `17.0.20`. Java 8 is labeled either `8` or `1.8.0_504`, so `[8,9)` matches only the first and
+`[1.8,1.9)` only the second. Other elements, like `vendor`, must equal the value in `toolchains.xml`, ignoring case.
 
 Minimum Java Version for Toolchains
 -----------------------------------
