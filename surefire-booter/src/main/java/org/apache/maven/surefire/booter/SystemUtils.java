@@ -132,7 +132,12 @@ public final class SystemUtils {
         Properties properties = new Properties();
         try (InputStream is = new FileInputStream(release)) {
             properties.load(is);
-            String javaVersion = properties.getProperty("JAVA_VERSION").replace("\"", "");
+            String javaVersion = properties.getProperty("JAVA_VERSION");
+            if (javaVersion == null) {
+                // some JDK distributions (e.g. certain GraalVM builds) ship a release file without this key
+                return null;
+            }
+            javaVersion = javaVersion.replace("\"", "");
             StringTokenizer versions = new StringTokenizer(javaVersion, "._");
 
             if (versions.countTokens() == 1) {

@@ -75,6 +75,17 @@ public class SystemUtilsTest {
         }
 
         @Test
+        public void shouldNotThrowOnReleaseFileWithoutJavaVersion() throws IOException {
+            String classes = new File(".").getCanonicalPath() + separator + "target" + separator + "test-classes";
+
+            File path = new File(classes, "graalvm-no-java-version" + separator + "bin" + separator + "java");
+            assertThat(SystemUtils.isJava9AtLeast(path.getAbsolutePath())).isFalse();
+
+            File jdkHome = new File(classes, "graalvm-no-java-version");
+            assertThat(SystemUtils.toJdkVersionFromReleaseFile(jdkHome)).isNull();
+        }
+
+        @Test
         public void shouldHaveJavaPath() {
             String javaPath = System.getProperty("java.home") + separator + "bin" + separator + "java";
             assertThat(SystemUtils.endsWithJavaPath(javaPath)).isTrue();
