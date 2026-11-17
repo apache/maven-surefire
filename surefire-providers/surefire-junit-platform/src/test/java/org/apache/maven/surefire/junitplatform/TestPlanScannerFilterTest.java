@@ -26,10 +26,10 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.platform.commons.JUnitException;
 import org.junit.jupiter.params.Parameter;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.engine.Filter;
 import org.junit.platform.launcher.Launcher;
 import org.junit.platform.launcher.LauncherDiscoveryRequest;
@@ -111,9 +111,8 @@ public class TestPlanScannerFilterTest {
                 .thenThrow(new JUnitException("engine discovery failed", new RuntimeException("wrapper", rootCause)));
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
         assertSame(rootCause, failure.getCause().getCause().getCause());
@@ -128,9 +127,8 @@ public class TestPlanScannerFilterTest {
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals(
                 "engine discovery failed: listener failed during discovery: java.lang.RuntimeException",
@@ -145,9 +143,8 @@ public class TestPlanScannerFilterTest {
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals("engine discovery failed: " + rootCause.getClass().getName(), failure.getMessage());
         assertSame(rootCause, failure.getCause().getCause());
@@ -161,9 +158,8 @@ public class TestPlanScannerFilterTest {
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
         assertSame(rootCause, failure.getCause().getCause());
@@ -177,9 +173,8 @@ public class TestPlanScannerFilterTest {
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals("engine discovery failed: " + rootCause.getClass().getName(), failure.getMessage());
         assertSame(rootCause, failure.getCause().getCause());
@@ -193,9 +188,8 @@ public class TestPlanScannerFilterTest {
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals("engine discovery failed", failure.getMessage());
     }
@@ -206,9 +200,7 @@ public class TestPlanScannerFilterTest {
         Launcher launcher = mock(Launcher.class);
         doThrow(new JUnitException("engine execution failed", rootCause))
                 .when(launcher)
-                .execute(
-                        any(LauncherDiscoveryRequest.class),
-                        any(TestExecutionListener[].class));
+                .execute(any(LauncherDiscoveryRequest.class), any(TestExecutionListener[].class));
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
@@ -277,9 +269,8 @@ public class TestPlanScannerFilterTest {
 
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(
-                        new LauncherAdapter(launcher, null),
-                        new Filter<?>[0]).accept(ClassWithTestMethods.class));
+                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
+                        .accept(ClassWithTestMethods.class));
 
         assertEquals("engine discovery failed: SUREFIRE-3463: java.lang.IllegalStateException", failure.getMessage());
     }
