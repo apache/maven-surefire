@@ -20,6 +20,8 @@ package org.apache.maven.plugin.surefire;
 
 import javax.annotation.Nonnull;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
@@ -81,16 +83,26 @@ public class InPluginVMSurefireStarter {
                 .toRealPath(ClasspathConfiguration.class)
                 .createMergedClassLoader();
 
-        CommonReflector surefireReflector = new CommonReflector(testClassLoader);
-
-        Object factory = surefireReflector.createReportingReporterFactory(startupReportConfig, consoleLogger);
-
         try {
+            CommonReflector surefireReflector = new CommonReflector(testClassLoader);
+
+            Object factory = surefireReflector.createReportingReporterFactory(startupReportConfig, consoleLogger);
+
             return platform.isShutdown()
                     ? new RunResult(0, 0, 0, 0)
                     : invokeProvider(null, testClassLoader, factory, providerConfig, false, startupConfig, true);
         } catch (InvocationTargetException e) {
             throw new SurefireExecutionException("Exception in provider", e.getTargetException());
+        } finally {
+            // the merged test classloader is a URLClassLoader opening every test classpath JAR;
+            // close it so those file handles don't leak for the rest of this JVM's life (#2098)
+            if (testClassLoader instanceof Closeable) {
+                try {
+                    ((Closeable) testClassLoader).close();
+                } catch (IOException e) {
+                    consoleLogger.debug("Failed to close the in-process test classloader: " + e.getLocalizedMessage());
+                }
+            }
         }
     }
 }
