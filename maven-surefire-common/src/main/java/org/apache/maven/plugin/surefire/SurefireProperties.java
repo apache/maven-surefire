@@ -71,7 +71,8 @@ public class SurefireProperties extends Properties implements KeyValueSource {
     private Collection<String> putAllInternal(Map<?, ?> source) {
         Collection<String> overwrittenProperties = new LinkedList<>();
         for (Entry<?, ?> entry : source.entrySet()) {
-            if (put(entry.getKey(), entry.getValue()) != null) {
+            Object previous = put(entry.getKey(), entry.getValue());
+            if (previous != null && !previous.equals(entry.getValue())) {
                 overwrittenProperties.add(entry.getKey().toString());
             }
         }
@@ -153,7 +154,8 @@ public class SurefireProperties extends Properties implements KeyValueSource {
         if (source != null) {
             for (String key : source.keySet()) {
                 String value = source.get(key);
-                if (target.setProperty(key, value == null ? "" : value) != null) {
+                Object previous = target.setProperty(key, value == null ? "" : value);
+                if (previous != null && !previous.equals(value == null ? "" : value)) {
                     overwrittenProperties.add(key);
                 }
             }
