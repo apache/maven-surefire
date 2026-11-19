@@ -221,6 +221,24 @@ class TestSuiteXmlParserTest {
     }
 
     @Test
+    void testParseTimeWithGroupingSeparator() throws Exception {
+        // JUnit 5's LegacyXmlReportGeneratingListener writes elapsed times >= 1000 seconds with a grouping
+        // separator, e.g. time="1,323.333", which is what the pre-SUREFIRE-2167 NumberFormat-based parser
+        // tolerated but plain Float.parseFloat does not.
+        TestSuiteXmlParser testSuiteXmlParser = new TestSuiteXmlParser(consoleLogger);
+        String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"
+                + "<testsuite failures=\"0\" time=\"1,323.333\" errors=\"0\" skipped=\"0\" tests=\"1\" name=\"longRunning.LongTest\">\n"
+                + "  <testcase time=\"1,000.0\" classname=\"longRunning.LongTest\" name=\"longRunningTest\"/>\n"
+                + "</testsuite>";
+        InputStream byteArrayIs = new ByteArrayInputStream(xml.getBytes());
+        List<ReportTestSuite> parse = testSuiteXmlParser.parse(new InputStreamReader(byteArrayIs, UTF_8));
+        assertThat(parse.size(), is(1));
+        ReportTestSuite report = parse.get(0);
+        assertThat(report.getTimeElapsed(), is(1323.333f));
+        assertThat(report.getTestCases().get(0).getTime(), is(1000.0f));
+    }
+
+    @Test
     void testParser() throws Exception {
         TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
 
