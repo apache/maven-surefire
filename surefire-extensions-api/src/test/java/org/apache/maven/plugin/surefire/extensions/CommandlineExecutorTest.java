@@ -78,7 +78,9 @@ class CommandlineExecutorTest {
     @Test
     void shouldExecuteNativeCommand() throws Exception {
         Closeable closer = mock(Closeable.class);
-        Commandline cli = new Commandline(IS_OS_WINDOWS ? "cmd.exe /c dir" : "ls -la");
+        // "dir /b" prints only the file names. Plain "dir" adds a localized header
+        // that can fail to decode with the default charset, see #3366.
+        Commandline cli = new Commandline(IS_OS_WINDOWS ? "cmd.exe /c dir /b" : "ls -la");
         cli.setWorkingDirectory(
                 Paths.get(baseDir, "target", "CommandlineExecutorTest").toFile());
         CountdownCloseable countdownCloseable = new CountdownCloseable(closer, 1);
