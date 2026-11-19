@@ -40,13 +40,13 @@ public class DefaultRunOrderCalculator implements RunOrderCalculator {
 
     private final RunOrderParameters runOrderParameters;
 
-    private final int threadCount;
+    private final int distributedParallelism;
 
     private final Random random;
 
-    public DefaultRunOrderCalculator(RunOrderParameters runOrderParameters, int threadCount) {
+    public DefaultRunOrderCalculator(RunOrderParameters runOrderParameters, int distributedParallelism) {
         this.runOrderParameters = runOrderParameters;
-        this.threadCount = threadCount;
+        this.distributedParallelism = distributedParallelism;
         this.runOrder = runOrderParameters.getRunOrder();
         this.sortOrder = this.runOrder.length > 0 ? getSortOrderComparator(this.runOrder[0]) : null;
         Long runOrderRandomSeed = runOrderParameters.getRunOrderRandomSeed();
@@ -78,7 +78,7 @@ public class DefaultRunOrderCalculator implements RunOrderCalculator {
 
         } else if (RunOrder.BALANCED.equals(runOrder)) {
             RunEntryStatisticsMap stat = RunEntryStatisticsMap.fromFile(runOrderParameters.getRunStatisticsFile());
-            List<Class<?>> prioritized = stat.getPrioritizedTestsClassRunTime(testClasses, threadCount);
+            List<Class<?>> prioritized = stat.getPrioritizedTestsClassRunTime(testClasses, distributedParallelism);
             testClasses.clear();
             testClasses.addAll(prioritized);
 
