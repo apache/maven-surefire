@@ -20,6 +20,7 @@ package org.apache.maven.surefire.junitplatform;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Optional;
 
 import org.apache.maven.surefire.api.testset.TestListResolver;
 import org.junit.jupiter.api.Test;
@@ -28,8 +29,11 @@ import org.junit.jupiter.engine.descriptor.ClassTestDescriptor;
 import org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor;
 import org.junit.platform.engine.ConfigurationParameters;
 import org.junit.platform.engine.FilterResult;
+import org.junit.platform.engine.TestDescriptor;
+import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.UniqueId;
 import org.junit.platform.engine.reporting.OutputDirectoryProvider;
+import org.junit.platform.engine.support.descriptor.MethodSource;
 
 import static org.apache.maven.surefire.api.testset.TestListResolver.toClassFileName;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -78,6 +82,55 @@ public class TestMethodFilterTest {
 
         assertTrue(result.included());
         assertFalse(result.excluded());
+    }
+
+    @Test
+    public void includesOneRunOfJUnit4ParameterizedTest() {
+        TestMethodFilter indexFilter = new TestMethodFilter(new TestListResolver("*TestClass#testMethod[1]"));
+
+        assertTrue(indexFilter.apply(newVintageDescriptor("testMethod[1]")).included());
+        assertTrue(indexFilter.apply(newVintageDescriptor("testMethod[0]")).excluded());
+        assertTrue(indexFilter.apply(newVintageDescriptor("testMethod[10]")).excluded());
+    }
+
+    @Test
+    public void includesOneRunOfJUnit4ParameterizedTestWithCustomName() {
+        TestMethodFilter indexFilter = new TestMethodFilter(new TestListResolver("*TestClass#testMethod[2:*]"));
+
+        assertTrue(indexFilter
+                .apply(newVintageDescriptor("testMethod[2: fib(2)=1]"))
+                .included());
+        assertTrue(indexFilter
+                .apply(newVintageDescriptor("testMethod[3: fib(3)=2]"))
+                .excluded());
+    }
+
+    @Test
+    public void includesEveryRunOfJUnit4ParameterizedTestByMethodName() {
+        TestMethodFilter nameFilter = new TestMethodFilter(new TestListResolver("*TestClass#testMethod"));
+
+        assertTrue(nameFilter.apply(newVintageDescriptor("testMethod[0]")).included());
+        assertTrue(nameFilter.apply(newVintageDescriptor("testMethod[1]")).included());
+    }
+
+    @Test
+    public void excludesOneRunOfJUnit4ParameterizedTest() {
+        TestMethodFilter excludeFilter = new TestMethodFilter(new TestListResolver("!*TestClass#testMethod[1]"));
+
+        assertTrue(excludeFilter.apply(newVintageDescriptor("testMethod[0]")).included());
+        assertTrue(excludeFilter.apply(newVintageDescriptor("testMethod[1]")).excluded());
+    }
+
+    /**
+     * Mimics a JUnit 4 parameterized test run on the Vintage engine: the method source has the plain
+     * method name, the reporting name has the index.
+     */
+    private static TestDescriptor newVintageDescriptor(String reportingName) {
+        TestDescriptor descriptor = mock(TestDescriptor.class);
+        when(descriptor.getSource())
+                .thenReturn(Optional.<TestSource>of(MethodSource.from(TestClass.class.getName(), "testMethod")));
+        when(descriptor.getLegacyReportingName()).thenReturn(reportingName);
+        return descriptor;
     }
 
     private static TestMethodTestDescriptor newTestMethodDescriptor() throws Exception {
