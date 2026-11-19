@@ -72,5 +72,51 @@ public class ResolvedTestTest {
 
         classFileName = fromFullyQualifiedClass("my.package.MyTest.*");
         assertEquals("my/package/MyTest.*", classFileName);
+
+        classFileName = fromFullyQualifiedClass("dev.aspectj.*");
+        assertEquals("dev/aspectj/*", classFileName);
+
+        classFileName = fromFullyQualifiedClass("dev.*");
+        assertEquals("dev/*", classFileName);
+    }
+
+    @Test
+    public void testPackageWildcardMatchesAllClassesInPackage() {
+        ResolvedTest test = new ResolvedTest(CLASS, "dev.aspectj.*", false);
+        assertTrue(test.matchAsInclusive("dev/aspectj/MyTest.class", null));
+        assertTrue(test.matchAsInclusive("dev/aspectj/OtherTest.class", null));
+        assertFalse(test.matchAsInclusive("dev/aspectj/sub/NestedTest.class", null));
+        assertFalse(test.matchAsInclusive("dev/aspectjx/MyTest.class", null));
+        assertFalse(test.matchAsInclusive("other/MyTest.class", null));
+    }
+
+    @Test
+    public void testSingleSegmentPackageWildcardMatchesClassesInThatPackage() {
+        ResolvedTest test = new ResolvedTest(CLASS, "dev.*", false);
+        assertTrue(test.matchAsInclusive("dev/MyTest.class", null));
+        assertFalse(test.matchAsInclusive("dev/sub/NestedTest.class", null));
+        assertFalse(test.matchAsInclusive("devx/MyTest.class", null));
+        assertFalse(test.matchAsInclusive("other/MyTest.class", null));
+    }
+
+    @Test
+    public void testSlashAuthoredPackageWildcardDoesNotGetLegacyClassFallback() {
+        // A pattern the caller already wrote with a slash, e.g. "dev/aspectj/*", is unambiguous: there is
+        // no dot-notation to disambiguate, so it must not also match the legacy single-class-file
+        // interpretation that only applies to a dotted wildcard like "dev.aspectj.*".
+        ResolvedTest test = new ResolvedTest(CLASS, "dev/aspectj/*", false);
+        assertTrue(test.matchAsInclusive("dev/aspectj/MyTest.class", null));
+        assertFalse(test.matchAsInclusive("dev/aspectj.class", null));
+    }
+
+    @Test
+    public void testClassWildcardWithLowercaseNameStillMatchesTheClassItself() {
+        // "org.example.lowerTest.*" looks like a package wildcard by the naming convention used to
+        // resolve the dot-notation ambiguity, but a pre-existing class named "lowerTest" must still
+        // match itself: the package interpretation is additional, not a replacement.
+        ResolvedTest test = new ResolvedTest(CLASS, "org.example.lowerTest.*", false);
+        assertTrue(test.matchAsInclusive("org/example/lowerTest.class", null));
+        assertTrue(test.matchAsInclusive("org/example/lowerTest/NestedInPackage.class", null));
+        assertFalse(test.matchAsInclusive("org/example/other.class", null));
     }
 }
