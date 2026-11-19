@@ -20,6 +20,7 @@ package org.apache.maven.surefire.report;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import org.apache.maven.plugin.surefire.report.FileReporter;
@@ -63,6 +64,35 @@ public class FileReporterTest {
 
     private TestSetStats createTestSetStats() {
         return new TestSetStats(true, true);
+    }
+
+    /**
+     * SUREFIRE-2233: a report file name derived from a long, deeply nested test class name must
+     * still be creatable, even on filesystems with a low per-component length limit.
+     */
+    @Test
+    public void testVeryLongFileNameIsTruncated() {
+        File reportDir = new File("target");
+        StringBuilder packageBuilder = new StringBuilder("org.example.");
+        for (int i = 0; i < 12; i++) {
+            packageBuilder.append("subpackage1.");
+        }
+        String longTestName = packageBuilder + "TestWithAnExceptionallyLongAndDeeplyNestedFullyQualifiedClassName";
+        reportEntry = new SimpleReportEntry(NORMAL_RUN, 1L, longTestName, null, longTestName, null);
+        WrappedReportEntry wrappedReportEntry =
+                new WrappedReportEntry(reportEntry, ReportEntryType.SUCCESS, 1771085631L, 12, null, null);
+        reporter = new FileReporter(reportDir, null, StandardCharsets.UTF_8, false, false, false);
+        reporter.testSetCompleted(wrappedReportEntry, createTestSetStats(), new ArrayList<>());
+
+        String expectedName = "org.example.subpackage1.subpackage1.subpackage1.subpackage1.subpackage1."
+                + "subpackage1.subpackage1.subpackage1.subpackage1.subpackage1.subpackage1.subpackage1."
+                + "TestWithAnExceptionallyLongAndD_f5409b78.txt";
+        File expectedReportFile = new File(reportDir, expectedName);
+        assertTrue(
+                expectedReportFile.exists(),
+                "Report file (" + expectedReportFile.getAbsolutePath() + ") doesn't exist");
+        //noinspection ResultOfMethodCallIgnored
+        expectedReportFile.delete();
     }
 
     @Test
