@@ -151,3 +151,9 @@ Some system properties must be set on the command line of the forked VM, and can
 ```xml
   <argLine>-Djava.endorsed.dirs=...</argLine>
 ```
+
+The same applies to the properties that select the default `Locale` (`user.language`, `user.country`, `user.region`, `user.variant` and `user.script`). Setting them in `systemPropertyVariables` changes what `System.getProperty()` returns, but not `Locale.getDefault()`:
+
+```xml
+  <argLine>-Duser.language=en -Duser.country=GB</argLine>
+```
