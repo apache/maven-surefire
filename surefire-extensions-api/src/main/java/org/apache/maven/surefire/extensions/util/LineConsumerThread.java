@@ -22,14 +22,18 @@ import javax.annotation.Nonnull;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.Reader;
+import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
-import java.util.Scanner;
 
 import org.apache.maven.surefire.extensions.CloseableDaemonThread;
 import org.apache.maven.surefire.extensions.EventHandler;
 
 public final class LineConsumerThread extends CloseableDaemonThread {
+    private static final int MAX_LINE_LENGTH = 1024 * 1024;
+
     private final Charset encoding;
     private final ReadableByteChannel channel;
     private final EventHandler<String> eventHandler;
@@ -59,26 +63,40 @@ public final class LineConsumerThread extends CloseableDaemonThread {
 
     @Override
     public void run() {
-        try (Scanner stream = new Scanner(channel, encoding.name());
-                CountdownCloseable c = countdownCloseable; ) {
-            boolean isError = false;
-            while (stream.hasNextLine()) {
-                try {
-                    String line = stream.nextLine();
-                    isError |= stream.ioException() != null;
-                    if (!isError && !disabled) {
-                        eventHandler.handleEvent(line);
+        try (Reader reader = Channels.newReader(channel, encoding.newDecoder(), 4096);
+                CountdownCloseable c = countdownCloseable) {
+            StringBuilder line = new StringBuilder();
+            boolean truncated = false;
+            CharBuffer buffer = CharBuffer.allocate(4096);
+            while (reader.read(buffer) != -1) {
+                buffer.flip();
+                while (buffer.hasRemaining()) {
+                    char character = buffer.get();
+                    if (character == '\n') {
+                        dispatch(line, truncated);
+                        line.setLength(0);
+                        truncated = false;
+                    } else if (character != '\r' && line.length() < MAX_LINE_LENGTH) {
+                        line.append(character);
+                    } else if (line.length() >= MAX_LINE_LENGTH) {
+                        truncated = true;
                     }
-                } catch (IllegalStateException e) {
-                    isError = true;
                 }
+                buffer.clear();
+            }
+            if (line.length() > 0 || truncated) {
+                dispatch(line, truncated);
             }
         } catch (IOException e) {
             if (e instanceof InterruptedIOException || e.getCause() instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
-        } catch (IllegalStateException e) {
-            // not needed
+        }
+    }
+
+    private void dispatch(StringBuilder line, boolean truncated) {
+        if (!disabled) {
+            eventHandler.handleEvent(truncated ? line.append(" [line truncated]").toString() : line.toString());
         }
     }
 

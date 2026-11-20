@@ -19,13 +19,17 @@
 package org.apache.maven.plugin.failsafe;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.maven.plugin.failsafe.util.FailsafeSummaryXmlUtils;
 import org.apache.maven.surefire.api.suite.RunResult;
 import org.apache.maven.surefire.api.util.SureFireFileManager;
 import org.junit.jupiter.api.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  *
@@ -87,5 +91,21 @@ class MarshallerUnmarshallerTest {
         assertThat(actual.getSkipped()).isEqualTo(expected.getSkipped());
 
         assertThat(actual.getFailure()).isEqualTo(expected.getFailure());
+    }
+
+    @Test
+    void shouldRejectSummaryWithDoctype() throws Exception {
+        File secret = SureFireFileManager.createTempFile("failsafe-xxe-secret", ".txt");
+        Files.write(secret.toPath(), "SENSITIVE_MARKER".getBytes(UTF_8));
+        String xml = "<?xml version=\"1.0\"?><!DOCTYPE failsafe-summary [<!ENTITY xxe SYSTEM \""
+                + secret.toURI()
+                + "\">]><failsafe-summary timeout=\"false\"><completed>1</completed>"
+                + "<errors>0</errors><failures>0</failures><skipped>0</skipped>"
+                + "<failureMessage>&xxe;</failureMessage><flakes>0</flakes></failsafe-summary>";
+
+        File xmlFile = SureFireFileManager.createTempFile("failsafe-summary-doctype", ".xml");
+        Files.write(xmlFile.toPath(), xml.getBytes(UTF_8));
+
+        assertThrows(IOException.class, () -> FailsafeSummaryXmlUtils.toRunResult(xmlFile));
     }
 }

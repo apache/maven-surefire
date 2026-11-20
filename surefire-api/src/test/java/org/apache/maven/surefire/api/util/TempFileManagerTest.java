@@ -21,6 +21,8 @@ package org.apache.maven.surefire.api.util;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Random;
 
@@ -80,6 +82,37 @@ public class TempFileManagerTest {
         tfm.deleteAll();
         assertThat(tempFile).doesNotExist();
         assertThat(tfm.getTempDir()).doesNotExist();
+    }
+
+    @Test
+    public void testCreateTempFileDoesNotReturnPreplantedSymlink() throws Exception {
+        String subDirName = TempFileManagerTest.class.getSimpleName() + new Random().nextLong();
+        TempFileManager tfm = TempFileManager.instance(subDirName);
+        File first = tfm.createTempFile("prefix", ".tmp");
+        String firstBase = first.getName().substring(0, first.getName().lastIndexOf('_'));
+        int firstId = Integer.parseInt(first.getName().substring(firstBase.length() + 1, first.getName().length() - 4));
+        java.nio.file.Path link = tfm.getTempDir().toPath().resolve(firstBase + "_" + (firstId + 1) + ".tmp");
+        try {
+            Files.createSymbolicLink(link, tfm.getTempDir().toPath().resolve("missing-target"));
+        } catch (UnsupportedOperationException e) {
+            return;
+        }
+        File second = tfm.createTempFile("prefix", ".tmp");
+        assertThat(Files.isSymbolicLink(second.toPath())).isFalse();
+        assertThat(second).exists();
+    }
+
+    @Test
+    public void testCreateTempFileUsesOwnerOnlyPermissionsOnPosix() throws Exception {
+        String subDirName = TempFileManagerTest.class.getSimpleName() + new Random().nextLong();
+        TempFileManager tfm = TempFileManager.instance(subDirName);
+        File tempFile = tfm.createTempFile("prefix", ".tmp");
+        try {
+            assertThat(Files.getPosixFilePermissions(tempFile.toPath()))
+                    .isEqualTo(PosixFilePermissions.fromString("rw-------"));
+        } catch (UnsupportedOperationException e) {
+            // Non-POSIX filesystem
+        }
     }
 
     @Test

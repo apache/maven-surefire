@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
+import org.xml.sax.SAXParseException;
 import org.apache.maven.plugins.surefire.report.ReportTestCase.FlakyError;
 import org.apache.maven.plugins.surefire.report.ReportTestCase.FlakyFailure;
 import org.junit.jupiter.api.AfterEach;
@@ -42,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -782,5 +784,22 @@ class TestSuiteXmlParserTest {
         assertThat(tests.get(1).getFullName(), is("org.acme.FlakyTest.testStable"));
         assertThat(tests.get(1).hasError(), is(false));
         assertThat(tests.get(1).hasFlakes(), is(false));
+    }
+
+    @Test
+    void testDoctypeWithExternalEntityIsRejected() throws Exception {
+        Path secret = Files.createTempFile("surefire-xxe", ".txt");
+        Files.write(secret, "SENSITIVE_MARKER".getBytes(UTF_8));
+        String xml = "<?xml version=\"1.0\"?><!DOCTYPE testsuite [<!ENTITY xxe SYSTEM \""
+                + secret.toUri()
+                + "\">]><testsuite name=\"s\" tests=\"0\" errors=\"0\" skipped=\"0\" failures=\"0\"/>";
+        try {
+            TestSuiteXmlParser parser = new TestSuiteXmlParser(consoleLogger);
+            assertThrows(
+                    SAXParseException.class,
+                    () -> parser.parse(new InputStreamReader(new ByteArrayInputStream(xml.getBytes(UTF_8)), UTF_8)));
+        } finally {
+            Files.deleteIfExists(secret);
+        }
     }
 }

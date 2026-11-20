@@ -18,6 +18,9 @@
  */
 package org.apache.maven.plugin.failsafe.util;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -32,14 +35,15 @@ import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
 import org.apache.maven.surefire.api.suite.RunResult;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.xml.xpath.XPathConstants.NODE;
 import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.escapeXml10;
 import static org.apache.maven.surefire.shared.lang3.StringEscapeUtils.unescapeXml;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
@@ -78,7 +82,18 @@ public final class FailsafeSummaryXmlUtils {
         XPath xpath = xpathFactory.newXPath();
 
         try (Reader reader = new InputStreamReader(new FileInputStream(failsafeSummaryXml), UTF_8)) {
-            Node root = (Node) xpath.evaluate("/", new InputSource(reader), NODE);
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            setFeature(factory, "http://apache.org/xml/features/disallow-doctype-decl", true);
+            setFeature(factory, "http://xml.org/sax/features/external-general-entities", false);
+            setFeature(factory, "http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setXIncludeAware(false);
+            factory.setExpandEntityReferences(false);
+            setAttribute(factory, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            setAttribute(factory, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+            Document document = factory.newDocumentBuilder().parse(new InputSource(reader));
+            Node root = document.getDocumentElement();
 
             String completed = xpath.evaluate("/failsafe-summary/completed", root);
             String errors = xpath.evaluate("/failsafe-summary/errors", root);
@@ -100,6 +115,24 @@ public final class FailsafeSummaryXmlUtils {
                     parseBoolean(timeout));
         } catch (XPathExpressionException | NumberFormatException e) {
             throw new IOException("Could not parse " + failsafeSummaryXml.getPath(), e);
+        } catch (ParserConfigurationException | SAXException e) {
+            throw new IOException("Could not parse " + failsafeSummaryXml.getPath(), e);
+        }
+    }
+
+    private static void setFeature(DocumentBuilderFactory factory, String feature, boolean value) {
+        try {
+            factory.setFeature(feature, value);
+        } catch (ParserConfigurationException e) {
+            // Optional hardening feature unsupported by this parser; secure processing is still enabled.
+        }
+    }
+
+    private static void setAttribute(DocumentBuilderFactory factory, String attribute, String value) {
+        try {
+            factory.setAttribute(attribute, value);
+        } catch (IllegalArgumentException e) {
+            // Optional access restriction unsupported by this parser.
         }
     }
 

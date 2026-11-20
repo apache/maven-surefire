@@ -21,6 +21,10 @@ package org.apache.maven.surefire.api.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -148,26 +152,42 @@ public final class TempFileManager {
             throw new UncheckedIOException(new IOException("Unable to create temporary file " + tempFile));
         }
 
-        if (tempFile.exists() || tempFiles.contains(tempFile)) {
-            // temporary file already exists? Try another name
+        if (tempFiles.contains(tempFile)) {
+            // already handed out in this JVM? Try another name
             return createTempFile(prefix, suffix);
-        } else {
-            // create temporary directory
-            if (!tempDir.exists()) {
-                if (!tempDir.mkdirs()) {
-                    throw new UncheckedIOException(
-                            new IOException("Unable to create temporary directory " + tempDir.getAbsolutePath()));
-                }
-            }
+        }
 
+        // create temporary directory with owner-only permissions where supported
+        if (!tempDir.exists()) {
             try {
-                tempFile.createNewFile();
+                Files.createDirectories(tempDir.toPath());
+                setOwnerOnlyPermissions(tempDir.toPath(), "rwx------");
             } catch (IOException ex) {
-                throw new UncheckedIOException("Unable to create temporary file " + tempFile.getAbsolutePath(), ex);
+                throw new UncheckedIOException(
+                        new IOException("Unable to create temporary directory " + tempDir.getAbsolutePath(), ex));
             }
+        }
 
-            tempFiles.add(tempFile);
-            return tempFile;
+        Path path = tempFile.toPath();
+        try {
+            Files.createFile(path);
+            setOwnerOnlyPermissions(path, "rw-------");
+        } catch (FileAlreadyExistsException ex) {
+            // A plain file or a symlink already occupies the predicted name; never reuse it
+            return createTempFile(prefix, suffix);
+        } catch (IOException ex) {
+            throw new UncheckedIOException("Unable to create temporary file " + tempFile.getAbsolutePath(), ex);
+        }
+
+        tempFiles.add(tempFile);
+        return tempFile;
+    }
+
+    private static void setOwnerOnlyPermissions(Path path, String permissions) throws IOException {
+        try {
+            Files.setPosixFilePermissions(path, PosixFilePermissions.fromString(permissions));
+        } catch (UnsupportedOperationException e) {
+            // Non-POSIX filesystem: the platform's default permissions apply
         }
     }
 

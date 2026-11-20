@@ -18,6 +18,7 @@
  */
 package org.apache.maven.plugins.surefire.report;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -35,6 +36,8 @@ import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -79,8 +82,15 @@ public final class TestSuiteXmlParser extends DefaultHandler {
     public List<ReportTestSuite> parse(InputStreamReader stream)
             throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        setFeature(factory, "http://apache.org/xml/features/disallow-doctype-decl", true);
+        setFeature(factory, "http://xml.org/sax/features/external-general-entities", false);
+        setFeature(factory, "http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setXIncludeAware(false);
 
         SAXParser saxParser = factory.newSAXParser();
+        setProperty(saxParser, XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        setProperty(saxParser, XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
 
         valid = true;
 
@@ -98,6 +108,23 @@ public final class TestSuiteXmlParser extends DefaultHandler {
         }
 
         return suites;
+    }
+
+    private static void setFeature(SAXParserFactory factory, String feature, boolean value)
+            throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {
+        try {
+            factory.setFeature(feature, value);
+        } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
+            // The parser does not know this optional hardening feature; secure processing is still enabled.
+        }
+    }
+
+    private static void setProperty(SAXParser saxParser, String property, String value) {
+        try {
+            saxParser.setProperty(property, value);
+        } catch (SAXNotRecognizedException | SAXNotSupportedException e) {
+            // The parser does not know this optional access restriction.
+        }
     }
 
     /**
