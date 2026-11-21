@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -190,10 +191,15 @@ public class Verifier {
         ExecutorResult result;
         // shared by both stdOut and stdErr below: the pump threads each close whatever stream they are given,
         // and may write concurrently, so this sink must tolerate a double close and serialize writes.
+        // Part of GH-Issue: 3628: Encoding is set to UTF-8 to ensure ITs use the same encoding on all platforms and
+        // JDKs
         try (IdempotentOutputStream sink = new IdempotentOutputStream(Files.newOutputStream(logFile.toPath()))) {
             ExecutorRequest.Builder builder = ExecutorRequest.mavenBuilder()
                     .cwd(Paths.get(basedir))
                     .arguments(args)
+                    .jvmSystemProperty("file.encoding", "UTF-8")
+                    .jvmSystemProperty("stdout.encoding", "UTF-8")
+                    .jvmSystemProperty("stderr.encoding", "UTF-8")
                     .stdOut(sink)
                     .stdErr(sink);
             if (!environmentVariables.isEmpty()) {
@@ -337,7 +343,8 @@ public class Verifier {
         File file = new File(basedir, filename);
         if (file.exists()) {
             try {
-                for (String line : Files.readAllLines(file.toPath(), Charset.defaultCharset())) {
+                // for (String line : Files.readAllLines(file.toPath(), Charset.defaultCharset())) {
+                for (String line : Files.readAllLines(file.toPath(), StandardCharsets.UTF_8)) {
                     String trimmed = line.trim();
                     if (!trimmed.startsWith("#") && !trimmed.isEmpty()) {
                         lines.add(trimmed);
