@@ -53,7 +53,9 @@ public final class CountdownCloseable implements Closeable {
      * @throws InterruptedException see {@link Object#wait()}
      */
     public synchronized void awaitClosed() throws InterruptedException {
-        if (countdown > 0) {
+        // wait() must be called in a loop: a spurious wakeup (JLS 17.2) can return control
+        // before close() has actually decremented the countdown to zero and notified.
+        while (countdown > 0) {
             wait();
         }
     }
