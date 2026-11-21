@@ -44,8 +44,17 @@ import static java.util.Map.Entry;
  * A {@link Properties} implementation that preserves insertion order.
  */
 public class SurefireProperties extends Properties implements KeyValueSource {
-    private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES =
-            asList("java.library.path", "file.encoding", "jdk.map.althashing.threshold", "line.separator");
+    private static final Collection<String> KEYS_THAT_CANNOT_BE_USED_AS_SYSTEM_PROPERTIES = asList(
+            "java.library.path",
+            "file.encoding",
+            "jdk.map.althashing.threshold",
+            "line.separator",
+            // the default Locale is fixed when the JVM starts
+            "user.language",
+            "user.country",
+            "user.region",
+            "user.variant",
+            "user.script");
 
     private final LinkedHashSet<Object> items = new LinkedHashSet<>();
 
