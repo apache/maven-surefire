@@ -46,6 +46,7 @@ import org.apache.maven.plugin.surefire.extensions.SurefireStatelessTestsetInfoR
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.report.DefaultReporterFactory;
 import org.apache.maven.surefire.api.booter.Shutdown;
+import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.ReporterConfiguration;
 import org.apache.maven.surefire.api.report.ReporterFactoryOptions;
 import org.apache.maven.surefire.booter.AbstractPathConfiguration;
@@ -55,6 +56,7 @@ import org.apache.maven.surefire.booter.PropertiesWrapper;
 import org.apache.maven.surefire.booter.ProviderConfiguration;
 import org.apache.maven.surefire.booter.StartupConfiguration;
 import org.apache.maven.surefire.booter.SurefireBooterForkException;
+import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import org.apache.maven.surefire.shared.compress.archivers.zip.Zip64Mode;
 import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveEntry;
@@ -62,14 +64,18 @@ import org.apache.maven.surefire.shared.compress.archivers.zip.ZipArchiveOutputS
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -304,6 +310,125 @@ public class ForkStarterTest {
         List<String> testClassNames = (List<String>) method.invoke(null, discoveryFile);
 
         assertThat(testClassNames).containsExactly("com.example.FooTest", "com.example.BarTest");
+    }
+
+    @Test
+    public void redactConnectionStringShouldMaskSessionIdQueryParameter() {
+        assertThat(ForkStarter.redactConnectionString(
+                        "tcp://127.0.0.1:54321?sessionId=6ba7b812-9dad-11d1-80b4-00c04fd430c8"))
+                .isEqualTo("tcp://127.0.0.1:54321?sessionId=<redacted>");
+        assertThat(ForkStarter.redactConnectionString(
+                        "tcp://127.0.0.1:54321?foo=bar&sessionId=secret-token&baz=qux#frag"))
+                .isEqualTo("tcp://127.0.0.1:54321?foo=bar&sessionId=<redacted>&baz=qux#frag");
+        assertThat(ForkStarter.redactConnectionString("pipe://1")).isEqualTo("pipe://1");
+        assertThat(ForkStarter.redactConnectionString(null)).isNull();
+    }
+
+    @Test
+    public void forkDebugLogShouldRedactSessionIdFromConnectionString() throws Exception {
+        ReporterConfiguration reporterConfiguration = new ReporterConfiguration(tmp, true);
+
+        ProviderConfiguration providerConfiguration = mock(ProviderConfiguration.class);
+        when(providerConfiguration.getReporterConfiguration()).thenReturn(reporterConfiguration);
+        when(providerConfiguration.getShutdown()).thenReturn(Shutdown.EXIT);
+
+        StartupConfiguration startupConfiguration = mock(StartupConfiguration.class);
+        when(startupConfiguration.getClasspathConfiguration()).thenReturn(new ClasspathConfig());
+        when(startupConfiguration.getClassLoaderConfiguration()).thenReturn(new ClassLoaderConfiguration(false, false));
+        when(startupConfiguration.getProviderClassName()).thenReturn(MainClass.class.getName());
+
+        ForkConfiguration forkConfiguration = mock(ForkConfiguration.class);
+        when(forkConfiguration.getWorkingDirectory()).thenReturn(tmp);
+        when(forkConfiguration.getTempDirectory()).thenReturn(tmp);
+        when(forkConfiguration.getPluginPlatform()).thenReturn(new Platform());
+        Commandline cli = new Commandline();
+        cli.setWorkingDirectory(tmp);
+        cli.setExecutable(System.getProperty("java.home") + "/bin/java");
+        cli.createArg().setLine("-jar");
+        cli.createArg().setLine("surefirebooter.jar");
+        cli.createArg().setLine("fail");
+        when(forkConfiguration.createCommandLine(eq(startupConfiguration), eq(1), eq(tmp)))
+                .thenReturn(cli);
+
+        SurefireStatelessTestsetInfoReporter statelessTestsetInfoReporter = new SurefireStatelessTestsetInfoReporter();
+        SurefireConsoleOutputReporter outputReporter = new SurefireConsoleOutputReporter();
+        SurefireStatelessReporter xmlReporter = new SurefireStatelessReporter(true, "3");
+
+        StartupReportConfiguration startupReportConfiguration = new StartupReportConfiguration(
+                true,
+                true,
+                null,
+                false,
+                tmp,
+                true,
+                "",
+                null,
+                false,
+                0,
+                null,
+                null,
+                true,
+                true,
+                true,
+                false,
+                xmlReporter,
+                outputReporter,
+                statelessTestsetInfoReporter,
+                new ReporterFactoryOptions());
+
+        ConsoleLogger logger = mock(ConsoleLogger.class);
+        ForkStarter forkStarter = new ForkStarter(
+                providerConfiguration, startupConfiguration, forkConfiguration, 0, startupReportConfiguration, logger);
+        DefaultReporterFactory reporterFactory = new DefaultReporterFactory(startupReportConfiguration, logger, 1);
+
+        final String[] capturedSessionId = new String[1];
+        ForkNodeFactory forkNodeFactory = mock(ForkNodeFactory.class);
+        when(forkNodeFactory.createForkChannel(any(ForkNodeArguments.class))).thenAnswer(inv -> {
+            ForkNodeArguments args = inv.getArgument(0);
+            capturedSessionId[0] = args.getSessionId();
+            ForkChannel channel = mock(ForkChannel.class);
+            when(channel.getForkNodeConnectionString())
+                    .thenReturn("tcp://127.0.0.1:54321?sessionId=" + args.getSessionId());
+            when(channel.getCountdownCloseablePermits()).thenReturn(1);
+            return channel;
+        });
+
+        Class<?>[] types = {
+            Object.class,
+            PropertiesWrapper.class,
+            ForkClient.class,
+            SurefireProperties.class,
+            int.class,
+            AbstractCommandReader.class,
+            ForkNodeFactory.class,
+            boolean.class
+        };
+        TestProvidingInputStream testProvidingInputStream = new TestProvidingInputStream(new ArrayDeque<String>());
+        try {
+            assertThrows(
+                    SurefireBooterForkException.class,
+                    () -> invokeMethod(
+                            forkStarter,
+                            "fork",
+                            types,
+                            null,
+                            new PropertiesWrapper(Collections.<String, String>emptyMap()),
+                            new ForkClient(reporterFactory, null, 1),
+                            new SurefireProperties(),
+                            1,
+                            testProvidingInputStream,
+                            forkNodeFactory,
+                            true));
+        } finally {
+            testProvidingInputStream.close();
+        }
+
+        assertThat(capturedSessionId[0]).isNotBlank();
+        ArgumentCaptor<String> debugMessages = ArgumentCaptor.forClass(String.class);
+        verify(logger, atLeastOnce()).debug(debugMessages.capture());
+        assertThat(debugMessages.getAllValues())
+                .anyMatch(msg -> msg.contains("tcp://127.0.0.1:54321?sessionId=<redacted>"))
+                .noneMatch(msg -> msg.contains(capturedSessionId[0]));
     }
 
     @SuppressWarnings("unchecked")
