@@ -97,6 +97,8 @@ There are certain times when some tests are causing the build to fail. Excluding
 </project>
 ```
 
+Note that inclusion and exclusion patterns are matched against the compiled test classes (`.class` files), not against the source files. A trailing `.java` is accepted and treated as `.class`, which is why the examples above work. Other source file extensions such as `.groovy` or `.kt` are not translated, so a pattern like `**/MyGroovyTest.groovy` matches nothing. Leave the extension off (`**/MyGroovyTest`) or use `.class` (`**/MyGroovyTest.class`) instead.
+
 Regular Expression Support
 --------------------------
 
