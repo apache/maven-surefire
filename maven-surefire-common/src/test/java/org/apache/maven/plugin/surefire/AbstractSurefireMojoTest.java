@@ -2681,6 +2681,30 @@ public class AbstractSurefireMojoTest {
     }
 
     @Test
+    public void shouldAlwaysExcludeNestedClassesEvenWithCustomExcludes() throws Exception {
+        Mojo plugin = new Mojo();
+
+        plugin.setLogger(mock(Logger.class));
+
+        // a custom exclude unrelated to nested classes must not disable the default "**/*$*" exclude (SUREFIRE-1720)
+        plugin.setExcludes(singletonList("**/*IntegrationTest.java"));
+
+        VersionRange version = VersionRange.createFromVersion("1.0");
+        ArtifactHandler handler = new DefaultArtifactHandler();
+        Artifact testDeps = new DefaultArtifact("g", "a", version, "compile", "jar", null, handler);
+        File classes = Files.createTempDirectory(tempFolder, "surefire-classes").toFile();
+        testDeps.setFile(classes);
+        assertThat(new File(classes, "AppTest.class").createNewFile()).isTrue();
+        assertThat(new File(classes, "AppTest$NestedTests.class").createNewFile())
+                .isTrue();
+        plugin.setProjectTestArtifacts(singletonList(testDeps));
+        plugin.setDependenciesToScan(new String[] {"g:a"});
+
+        DefaultScanResult result = plugin.scanDependencies();
+        assertThat(result.getClasses()).containsExactly("AppTest");
+    }
+
+    @Test
     public void shouldFilterTestMethodsOnExcludes() throws Exception {
         Mojo plugin = new Mojo();
 

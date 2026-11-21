@@ -217,13 +217,14 @@ public class SurefireMojo extends AbstractSurefireMojo implements SurefireReport
 
     /**
      * A list of {@literal <exclude>} elements specifying the tests (by pattern) that should be excluded in testing.
-     * When not specified and when the {@code test} parameter is not specified, the default excludes will be <br>
+     * Unless the {@code test} parameter is specified, this is always applied in addition to the default exclude<br>
      * <pre><code>
      * {@literal <excludes>}
      *     {@literal <exclude>}**{@literal /}*$*{@literal </exclude>}
      * {@literal </excludes>}
      * </code></pre>
-     * (which excludes all inner classes).
+     * (which excludes all inner/nested classes, since they are run as part of their enclosing class rather than
+     * scanned as separate test classes).
      * <br>
      * Each exclude item may also contain a comma-separated sub-list of items, which will be treated as multiple
      * {@literal <exclude>} entries.<br>
