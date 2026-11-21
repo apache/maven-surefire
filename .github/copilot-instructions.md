@@ -28,7 +28,7 @@ mvn test -pl surefire-booter -Dtest=ForkedBooterTest
 mvn test -pl surefire-booter -Dtest=ForkedBooterTest#testMethod
 
 # Run a single integration test (requires -Prun-its)
-mvn verify -pl surefire-its -Prun-its -Dit.test=JUnit47RedirectOutputIT -Dmaven.build.cache.enabled=false
+mvn verify -pl surefire-its -Prun-its -Dit.test=JUnit447RedirectOutputIT -Dmaven.build.cache.enabled=false
 
 # Checkstyle
 mvn checkstyle:check
