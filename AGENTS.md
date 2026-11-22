@@ -35,38 +35,57 @@ Points at the Apache Maven family umbrella security model.
 
 ## Build Commands
 
+Use `verify`, not `install`. In a reactor build each module gets the jars its sibling modules just
+built, so nothing has to be installed in `~/.m2` first. CI runs `mvn clean verify -Prun-its` as well.
+
 ```bash
 # Full build (unit tests only)
-mvn clean install
+mvn clean verify
 
 # Full build with integration tests
-mvn clean install -Prun-its
+mvn clean verify -Prun-its
 
-# Build a single module
-mvn clean install -pl surefire-api
-mvn clean install -pl :maven-surefire-report-plugin -am   # -am builds dependencies too
+# Build one module and the modules it depends on (-am)
+mvn verify -pl surefire-api -am
+mvn verify -pl :maven-surefire-report-plugin -am
 
 # Skip tests
-mvn clean install -DskipTests
-
-# Run unit tests for a single module
-mvn test -pl maven-surefire-common
+mvn clean verify -DskipTests
 
 # Run a single test class
-mvn test -pl surefire-booter -Dtest=ForkedBooterTest
+# (failIfNoSpecifiedTests=false lets the upstream modules pass when nothing matches there)
+mvn verify -pl surefire-booter -am -Dtest=ForkedBooterTest -Dsurefire.failIfNoSpecifiedTests=false
 
 # Run a single test method
-mvn test -pl surefire-booter -Dtest=ForkedBooterTest#testMethod
+mvn verify -pl surefire-booter -am -Dtest=ForkedBooterTest#testMethod -Dsurefire.failIfNoSpecifiedTests=false
 
-# Run a single integration test (requires -Prun-its)
-mvn verify -pl surefire-its -Prun-its -Dit.test=JUnit447RedirectOutputIT -Dmaven.build.cache.enabled=false
+# Run a single integration test (-Dtest=none skips the unit tests of the upstream modules)
+mvn verify -pl surefire-its -am -Prun-its -Dit.test=JUnit447RedirectOutputIT -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false
 
-# Checkstyle
+# Format the code and run Checkstyle
+mvn spotless:apply
 mvn checkstyle:check
 
 # Build site documentation
-mvn site -pl maven-surefire-plugin
+mvn verify site -pl maven-surefire-plugin -am -DskipTests
 ```
+
+### Build Gotchas
+
+- **Always use `-am` with `-pl`.** Without it Maven takes the sibling modules from `~/.m2`. That copy
+  can be an old snapshot or missing, and you end up testing against stale code without noticing.
+- **Run up to `verify` (or at least `package`), not `compile` or `test`, when building more than one module.**
+  `surefire-shared-utils` has no sources. Its relocated classes (`org.apache.maven.surefire.shared.*`)
+  only exist once the shade plugin runs at `package`. So `mvn test -pl surefire-booter -am` fails with
+  `package org.apache.maven.surefire.shared.lang3 does not exist`.
+- **`-Prun-its` still writes to the local repository.** In `pre-integration-test`, `maven-invoker-plugin:install`
+  copies the plugins, `surefire-junit-platform`, `surefire-shadefire` and `maven-surefire-report-plugin`
+  into `${settings.localRepository}` so the IT projects can find them. If a new IT needs another artifact
+  that `surefire-its` does not depend on, add it to `extraArtifacts` in `surefire-its/pom.xml`.
+- **`-D` options on the outer command line do not reach the Maven builds the ITs launch.**
+- **Every build runs Spotless and Checkstyle in `process-sources`.** Locally Spotless applies its formatting,
+  so expect it to reformat the files you touched.
+- **`install` is only needed** for the IDE setup below, or when another project has to use your snapshot.
 
 ## High-Level Architecture
 
@@ -115,7 +134,7 @@ All test frameworks execute through the unified JUnit Platform provider (`surefi
 
 ### Integration Tests
 
-`surefire-its` contains integration tests that launch real Maven builds against fixture projects in `surefire-its/src/test/resources/`. Requires `-Prun-its`. Uses `maven-executor` (via the `fixture.Verifier` wrapper) to invoke Maven and assert on build output.
+`surefire-its` contains integration tests that launch real Maven builds against fixture projects in `surefire-its/src/test/resources/`. Requires `-Prun-its`. Uses `maven-executor` (via the `fixture.Verifier` wrapper) to invoke Maven and assert on build output. The profile installs what those builds need into the local repository first, so `verify` is enough (see Build Gotchas).
 
 ## Key Conventions
 

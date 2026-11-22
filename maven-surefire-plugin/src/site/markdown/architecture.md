@@ -453,33 +453,6 @@ A group which TestNG accepts but JUnit cannot parse as a tag expression, like `(
 
 ---
 
-## Build and Test
-
-```bash
-# Full build with unit tests
-mvn clean install
-
-# Full build with integration tests
-mvn clean install -P run-its
-
-# Build a single module
-mvn clean install -pl surefire-booter
-
-# Run a single test
-mvn test -pl surefire-booter -Dtest=ForkedBooterTest
-
-# Run a single integration test
-mvn verify -pl surefire-its -Prun-its -Dit.test=JUnit47RedirectOutputIT
-
-# IDE setup (required before importing)
-mvn install -P ide-development -f surefire-shared-utils/pom.xml
-mvn compile -f surefire-grouper/pom.xml
-```
-
-**Requirements**: Maven 3.6.3+, JDK 8+ (source level 8, `animal-sniffer` enforces Java 8 API).
-
----
-
 ## Stack trace filtering
 
 A new `StackTraceProvider` optimizes memory usage by truncating stack traces to 15 frames and filtering JDK packages by default. This is configurable:
