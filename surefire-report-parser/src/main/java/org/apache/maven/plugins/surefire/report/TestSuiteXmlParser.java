@@ -113,7 +113,7 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         currentSuite = defaultSuite;
                         String timeStr = attributes.getValue("time");
                         if (timeStr != null) {
-                            defaultSuite.setTimeElapsed(Float.parseFloat(timeStr));
+                            defaultSuite.setTimeElapsed(Float.parseFloat(timeStr.replaceAll(",", "")));
                         } else {
                             consoleLogger.warning("No time attribute found on testsuite element");
                         }
@@ -156,7 +156,7 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                         testCase.setFullClassName(currentSuite.getFullClassName())
                                 .setClassName(currentSuite.getName())
                                 .setFullName(currentSuite.getFullClassName() + "." + testCase.getName())
-                                .setTime(timeStr != null ? Float.parseFloat(timeStr) : 0.0f);
+                                .setTime(timeStr != null ? Float.parseFloat(timeStr.replaceAll(",", "")) : 0.0f);
 
                         if (currentSuite != defaultSuite) {
                             currentSuite.setTimeElapsed(testCase.getTime() + currentSuite.getTimeElapsed());
@@ -228,7 +228,8 @@ public final class TestSuiteXmlParser extends DefaultHandler {
                 break;
             case "time":
                 try {
-                    defaultSuite.setTimeElapsed(Float.parseFloat(currentElement.toString()));
+                    defaultSuite.setTimeElapsed(
+                            Float.parseFloat(currentElement.toString().replaceAll(",", "")));
                 } catch (NumberFormatException e) {
                     throw new SAXException("Failed to parse time value", e);
                 }
