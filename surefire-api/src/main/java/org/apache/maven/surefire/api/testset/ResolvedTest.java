@@ -355,8 +355,11 @@ public final class ResolvedTest {
         }
 
         private boolean matchClassRegexPatter(String testClassFile) {
-            String realFile = separatorChar == '/' ? testClassFile : testClassFile.replace('/', separatorChar);
-            return of(classPattern).matches(realFile, true);
+            // testClassFile is always forward-slash (see FileScanner/TestListResolver), and so is the user's
+            // %regex[...] pattern by documented contract (inclusion-exclusion.md.vm: "Slashes here are forward,
+            // even on Windows") - neither side is platform-native, so unlike matchClassPatter there is nothing
+            // to convert here.
+            return of(classPattern).matches(testClassFile, true);
         }
     }
 
