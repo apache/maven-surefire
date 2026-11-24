@@ -144,7 +144,7 @@ public class ForkConfigurationTest {
 
         assertThat(cli.getEnvironmentVariables())
                 .contains("key1=val1", "key2=val2", "key3=val3")
-                .doesNotContain("PATH=")
+                .allMatch(e -> !e.regionMatches(IS_OS_WINDOWS, 0, "PATH=", 0, 5))
                 .doesNotHaveDuplicates();
     }
 
@@ -198,14 +198,14 @@ public class ForkConfigurationTest {
 
         assertThat(cliFork1.getEnvironmentVariables())
                 .contains("FORK_ID=1")
-                .doesNotContain("PATH=")
+                .allMatch(e -> !e.regionMatches(IS_OS_WINDOWS, 0, "PATH=", 0, 5))
                 .doesNotHaveDuplicates();
 
         Commandline cliFork2 = config.createCommandLine(startup, 2, getTempDirectory());
 
         assertThat(cliFork2.getEnvironmentVariables())
                 .contains("FORK_ID=2")
-                .doesNotContain("PATH=")
+                .allMatch(e -> !e.regionMatches(IS_OS_WINDOWS, 0, "PATH=", 0, 5))
                 .doesNotHaveDuplicates();
     }
 
