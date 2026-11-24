@@ -44,7 +44,10 @@ public class Commandline extends org.apache.maven.surefire.extensions.util.Comma
     @Override
     protected Map<String, String> environment() {
         Map<String, String> env = super.environment();
-        env.keySet().removeAll(excludedEnvironmentVariables);
+        // one at a time, so the map decides how names match: ignoring case on Windows
+        for (String name : excludedEnvironmentVariables) {
+            env.remove(name);
+        }
         return env;
     }
 }

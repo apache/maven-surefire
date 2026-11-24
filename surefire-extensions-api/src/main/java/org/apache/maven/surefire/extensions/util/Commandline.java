@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 /**
  * The command line of a process Surefire starts: an executable, its arguments, the environment and the working
@@ -112,11 +113,20 @@ public class Commandline {
     /**
      * The environment the process gets: the environment of this JVM, with {@link #addEnvironment added} variables
      * overriding it. Subclasses may remove variables.
+     * <p>
+     * On Windows, names are matched ignoring case, like Windows does, so an added {@code PATH} replaces {@code Path}.
+     * Elsewhere, {@code PWD} is set to the working directory, as the shell used to start the process did.
      *
      * @return a mutable copy
      */
     protected Map<String, String> environment() {
-        Map<String, String> env = new LinkedHashMap<>(System.getenv());
+        Map<String, String> env = WINDOWS ? new TreeMap<>(String.CASE_INSENSITIVE_ORDER) : new LinkedHashMap<>();
+        env.putAll(System.getenv());
+        if (!WINDOWS && workingDirectory != null) {
+            env.put(
+                    "PWD",
+                    workingDirectory.toPath().toAbsolutePath().normalize().toString());
+        }
         env.putAll(addedEnvironment);
         return env;
     }
