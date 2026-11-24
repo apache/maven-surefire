@@ -1,3 +1,4 @@
+/Users/efegokdemir/.zshenv:.:1: no such file or directory: /private/tmp/oss-apache-datafusion-comet-7748.9Fxtj6/repo/tooling/cargo/env
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -529,8 +530,10 @@ public class AbstractSurefireMojoJava7PlusTest {
         List<String[]> args = providerInfo.getJpmsArguments(providerRequirements);
         assertThat(args).isEmpty();
 
+        when(handler.isAddedToClasspath()).thenReturn(true);
         Artifact junitPlatformCommons = new DefaultArtifact(
                 "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "jar", "", handler);
+        junitPlatformCommons.setFile(mockFile("junit-platform-commons.jar"));
         providerInfo =
                 mojo.newJUnitPlatformProviderInfo(new TestClassPath(singleton(junitPlatformCommons), null, null, null));
         assertThat(providerInfo.getJpmsArguments(providerRequirements))
@@ -545,19 +548,42 @@ public class AbstractSurefireMojoJava7PlusTest {
                             "--add-opens", "org.junit.platform.commons/org.junit.platform.commons.logging=ALL-UNNAMED"
                         },
                         atIndex(1));
+
+        when(handler.isAddedToClasspath()).thenReturn(false);
+        Artifact commonsPom = new DefaultArtifact(
+                "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "pom", "", handler);
+        commonsPom.setFile(mockFile("junit-platform-commons.pom"));
+        ProviderInfo pomOnly =
+                mojo.newJUnitPlatformProviderInfo(new TestClassPath(singleton(commonsPom), null, null, null));
+        assertThat(pomOnly.getJpmsArguments(providerRequirements)).isEmpty();
+
+        Artifact commonsWithoutFile = new DefaultArtifact(
+                "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "jar", "", handler);
+        ProviderInfo missingFile =
+                mojo.newJUnitPlatformProviderInfo(new TestClassPath(singleton(commonsWithoutFile), null, null, null));
+        assertThat(missingFile.getJpmsArguments(providerRequirements)).isEmpty();
     }
 
     @Test
     public void shouldApplyCommonsGuardToShadefire() {
         Mojo mojo = new Mojo();
         ProviderRequirements requirements = new ProviderRequirements(true, false, true);
+        when(handler.isAddedToClasspath()).thenReturn(true);
         Artifact commons = new DefaultArtifact(
                 "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "jar", "", handler);
+        commons.setFile(mockFile("junit-platform-commons.jar"));
         ProviderInfo withCommons =
                 mojo.newShadefireProviderInfo(new TestClassPath(singleton(commons), null, null, null));
         ProviderInfo providerOnly = mojo.newShadefireProviderInfo(new TestClassPath(emptyList(), null, null, null));
         assertThat(withCommons.getJpmsArguments(requirements)).hasSize(2);
         assertThat(providerOnly.getJpmsArguments(requirements)).isEmpty();
+        when(handler.isAddedToClasspath()).thenReturn(false);
+        Artifact commonsPom = new DefaultArtifact(
+                "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "pom", "", handler);
+        commonsPom.setFile(mockFile("junit-platform-commons.pom"));
+        ProviderInfo pomOnly =
+                mojo.newShadefireProviderInfo(new TestClassPath(singleton(commonsPom), null, null, null));
+        assertThat(pomOnly.getJpmsArguments(requirements)).isEmpty();
         assertThat(withCommons.getJpmsArguments(new ProviderRequirements(true, true, false)))
                 .isEmpty();
         assertThat(withCommons.getJpmsArguments(new ProviderRequirements(false, false, false)))
