@@ -1,4 +1,3 @@
-/Users/efegokdemir/.zshenv:.:1: no such file or directory: /private/tmp/oss-apache-datafusion-comet-7748.9Fxtj6/repo/tooling/cargo/env
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -581,8 +580,7 @@ public class AbstractSurefireMojoJava7PlusTest {
         Artifact commonsPom = new DefaultArtifact(
                 "org.junit.platform", "junit-platform-commons", createFromVersion("1"), "test", "pom", "", handler);
         commonsPom.setFile(mockFile("junit-platform-commons.pom"));
-        ProviderInfo pomOnly =
-                mojo.newShadefireProviderInfo(new TestClassPath(singleton(commonsPom), null, null, null));
+        ProviderInfo pomOnly = mojo.newShadefireProviderInfo(new TestClassPath(singleton(commonsPom), null, null, null));
         assertThat(pomOnly.getJpmsArguments(requirements)).isEmpty();
         assertThat(withCommons.getJpmsArguments(new ProviderRequirements(true, true, false)))
                 .isEmpty();
