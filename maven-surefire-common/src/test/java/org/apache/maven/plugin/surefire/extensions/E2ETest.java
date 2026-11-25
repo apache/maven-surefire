@@ -27,6 +27,9 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -34,17 +37,20 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.maven.plugin.surefire.booterclient.output.DeserializedStacktraceWriter;
 import org.apache.maven.plugin.surefire.booterclient.output.ThreadedStreamConsumer;
 import org.apache.maven.plugin.surefire.log.api.ConsoleLogger;
 import org.apache.maven.plugin.surefire.log.api.NullConsoleLogger;
 import org.apache.maven.surefire.api.booter.Command;
 import org.apache.maven.surefire.api.event.Event;
+import org.apache.maven.surefire.api.event.JvmExitErrorEvent;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.TestOutputReportEntry;
 import org.apache.maven.surefire.booter.spi.EventChannelEncoder;
 import org.apache.maven.surefire.booter.spi.SurefireMasterProcessChannelProcessorFactory;
 import org.apache.maven.surefire.extensions.CommandReader;
 import org.apache.maven.surefire.extensions.EventHandler;
+import org.apache.maven.surefire.extensions.util.CommandlineStreams;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -64,6 +70,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class E2ETest {
     private static final String LONG_STRING =
             "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
+    private static final String FORK_ERROR = "Fork failed before its connection was accepted";
 
     @Test
     public void endToEndTest() throws Exception {
@@ -227,6 +234,69 @@ public class E2ETest {
             assertThat(ex.getMessage())
                     .contains("The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
                             + forkNodeArguments.getSessionId() + "'.");
+        }
+    }
+
+    @Test
+    @Timeout(30)
+    void drainsExitErrorFromQueuedConnection() throws Exception {
+        ForkNodeArguments arguments = new Arguments(UUID.randomUUID().toString(), 1, new NullConsoleLogger());
+
+        try (SurefireForkChannel server = new SurefireForkChannel(arguments);
+                CommandReader commands = new DummyCommandReader()) {
+            server.tryConnectToClient();
+            String java =
+                    Paths.get(System.getProperty("java.home"), "bin", "java").toString();
+            String classPath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
+            Process fork = new ProcessBuilder(
+                            java,
+                            "-cp",
+                            classPath,
+                            ExitWithDiagnostic.class.getName(),
+                            server.getForkNodeConnectionString())
+                    .redirectError(ProcessBuilder.Redirect.INHERIT)
+                    .start();
+
+            try (CommandlineStreams streams = new CommandlineStreams(fork)) {
+                // Wait for the fork to send the error and exit before the server accepts the connection.
+                assertThat(fork.waitFor(10, SECONDS)).isTrue();
+                assertThat(fork.exitValue()).isEqualTo(1);
+
+                List<Event> events = new ArrayList<>();
+                CountDownLatch drained = new CountDownLatch(1);
+                // Only the native stdout and TCP event consumers are bound in this test.
+                CountdownCloseable countdown =
+                        new CountdownCloseable(drained::countDown, server.getCountdownCloseablePermits() - 1);
+                server.bindCommandReader(commands, streams.getStdInChannel());
+                server.bindEventHandler(events::add, countdown, streams.getStdOutChannel(), fork);
+
+                assertThat(drained.await(10, SECONDS)).isTrue();
+                assertThat(events)
+                        .singleElement()
+                        .isInstanceOfSatisfying(
+                                JvmExitErrorEvent.class,
+                                error -> assertThat(error.getStackTraceWriter()
+                                                .getThrowable()
+                                                .getMessage())
+                                        .isEqualTo(FORK_ERROR));
+            } finally {
+                if (fork.isAlive()) {
+                    fork.destroyForcibly();
+                }
+            }
+        }
+    }
+
+    public static class ExitWithDiagnostic {
+        public static void main(String[] args) throws IOException {
+            ForkNodeArguments arguments = new Arguments("", 1, new NullConsoleLogger());
+            try (SurefireMasterProcessChannelProcessorFactory client =
+                    new SurefireMasterProcessChannelProcessorFactory()) {
+                client.connect(args[0]);
+                EventChannelEncoder encoder = (EventChannelEncoder) client.createEncoder(arguments);
+                encoder.sendExitError(new DeserializedStacktraceWriter(FORK_ERROR, null, null), false);
+            }
+            System.exit(1);
         }
     }
 
