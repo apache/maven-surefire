@@ -98,6 +98,27 @@ public abstract class ForkChannel implements Closeable {
             ReadableByteChannel stdOut)
             throws IOException, InterruptedException;
 
+    /**
+     * Starts reading events from the fork. A channel that waits for a connection
+     * can use the process to detect a fork that exits before connecting.
+     *
+     * @param eventHandler handler for fork events
+     * @param countdownCloseable counts down when a stream consumer finishes
+     * @param stdOut optional standard output stream of the JVM
+     * @param process the forked JVM process
+     * @throws InterruptedException channel interrupted
+     * @throws IOException if an error occurs in the fork channel
+     * @since 3.6.2
+     */
+    public void bindEventHandler(
+            @Nonnull EventHandler<Event> eventHandler,
+            @Nonnull CountdownCloseable countdownCloseable,
+            ReadableByteChannel stdOut,
+            Process process)
+            throws IOException, InterruptedException {
+        bindEventHandler(eventHandler, countdownCloseable, stdOut);
+    }
+
     @Nonnull
     protected ForkNodeArguments getArguments() {
         return arguments;
