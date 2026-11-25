@@ -46,7 +46,6 @@ import org.apache.maven.surefire.extensions.ForkNodeFactory;
 import static java.io.File.pathSeparatorChar;
 import static org.apache.maven.plugin.surefire.SurefireHelper.escapeToPlatformPath;
 import static org.apache.maven.surefire.api.util.internal.StringUtils.NL;
-import static org.apache.maven.surefire.shared.lang3.StringUtils.replace;
 
 /**
  * @author <a href="mailto:tibordigana@apache.org">Tibor Digana (tibor17)</a>
@@ -152,7 +151,7 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
                 args.append("--module-path").append(NL).append('"');
 
                 for (Iterator<String> it = modulePath.iterator(); it.hasNext(); ) {
-                    args.append(replace(it.next(), "\\", "\\\\"));
+                    args.append(escapeQuoted(it.next()));
                     if (it.hasNext()) {
                         args.append(pathSeparatorChar);
                     }
@@ -165,7 +164,7 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
                 args.append("--class-path").append(NL).append('"');
 
                 for (Iterator<String> it = classPath.iterator(); it.hasNext(); ) {
-                    args.append(replace(it.next(), "\\", "\\\\"));
+                    args.append(escapeQuoted(it.next()));
                     if (it.hasNext()) {
                         args.append(pathSeparatorChar);
                     }
@@ -180,7 +179,7 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
                         .append(moduleName)
                         .append('=')
                         .append('"')
-                        .append(replace(patchFile.getPath(), "\\", "\\\\"))
+                        .append(escapeQuoted(patchFile.getPath()))
                         .append('"')
                         .append(NL);
 
@@ -223,5 +222,9 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
 
             return surefireArgs;
         }
+    }
+
+    private static String escapeQuoted(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", "\\r").replace("\n", "\\n");
     }
 }
