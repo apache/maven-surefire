@@ -50,7 +50,6 @@ under the License.
         <configuration>
           <argLine>${fork.jvm.arg}</argLine>
           <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
-          <forkedProcessTimeoutInSeconds>2</forkedProcessTimeoutInSeconds>
           <failIfNoTests>true</failIfNoTests>
         </configuration>
         <executions>

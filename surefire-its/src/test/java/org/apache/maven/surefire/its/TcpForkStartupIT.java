@@ -29,6 +29,7 @@ class TcpForkStartupIT extends SurefireJUnit4IntegrationTestCase {
         unpack("tcp-fork-startup")
                 .setForkJvm()
                 .addGoal("-Dfork.jvm.arg=-surefire-invalid-jvm-option")
+                .sysProp("failsafe.timeout", "2")
                 .maven()
                 .withFailure()
                 .executeVerify()
@@ -38,6 +39,6 @@ class TcpForkStartupIT extends SurefireJUnit4IntegrationTestCase {
 
     @Test
     void runsTestsWhenForkConnects() {
-        unpack("tcp-fork-startup").executeVerify().assertIntegrationTestSuiteResults(1, 0, 0, 0);
+        unpack("tcp-fork-startup").setForkJvm().executeVerify().assertIntegrationTestSuiteResults(1, 0, 0, 0);
     }
 }
