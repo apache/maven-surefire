@@ -55,6 +55,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.parallel.Resources;
+import org.junit.jupiter.engine.JupiterTestEngine;
 import org.junit.platform.engine.TestDescriptor;
 import org.junit.platform.engine.TestExecutionResult;
 import org.junit.platform.engine.UniqueId;
@@ -1670,7 +1671,7 @@ public class JUnitPlatformProviderTest {
     private static LauncherSessionFactory spyingLauncherSessionFactory(
             List<LauncherSession> createdSessions, TestExecutionListener... listeners) {
         LauncherConfig launcherConfig =
-                LauncherConfig.builder().addTestExecutionListeners(listeners).build();
+                jupiterOnly().addTestExecutionListeners(listeners).build();
         return cancellationToken -> {
             LauncherSession session = spy(LauncherFactory.openSession(launcherConfig));
             createdSessions.add(session);
@@ -1683,10 +1684,15 @@ public class JUnitPlatformProviderTest {
     }
 
     private static LauncherSessionFactory launcherSessionConfig(UnaryOperator<LauncherConfig.Builder> configurer) {
-        LauncherConfig launcherConfig =
-                configurer.apply(LauncherConfig.builder()).build();
+        LauncherConfig launcherConfig = configurer.apply(jupiterOnly()).build();
         return cancellationToken ->
                 createLauncherSessionAdapter(LauncherFactory.openSession(launcherConfig), cancellationToken);
+    }
+
+    // The Surefire running this build adds the vintage engine because junit:junit is a test dependency.
+    // Only register Jupiter so that extra engine doesn't change the counts.
+    private static LauncherConfig.Builder jupiterOnly() {
+        return LauncherConfig.builder().enableTestEngineAutoRegistration(false).addTestEngines(new JupiterTestEngine());
     }
 
     private static LauncherSessionAdapter createLauncherSessionAdapter(

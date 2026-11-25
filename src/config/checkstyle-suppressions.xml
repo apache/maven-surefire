@@ -25,5 +25,5 @@ under the License.
   <suppress checks="MethodLengthCheck" files="AbstractStreamEncoderTest.java|EventChannelEncoderTest.java|EventDecoderTest.java|AbstractSurefireMojoTest.java|ForkStarter.java|AbstractSurefireMojoJava7PlusTest.java" />
   <suppress checks="UnusedLocalVariableCheck" files="PpidCheckerTest.java|ATestClass.java|E2ETest.java|AbstractSurefireMojo.java|AbstractStreamDecoderTest.java" />
   <suppress checks="AvoidStarImportCheck" files="BooterDeserializer.java|TestSuiteXmlParserTest.java" />
-  <suppress checks="FileLengthCheck" files="AbstractSurefireMojo.java|AbstractSurefireMojoTest.java" />
+  <suppress checks="FileLengthCheck" files="AbstractSurefireMojo.java|AbstractSurefireMojoTest.java|JUnitPlatformProviderTest.java" />
 </suppressions>
