@@ -37,6 +37,7 @@ import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.core.LauncherFactory;
 
 import static java.util.Collections.emptyList;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -106,16 +107,22 @@ public class TestPlanScannerFilterTest {
     @Test
     public void discoveryFailureIncludesRootCauseMessage() {
         RuntimeException rootCause = new RuntimeException("listener failed during discovery");
+        JUnitException original =
+                new JUnitException("engine discovery failed", new RuntimeException("wrapper", rootCause));
+        StackTraceElement[] stackTrace = {new StackTraceElement("Test", "method", "Test.java", 10)};
+        IllegalStateException suppressed = new IllegalStateException("suppressed");
+        original.setStackTrace(stackTrace);
+        original.addSuppressed(suppressed);
         Launcher launcher = mock(Launcher.class);
-        when(launcher.discover(any()))
-                .thenThrow(new JUnitException("engine discovery failed", new RuntimeException("wrapper", rootCause)));
+        when(launcher.discover(any())).thenThrow(original);
         JUnitException failure = assertThrows(
                 JUnitException.class,
-                () -> new TestPlanScannerFilter(new LauncherAdapter(launcher, null), new Filter<?>[0])
-                        .accept(ClassWithTestMethods.class));
+                () -> new LauncherAdapter(launcher, null).discover(mock(LauncherDiscoveryRequest.class)));
 
         assertEquals("engine discovery failed: " + rootCause, failure.getMessage());
         assertSame(rootCause, failure.getCause().getCause().getCause());
+        assertArrayEquals(original.getStackTrace(), failure.getStackTrace());
+        assertSame(suppressed, failure.getSuppressed()[0]);
     }
 
     @Test

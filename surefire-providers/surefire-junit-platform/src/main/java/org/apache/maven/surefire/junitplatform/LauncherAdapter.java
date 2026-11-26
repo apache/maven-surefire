@@ -19,9 +19,12 @@
 package org.apache.maven.surefire.junitplatform;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.maven.surefire.api.util.ReflectionUtils;
 import org.apache.maven.surefire.api.util.SurefireReflectionException;
@@ -49,11 +52,7 @@ final class LauncherAdapter {
     }
 
     TestPlan discover(LauncherDiscoveryRequest discoveryRequest) {
-        try {
-            return delegate.discover(discoveryRequest);
-        } catch (JUnitException e) {
-            throw withRootCauseMessage(e);
-        }
+        return translateJUnitException(() -> delegate.discover(discoveryRequest));
     }
 
     void execute(LauncherDiscoveryRequest discoveryRequest, TestExecutionListener... listeners) {
@@ -66,8 +65,20 @@ final class LauncherAdapter {
 
     void executeWithoutCancellationToken(
             LauncherDiscoveryRequest discoveryRequest, TestExecutionListener... listeners) {
+        translateJUnitException(() -> delegate.execute(discoveryRequest, listeners));
+    }
+
+    private <T> T translateJUnitException(Supplier<T> action) {
         try {
-            delegate.execute(discoveryRequest, listeners);
+            return action.get();
+        } catch (JUnitException e) {
+            throw withRootCauseMessage(e);
+        }
+    }
+
+    private void translateJUnitException(Runnable action) {
+        try {
+            action.run();
         } catch (JUnitException e) {
             throw withRootCauseMessage(e);
         }
@@ -92,24 +103,17 @@ final class LauncherAdapter {
     }
 
     static JUnitException findJUnitException(Throwable failure) {
-        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
-        Throwable cause = failure;
-        while (cause != null && visited.add(cause)) {
+        for (Throwable cause : causeChain(failure)) {
             if (cause instanceof JUnitException) {
                 return (JUnitException) cause;
             }
-            cause = cause.getCause();
         }
         return null;
     }
 
     private static JUnitException withRootCauseMessage(JUnitException failure) {
-        Throwable rootCause = failure;
-        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
-        visited.add(rootCause);
-        while (rootCause.getCause() != null && visited.add(rootCause.getCause())) {
-            rootCause = rootCause.getCause();
-        }
+        List<Throwable> causeChain = causeChain(failure);
+        Throwable rootCause = causeChain.get(causeChain.size() - 1);
 
         if (rootCause == failure) {
             return failure;
@@ -129,12 +133,33 @@ final class LauncherAdapter {
                 if (message.contains(rootCauseType)) {
                     return failure;
                 }
-                return new JUnitException(message + ": " + rootCauseType, failure);
+                return copyFailureContext(new JUnitException(message + ": " + rootCauseType, failure), failure);
             }
         }
-        return new JUnitException(
-                message == null || message.isEmpty() ? rootCauseDescription : message + ": " + rootCauseDescription,
+        return copyFailureContext(
+                new JUnitException(
+                        message == null || message.isEmpty()
+                                ? rootCauseDescription
+                                : message + ": " + rootCauseDescription,
+                        failure),
                 failure);
+    }
+
+    private static List<Throwable> causeChain(Throwable failure) {
+        List<Throwable> causes = new ArrayList<>();
+        Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+        for (Throwable cause = failure; cause != null && visited.add(cause); cause = cause.getCause()) {
+            causes.add(cause);
+        }
+        return causes;
+    }
+
+    private static JUnitException copyFailureContext(JUnitException translated, JUnitException original) {
+        translated.setStackTrace(original.getStackTrace());
+        for (Throwable suppressed : original.getSuppressed()) {
+            translated.addSuppressed(suppressed);
+        }
+        return translated;
     }
 
     private static Method findExecuteMethodWithLauncherExecutionRequestParameter() {
