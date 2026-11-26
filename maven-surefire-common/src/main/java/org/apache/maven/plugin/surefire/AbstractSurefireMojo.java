@@ -400,6 +400,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
      * <li>{@code file.encoding}</li>
      * <li>{@code jdk.map.althashing.threshold}</li>
      * <li>{@code line.separator}</li>
+     * <li>{@code user.language}, {@code user.country}, {@code user.region}, {@code user.variant} and
+     * {@code user.script}, which set the default {@code Locale}</li>
      * </ul>
      *
      * @see #systemProperties

@@ -172,30 +172,50 @@ public class TestListResolver implements GenericTestPattern<ResolvedTest, String
     public boolean shouldRun(String testClassFile, String methodName) {
         if (isEmpty() || isBlank(testClassFile) && isBlank(methodName)) {
             return true;
-        } else {
-            boolean shouldRun = false;
-
-            if (getIncludedPatterns().isEmpty()) {
-                shouldRun = true;
-            } else {
-                for (ResolvedTest filter : getIncludedPatterns()) {
-                    if (filter.matchAsInclusive(testClassFile, methodName)) {
-                        shouldRun = true;
-                        break;
-                    }
-                }
-            }
-
-            if (shouldRun) {
-                for (ResolvedTest filter : getExcludedPatterns()) {
-                    if (filter.matchAsExclusive(testClassFile, methodName)) {
-                        shouldRun = false;
-                        break;
-                    }
-                }
-            }
-            return shouldRun;
         }
+        return isIncluded(testClassFile, methodName) && !isExcluded(testClassFile, methodName);
+    }
+
+    /**
+     * Same as {@link #shouldRun(String, String)} for a test that goes by two method names.
+     * A JUnit 4 parameterized test, for example, is both {@code test} and {@code test[1]}.
+     * The test runs when an include matches one of the names and no exclude matches either of them.
+     *
+     * @param testClassFile format must be e.g. "my/package/MyTest.class" including class extension
+     * @param methodName real test-method name, e.g. {@code test}
+     * @param otherMethodName the other name of the same test, e.g. {@code test[1]}
+     * @return {@code true} if the test should run
+     * @since 3.6.2
+     */
+    public boolean shouldRun(String testClassFile, String methodName, String otherMethodName) {
+        if (isEmpty()) {
+            return true;
+        }
+        if (isExcluded(testClassFile, methodName) || isExcluded(testClassFile, otherMethodName)) {
+            return false;
+        }
+        return isIncluded(testClassFile, methodName) || isIncluded(testClassFile, otherMethodName);
+    }
+
+    private boolean isIncluded(String testClassFile, String methodName) {
+        if (getIncludedPatterns().isEmpty()) {
+            return true;
+        }
+        for (ResolvedTest filter : getIncludedPatterns()) {
+            if (filter.matchAsInclusive(testClassFile, methodName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isExcluded(String testClassFile, String methodName) {
+        for (ResolvedTest filter : getExcludedPatterns()) {
+            if (filter.matchAsExclusive(testClassFile, methodName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

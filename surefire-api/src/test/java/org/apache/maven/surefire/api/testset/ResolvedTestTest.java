@@ -73,4 +73,15 @@ public class ResolvedTestTest {
         classFileName = fromFullyQualifiedClass("my.package.MyTest.*");
         assertEquals("my/package/MyTest.*", classFileName);
     }
+
+    @Test
+    public void testRegexPatternUsesForwardSlashesLikeTestClassFile() {
+        // Per inclusion-exclusion.md.vm: "Regex matches are done over paths using slashes ("/") ...
+        // Slashes here are forward, even on Windows." testClassFile (built by FileScanner) is always
+        // forward-slash too, so neither side of this match should ever be converted to the platform's
+        // separator - %regex[it/.*] must keep matching "it/ExampleIntegrationTest.class" everywhere.
+        ResolvedTest test = new ResolvedTest(CLASS, "it/.*", true);
+        assertTrue(test.matchAsInclusive("it/ExampleIntegrationTest.class", null));
+        assertFalse(test.matchAsInclusive("other/ExampleIntegrationTest.class", null));
+    }
 }

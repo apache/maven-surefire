@@ -413,6 +413,53 @@ public class TestListResolverTest {
         assertThrows(IllegalArgumentException.class, () -> new TestListResolver("%regex[#.(.]"));
     }
 
+    @Test
+    public void testIndexOfParameterizedTest() {
+        TestListResolver resolver = new TestListResolver("MyTest#test[1]");
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[1]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "test", "test[0]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "test", "test[10]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "anotherTest", "anotherTest[1]"));
+    }
+
+    @Test
+    public void testAnyIndexOfParameterizedTest() {
+        TestListResolver resolver = new TestListResolver("MyTest#test[*]");
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[0]"));
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[1]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "anotherTest", "anotherTest[1]"));
+    }
+
+    @Test
+    public void testIndexOfParameterizedTestWithCustomName() {
+        TestListResolver resolver = new TestListResolver("MyTest#test[5:*]");
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[5: fib(5)=5]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "test", "test[6: fib(6)=8]"));
+    }
+
+    @Test
+    public void testMethodNameSelectsEveryIndexOfParameterizedTest() {
+        TestListResolver resolver = new TestListResolver("MyTest#test");
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[0]"));
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[1]"));
+    }
+
+    @Test
+    public void testExcludedIndexOfParameterizedTest() {
+        TestListResolver resolver = new TestListResolver("MyTest, !MyTest#test[1]");
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "test", "test[0]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "test", "test[1]"));
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "anotherTest", "anotherTest[1]"));
+    }
+
+    @Test
+    public void testExcludedMethodNameExcludesEveryIndexOfParameterizedTest() {
+        TestListResolver resolver = new TestListResolver("!MyTest#test");
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "test", "test[0]"));
+        assertFalse(resolver.shouldRun("pkg/MyTest.class", "test", "test[1]"));
+        assertTrue(resolver.shouldRun("pkg/MyTest.class", "anotherTest", "anotherTest[1]"));
+    }
+
     private static Set<ResolvedTest> resolveClass(String patterns) {
         Set<ResolvedTest> resolved = new HashSet<>();
         for (String pattern : patterns.split(",")) {

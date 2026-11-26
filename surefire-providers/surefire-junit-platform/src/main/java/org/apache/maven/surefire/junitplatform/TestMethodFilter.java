@@ -41,15 +41,27 @@ class TestMethodFilter implements PostDiscoveryFilter {
                 .getSource()
                 .filter(MethodSource.class::isInstance)
                 .map(MethodSource.class::cast)
-                .map(this::shouldRun)
+                .map(source -> shouldRun(source, descriptor.getLegacyReportingName()))
                 .orElse(true);
 
         return FilterResult.includedIf(shouldRun);
     }
 
-    private boolean shouldRun(MethodSource source) {
+    private boolean shouldRun(MethodSource source, String reportingName) {
         String testClass = TestListResolver.toClassFileName(source.getClassName());
         String testMethod = source.getMethodName();
-        return this.testListResolver.shouldRun(testClass, testMethod);
+        if (isIndexedName(testMethod, reportingName)) {
+            return testListResolver.shouldRun(testClass, testMethod, reportingName);
+        }
+        return testListResolver.shouldRun(testClass, testMethod);
+    }
+
+    /**
+     * A JUnit 4 parameterized test run by the Vintage engine is reported as {@code test[1]}, or with the name
+     * given in {@code @Parameters}, while its method source only says {@code test}. Matching both names lets
+     * {@code -Dtest=MyTest#test[1]} pick one run, and {@code -Dtest=MyTest#test} still picks all of them.
+     */
+    private static boolean isIndexedName(String methodName, String reportingName) {
+        return reportingName != null && reportingName.startsWith(methodName + '[') && reportingName.endsWith("]");
     }
 }

@@ -20,6 +20,7 @@ package org.apache.maven.plugin.surefire;
 
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ import java.util.TreeSet;
 import org.apache.maven.surefire.booter.KeyValueSource;
 import org.junit.jupiter.api.Test;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.list;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -131,6 +133,22 @@ public class SurefirePropertiesTest {
         orderedProperties.put("property3", "value");
         // check return value containing all overwritten property names
         assertEquals(Arrays.asList("property1", "property2"), orderedProperties.copyPropertiesFrom(properties));
+    }
+
+    @Test
+    public void testLocalePropertiesCannotBeSetAsSystemProperties() {
+        // the JVM fixes the default Locale at startup, so these only take effect in argLine
+        SurefireProperties properties = new SurefireProperties();
+        properties.setProperty("user.language", "en");
+        properties.setProperty("user.country", "GB");
+        properties.setProperty("user.region", "GB");
+        properties.setProperty("user.variant", "POSIX");
+        properties.setProperty("user.script", "Latn");
+        properties.setProperty("my.property", "value");
+
+        assertEquals(
+                new HashSet<>(asList("user.language", "user.country", "user.region", "user.variant", "user.script")),
+                properties.propertiesThatCannotBeSetASystemProperties());
     }
 
     private static int size(Iterator<?> iterator) {

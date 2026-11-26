@@ -60,7 +60,7 @@ Build the Surefire project using **Maven 3.6.3+** and **JDK 8+**.
 
 * In order to build and run the tests:
   ```
-  mvn install site site:stage -P reporting,run-its
+  mvn verify site site:stage -P reporting,run-its
   ```
 
 * To set up the project in [Eclipse IDE](https://www.eclipse.org/) or [IntelliJ IDEA](https://www.jetbrains.com/idea/), please follow these steps:

@@ -18,10 +18,16 @@
  */
 package org.apache.maven.plugin.surefire.booterclient.lazytestprovider;
 
+import java.io.File;
+import java.nio.file.Paths;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import static org.apache.maven.surefire.shared.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 
 /**
  *
@@ -42,6 +48,40 @@ public class CommandlineTest {
     }
 
     @Test
+    @EnabledOnOs(WINDOWS)
+    public void shouldOverrideInheritedVariableIgnoringCaseOnWindows() {
+        Commandline cli = new Commandline();
+        cli.addEnvironment(otherCaseOfInheritedPath(), "C:\\configured");
+
+        assertThat(cli.getEnvironmentVariables())
+                .filteredOn(e -> e.regionMatches(true, 0, "PATH=", 0, 5))
+                .containsExactly(inheritedPathName() + "=C:\\configured");
+    }
+
+    @Test
+    @EnabledOnOs(WINDOWS)
+    public void shouldExcludeVariableIgnoringCaseOnWindows() {
+        Commandline cli = new Commandline(new String[] {otherCaseOfInheritedPath()});
+
+        assertThat(cli.getEnvironmentVariables()).noneMatch(e -> e.regionMatches(true, 0, "PATH=", 0, 5));
+    }
+
+    @Test
+    @DisabledOnOs(WINDOWS)
+    public void shouldSetPwdToWorkingDirectory() {
+        String userDir = System.getProperty("user.dir");
+        Commandline cli = new Commandline();
+        cli.setWorkingDirectory(new File(userDir, "target/../target"));
+
+        assertThat(cli.toProcessBuilder().environment())
+                .containsEntry("PWD", Paths.get(userDir, "target").toString());
+
+        cli.addEnvironment("PWD", "/configured");
+
+        assertThat(cli.toProcessBuilder().environment()).containsEntry("PWD", "/configured");
+    }
+
+    @Test
     public void shouldExecute() throws Exception {
         Commandline cli = new Commandline();
         cli.setWorkingDirectory(System.getProperty("user.dir"));
@@ -50,5 +90,17 @@ public class CommandlineTest {
             cli.addArguments("/c", "dir");
         }
         cli.execute();
+    }
+
+    private static String inheritedPathName() {
+        return System.getenv().keySet().stream()
+                .filter(name -> name.equalsIgnoreCase("PATH"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("no PATH variable"));
+    }
+
+    // Path or PATH on Windows, so this gives a name that only matches when case is ignored
+    private static String otherCaseOfInheritedPath() {
+        return "PATH".equals(inheritedPathName()) ? "path" : "PATH";
     }
 }
