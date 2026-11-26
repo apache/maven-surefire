@@ -46,6 +46,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import org.apache.maven.plugin.surefire.CommonReflector;
 import org.apache.maven.plugin.surefire.JdkAttributes;
@@ -149,6 +150,8 @@ public class ForkStarter {
             newDaemonThreadFactory("surefire-jvm-killer-shutdownhook");
 
     private static final AtomicInteger SYSTEM_PROPERTIES_FILE_COUNTER = new AtomicInteger();
+
+    private static final Pattern SESSION_ID_PARAM = Pattern.compile("([?&]sessionId=)[^&#]*");
 
     private final Set<String> logsAtEnd = new ConcurrentSkipListSet<>();
 
@@ -569,7 +572,7 @@ public class ForkStarter {
             Long pluginPid = forkConfiguration.getPluginPlatform().getPluginPid();
             log.debug("Determined Maven Process ID " + pluginPid);
             String connectionString = forkChannel.getForkNodeConnectionString();
-            log.debug("Fork Channel [" + forkNumber + "] connection string '" + connectionString
+            log.debug("Fork Channel [" + forkNumber + "] connection string '" + redactConnectionString(connectionString)
                     + "' for the implementation " + forkChannel.getClass());
             surefireProperties = booterSerializer.serialize(
                     providerProperties,
@@ -985,6 +988,13 @@ public class ForkStarter {
                 0,
                 TIMEOUT_CHECK_PERIOD_MILLIS,
                 MILLISECONDS);
+    }
+
+    static String redactConnectionString(String connectionString) {
+        if (connectionString == null) {
+            return null;
+        }
+        return SESSION_ID_PARAM.matcher(connectionString).replaceAll("$1<redacted>");
     }
 
     private final class ForkedNodeArg implements ForkNodeArguments {

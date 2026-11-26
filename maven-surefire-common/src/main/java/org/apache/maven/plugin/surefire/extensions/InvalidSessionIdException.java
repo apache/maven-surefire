@@ -32,6 +32,6 @@ import org.apache.maven.surefire.extensions.util.CommandlineExecutor;
  */
 public class InvalidSessionIdException extends IOException {
     public InvalidSessionIdException(String actualSessionId, String expectedSessionId) {
-        super("The actual sessionId '" + actualSessionId + "' does not match '" + expectedSessionId + "'.");
+        super("The actual sessionId does not match the expected sessionId.");
     }
 }

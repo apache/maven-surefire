@@ -33,6 +33,7 @@ import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.security.MessageDigest;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -187,7 +188,8 @@ final class SurefireForkChannel extends ForkChannel {
 
     private void verifySessionId() throws InterruptedException, IOException {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(sessionId.length());
+            byte[] expectedSessionId = sessionId.getBytes(US_ASCII);
+            ByteBuffer buffer = ByteBuffer.allocate(expectedSessionId.length);
             int read;
             do {
                 read = getChannel().read(buffer).get();
@@ -198,9 +200,8 @@ final class SurefireForkChannel extends ForkChannel {
             }
 
             ((Buffer) buffer).flip();
-            String clientSessionId = new String(buffer.array(), US_ASCII);
-            if (!clientSessionId.equals(sessionId)) {
-                throw new InvalidSessionIdException(clientSessionId, sessionId);
+            if (!MessageDigest.isEqual(buffer.array(), expectedSessionId)) {
+                throw new InvalidSessionIdException(new String(buffer.array(), US_ASCII), sessionId);
             }
         } catch (ExecutionException e) {
             Throwable cause = e.getCause();

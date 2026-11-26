@@ -225,8 +225,9 @@ public class E2ETest {
                 fail(task.get());
             });
             assertThat(ex.getMessage())
-                    .contains("The actual sessionId '6ba7b812-9dad-11d1-80b4-00c04fd430c8' does not match '"
-                            + forkNodeArguments.getSessionId() + "'.");
+                    .isEqualTo("The actual sessionId does not match the expected sessionId.")
+                    .doesNotContain("6ba7b812-9dad-11d1-80b4-00c04fd430c8")
+                    .doesNotContain(forkNodeArguments.getSessionId());
         }
     }
 
