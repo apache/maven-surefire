@@ -225,6 +225,9 @@ public class ModularClasspathForkConfiguration extends DefaultForkConfiguration 
     }
 
     private static String escapeQuoted(String value) {
-        return value.replace("\\", "\\\\").replace("\"", "\\\"").replace("\r", "\\r").replace("\n", "\\n");
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
     }
 }
