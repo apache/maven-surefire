@@ -129,6 +129,27 @@ public class RunEntryStatisticsMapTest {
 
     @Test
     @SuppressWarnings("checkstyle:magicnumber")
+    public void testSerializeClassFollowedByMethod() throws Exception {
+        File data = SureFireFileManager.createTempFile("surefire-unit", "test");
+        RunEntryStatisticsMap newResults = new RunEntryStatisticsMap();
+        ReportEntry classEntry = new SimpleReportEntry(NORMAL_RUN, 0L, "abc", null, null, null, 10);
+        ReportEntry methodEntry = new SimpleReportEntry(NORMAL_RUN, 0L, "def", null, "test", null, 42);
+        newResults.add(newResults.createNextGeneration(classEntry));
+        newResults.add(newResults.createNextGeneration(methodEntry));
+        newResults.serialize(data);
+
+        List<String> lines = Files.readAllLines(data.toPath(), UTF_8);
+        assertThat(lines).hasSize(2);
+        assertThat(lines).containsSequence("1,10,abc,", "1,42,def,test");
+
+        RunEntryStatisticsMap nextRun = RunEntryStatisticsMap.fromFile(data);
+        Map<ClassMethod, RunEntryStatistics> stats = getInternalState(nextRun, "runEntryStatistics");
+        assertThat(stats).hasSize(2);
+        assertThat(stats.get(new ClassMethod("def", "test")).getRunTime()).isEqualTo(42);
+    }
+
+    @Test
+    @SuppressWarnings("checkstyle:magicnumber")
     public void testSerialize() throws Exception {
         File data = SureFireFileManager.createTempFile("surefire-unit", "test");
         RunEntryStatisticsMap existingEntries = RunEntryStatisticsMap.fromFile(data);
