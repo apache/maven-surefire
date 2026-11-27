@@ -135,18 +135,16 @@ public final class RunEntryStatisticsMap {
                 writer.write(line);
                 boolean wasFirstLine = false;
                 String method = test.getMethod();
-                if (method == null) {
-                    continue;
-                }
-
-                for (Scanner scanner = new Scanner(method); scanner.hasNextLine(); wasFirstLine = true) {
-                    String methodLine = scanner.nextLine();
-                    if (wasFirstLine) {
-                        writer.write(' ');
-                    }
-                    writer.write(methodLine);
-                    if (scanner.hasNextLine()) {
-                        writer.newLine();
+                if (method != null) {
+                    for (Scanner scanner = new Scanner(method); scanner.hasNextLine(); wasFirstLine = true) {
+                        String methodLine = scanner.nextLine();
+                        if (wasFirstLine) {
+                            writer.write(' ');
+                        }
+                        writer.write(methodLine);
+                        if (scanner.hasNextLine()) {
+                            writer.newLine();
+                        }
                     }
                 }
 
