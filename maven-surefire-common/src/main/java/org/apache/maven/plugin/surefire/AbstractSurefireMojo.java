@@ -2253,7 +2253,8 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         }
         testClasspath = layout.getClasspath();
         Classpath testModulepath = layout.getModulepath();
-        ProviderRequirements providerRequirements = new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor);
+        ProviderRequirements providerRequirements =
+                new ProviderRequirements(true, isMainDescriptor, !isMainDescriptor, javaHome);
 
         getConsoleLogger().debug("main module descriptor name: " + javaModuleDescriptor.name());
 
@@ -3408,7 +3409,53 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
         @Nonnull
         @Override
         public List<String[]> getJpmsArguments(@Nonnull ProviderRequirements forkRequirements) {
-            return ModulePathJpmsArguments.junitPlatformArguments(forkRequirements);
+            boolean commonsDependency = hasCommonsOnTestClasspath();
+            return commonsDependency || hasCommonsOnAdditionalClasspath(forkRequirements.getJavaHome())
+                    ? ModulePathJpmsArguments.junitPlatformArguments(forkRequirements)
+                    : emptyList();
+        }
+
+        private boolean hasCommonsOnTestClasspath() {
+            for (Artifact artifact : testClasspath.getArtifacts()) {
+                if ("org.junit.platform".equals(artifact.getGroupId())
+                        && "junit-platform-commons".equals(artifact.getArtifactId())
+                        && artifact.getArtifactHandler().isAddedToClasspath()
+                        && artifact.getFile() != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean hasCommonsOnAdditionalClasspath(String javaHome) {
+            Iterable<String> additionalElements = testClasspath.getAdditionalClasspathElements();
+            if (additionalElements == null) {
+                return false;
+            }
+            for (String additionalElement : additionalElements) {
+                if (additionalElement == null) {
+                    continue;
+                }
+                for (String path : StringUtils.split(additionalElement, ",")) {
+                    if (path == null || path.trim().isEmpty()) {
+                        continue;
+                    }
+                    try {
+                        ResolvePathRequest<String> request = ResolvePathRequest.ofString(path.trim());
+                        if (javaHome != null) {
+                            request.setJdkHome(javaHome);
+                        }
+                        ResolvePathResult result = getLocationManager().resolvePath(request);
+                        JavaModuleDescriptor descriptor = result == null ? null : result.getModuleDescriptor();
+                        if (descriptor != null && "org.junit.platform.commons".equals(descriptor.name())) {
+                            return true;
+                        }
+                    } catch (IOException e) {
+                        logger.debug("Could not inspect additional classpath element '{}'.", path, e);
+                    }
+                }
+            }
+            return false;
         }
 
         @Override

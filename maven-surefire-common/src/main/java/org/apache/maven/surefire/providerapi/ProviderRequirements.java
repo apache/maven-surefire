@@ -18,6 +18,8 @@
  */
 package org.apache.maven.surefire.providerapi;
 
+import javax.annotation.Nullable;
+
 /**
  * Used to get additional provider-specific JVM arguments.
  *
@@ -27,11 +29,21 @@ public final class ProviderRequirements {
     private final boolean modularPath;
     private final boolean mainModuleDescriptor;
     private final boolean testModuleDescriptor;
+    private final String javaHome;
 
     public ProviderRequirements(boolean modularPath, boolean mainModuleDescriptor, boolean testModuleDescriptor) {
+        this(modularPath, mainModuleDescriptor, testModuleDescriptor, null);
+    }
+
+    public ProviderRequirements(
+            boolean modularPath,
+            boolean mainModuleDescriptor,
+            boolean testModuleDescriptor,
+            @Nullable String javaHome) {
         this.modularPath = modularPath;
         this.mainModuleDescriptor = mainModuleDescriptor;
         this.testModuleDescriptor = testModuleDescriptor;
+        this.javaHome = javaHome;
     }
 
     public boolean isModularPath() {
@@ -44,5 +56,10 @@ public final class ProviderRequirements {
 
     public boolean hasTestModuleDescriptor() {
         return testModuleDescriptor;
+    }
+
+    @Nullable
+    public String getJavaHome() {
+        return javaHome;
     }
 }
