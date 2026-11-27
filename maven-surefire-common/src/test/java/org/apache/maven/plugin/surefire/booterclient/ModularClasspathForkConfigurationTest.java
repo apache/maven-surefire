@@ -43,6 +43,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.readAllLines;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.apache.maven.surefire.booter.Classpath.emptyClasspath;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.replace;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -164,5 +165,48 @@ public class ModularClasspathForkConfigurationTest {
             String line = argsFileLines2.get(i);
             assertThat(line).isEqualTo(argsFileLines.get(i));
         }
+    }
+
+    @Test
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public void shouldEscapeQuotesAndLineBreaksInArgsFile() throws Exception {
+        Classpath booter = new Classpath(asList("booter.jar", "non-modular.jar"));
+        File target = new File("target").getCanonicalFile();
+        File tmp = new File(target, "surefire");
+        tmp.mkdirs();
+        File pwd = new File(".").getCanonicalFile();
+
+        ModularClasspathForkConfiguration config = new ModularClasspathForkConfiguration(
+                booter,
+                tmp,
+                "",
+                pwd,
+                new Properties(),
+                "",
+                Collections.<String, String>emptyMap(),
+                new String[0],
+                true,
+                1,
+                true,
+                new Platform(),
+                new NullConsoleLogger(),
+                mock(ForkNodeFactory.class));
+
+        File argsFile = config.createArgsFile(
+                "abc",
+                singletonList("modular\r\n\".jar"),
+                singletonList("non\nmodular.jar"),
+                singleton("org.apache.abc"),
+                new File("test\"classes"),
+                ForkedBooter.class.getName(),
+                true,
+                Collections.<String[]>emptyList());
+
+        List<String> argsFileLines = readAllLines(argsFile.toPath(), UTF_8);
+
+        assertThat(argsFileLines).hasSize(13);
+        assertThat(argsFileLines.get(1)).isEqualTo("\"modular\\r\\n\\\".jar\"");
+        assertThat(argsFileLines.get(3)).isEqualTo("\"non\\nmodular.jar\"");
+        assertThat(argsFileLines.get(5)).isEqualTo("abc=\"test\\\"classes\"");
     }
 }
