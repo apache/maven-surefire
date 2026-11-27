@@ -2455,8 +2455,10 @@ public abstract class AbstractSurefireMojo extends AbstractMojo implements Suref
                 excludes.addAll(readListFromFile(getExcludesFile()));
             }
 
-            if (asScanList && excludes.isEmpty()) {
-                excludes = Collections.singletonList(getDefaultExcludes());
+            if (asScanList) {
+                // nested classes are not separate scan targets, they run as part of their enclosing
+                // class, so this must always apply on top of any user-supplied excludes (SUREFIRE-1720)
+                excludes.add(getDefaultExcludes());
             }
         }
         return filterNulls(excludes);
