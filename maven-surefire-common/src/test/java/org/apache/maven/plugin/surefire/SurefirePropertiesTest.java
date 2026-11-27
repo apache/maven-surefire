@@ -19,6 +19,7 @@
 package org.apache.maven.plugin.surefire;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -131,8 +132,21 @@ public class SurefirePropertiesTest {
         properties.put("property2", "value");
         orderedProperties.putAll(properties);
         orderedProperties.put("property3", "value");
-        // check return value containing all overwritten property names
-        assertEquals(Arrays.asList("property1", "property2"), orderedProperties.copyPropertiesFrom(properties));
+
+        properties.put("property1", "otherValue");
+        // check return value containing only the property names whose value actually changed
+        assertEquals(Arrays.asList("property1"), orderedProperties.copyPropertiesFrom(properties));
+    }
+
+    @Test
+    public void testCopyPropertiesFromDoesNotReportUnchangedValuesAsOverwritten() {
+        SurefireProperties orderedProperties = new SurefireProperties();
+        Map<String, String> properties = new LinkedHashMap<>();
+        properties.put("property1", "value");
+        orderedProperties.putAll(properties);
+
+        // re-applying the exact same key/value pairs should not be reported as overwritten
+        assertEquals(Collections.emptyList(), orderedProperties.copyPropertiesFrom(properties));
     }
 
     @Test
