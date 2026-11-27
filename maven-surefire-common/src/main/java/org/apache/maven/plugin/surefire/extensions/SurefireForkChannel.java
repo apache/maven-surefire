@@ -22,21 +22,19 @@ import javax.annotation.Nonnull;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketOption;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousServerSocketChannel;
-import java.nio.channels.AsynchronousSocketChannel;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.apache.maven.plugin.surefire.booterclient.output.NativeStdOutStreamConsumer;
 import org.apache.maven.surefire.api.event.Event;
@@ -49,24 +47,19 @@ import org.apache.maven.surefire.extensions.util.CountDownLauncher;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
 import org.apache.maven.surefire.extensions.util.LineConsumerThread;
 
-import static java.net.StandardSocketOptions.SO_KEEPALIVE;
 import static java.net.StandardSocketOptions.SO_REUSEADDR;
-import static java.net.StandardSocketOptions.TCP_NODELAY;
-import static java.nio.channels.AsynchronousChannelGroup.withThreadPool;
-import static java.nio.channels.AsynchronousServerSocketChannel.open;
+import static java.nio.channels.Channels.newOutputStream;
+import static java.nio.channels.SelectionKey.OP_ACCEPT;
 import static java.nio.charset.StandardCharsets.US_ASCII;
 import static org.apache.maven.surefire.api.util.internal.Channels.newBufferedChannel;
 import static org.apache.maven.surefire.api.util.internal.Channels.newChannel;
-import static org.apache.maven.surefire.api.util.internal.Channels.newInputStream;
-import static org.apache.maven.surefire.api.util.internal.Channels.newOutputStream;
-import static org.apache.maven.surefire.api.util.internal.DaemonThreadFactory.newDaemonThreadFactory;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isBlank;
 import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
 
 /**
  * The TCP/IP server accepting only one client connection. The forked JVM connects to the server using the
  * {@link #getForkNodeConnectionString() connection string}.
- * The main purpose of this class is to {@link #tryConnectToClient() conect with tthe client}, bind the
+ * The main purpose of this class is to accept the client connection, bind the
  * {@link #bindCommandReader(CommandReader, WritableByteChannel) command reader} to the internal socket's
  * {@link java.io.InputStream}, and bind the
  * {@link #bindEventHandler(EventHandler, CountdownCloseable, ReadableByteChannel) event handler} writing the event
@@ -78,14 +71,14 @@ import static org.apache.maven.surefire.shared.lang3.StringUtils.isNotBlank;
  * The channel is closed after the forked JVM has finished normally or the shutdown hook is executed in the plugin.
  */
 final class SurefireForkChannel extends ForkChannel {
-    private static final ExecutorService THREAD_POOL = Executors.newCachedThreadPool(newDaemonThreadFactory());
+    private static final long CONNECTION_POLL_INTERVAL_MILLIS = 100L;
 
-    private final AsynchronousServerSocketChannel server;
+    private final ServerSocketChannel server;
     private final String localHost;
     private final int localPort;
     private final String sessionId;
     private final Bindings bindings = new Bindings(2);
-    private volatile Future<AsynchronousSocketChannel> session;
+    private SocketChannel connection;
     private volatile LineConsumerThread out;
     private volatile CloseableDaemonThread commandReaderBindings;
     private volatile CloseableDaemonThread eventHandlerBindings;
@@ -94,8 +87,9 @@ final class SurefireForkChannel extends ForkChannel {
 
     SurefireForkChannel(@Nonnull ForkNodeArguments arguments) throws IOException {
         super(arguments);
-        server = open(withThreadPool(THREAD_POOL));
-        setTrueOptions(SO_REUSEADDR, TCP_NODELAY, SO_KEEPALIVE);
+        server = ServerSocketChannel.open();
+        server.configureBlocking(false);
+        server.setOption(SO_REUSEADDR, true);
         InetAddress ip = InetAddress.getLoopbackAddress();
         server.bind(new InetSocketAddress(ip, 0), 1);
         InetSocketAddress localAddress = (InetSocketAddress) server.getLocalAddress();
@@ -106,10 +100,7 @@ final class SurefireForkChannel extends ForkChannel {
 
     @Override
     public void tryConnectToClient() {
-        if (session != null) {
-            throw new IllegalStateException("already accepted TCP client connection");
-        }
-        session = server.accept();
+        // The listener is already bound. Accept when the fork process and the stream handlers are available.
     }
 
     @Override
@@ -148,6 +139,16 @@ final class SurefireForkChannel extends ForkChannel {
             @Nonnull CountdownCloseable countdown,
             ReadableByteChannel stdOut)
             throws IOException, InterruptedException {
+        bindEventHandler(eventHandler, countdown, stdOut, null);
+    }
+
+    @Override
+    public void bindEventHandler(
+            @Nonnull EventHandler<Event> eventHandler,
+            @Nonnull CountdownCloseable countdown,
+            ReadableByteChannel stdOut,
+            Process process)
+            throws IOException, InterruptedException {
         ForkNodeArguments args = getArguments();
         out = new LineConsumerThread(
                 "fork-" + args.getForkChannelId() + "-out-thread",
@@ -156,7 +157,7 @@ final class SurefireForkChannel extends ForkChannel {
                 countdown);
         out.start();
 
-        eventBindings = new EventBindings(eventHandler, countdown);
+        eventBindings = new EventBindings(eventHandler, countdown, process);
 
         bindings.countDown();
     }
@@ -173,24 +174,25 @@ final class SurefireForkChannel extends ForkChannel {
     }
 
     @Override
-    public void close() throws IOException {
-        //noinspection unused,EmptyTryBlock,EmptyTryBlock
-        try (Closeable c1 = getChannel();
-                Closeable c2 = server;
-                Closeable c3 = out) {
-            // only close all channels
-        } catch (InterruptedException e) {
-            Throwable cause = e.getCause();
-            throw cause instanceof IOException ? (IOException) cause : new IOException(cause);
+    public synchronized void close() throws IOException {
+        try (Closeable stdout = out;
+                Closeable socket = connection;
+                Closeable listener = server) {
+            // Close the listener before the accepted socket and stdout.
         }
     }
 
-    private void verifySessionId() throws InterruptedException, IOException {
+    private synchronized SocketChannel acceptConnection() throws IOException {
+        connection = server.accept();
+        return connection;
+    }
+
+    private void verifySessionId(SocketChannel channel) throws InterruptedException, IOException {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(sessionId.length());
             int read;
             do {
-                read = getChannel().read(buffer).get();
+                read = channel.read(buffer);
             } while (read != -1 && buffer.hasRemaining());
 
             if (read == -1) {
@@ -202,34 +204,50 @@ final class SurefireForkChannel extends ForkChannel {
             if (!clientSessionId.equals(sessionId)) {
                 throw new InvalidSessionIdException(clientSessionId, sessionId);
             }
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            throw cause instanceof IOException ? (IOException) cause : new IOException(cause);
+        } catch (ClosedByInterruptException e) {
+            Thread.interrupted();
+            InterruptedException interrupted = new InterruptedException();
+            interrupted.initCause(e);
+            throw interrupted;
         }
     }
 
-    @SafeVarargs
-    private final void setTrueOptions(SocketOption<Boolean>... options) throws IOException {
-        for (SocketOption<Boolean> option : options) {
-            if (server.supportedOptions().contains(option)) {
-                server.setOption(option, true);
+    private static InputStream socketInputStream(SocketChannel socket) {
+        // The JDK's channel stream adapters share a blocking lock. Read directly so commands can be sent concurrently.
+        return new InputStream() {
+            @Override
+            public int read() throws IOException {
+                byte[] b = new byte[1];
+                return read(b, 0, b.length) == -1 ? -1 : b[0] & 0xff;
             }
-        }
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                return socket.read(ByteBuffer.wrap(b, off, len));
+            }
+
+            @Override
+            public void close() throws IOException {
+                socket.close();
+            }
+        };
     }
 
     private class EventBindings {
         private final EventHandler<Event> eventHandler;
         private final CountdownCloseable countdown;
+        private final Process process;
 
-        private EventBindings(EventHandler<Event> eventHandler, CountdownCloseable countdown) {
+        private EventBindings(EventHandler<Event> eventHandler, CountdownCloseable countdown, Process process) {
             this.eventHandler = eventHandler;
             this.countdown = countdown;
+            this.process = process;
         }
 
-        void bindEventHandler(AsynchronousSocketChannel source) {
+        void bindEventHandler(SocketChannel source) {
             ForkNodeArguments args = getArguments();
             String threadName = "fork-" + args.getForkChannelId() + "-event-thread";
-            ReadableByteChannel channel = newBufferedChannel(newInputStream(source));
+            ReadableByteChannel channel = newBufferedChannel(socketInputStream(source));
             eventHandlerBindings = new EventConsumerThread(threadName, channel, eventHandler, countdown, args);
             eventHandlerBindings.start();
         }
@@ -242,7 +260,7 @@ final class SurefireForkChannel extends ForkChannel {
             this.commands = commands;
         }
 
-        void bindCommandSender(AsynchronousSocketChannel source) {
+        void bindCommandSender(SocketChannel source) {
             // don't use newBufferedChannel here - may cause the command is not sent and the JVM hangs
             // only newChannel flushes the message
             // newBufferedChannel does not flush
@@ -261,21 +279,37 @@ final class SurefireForkChannel extends ForkChannel {
 
         @Override
         protected void job() throws IOException, InterruptedException {
-            AsynchronousSocketChannel channel = getChannel();
-            if (isNotBlank(sessionId)) {
-                verifySessionId();
+            Process process = eventBindings.process;
+            SocketChannel channel = awaitConnection(process);
+            if (channel == null) {
+                // No event consumer will start. Release its permit so ForkStarter can collect the exit code.
+                eventBindings.countdown.close();
+            } else {
+                if (isNotBlank(sessionId)) {
+                    verifySessionId(channel);
+                }
+                eventBindings.bindEventHandler(channel);
+                if (process == null || process.isAlive()) {
+                    commandBindings.bindCommandSender(channel);
+                }
             }
-            eventBindings.bindEventHandler(channel);
-            commandBindings.bindCommandSender(channel);
         }
     }
 
-    private AsynchronousSocketChannel getChannel() throws InterruptedException, IOException {
-        try {
-            return session == null ? null : session.get();
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            throw cause instanceof IOException ? (IOException) cause : new IOException(cause);
+    private SocketChannel awaitConnection(Process process) throws InterruptedException, IOException {
+        try (Selector selector = server.provider().openSelector()) {
+            server.register(selector, OP_ACCEPT);
+            while (!Thread.interrupted()) {
+                // Check the listener after observing the exit so we can still drain a queued connection.
+                boolean exited = process != null && !process.isAlive();
+                SocketChannel socket = acceptConnection();
+                if (socket != null || exited) {
+                    return socket;
+                }
+                selector.select(CONNECTION_POLL_INTERVAL_MILLIS);
+                selector.selectedKeys().clear();
+            }
         }
+        throw new InterruptedException();
     }
 }

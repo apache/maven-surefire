@@ -630,9 +630,10 @@ public class ForkStarter {
 
             forkChannel.bindCommandReader(commandReader, streams.getStdInChannel());
 
-            forkChannel.bindEventHandler(eventConsumer, countdownCloseable, streams.getStdOutChannel());
+            forkChannel.bindEventHandler(
+                    eventConsumer, countdownCloseable, streams.getStdOutChannel(), exec.getProcess());
 
-            log.debug("Fork Channel [" + forkNumber + "] connected to the client.");
+            log.debug("Fork Channel [" + forkNumber + "] configured.");
 
             if (timeoutExtensionDispatcher.hasExtensions() && forkedProcessTimeoutInSeconds > 0) {
                 Process process = exec.getProcess();
