@@ -57,6 +57,10 @@ A single version must equal the one in `toolchains.xml`: `17` does not match `17
 matches both `17` and `17.0.20`. Java 8 is labeled either `8` or `1.8.0_504`, so `[8,9)` matches only the first and
 `[1.8,1.9)` only the second. Other elements, like `vendor`, must equal the value in `toolchains.xml`, ignoring case.
 
+If no configured toolchain matches, ${thisPlugin} also checks the JDK toolchain selected in Maven's build context.
+This allows the `maven-toolchains-plugin` `select-jdk-toolchain` goal to select a discovered JDK, provided it
+matches the `jdkToolchain` requirements.
+
 Minimum Java Version for Toolchains
 -----------------------------------
 

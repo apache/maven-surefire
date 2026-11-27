@@ -31,6 +31,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.toolchain.Toolchain;
 import org.apache.maven.toolchain.ToolchainManager;
+import org.apache.maven.toolchain.ToolchainPrivate;
 import org.apache.maven.toolchain.java.DefaultJavaToolChain;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -66,6 +67,35 @@ public class AbstractSurefireMojoToolchainsTest {
         mojo.setJdkToolchain(singletonMap("version", "1.8"));
         Toolchain actual = invokeMethod(mojo, "getToolchain");
         assertThat(actual).isSameAs(expectedMethod);
+    }
+
+    @Test
+    public void shouldUseMatchingBuildContextToolchainWhenNoConfiguredToolchainMatches() throws Exception {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        ToolchainPrivate expectedFromContext = mock(ToolchainPrivate.class);
+        Map<String, String> requirements = singletonMap("version", "11");
+        when(expectedFromContext.matchesRequirements(requirements)).thenReturn(true);
+        mojo.setToolchainManager(new MockToolchainManager(null, expectedFromContext));
+        mojo.setJdkToolchain(requirements);
+
+        Toolchain actual = invokeMethod(mojo, "getToolchain");
+
+        assertThat(actual).isSameAs(expectedFromContext);
+    }
+
+    @Test
+    public void shouldNotUseNonMatchingBuildContextToolchain() {
+        AbstractSurefireMojoTest.Mojo mojo = new AbstractSurefireMojoTest.Mojo();
+        ToolchainPrivate toolchainFromContext = mock(ToolchainPrivate.class);
+        Map<String, String> requirements = singletonMap("version", "11");
+        when(toolchainFromContext.matchesRequirements(requirements)).thenReturn(false);
+        mojo.setToolchainManager(new MockToolchainManager(null, toolchainFromContext));
+        mojo.setJdkToolchain(requirements);
+
+        MojoFailureException exception =
+                assertThrows(MojoFailureException.class, () -> invokeMethod(mojo, "getToolchain"));
+
+        assertThat(exception.getMessage()).contains("{version=11}");
     }
 
     /**
