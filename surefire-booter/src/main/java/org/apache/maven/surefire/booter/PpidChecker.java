@@ -199,8 +199,15 @@ final class PpidChecker implements ProcessChecker {
                 return previousOutputLine;
             }
         };
-        String cmd = unixPathToPS() + " -o etime,pid " + (IS_OS_LINUX ? "" : "-p ") + ppid;
-        return reader.execute("/bin/sh", "-c", cmd);
+        return reader.execute(unixPsCommand(ppid));
+    }
+
+    static String[] unixPsCommand(String ppid) {
+        String ps = unixPathToPS();
+        if (IS_OS_LINUX) {
+            return new String[] {ps, "-o", "etime,pid", ppid};
+        }
+        return new String[] {ps, "-o", "etime,pid", "-p", ppid};
     }
 
     ProcessInfo windows() {
