@@ -27,8 +27,6 @@ import java.util.Set;
  * Loads classes from jar files added via {@link #addURL(URL)}.
  */
 public class IsolatedClassLoader extends URLClassLoader {
-    private final ClassLoader parent = ClassLoader.getSystemClassLoader();
-
     private final Set<URL> urls = new HashSet<>();
 
     private final String roleName;
@@ -69,11 +67,7 @@ public class IsolatedClassLoader extends URLClassLoader {
                 try {
                     c = findClass(name);
                 } catch (ClassNotFoundException e) {
-                    if (parent == null) {
-                        throw e;
-                    } else {
-                        c = parent.loadClass(name);
-                    }
+                    c = super.loadClass(name);
                 }
             }
 

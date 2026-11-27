@@ -55,4 +55,27 @@ public class IsolatedClassLoaderTest {
         assertThat(isolatedClass.getName()).isEqualTo(AbstractProvider.class.getName());
         assertThat(isolatedClass).isNotSameAs(AbstractProvider.class);
     }
+
+    @Test
+    public void shouldFallBackToGivenParentWithChildDelegation() throws Exception {
+        ClassLoader parent = new ClassLoader(null) {
+            @Override
+            protected Class<?> findClass(String name) throws ClassNotFoundException {
+                if ("only.in.Parent".equals(name)) {
+                    return AbstractProvider.class;
+                }
+                throw new ClassNotFoundException(name);
+            }
+        };
+        IsolatedClassLoader childFirst = new IsolatedClassLoader(parent, true, "role");
+
+        assertThat(childFirst.loadClass("only.in.Parent")).isSameAs(AbstractProvider.class);
+    }
+
+    @Test
+    public void shouldLoadJdkClassWithChildDelegationAndNoParent() throws Exception {
+        IsolatedClassLoader childFirst = new IsolatedClassLoader(null, true, "role");
+
+        assertThat(childFirst.loadClass(String.class.getName())).isSameAs(String.class);
+    }
 }
